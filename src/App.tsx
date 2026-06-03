@@ -4,13 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course } from './types';
 import {
   INITIAL_USERS,
   INITIAL_SCHEDULES,
   INITIAL_PROGRESS,
   INITIAL_NOTIFICATIONS,
   INITIAL_BACKUPS,
+  INITIAL_BATCHES,
+  INITIAL_COURSES,
   getSavedState,
   saveState
 } from './utils';
@@ -114,6 +116,16 @@ function AppContent() {
     return getSavedState<SimulatedEmail[]>('db-simulated-emails', []);
   });
 
+  // Student batches published by admin/sub-admin
+  const [batches, setBatches] = useState<StudentBatch[]>(() => {
+    return getSavedState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
+  });
+
+  // Student courses published by admin/sub-admin
+  const [courses, setCourses] = useState<Course[]>(() => {
+    return getSavedState<Course[]>('db-courses', INITIAL_COURSES);
+  });
+
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
 
@@ -136,6 +148,7 @@ function AppContent() {
   const [fastInstructorId, setFastInstructorId] = useState('');
   const [fastFatherName, setFastFatherName] = useState('');
   const [fastFatherPhone, setFastFatherPhone] = useState('');
+  const [fastCourse, setFastCourse] = useState('');
 
 
   const [fastNameError, setFastNameError] = useState('');
@@ -144,6 +157,7 @@ function AppContent() {
   const [fastDobError, setFastDobError] = useState('');
   const [fastFatherNameError, setFastFatherNameError] = useState('');
   const [fastLastQualificationError, setFastLastQualificationError] = useState('');
+  const [fastCourseError, setFastCourseError] = useState('');
   const [fastLastQualification, setFastLastQualification] = useState('');
   const [lastQualificationCategory, setLastQualificationCategory] = useState('');
   const [schoolClassInput, setSchoolClassInput] = useState('');
@@ -236,6 +250,14 @@ function AppContent() {
   useEffect(() => {
     saveState('db-simulated-emails', simulatedEmails);
   }, [simulatedEmails]);
+
+  useEffect(() => {
+    saveState('db-batches', batches);
+  }, [batches]);
+
+  useEffect(() => {
+    saveState('db-courses', courses);
+  }, [courses]);
 
 
   // Push Notice trigger helper
@@ -395,6 +417,86 @@ function AppContent() {
       read: false,
       type: 'general',
       channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddBatch = (newBatch: Omit<StudentBatch, 'id' | 'createdDate'>) => {
+    const batch: StudentBatch = {
+      ...newBatch,
+      id: generateUniqueId('batch'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setBatches(prev => [...prev, batch]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Student Batch Published',
+      message: `Batch "${batch.name}" has been registered and published to the live class scheduler.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteBatch = (batchId: string) => {
+    const batchToDelete = batches.find(b => b.id === batchId);
+    if (!batchToDelete) return;
+
+    setBatches(prev => prev.filter(b => b.id !== batchId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Student Batch Unregistered',
+      message: `Batch "${batchToDelete.name}" has been removed from active cohorts.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddCourse = (newCourse: Omit<Course, 'id' | 'createdDate'>) => {
+    const course: Course = {
+      ...newCourse,
+      id: generateUniqueId('course'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setCourses(prev => [...prev, course]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Course Registered & Published',
+      message: `Course "${course.name}" (${course.code}) has been successfully registered and is now available.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteCourse = (courseId: string) => {
+    const courseToDelete = courses.find(c => c.id === courseId);
+    if (!courseToDelete) return;
+
+    setCourses(prev => prev.filter(c => c.id !== courseId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Course Decommissioned',
+      message: `Course "${courseToDelete.name}" has been decommissioned from active directories.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
     };
     setNotifications(prev => [notif, ...prev]);
     triggerToast(notif);
@@ -571,7 +673,8 @@ function AppContent() {
     lastQualification?: string,
     gender?: string,
     dob?: string,
-    avatarUrl?: string
+    avatarUrl?: string,
+    course?: string
   ) => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -600,7 +703,8 @@ function AppContent() {
       lastQualification: lastQualification?.trim() || undefined,
       gender: gender?.trim() || undefined,
       dob: dob?.trim() || undefined,
-      avatarUrl: avatarUrl || undefined
+      avatarUrl: avatarUrl || undefined,
+      course: course
     };
 
     setRegistrationRequests(prev => [newRequest, ...prev]);
@@ -642,7 +746,9 @@ function AppContent() {
       address: r.address,
       lastQualification: r.lastQualification,
       gender: r.gender,
-      dob: r.dob
+      dob: r.dob,
+      batch: r.batch || 'Batch A',
+      course: r.course
     };
 
     // Send simulated email
@@ -773,6 +879,14 @@ function AppContent() {
       hasError = true;
     }
 
+    // Check Course
+    if (!fastCourse) {
+      setFastCourseError('Desired course selection is required');
+      hasError = true;
+    } else {
+      setFastCourseError('');
+    }
+
     // Check Father Name
     if (!fastFatherName.trim()) {
       setFastFatherNameError("Father's name is required");
@@ -847,7 +961,8 @@ function AppContent() {
       fastLastQualification,
       fastGender,
       fastDob,
-      fastAvatarUrl
+      fastAvatarUrl,
+      fastCourse
     );
     setFastRegSuccess(req);
     
@@ -862,6 +977,8 @@ function AppContent() {
     setFastFatherPhone('');
     setFastFatherPhonePrefix('+91');
     setFastFatherPhoneError('');
+    setFastCourse('');
+    setFastCourseError('');
     
 
 
@@ -1587,6 +1704,27 @@ function AppContent() {
                           )}
                         </div>
 
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Desired Professional Course *</label>
+                          <select
+                            required
+                            value={fastCourse}
+                            onChange={e => {
+                              setFastCourse(e.target.value);
+                              if (e.target.value) setFastCourseError('');
+                            }}
+                            className={`w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastCourseError ? 'border-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 transition-all font-sans`}
+                          >
+                            <option value="">-- Select Course Program --</option>
+                            {courses.map(c => (
+                              <option key={c.id} value={c.name}>{c.name} ({c.code})</option>
+                            ))}
+                          </select>
+                          {fastCourseError && (
+                            <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastCourseError}</p>
+                          )}
+                        </div>
+
                         <button
                           type="submit"
                           className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 font-extrabold rounded-xl text-xs shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/15 transition-all active:scale-98 cursor-pointer mt-3 flex items-center justify-center gap-2"
@@ -1950,7 +2088,7 @@ function AppContent() {
                         ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
                         : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
                     }`}
-                    title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : 'My Student Profile') : undefined}
+                    title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : 'My Profile') : undefined}
                   >
                     <Users className="w-4 h-4 flex-shrink-0" />
                     {!isActuallyCollapsed && (
@@ -1961,7 +2099,7 @@ function AppContent() {
                             ? 'Enrollments & Faculty' 
                             : currentUser.role === 'instructor' 
                               ? 'Student Profiles Registry' 
-                              : 'My Student Profile'}
+                              : 'My Profile'}
                       </span>
                     )}
                   </button>
@@ -2088,7 +2226,7 @@ function AppContent() {
                   
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                      <span className="inline-block h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
                       COACHING OFFICE SERVER CONNECTED
                     </p>
                     <h1 className="text-2xl md:text-3xl font-serif italic text-amber-500 font-bold tracking-tight mt-1">
@@ -2151,41 +2289,102 @@ function AppContent() {
                 )}
 
                 {currentUser.role === 'student' && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
-                      <div>
-                        <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Your Enrolled Courses</p>
-                        <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">
-                          {schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id)).length}
-                        </p>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
+                        <div>
+                          <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Your Enrolled Courses</p>
+                          <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">
+                            {schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id)).length}
+                          </p>
+                        </div>
+                        <span className="text-[10.5px] font-semibold text-amber-500 hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
+                          Check Timetables &rarr;
+                        </span>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-amber-500 hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
-                        Check Timetables &rarr;
-                      </span>
+
+                      <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
+                        <div>
+                          <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">My Evaluative Average Score</p>
+                          <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">
+                            {progressRecords.filter(r => r.studentId === currentUser.id).length > 0
+                              ? (progressRecords.filter(r => r.studentId === currentUser.id).reduce((acc, r) => acc + r.score, 0) / progressRecords.filter(r => r.studentId === currentUser.id).length).toFixed(0)
+                              : '0'}%
+                          </p>
+                        </div>
+                        <span className="text-[10.5px] font-semibold text-amber-500 hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
+                          View My Feedbacks &rarr;
+                        </span>
+                      </div>
+
+                      <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
+                        <div>
+                          <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Assigned Mentor Advisor</p>
+                          <p className="text-xl font-serif text-amber-500 mt-2 italic font-bold">
+                            {users.find(i => i.id === currentUser.assignedInstructorId)?.name || 'No Assigned Advisor'}
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-4">Profile synced successfully</p>
+                      </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
-                      <div>
-                        <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">My Evaluative Average Score</p>
-                        <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">
-                          {progressRecords.filter(r => r.studentId === currentUser.id).length > 0
-                            ? (progressRecords.filter(r => r.studentId === currentUser.id).reduce((acc, r) => acc + r.score, 0) / progressRecords.filter(r => r.studentId === currentUser.id).length).toFixed(0)
-                            : '0'}%
-                        </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {/* Upcoming Events Panel */}
+                      <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 font-serif italic">
+                          <Calendar className="w-4 h-4 text-amber-500" /> Upcoming Events & Classes
+                        </h3>
+                        <div className="space-y-3">
+                          {schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id) && s.status === 'scheduled').length === 0 ? (
+                            <p className="text-xs text-slate-500 dark:text-gray-400 font-sans">No upcoming events scheduled at the moment.</p>
+                          ) : (
+                            schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id) && s.status === 'scheduled').slice(0, 3).map(sch => (
+                              <div key={sch.id} className="p-3.5 rounded-xl bg-slate-50/50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 transition hover:shadow-sm">
+                                <div className="flex justify-between items-start mb-1.5">
+                                  <p className="text-xs font-bold text-slate-800 dark:text-gray-100 leading-snug">{sch.title}</p>
+                                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-semibold">{sch.subject}</span>
+                                </div>
+                                <p className="text-[10.5px] text-slate-500 dark:text-gray-400 flex items-center gap-1.5 font-sans mt-2">
+                                  <Clock className="w-3.5 h-3.5 text-slate-400" /> {sch.date} at {sch.time}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <button onClick={() => setActiveTab('schedule')} className="w-full text-xs font-bold text-amber-500 hover:text-amber-600 bg-amber-50/50 dark:bg-amber-500/5 py-2.5 mt-4 rounded-xl transition">
+                          View Academic Calendar
+                        </button>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-amber-500 hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
-                        View My Feedbacks &rarr;
-                      </span>
-                    </div>
 
-                    <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-1 flex flex-col justify-between">
-                      <div>
-                        <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Assigned Mentor Advisor</p>
-                        <p className="text-xl font-serif text-amber-500 mt-2 italic font-bold">
-                          {users.find(i => i.id === currentUser.assignedInstructorId)?.name || 'No Assigned Advisor'}
-                        </p>
+                      {/* Recent Evaluations Panel */}
+                      <div className="bg-white dark:bg-[#161618] border border-slate-150/80 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 font-serif italic">
+                          <Award className="w-4 h-4 text-emerald-500" /> Recent Evaluation Dates
+                        </h3>
+                        <div className="space-y-3">
+                          {progressRecords.filter(r => r.studentId === currentUser.id).length === 0 ? (
+                            <p className="text-xs text-slate-500 dark:text-gray-400 font-sans">No evaluations recorded yet.</p>
+                          ) : (
+                            progressRecords.filter(r => r.studentId === currentUser.id).sort((a,b) => new Date(b.evaluationDate).getTime() - new Date(a.evaluationDate).getTime()).slice(0, 3).map(rec => (
+                              <div key={rec.id} className="p-3.5 rounded-xl bg-slate-50/50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 flex items-center justify-between transition hover:shadow-sm">
+                                <div>
+                                  <p className="text-xs font-bold text-slate-800 dark:text-gray-100">{rec.className}</p>
+                                  <p className="text-[10.5px] text-slate-500 dark:text-gray-400 mt-1 font-sans flex items-center gap-1.5">
+                                    <Activity className="w-3.5 h-3.5 text-slate-400" /> Evaluated on: {rec.evaluationDate}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-sm font-serif font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md">{rec.score}%</span>
+                                  <p className="text-[9px] text-slate-400 dark:text-gray-500 capitalize mt-1.5 font-mono">{rec.academicPerformance.replace('-', ' ')}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <button onClick={() => setActiveTab('progress')} className="w-full text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/5 py-2.5 mt-4 rounded-xl transition">
+                          View Detailed Progress
+                        </button>
                       </div>
-                      <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-4">Profile synced successfully</p>
                     </div>
                   </div>
                 )}
@@ -2220,6 +2419,7 @@ function AppContent() {
 
                 {/* Main alerts panels & Notification workspace inside Dashboard */}
                 <NotificationCenter
+                  currentUser={currentUser}
                   notifications={notifications}
                   onMarkAsRead={id => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
                   onClearAll={() => setNotifications([])}
@@ -2264,6 +2464,8 @@ function AppContent() {
                 instructors={users.filter(u => u.role === 'instructor')}
                 subAdmins={users.filter(u => u.role === 'sub-admin')}
                 schedules={schedules}
+                batches={batches}
+                courses={courses}
                 onAddStudent={handleAddStudent}
                 onAddInstructor={handleAddInstructor}
                 onAddSubAdmin={handleAddSubAdmin}
@@ -2284,9 +2486,15 @@ function AppContent() {
                 schedules={schedules}
                 instructors={users.filter(u => u.role === 'instructor')}
                 students={users.filter(u => u.role === 'student')}
+                batches={batches}
+                courses={courses}
                 onAddClass={handleAddClass}
                 onUpdateStatus={handleUpdateClassStatus}
                 onSelfEnroll={handleSelfEnroll}
+                onAddBatch={handleAddBatch}
+                onDeleteBatch={handleDeleteBatch}
+                onAddCourse={handleAddCourse}
+                onDeleteCourse={handleDeleteCourse}
               />
             )}
 

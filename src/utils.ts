@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course } from './types';
 
 // Initial seed data for the Coaching Center
 export const INITIAL_USERS: UserAccount[] = [
@@ -51,11 +51,76 @@ export const INITIAL_USERS: UserAccount[] = [
     joinedDate: '2024-05-23',
     username: 'john',
     password: 'john',
-    assignedInstructorId: 'instructor-1'
+    assignedInstructorId: 'instructor-1',
+    batch: 'Batch A',
+    course: 'IIT-JEE Master Preparation'
+  },
+  {
+    id: 'student-2',
+    name: 'Alex Mercer',
+    email: 'alex@prismcoaching.com',
+    role: 'student',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    phone: '+1 (555) 0124',
+    joinedDate: '2024-05-24',
+    username: 'alex',
+    password: 'alex',
+    assignedInstructorId: 'instructor-1',
+    batch: 'Batch B',
+    course: 'Medical NEET Crash Course'
   }
 ];
 
-export const INITIAL_SCHEDULES: ClassSchedule[] = [];
+export const INITIAL_SCHEDULES: ClassSchedule[] = [
+  {
+    id: 'class-1',
+    title: 'Introductory Mechanics & Forces',
+    subject: 'Physics',
+    instructorId: 'instructor-1',
+    instructorName: 'Prof. Sarah Connor',
+    date: '2026-06-05',
+    time: '15:00',
+    duration: 90,
+    maxStudents: 15,
+    enrolledStudentIds: ['student-1'],
+    location: 'Lab 2B (Mechanical Wing)',
+    status: 'scheduled',
+    batch: 'Batch A',
+    course: 'IIT-JEE Master Preparation'
+  },
+  {
+    id: 'class-2',
+    title: 'Organic Chemistry Principles',
+    subject: 'Chemistry',
+    instructorId: 'instructor-1',
+    instructorName: 'Prof. Sarah Connor',
+    date: '2026-06-06',
+    time: '14:00',
+    duration: 60,
+    maxStudents: 10,
+    enrolledStudentIds: [],
+    location: 'Room 304, Main Campus',
+    status: 'scheduled',
+    batch: 'Batch B',
+    course: 'Medical NEET Crash Course'
+  },
+  {
+    id: 'class-3',
+    title: 'Calculus Foundation & Series',
+    subject: 'Mathematics',
+    instructorId: 'instructor-1',
+    instructorName: 'Prof. Sarah Connor',
+    date: '2026-06-07',
+    time: '10:00',
+    duration: 120,
+    maxStudents: 30,
+    enrolledStudentIds: [],
+    location: 'Auditorium A',
+    status: 'scheduled',
+    batch: 'All',
+    course: 'All'
+  }
+];
 
 export const INITIAL_PROGRESS: ProgressRecord[] = [];
 
@@ -72,6 +137,19 @@ export const INITIAL_NOTIFICATIONS: AppNotification[] = [
 ];
 
 export const INITIAL_BACKUPS: BackupHistory[] = [];
+
+export const INITIAL_BATCHES: StudentBatch[] = [
+  { id: 'batch-1', name: 'Batch A', description: 'Primary Morning Group', createdDate: '2024-05-20' },
+  { id: 'batch-2', name: 'Batch B', description: 'Mid-Day Intensive Group', createdDate: '2024-05-21' },
+  { id: 'batch-3', name: 'Batch C', description: 'Evening Fast-Track Group', createdDate: '2024-05-22' },
+  { id: 'batch-4', name: 'Batch D', description: 'Weekend Practical Lab Group', createdDate: '2024-05-23' }
+];
+
+export const INITIAL_COURSES: Course[] = [
+  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '52', createdDate: '2024-05-18' },
+  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '24', createdDate: '2024-05-19' },
+  { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '36', createdDate: '2024-05-19' }
+];
 
 // Local Storage Helper to load/save active states securely and completely
 export function getSavedState<T>(key: string, defaultValue: T): T {

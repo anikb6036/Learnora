@@ -23,6 +23,8 @@ export interface UserAccount {
   lastQualification?: string;
   gender?: string;
   dob?: string;
+  batch?: string; // Added student batch
+  course?: string; // Added student course
 }
 
 export interface RegistrationRequest {
@@ -42,6 +44,8 @@ export interface RegistrationRequest {
   gender?: string;
   dob?: string;
   avatarUrl?: string;
+  batch?: string; // Added student batch
+  course?: string; // Added student course
 }
 
 export interface SimulatedEmail {
@@ -67,6 +71,8 @@ export interface ClassSchedule {
   enrolledStudentIds: string[];
   location: string; // e.g. "Room 101", "Online - Zoom"
   status: 'scheduled' | 'completed' | 'cancelled';
+  batch?: string; // Optional target batch (e.g. Batch A, Batch B, or All)
+  course?: string; // Optional target course (e.g. Web Development, or All)
 }
 
 export interface ProgressRecord {
@@ -108,3 +114,20 @@ export interface BackupHistory {
   };
   status: 'success' | 'failed';
 }
+
+export interface StudentBatch {
+  id: string;
+  name: string;
+  description?: string;
+  createdDate: string;
+}
+
+export interface Course {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  durationWeeks?: string;
+  createdDate: string;
+}
+
