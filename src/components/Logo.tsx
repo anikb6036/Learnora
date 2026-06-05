@@ -91,8 +91,8 @@ export default function Logo({
         </div>
         
         {withStrapline && (
-          <p className={`text-[9px] md:text-[10.5px] tracking-[0.18em] uppercase ${straplineColorClass} font-extrabold mt-1 leading-none`}>
-            Coaching Center
+          <p className={`text-[9px] md:text-[5.5px] tracking-[0.18em] uppercase ${straplineColorClass} font-extrabold mt-1 leading-none`}>
+            Learn Beyond Limits
           </p>
         )}
       </div>
