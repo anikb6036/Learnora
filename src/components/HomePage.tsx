@@ -119,7 +119,7 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
 
             <div className="space-y-4">
               <div className="flex gap-4 items-start p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl transition">
-                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none">•</div>
+                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none animate-pulse">•</div>
                 <div>
                    <h4 className="text-xs font-bold text-slate-900 dark:text-gray-200">Submit Application Form</h4>
                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">Submit registration with smart country dropdowns and file verification bounds.</p>
@@ -127,7 +127,7 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
               </div>
 
               <div className="flex gap-4 items-start p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl transition">
-                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none">•</div>
+                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none animate-pulse">•</div>
                 <div>
                    <h4 className="text-xs font-bold text-slate-900 dark:text-gray-200">Dynamic Admin Review</h4>
                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">Admin logs the request, checks information validity, and clicks Approve to enroll.</p>
@@ -135,7 +135,7 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
               </div>
 
               <div className="flex gap-4 items-start p-3 hover:bg-slate-55/60 dark:hover:bg-white/5 rounded-2xl transition">
-                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none">•</div>
+                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none animate-pulse">•</div>
                 <div>
                    <h4 className="text-xs font-bold text-slate-900 dark:text-gray-200">Credential Simulation Dispatch</h4>
                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">The platform auto-dispatches generated setup keys on the built-in Sandbox Student Inbox.</p>
@@ -143,7 +143,7 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
               </div>
 
               <div className="flex gap-4 items-start p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl transition">
-                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none">•</div>
+                <div className="text-lg text-blue-900 dark:text-blue-400 w-7 h-7 flex items-center justify-center shrink-0 font-bold select-none animate-pulse">•</div>
                 <div>
                    <h4 className="text-xs font-bold text-slate-900 dark:text-gray-200">Academic Evaluations</h4>
                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">Instructors schedule class logs and evaluate grades, displaying performance curves instantly.</p>

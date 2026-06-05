@@ -14,7 +14,8 @@ import {
   INITIAL_BATCHES,
   INITIAL_COURSES,
   getSavedState,
-  saveState
+  saveState,
+  useFirebaseState
 } from './utils';
 import { ThemeProvider, useTheme } from './components/ThemeContext';
 import NotificationCenter from './components/NotificationCenter';
@@ -92,50 +93,25 @@ declare global {
 function AppContent() {
   const { isDark } = useTheme();
 
-  // Root states synchronized with LocalStorage
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    return getSavedState<UserAccount | null>('active-user', null);
-  });
-  
-  const [users, setUsers] = useState<UserAccount[]>(() => {
-    return getSavedState<UserAccount[]>('db-users', INITIAL_USERS);
-  });
-
-  const [schedules, setSchedules] = useState<ClassSchedule[]>(() => {
-    return getSavedState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
-  });
-
-  const [progressRecords, setProgressRecords] = useState<ProgressRecord[]>(() => {
-    return getSavedState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
-  });
-
-  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-    return getSavedState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
-  });
-
-  const [backupHistory, setBackupHistory] = useState<BackupHistory[]>(() => {
-    return getSavedState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
-  });
+  // Root states synchronized with Firebase Live Queries
+  const [currentUser, setCurrentUser] = useFirebaseState<UserAccount | null>('active-user', null);
+  const [users, setUsers] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
+  const [schedules, setSchedules] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
+  const [progressRecords, setProgressRecords] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
+  const [notifications, setNotifications] = useFirebaseState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
+  const [backupHistory, setBackupHistory] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
 
   // Pending admission registration requests state
-  const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>(() => {
-    return getSavedState<RegistrationRequest[]>('db-registration-requests', []);
-  });
+  const [registrationRequests, setRegistrationRequests] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
 
   // Simulated student mailbox communications
-  const [simulatedEmails, setSimulatedEmails] = useState<SimulatedEmail[]>(() => {
-    return getSavedState<SimulatedEmail[]>('db-simulated-emails', []);
-  });
+  const [simulatedEmails, setSimulatedEmails] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
 
   // Student batches published by admin/sub-admin
-  const [batches, setBatches] = useState<StudentBatch[]>(() => {
-    return getSavedState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
-  });
+  const [batches, setBatches] = useFirebaseState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
 
   // Student courses published by admin/sub-admin
-  const [courses, setCourses] = useState<Course[]>(() => {
-    return getSavedState<Course[]>('db-courses', INITIAL_COURSES);
-  });
+  const [courses, setCourses] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
@@ -222,11 +198,6 @@ function AppContent() {
   // Push notifications toast overlay state
   const [toastAlert, setToastAlert] = useState<AppNotification | null>(null);
 
-  // Synchronizers
-  useEffect(() => {
-    saveState('active-user', currentUser);
-  }, [currentUser]);
-
   // Synchronize state of currently logged-in user with active database records or invalidate if deleted
   useEffect(() => {
     if (currentUser && currentUser.id !== 'admin-1') {
@@ -238,42 +209,6 @@ function AppContent() {
       }
     }
   }, [users, currentUser]);
-
-  useEffect(() => {
-    saveState('db-users', users);
-  }, [users]);
-
-  useEffect(() => {
-    saveState('db-schedules', schedules);
-  }, [schedules]);
-
-  useEffect(() => {
-    saveState('db-progress', progressRecords);
-  }, [progressRecords]);
-
-  useEffect(() => {
-    saveState('db-notifications', notifications);
-  }, [notifications]);
-
-  useEffect(() => {
-    saveState('db-backups', backupHistory);
-  }, [backupHistory]);
-
-  useEffect(() => {
-    saveState('db-registration-requests', registrationRequests);
-  }, [registrationRequests]);
-
-  useEffect(() => {
-    saveState('db-simulated-emails', simulatedEmails);
-  }, [simulatedEmails]);
-
-  useEffect(() => {
-    saveState('db-batches', batches);
-  }, [batches]);
-
-  useEffect(() => {
-    saveState('db-courses', courses);
-  }, [courses]);
 
   // Firebase Verification Logic
   const handleSendPhoneOTP = async () => {

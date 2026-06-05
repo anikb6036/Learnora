@@ -1,9 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default locked rule since we're currently only using Firebase Auth
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /app_state/{stateId} {
+      allow read, write: if true;
+    }
+    
+    match /users/{userId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /courses/{courseId} {
+      allow read, write: if isSignedIn();
     }
   }
 }

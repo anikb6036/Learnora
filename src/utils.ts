@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import React, { useState, useEffect } from 'react';
+import { db } from './firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course } from './types';
 
 // Initial seed data for the Coaching Center
@@ -151,7 +154,7 @@ export const INITIAL_COURSES: Course[] = [
   { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '36', createdDate: '2024-05-19' }
 ];
 
-// Local Storage Helper to load/save active states securely and completely
+// Deprecated, maintained as a fallback. Replaced by useFirebaseState.
 export function getSavedState<T>(key: string, defaultValue: T): T {
   try {
     const value = localStorage.getItem(key);
@@ -185,6 +188,44 @@ export function saveState<T>(key: string, data: T): void {
   } catch (err) {
     console.error(`Error saving standard local storage for key ${key}`, err);
   }
+}
+
+export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+  // Try to load any existing local data while Firebase fetches
+  const initialLocalData = getSavedState<T>(key, defaultValue);
+  const [state, setState] = useState<T>(initialLocalData);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "app_state", key), {
+      next: (docSnap) => {
+        if (docSnap.exists()) {
+          setState(docSnap.data().data as T);
+        } else {
+          // Init record remotely
+          setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true });
+        }
+        setIsLoaded(true);
+      },
+      error: (err) => {
+        console.warn(`Firebase read failing for ${key}, falling back to local.`, err);
+      }
+    });
+    return () => unsub();
+  }, [key]);
+
+  // Effect to sync state changes back to Firebase
+  useEffect(() => {
+    if (!isLoaded) return;
+    saveState(key, state); // maintain local copy just in case
+    
+    // Push changes back to Firestore
+    setDoc(doc(db, "app_state", key), { data: state }, { merge: true }).catch(err => {
+        console.error(`Failed to push sync to Firebase for ${key}`, err);
+    });
+  }, [state, isLoaded, key]);
+
+  return [state, setState];
 }
 
 // Export tool implementation for external analytics (generates structured CSVs for user download)
