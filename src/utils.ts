@@ -192,20 +192,20 @@ export function saveState<T>(key: string, data: T): void {
 
 export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   // Try to load any existing local data while Firebase fetches
-  const initialLocalData = getSavedState<T>(key, defaultValue);
-  const [state, setState] = useState<T>(initialLocalData);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [state, setState] = useState<T>(() => getSavedState<T>(key, defaultValue));
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "app_state", key), {
       next: (docSnap) => {
         if (docSnap.exists()) {
-          setState(docSnap.data().data as T);
+          const newData = docSnap.data().data as T;
+          setState(newData);
+          saveState(key, newData); // Sync to local storage
         } else {
-          // Init record remotely
+          // Init record remotely if it doesn't exist
+          const initialLocalData = getSavedState<T>(key, defaultValue);
           setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true });
         }
-        setIsLoaded(true);
       },
       error: (err) => {
         console.warn(`Firebase read failing for ${key}, falling back to local.`, err);
@@ -213,19 +213,20 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
     });
     return () => unsub();
   }, [key]);
-
-  // Effect to sync state changes back to Firebase
-  useEffect(() => {
-    if (!isLoaded) return;
-    saveState(key, state); // maintain local copy just in case
-    
-    // Push changes back to Firestore
-    setDoc(doc(db, "app_state", key), { data: state }, { merge: true }).catch(err => {
-        console.error(`Failed to push sync to Firebase for ${key}`, err);
+  
+  const setFirebaseState: React.Dispatch<React.SetStateAction<T>> = React.useCallback((value) => {
+    setState((prevState) => {
+      const nextState = value instanceof Function ? value(prevState) : value;
+      saveState(key, nextState); // maintain local copy just in case
+      // Push changes back to Firestore
+      setDoc(doc(db, "app_state", key), { data: nextState }, { merge: true }).catch(err => {
+          console.error(`Failed to push sync to Firebase for ${key}`, err);
+      });
+      return nextState;
     });
-  }, [state, isLoaded, key]);
+  }, [key]);
 
-  return [state, setState];
+  return [state, setFirebaseState];
 }
 
 // Export tool implementation for external analytics (generates structured CSVs for user download)
