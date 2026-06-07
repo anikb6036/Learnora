@@ -218,8 +218,12 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
     setState((prevState) => {
       const nextState = value instanceof Function ? value(prevState) : value;
       saveState(key, nextState); // maintain local copy just in case
+      
+      // Clean undefined values for Firestore
+      const cleanState = JSON.parse(JSON.stringify(nextState));
+
       // Push changes back to Firestore
-      setDoc(doc(db, "app_state", key), { data: nextState }, { merge: true }).catch(err => {
+      setDoc(doc(db, "app_state", key), { data: cleanState }, { merge: true }).catch(err => {
           console.error(`Failed to push sync to Firebase for ${key}`, err);
       });
       return nextState;

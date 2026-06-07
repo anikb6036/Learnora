@@ -53,7 +53,7 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
           </div>
 
           <h2 className="text-4xl md:text-6xl font-serif italic text-black dark:text-black leading-tight font-extrabold tracking-tight">
-            Learn with Rigor,<br />
+            Learn with LearnOra,<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-600">Coordinate with Grace.</span>
           </h2>
 

@@ -94,12 +94,16 @@ function AppContent() {
   const { isDark } = useTheme();
 
   // Root states synchronized with Firebase Live Queries
-  const [currentUser, setCurrentUser] = useFirebaseState<UserAccount | null>('active-user', null);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getSavedState('active-user', null));
   const [users, setUsers] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
   const [schedules, setSchedules] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
   const [progressRecords, setProgressRecords] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
   const [notifications, setNotifications] = useFirebaseState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
   const [backupHistory, setBackupHistory] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
+
+  useEffect(() => {
+    saveState('active-user', currentUser);
+  }, [currentUser]);
 
   // Pending admission registration requests state
   const [registrationRequests, setRegistrationRequests] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
@@ -125,7 +129,8 @@ function AppContent() {
   const [onboardingTab, setOnboardingTab] = useState<'fastReg' | 'authLogin' | 'adminLogin'>('authLogin');
   const [currentRegStep, setCurrentRegStep] = useState<number>(1);
   const [showPortal, setShowPortal] = useState<boolean>(false);
-  const [fastName, setFastName] = useState('');
+  const [fastFirstName, setFastFirstName] = useState('');
+  const [fastLastName, setFastLastName] = useState('');
   const [fastEmail, setFastEmail] = useState('');
   const [fastPhone, setFastPhone] = useState('');
   const [fastInstructorId, setFastInstructorId] = useState('');
@@ -134,7 +139,8 @@ function AppContent() {
   const [fastCourse, setFastCourse] = useState('');
 
 
-  const [fastNameError, setFastNameError] = useState('');
+  const [fastFirstNameError, setFastFirstNameError] = useState('');
+  const [fastLastNameError, setFastLastNameError] = useState('');
   const [fastEmailError, setFastEmailError] = useState('');
   const [fastGenderError, setFastGenderError] = useState('');
   const [fastDobError, setFastDobError] = useState('');
@@ -880,12 +886,17 @@ function AppContent() {
   const validateStep = (step: number): boolean => {
     if (step === 1) {
       let err = false;
-      setFastNameError('');
+      setFastFirstNameError('');
+      setFastLastNameError('');
       setFastCourseError('');
       setFastAvatarError('');
 
-      if (!fastName.trim()) {
-        setFastNameError('Full legal name is required');
+      if (!fastFirstName.trim()) {
+        setFastFirstNameError('First name is required');
+        err = true;
+      }
+      if (!fastLastName.trim()) {
+        setFastLastNameError('Last name is required');
         err = true;
       }
       if (!fastCourse) {
@@ -948,7 +959,8 @@ function AppContent() {
     e.preventDefault();
     
     // Reset all errors
-    setFastNameError('');
+    setFastFirstNameError('');
+    setFastLastNameError('');
     setFastEmailError('');
     setFastGenderError('');
     setFastDobError('');
@@ -960,8 +972,12 @@ function AppContent() {
     let hasError = false;
 
     // Check Name
-    if (!fastName.trim()) {
-      setFastNameError('Full legal name is required');
+    if (!fastFirstName.trim()) {
+      setFastFirstNameError('First name is required');
+      hasError = true;
+    }
+    if (!fastLastName.trim()) {
+      setFastLastNameError('Last name is required');
       hasError = true;
     }
 
@@ -1048,7 +1064,7 @@ function AppContent() {
     const assembledAddress = fastAddress.trim();
 
     const req = handleCreateRegistrationRequest(
-      fastName, 
+      `${fastFirstName.trim()} ${fastLastName.trim()}`, 
       fastEmail, 
       calculatedPhone, 
       fastInstructorId,
@@ -1064,7 +1080,8 @@ function AppContent() {
     setFastRegSuccess(req);
     
     // Reset form states
-    setFastName('');
+    setFastFirstName('');
+    setFastLastName('');
     setFastEmail('');
     setFastPhone('');
     setFastPhonePrefix('+91');
@@ -1587,27 +1604,51 @@ function AppContent() {
                               </div>
 
                               {/* Student Legal Name */}
-                              <div className="space-y-1.5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Full Legal Name *</label>
-                                <div className="relative">
-                                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">First Name *</label>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                      <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
+                                    </div>
+                                    <input
+                                      type="text"
+                                      required
+                                      placeholder="e.g. Samuel"
+                                      value={fastFirstName}
+                                      onChange={e => {
+                                        setFastFirstName(e.target.value);
+                                        if (e.target.value.trim()) setFastFirstNameError('');
+                                      }}
+                                      className={`w-full pl-10 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastFirstNameError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-850 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans`}
+                                    />
                                   </div>
-                                  <input
-                                    type="text"
-                                    required
-                                    placeholder="e.g. Samuel Wilson"
-                                    value={fastName}
-                                    onChange={e => {
-                                      setFastName(e.target.value);
-                                      if (e.target.value.trim()) setFastNameError('');
-                                    }}
-                                    className={`w-full pl-10 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastNameError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-850 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans`}
-                                  />
+                                  {fastFirstNameError && (
+                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastFirstNameError}</p>
+                                  )}
                                 </div>
-                                {fastNameError && (
-                                  <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastNameError}</p>
-                                )}
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Last Name *</label>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                      <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
+                                    </div>
+                                    <input
+                                      type="text"
+                                      required
+                                      placeholder="e.g. Wilson"
+                                      value={fastLastName}
+                                      onChange={e => {
+                                        setFastLastName(e.target.value);
+                                        if (e.target.value.trim()) setFastLastNameError('');
+                                      }}
+                                      className={`w-full pl-10 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastLastNameError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-850 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans`}
+                                    />
+                                  </div>
+                                  {fastLastNameError && (
+                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastLastNameError}</p>
+                                  )}
+                                </div>
                               </div>
 
                               {/* Student Target Program Course Selection */}
