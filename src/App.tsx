@@ -95,27 +95,30 @@ function AppContent() {
 
   // Root states synchronized with Firebase Live Queries
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getSavedState('active-user', null));
-  const [users, setUsers] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
-  const [schedules, setSchedules] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
-  const [progressRecords, setProgressRecords] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
-  const [notifications, setNotifications] = useFirebaseState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
-  const [backupHistory, setBackupHistory] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
+  const [users, setUsers, usersLoaded] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
+  const [schedules, setSchedules, schedulesLoaded] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
+  const [progressRecords, setProgressRecords, progressLoaded] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
+  const [notifications, setNotifications, notificationsLoaded] = useFirebaseState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
+  const [backupHistory, setBackupHistory, backupsLoaded] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
 
   useEffect(() => {
     saveState('active-user', currentUser);
   }, [currentUser]);
 
   // Pending admission registration requests state
-  const [registrationRequests, setRegistrationRequests] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
+  const [registrationRequests, setRegistrationRequests, registrationLoaded] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
 
   // Simulated student mailbox communications
-  const [simulatedEmails, setSimulatedEmails] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
+  const [simulatedEmails, setSimulatedEmails, emailsLoaded] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
 
   // Student batches published by admin/sub-admin
-  const [batches, setBatches] = useFirebaseState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
+  const [batches, setBatches, batchesLoaded] = useFirebaseState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
 
   // Student courses published by admin/sub-admin
-  const [courses, setCourses] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
+  const [courses, setCourses, coursesLoaded] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
+
+  const isDataLoaded = usersLoaded && schedulesLoaded && progressLoaded && notificationsLoaded && 
+                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded;
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
@@ -1152,6 +1155,19 @@ function AppContent() {
   };
 
   const isActuallyCollapsed = isSidebarCollapsed && !(isSidebarHovered && !ignoreHover);
+
+  if (!isDataLoaded) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#070708] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-white/10 border-t-amber-500 animate-spin" />
+          <p className="text-xs font-mono uppercase tracking-widest text-slate-500 dark:text-gray-500 text-center">
+            Synchronizing with<br />Live Database
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#FFF3F5] via-[#FFF8F9] to-[#FFFBFB] text-slate-800 dark:from-[#110D12] dark:via-[#160E14] dark:to-[#0A0A0B] dark:text-gray-200 transition-colors duration-300 font-sans">

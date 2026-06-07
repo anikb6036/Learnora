@@ -190,9 +190,10 @@ export function saveState<T>(key: string, data: T): void {
   }
 }
 
-export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {
   // Try to load any existing local data while Firebase fetches
   const [state, setState] = useState<T>(() => getSavedState<T>(key, defaultValue));
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "app_state", key), {
@@ -206,9 +207,11 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
           const initialLocalData = getSavedState<T>(key, defaultValue);
           setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true });
         }
+        setIsLoaded(true);
       },
       error: (err) => {
         console.warn(`Firebase read failing for ${key}, falling back to local.`, err);
+        setIsLoaded(true);
       }
     });
     return () => unsub();
@@ -230,7 +233,7 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
     });
   }, [key]);
 
-  return [state, setFirebaseState];
+  return [state, setFirebaseState, isLoaded];
 }
 
 // Export tool implementation for external analytics (generates structured CSVs for user download)
