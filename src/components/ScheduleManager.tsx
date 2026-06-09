@@ -22,6 +22,12 @@ interface ScheduleManagerProps {
   onDeleteBatch?: (id: string) => void;
   onAddCourse?: (newCourse: Omit<Course, 'id' | 'createdDate'>) => void;
   onDeleteCourse?: (id: string) => void;
+  showAddForm?: boolean;
+  setShowAddForm?: (val: boolean) => void;
+  showBatchManager?: boolean;
+  setShowBatchManager?: (val: boolean) => void;
+  showCourseDashboard?: boolean;
+  setShowCourseDashboard?: (val: boolean) => void;
 }
 
 export default function ScheduleManager({
@@ -37,7 +43,13 @@ export default function ScheduleManager({
   onAddBatch,
   onDeleteBatch,
   onAddCourse,
-  onDeleteCourse
+  onDeleteCourse,
+  showAddForm: controlledShowAddForm,
+  setShowAddForm: controlledSetShowAddForm,
+  showBatchManager: controlledShowBatchManager,
+  setShowBatchManager: controlledSetShowBatchManager,
+  showCourseDashboard: controlledShowCourseDashboard,
+  setShowCourseDashboard: controlledSetShowCourseDashboard,
 }: ScheduleManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
@@ -45,9 +57,28 @@ export default function ScheduleManager({
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
   const [batchFilter, setBatchFilter] = useState<'all' | string>('all');
   const [courseFilter, setCourseFilter] = useState<'all' | string>('all');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showBatchManager, setShowBatchManager] = useState(false);
-  const [showCourseDashboard, setShowCourseDashboard] = useState(false);
+  
+  const [localShowAddForm, localSetShowAddForm] = useState(false);
+  const [localShowBatchManager, localSetShowBatchManager] = useState(false);
+  const [localShowCourseDashboard, localSetShowCourseDashboard] = useState(false);
+
+  const showAddForm = controlledShowAddForm !== undefined ? controlledShowAddForm : localShowAddForm;
+  const setShowAddForm = (val: boolean) => {
+    if (controlledSetShowAddForm) controlledSetShowAddForm(val);
+    else localSetShowAddForm(val);
+  };
+
+  const showBatchManager = controlledShowBatchManager !== undefined ? controlledShowBatchManager : localShowBatchManager;
+  const setShowBatchManager = (val: boolean) => {
+    if (controlledSetShowBatchManager) controlledSetShowBatchManager(val);
+    else localSetShowBatchManager(val);
+  };
+
+  const showCourseDashboard = controlledShowCourseDashboard !== undefined ? controlledShowCourseDashboard : localShowCourseDashboard;
+  const setShowCourseDashboard = (val: boolean) => {
+    if (controlledSetShowCourseDashboard) controlledSetShowCourseDashboard(val);
+    else localSetShowCourseDashboard(val);
+  };
 
   // New Batch Form State
   const [newBatchName, setNewBatchName] = useState('');
@@ -169,63 +200,14 @@ export default function ScheduleManager({
   return (
     <div className="space-y-6 font-sans">
       <div className="bg-white dark:bg-[#161618] rounded-3xl border border-slate-150/80 dark:border-white/5 shadow-sm p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-serif italic text-amber-500 font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-amber-500" />
-              Class Scheduling & Timekeeping
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5">
-              Set schedules, coordinate instructor workloads, or reserve online/offline study spaces.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2.5">
-            {['admin', 'sub-admin'].includes(currentUser.role) && (
-              <>
-                <button
-                  onClick={() => {
-                    setShowBatchManager(!showBatchManager);
-                    setShowCourseDashboard(false);
-                    setShowAddForm(false);
-                  }}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#0A0A0C] dark:hover:bg-white/5 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm font-bold text-xs flex items-center gap-2 transition active:scale-95 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5 text-amber-500" />
-                  {showBatchManager ? 'Close Batch Manager' : 'Manage & Publish Batches'}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowCourseDashboard(!showCourseDashboard);
-                    setShowBatchManager(false);
-                    setShowAddForm(false);
-                  }}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#0A0A0C] dark:hover:bg-white/5 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm font-bold text-xs flex items-center gap-2 transition active:scale-95 cursor-pointer"
-                >
-                  <GraduationCap className="w-3.5 h-3.5 text-amber-500" />
-                  {showCourseDashboard ? 'Close Course Dashboard' : 'Courses Publish Dashboard'}
-                </button>
-              </>
-            )}
-
-            {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
-              <button
-                onClick={() => {
-                  setShowAddForm(!showAddForm);
-                  setShowBatchManager(false);
-                  setShowCourseDashboard(false);
-                  if (currentUser.role === 'instructor') {
-                    setInstructorId(currentUser.id);
-                  }
-                }}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-955 rounded-xl shadow-md font-bold text-xs flex items-center gap-2 transition active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {showAddForm ? 'Close Scheduler Creator' : 'Schedule New Live Class'}
-              </button>
-            )}
-          </div>
+        <div className="border-b border-slate-100 dark:border-white/5 pb-4.5 mb-6">
+          <h2 className="text-2xl font-serif italic text-amber-500 font-bold tracking-tight flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-amber-500" />
+            Class Scheduling & Timekeeping
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+            Set schedules, coordinate instructor workloads, or reserve online/offline study spaces.
+          </p>
         </div>
 
         {/* Dynamic Courses Publish Dashboard */}

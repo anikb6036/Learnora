@@ -56,6 +56,7 @@ import {
   GraduationCap,
   Camera,
   Trash2,
+  Plus,
   Upload,
   X,
   AlertCircle,
@@ -122,6 +123,19 @@ function AppContent() {
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
+
+  // Control individual show variables inside ScheduleManager from the main sidebar
+  const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
+  const [scheduleShowBatchManager, setScheduleShowBatchManager] = useState(false);
+  const [scheduleShowCourseDashboard, setScheduleShowCourseDashboard] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== 'schedule') {
+      setScheduleShowAddForm(false);
+      setScheduleShowBatchManager(false);
+      setScheduleShowCourseDashboard(false);
+    }
+  }, [activeTab]);
 
   // Security Session Activity Auto-Logout
   const AUTO_LOGOUT_TIME_MS = 15 * 60 * 1000; // 15 mins of inactivity
@@ -2485,7 +2499,12 @@ function AppContent() {
 
                   <button
                     type="button"
-                    onClick={() => setActiveTab('schedule')}
+                    onClick={() => {
+                      setActiveTab('schedule');
+                      setScheduleShowAddForm(false);
+                      setScheduleShowBatchManager(false);
+                      setScheduleShowCourseDashboard(false);
+                    }}
                     className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
                       activeTab === 'schedule'
                         ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
@@ -2496,6 +2515,69 @@ function AppContent() {
                     <Calendar className="w-4 h-4 flex-shrink-0" />
                     {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Class Timetable Scheduling</span>}
                   </button>
+
+                  {/* Sub-menu options nested beneath Class Timetable Scheduling */}
+                  {!isActuallyCollapsed && activeTab === 'schedule' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+                    <div className="pl-4 pr-1 py-1 space-y-1 bg-slate-50/20 dark:bg-white/[0.01] rounded-xl border border-dotted border-slate-200/50 dark:border-white/5 animate-fadeIn">
+                      {/* Sub-item 1: Schedule New Class */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScheduleShowAddForm(!scheduleShowAddForm);
+                          setScheduleShowBatchManager(false);
+                          setScheduleShowCourseDashboard(false);
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10.5px] transition cursor-pointer ${
+                          scheduleShowAddForm
+                            ? 'bg-amber-500/15 text-amber-500 font-bold'
+                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-[#161618]'
+                        }`}
+                      >
+                        <Plus className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                        <span className="truncate">Schedule New Live Class</span>
+                      </button>
+
+                      {/* Sub-item 2: Batch Management */}
+                      {['admin', 'sub-admin'].includes(currentUser.role) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setScheduleShowBatchManager(!scheduleShowBatchManager);
+                            setScheduleShowAddForm(false);
+                            setScheduleShowCourseDashboard(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10.5px] transition cursor-pointer ${
+                            scheduleShowBatchManager
+                              ? 'bg-amber-500/15 text-amber-500 font-bold'
+                              : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-[#161618]'
+                          }`}
+                        >
+                          <Plus className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                          <span className="truncate">Manage & Publish Batches</span>
+                        </button>
+                      )}
+
+                      {/* Sub-item 3: Courses Publish */}
+                      {['admin', 'sub-admin'].includes(currentUser.role) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setScheduleShowCourseDashboard(!scheduleShowCourseDashboard);
+                            setScheduleShowAddForm(false);
+                            setScheduleShowBatchManager(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10.5px] transition cursor-pointer ${
+                            scheduleShowCourseDashboard
+                              ? 'bg-amber-500/15 text-amber-500 font-bold'
+                              : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-[#161618]'
+                          }`}
+                        >
+                          <GraduationCap className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                          <span className="truncate">Courses Publish Dashboard</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   <button
                     type="button"
@@ -2887,6 +2969,12 @@ function AppContent() {
                 onDeleteBatch={handleDeleteBatch}
                 onAddCourse={handleAddCourse}
                 onDeleteCourse={handleDeleteCourse}
+                showAddForm={scheduleShowAddForm}
+                setShowAddForm={setScheduleShowAddForm}
+                showBatchManager={scheduleShowBatchManager}
+                setShowBatchManager={setScheduleShowBatchManager}
+                showCourseDashboard={scheduleShowCourseDashboard}
+                setShowCourseDashboard={setScheduleShowCourseDashboard}
               />
             )}
 
