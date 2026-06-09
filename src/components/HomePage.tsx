@@ -53,8 +53,8 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
           </div>
 
           <h2 className="text-4xl md:text-6xl font-serif italic text-black dark:text-black leading-tight font-extrabold tracking-tight">
-            Learn with LearnOra,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-600">Coordinate with Grace.</span>
+            Learn<span className="text-[#ff1f1f] dark:text-[#ff1f1f]">Ora</span>,<br />
+            <span className="text-black dark:text-black">Learn, Grow, Succeed.</span>
           </h2>
 
           <p className="text-sm md:text-base text-slate-500 dark:text-gray-400 leading-relaxed font-sans max-w-2xl">
@@ -161,15 +161,15 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
           
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
             <p className="text-[10px] font-mono uppercase tracking-widest text-amber-500 font-bold">System Capabilities</p>
-            <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-extrabold">Fully Integrated Sandbox Operations</h3>
+            <h3 className="text-3xl font-serif italic text-[#000080] dark:text-[#000080] font-extrabold">Fully Integrated Sandbox Operations</h3>
             <p className="text-xs text-slate-500 dark:text-gray-400">Learnora comes outfitted with custom management utilities built directly into the client.</p>
           </div>
 
           <div id="sandbox" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {/* Feature 1 */}
-            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-slate-200/50 dark:border-white/5 rounded-2xl space-y-3 shadow-sm hover:border-amber-500/40 transition">
-              <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl w-10 h-10 flex items-center justify-center border border-amber-500/20">
+            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-[#000080]/10 dark:border-[#000080]/30 rounded-2xl space-y-3 shadow-sm hover:border-[#E1AD01]/60 dark:hover:border-[#E1AD01]/60 transition">
+              <div className="p-2 bg-[#CC5500]/10 text-[#CC5500] rounded-xl w-10 h-10 flex items-center justify-center border border-[#CC5500]/20">
                 <GraduationCap className="w-5 h-5 flex-shrink-0" />
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-gray-200">Interactive Admissions</h4>
@@ -179,8 +179,8 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
             </div>
 
             {/* Feature 2 */}
-            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-slate-200/50 dark:border-white/5 rounded-2xl space-y-3 shadow-sm hover:border-amber-500/40 transition">
-              <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl w-10 h-10 flex items-center justify-center border border-amber-500/20">
+            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-[#000080]/10 dark:border-[#000080]/30 rounded-2xl space-y-3 shadow-sm hover:border-[#E1AD01]/60 dark:hover:border-[#E1AD01]/60 transition">
+              <div className="p-2 bg-[#CC5500]/10 text-[#CC5500] rounded-xl w-10 h-10 flex items-center justify-center border border-[#CC5500]/20">
                 <Users className="w-5 h-5 flex-shrink-0" />
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-gray-200">Multi-Role Dashboards</h4>
@@ -190,8 +190,8 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-slate-200/50 dark:border-white/5 rounded-2xl space-y-3 shadow-sm hover:border-amber-500/40 transition">
-              <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl w-10 h-10 flex items-center justify-center border border-amber-500/20">
+            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-[#000080]/10 dark:border-[#000080]/30 rounded-2xl space-y-3 shadow-sm hover:border-[#E1AD01]/60 dark:hover:border-[#E1AD01]/60 transition">
+              <div className="p-2 bg-[#CC5500]/10 text-[#CC5500] rounded-xl w-10 h-10 flex items-center justify-center border border-[#CC5500]/20">
                 <BarChart3 className="w-5 h-5 flex-shrink-0" />
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-gray-200">Interactive Evaluations</h4>
@@ -201,8 +201,8 @@ export default function HomePage({ isDark, onEnterPortal }: HomePageProps) {
             </div>
 
             {/* Feature 4 */}
-            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-slate-200/50 dark:border-white/5 rounded-2xl space-y-3 shadow-sm hover:border-amber-500/40 transition">
-              <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl w-10 h-10 flex items-center justify-center border border-amber-500/20">
+            <div className="p-6 bg-white dark:bg-[#0F0F11] border border-[#000080]/10 dark:border-[#000080]/30 rounded-2xl space-y-3 shadow-sm hover:border-[#E1AD01]/60 dark:hover:border-[#E1AD01]/60 transition">
+              <div className="p-2 bg-[#CC5500]/10 text-[#CC5500] rounded-xl w-10 h-10 flex items-center justify-center border border-[#CC5500]/20">
                 <CloudLightning className="w-5 h-5 flex-shrink-0" />
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-gray-200">Database Backups</h4>

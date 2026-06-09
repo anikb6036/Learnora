@@ -2599,25 +2599,36 @@ function AppContent() {
               <div className="space-y-6">
                 
                 {/* Welcomes banner custom header */}
-                <div className="p-6 md:p-8 rounded-3xl bg-black border border-white/10 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md relative overflow-hidden select-none">
+                <div 
+                  className="p-6 md:p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm relative overflow-hidden select-none text-white"
+                  style={{
+                    backgroundColor: "#0B0C10",
+                    backgroundImage: `
+                      radial-gradient(at 20% 20%, #2f326a 0px, transparent 50%),
+                      radial-gradient(at 80% 0%, #4f549c 0px, transparent 50%),
+                      radial-gradient(at 100% 80%, #9194c4 0px, transparent 50%),
+                      radial-gradient(at 0% 100%, #1e1f3f 0px, transparent 50%)
+                    `
+                  }}
+                >
                   {/* Branding background shape ornament */}
                   <div className="absolute right-0 bottom-0 h-32 w-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
                   
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-slate-200 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                  <div className="space-y-1 relative z-10">
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest font-mono flex items-center gap-1.5">
                       <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                       COACHING OFFICE SERVER CONNECTED
                     </p>
                     <h1 className="text-2xl md:text-3xl font-serif italic text-white font-bold tracking-tight mt-1">
                       Welcome Back, {currentUser.name}!
                     </h1>
-                    <p className="text-xs text-slate-200 pr-4 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-slate-300 pr-4 mt-0.5 leading-relaxed">
                       Auditing center coordinates. Time check: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}. All automated reminders ready in queue.
                     </p>
                   </div>
 
-                  <div className="bg-white/15 border border-white/10 p-3.5 rounded-2xl text-xs space-y-1 font-mono text-white">
-                    <p className="text-[#FF3B5C] font-bold">
+                  <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-2xl text-xs space-y-1 font-mono text-white relative z-10">
+                    <p className="font-bold">
                       STATUS Dashboard <span className="text-emerald-400 animate-pulse inline-block">Live</span>
                     </p>
                     <p className="text-slate-300 text-[10px]">RECORDS: {users.length} registered</p>
@@ -2632,7 +2643,7 @@ function AppContent() {
                         <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Total Students</p>
                         <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">{users.filter(u => u.role === 'student').length}</p>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('enrollments')}>
+                      <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('enrollments')}>
                         View folder registry &rarr;
                       </span>
                     </div>
@@ -2650,7 +2661,7 @@ function AppContent() {
                         <p className="text-xs text-slate-401 dark:text-gray-500 font-mono uppercase tracking-widest font-semibold">Scheduled Classes</p>
                         <p className="text-3xl font-serif text-slate-900 dark:text-white mt-1.5">{schedules.filter(s => s.status === 'scheduled').length}</p>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
+                      <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
                         Organize calendar &rarr;
                       </span>
                     </div>
@@ -2662,7 +2673,7 @@ function AppContent() {
                           {(progressRecords.reduce((acc, r) => acc + r.score, 0) / progressRecords.length).toFixed(0)}%
                         </p>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('reports')}>
+                      <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('reports')}>
                         Explore insights &rarr;
                       </span>
                     </div>
@@ -2679,7 +2690,7 @@ function AppContent() {
                             {schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id)).length}
                           </p>
                         </div>
-                        <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
+                        <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
                           Check Timetables &rarr;
                         </span>
                       </div>
@@ -2693,7 +2704,7 @@ function AppContent() {
                               : '0'}%
                           </p>
                         </div>
-                        <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
+                        <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
                           View My Feedbacks &rarr;
                         </span>
                       </div>
@@ -2779,7 +2790,7 @@ function AppContent() {
                           {schedules.filter(s => s.instructorId === currentUser.id && s.status === 'scheduled').length}
                         </p>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
+                      <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('schedule')}>
                         Mark Timetable completion &rarr;
                       </span>
                     </div>
@@ -2791,7 +2802,7 @@ function AppContent() {
                           {progressRecords.filter(r => r.instructorId === currentUser.id).length}
                         </p>
                       </div>
-                      <span className="text-[10.5px] font-semibold text-[#FF3B5C] hover:text-[#E11D48] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
+                      <span className="text-[10.5px] font-semibold text-[#000080] dark:text-[#000080] hover:text-[#0000CD] dark:hover:text-[#0000CD] hover:underline cursor-pointer flex items-center gap-0.5 mt-4" onClick={() => setActiveTab('progress')}>
                         Grade more schedules progress &rarr;
                       </span>
                     </div>
