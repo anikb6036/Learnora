@@ -387,18 +387,37 @@ function AppContent() {
 
   // State modification Handlers
   const handleAddStudent = (studentData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
+    const generatedUsername = studentData.username || `stu_${studentData.name.toLowerCase().replace(/\s+/g, '_')}_${Math.floor(100 + Math.random() * 900)}`;
+    const generatedPassword = studentData.password || `pass_${Math.floor(1000 + Math.random() * 9000)}`;
+
     const newStudent: UserAccount = {
       ...studentData,
       id: generateUniqueId('student'),
-      joinedDate: new Date().toLocaleDateString('en-US')
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      username: generatedUsername,
+      password: generatedPassword,
+      avatarUrl: studentData.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
     };
+
     setUsers(prev => [...prev, newStudent]);
+
+    // Send Simulated Welcome/Login Credentials Email to the student
+    const welcomeEmail: SimulatedEmail = {
+      id: generateUniqueId('mail'),
+      to: newStudent.email,
+      from: 'admissions@learnora.edu',
+      subject: 'Welcome to Learnora! - Access Credentials & Quick Start',
+      body: `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`,
+      timestamp: new Date().toISOString()
+    };
+
+    setSimulatedEmails(prev => [welcomeEmail, ...prev]);
 
     // System Notification Action
     const notif: AppNotification = {
       id: generateUniqueId('notif'),
       title: 'Student Account Registered',
-      message: `Successful registration folder instantiated for ${newStudent.name}. Profile ready for academic classes scheduling.`,
+      message: `Successful registration folder instantiated for ${newStudent.name}. Profile active and welcome email dispatched.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'enrollment',
