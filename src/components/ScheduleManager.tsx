@@ -201,8 +201,8 @@ export default function ScheduleManager({
     <div className="space-y-6 font-sans">
       <div className="bg-white dark:bg-[#161618] rounded-3xl border border-slate-150/80 dark:border-white/5 shadow-sm p-6 md:p-8">
         <div className="border-b border-slate-100 dark:border-white/5 pb-4.5 mb-6">
-          <h2 className="text-2xl font-serif italic text-amber-500 font-bold tracking-tight flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-amber-500" />
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-indigo-500 dark:text-blue-400" />
             Class Scheduling & Timekeeping
           </h2>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">

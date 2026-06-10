@@ -104,6 +104,7 @@ export default function EnrollmentManager({
   const [editBatch, setEditBatch] = useState('Batch A');
   const [newCourse, setNewCourse] = useState('');
   const [editCourse, setEditCourse] = useState('');
+  const [editSpecialization, setEditSpecialization] = useState('');
 
   // Phone country verification states
   const [newPhonePrefix, setNewPhonePrefix] = useState('+91');
@@ -1396,6 +1397,30 @@ export default function EnrollmentManager({
                       {['admin', 'sub-admin'].includes(currentUser.role) && (
                         <td className="p-4 text-right">
                           <button
+                            onClick={() => {
+                              setEditingStudent(ins);
+                              setEditName(ins.name || '');
+                              setEditEmail(ins.email || '');
+                              setEditUsername(ins.username || '');
+                              setEditPassword(ins.password || '');
+                              setEditSpecialization(ins.specialization || '');
+                              setEditAvatarUrl(ins.avatarUrl || '');
+                              
+                              if (ins.phone) {
+                                const match = COUNTRY_PHONE_CONFIGS.find(cfg => ins.phone?.startsWith(cfg.code));
+                                setEditPhonePrefix(match ? match.code : '+91');
+                                setEditPhoneRaw(match ? ins.phone.slice(match.code.length) : ins.phone);
+                              } else {
+                                setEditPhoneRaw('');
+                                setEditPhonePrefix('+91');
+                              }
+                            }}
+                            className="p-1.5 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 text-slate-444 hover:text-amber-500 rounded-lg transition mr-1.5"
+                            title="Edit Instructor Details"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => setUserToDelete({ id: ins.id, name: ins.name, role: 'instructor' })}
                             className="p-1.5 hover:bg-rose-50/10 dark:hover:bg-rose-950/20 text-slate-444 hover:text-rose-500 rounded-lg transition cursor-pointer"
                             title="Remove Faculty Record"
@@ -1466,6 +1491,29 @@ export default function EnrollmentManager({
                       {currentUser.role === 'admin' && (
                         <td className="p-4 text-right">
                           <button
+                            onClick={() => {
+                              setEditingStudent(sa);
+                              setEditName(sa.name || '');
+                              setEditEmail(sa.email || '');
+                              setEditUsername(sa.username || '');
+                              setEditPassword(sa.password || '');
+                              setEditAvatarUrl(sa.avatarUrl || '');
+                              
+                              if (sa.phone) {
+                                const match = COUNTRY_PHONE_CONFIGS.find(cfg => sa.phone?.startsWith(cfg.code));
+                                setEditPhonePrefix(match ? match.code : '+91');
+                                setEditPhoneRaw(match ? sa.phone.slice(match.code.length) : sa.phone);
+                              } else {
+                                setEditPhoneRaw('');
+                                setEditPhonePrefix('+91');
+                              }
+                            }}
+                            className="p-1.5 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 text-slate-444 hover:text-amber-500 rounded-lg transition mr-1.5"
+                            title="Edit Sub-Admin Details"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => setUserToDelete({ id: sa.id, name: sa.name, role: 'sub-admin' })}
                             className="p-1.5 hover:bg-rose-50/10 dark:hover:bg-rose-950/20 text-slate-444 hover:text-rose-500 rounded-lg transition cursor-pointer"
                             title="Remove Sub-Admin"
@@ -1491,7 +1539,7 @@ export default function EnrollmentManager({
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3">
                 <h3 className="text-base font-serif italic font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Pencil className="w-4 h-4 text-amber-500" /> Edit Student Details ({editingStudent.name})
+                  <Pencil className="w-4 h-4 text-amber-500" /> Edit {editingStudent.role === 'instructor' ? 'Instructor' : editingStudent.role === 'sub-admin' ? 'Sub-Admin' : 'Student'} Details ({editingStudent.name})
                 </h3>
                 <button
                   onClick={() => setEditingStudent(null)}
@@ -1548,6 +1596,7 @@ export default function EnrollmentManager({
                     password: editPassword.trim() || undefined,
                     batch: editBatch,
                     course: editCourse || undefined,
+                    specialization: editSpecialization.trim() || undefined,
                   };
 
                   setPendingStudentUpdate(updatedStudent);
@@ -1557,7 +1606,9 @@ export default function EnrollmentManager({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Student Name</label>
+                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">
+                      {editingStudent.role === 'instructor' ? 'Instructor Name' : editingStudent.role === 'sub-admin' ? 'Sub-Admin Name' : 'Student Name'}
+                    </label>
                     <input
                       type="text"
                       required
@@ -1603,6 +1654,23 @@ export default function EnrollmentManager({
                     {editPhoneError && <p className="text-[9px] text-rose-500 font-mono mt-0.5">{editPhoneError}</p>}
                   </div>
 
+                  {/* Instructor only fields */}
+                  {editingStudent.role === 'instructor' && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Specialization</label>
+                      <input
+                        type="text"
+                        value={editSpecialization}
+                        onChange={e => setEditSpecialization(e.target.value)}
+                        placeholder="e.g. Advanced AI Models"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 font-sans focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {/* Student only fields */}
+                  {editingStudent.role === 'student' && (
+                  <>
                   {/* Tutor Assignment */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Assigned Instructor / Tutor</label>
@@ -1617,6 +1685,8 @@ export default function EnrollmentManager({
                       ))}
                     </select>
                   </div>
+                  </>
+                  )}
 
                   {/* Username */}
                   <div className="space-y-1">
@@ -1642,6 +1712,8 @@ export default function EnrollmentManager({
                     />
                   </div>
 
+                  {editingStudent.role === 'student' && (
+                  <>
                   {/* Father Name */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Father / Guardian Name</label>
@@ -1751,17 +1823,76 @@ export default function EnrollmentManager({
                       ))}
                     </select>
                   </div>
+                  </>
+                  )}
 
-                  {/* Avatar URL / Pic */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Avatar Image URL</label>
-                    <input
-                      type="url"
-                      value={editAvatarUrl}
-                      onChange={e => setEditAvatarUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
-                    />
+                  {/* Profile Photo Upload Section */}
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Profile Photo (Maximum 150KB)</label>
+                    <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/5">
+                      {editAvatarUrl ? (
+                        <div className="relative">
+                          <img 
+                            src={editAvatarUrl} 
+                            alt="Preview" 
+                            className="w-10 h-10 rounded-full object-cover border border-amber-500 shadow-xs"
+                            referrerPolicy="no-referrer"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditAvatarUrl('');
+                              setEditAvatarError('');
+                            }}
+                            className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600 transition shadow"
+                            title="Remove Photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
+                          <Camera className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div className="flex flex-col flex-1 pl-2">
+                        <input
+                          type="file"
+                          id="edit-avatar-upload"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const limit = 150 * 1024;
+                            if (file.size > limit) {
+                              setEditAvatarError("Photo size more than 150KB. Please upload photo under 150KB.");
+                              setEditAvatarUrl('');
+                              e.target.value = '';
+                              return;
+                            }
+                            setEditAvatarError('');
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setEditAvatarUrl(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="edit-avatar-upload"
+                          className="inline-flex items-center self-start gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer text-slate-700 dark:text-slate-300 transition"
+                        >
+                          <Upload className="w-3 h-3" />
+                          {editAvatarUrl ? 'Change' : 'Select Photo'}
+                        </label>
+                        {editAvatarError && (
+                          <p className="text-[10px] text-rose-500 font-bold mt-1">
+                            {editAvatarError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
