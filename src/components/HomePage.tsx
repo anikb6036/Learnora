@@ -13,7 +13,49 @@ interface HomePageProps {
 
 export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePageProps) {
   const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
-  const activeCourseId = hoveredCourseId;
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const activeCourseId = selectedCourseId || hoveredCourseId;
+
+  const getCourseRoadmap = (courseName: string = '', courseCode: string = '') => {
+    const nameLower = courseName.toLowerCase();
+    const codeLower = courseCode.toLowerCase();
+
+    if (nameLower.includes('web') || nameLower.includes('software') || nameLower.includes('engineering') || codeLower.includes('web') || codeLower.includes('cse')) {
+      return [
+        { month: 1, title: 'Frontend Fundamentals', desc: 'HTML5, CSS3, Tailwind CSS, Responsive Design, and Javascript ES6 basics.' },
+        { month: 2, title: 'Modern UI Libraries', desc: 'React 18+, Component architecture, Hook patterns, state management, and Framer Motion animations.' },
+        { month: 3, title: 'Backend & APIs', desc: 'Node.js, Express framework, crafting RESTful APIs, and token-based authentication.' },
+        { month: 4, title: 'Databases & Integration', desc: 'SQL (PostgreSQL/MySQL) vs NoSQL (MongoDB/Firestore), schema migrations, and ORMs (Drizzle/Prisma).' },
+        { month: 5, title: 'Production Deployment & CI/CD', desc: 'Cloud Run / Vercel containers hosting, secure CORS policies, automated test suites, and git workflows.' },
+      ];
+    } else if (nameLower.includes('jee') || codeLower.includes('jee') || nameLower.includes('physics') || nameLower.includes('math')) {
+      return [
+        { month: 1, title: 'Calculus & Mechanics', desc: 'Kinematics, Newton’s Laws of Motion, work-power-energy, and modern mathematical limits & derivatives.' },
+        { month: 2, title: 'Fluids & Chemistry Basics', desc: 'Fluid dynamics, thermodynamics, key organic nomenclature pathways, and 3D vectors.' },
+        { month: 3, title: 'Electrostatics & Reactions', desc: 'Coulomb’s law, electric fields, reaction mechanisms, coordination structures, and integrals.' },
+        { month: 4, title: 'Optics & Modern Physics', desc: 'Wave optics, dual nature of matter, atomic nuclei, permutations, and probability models.' },
+        { month: 5, title: 'Grand Practice Exams', desc: 'Real JEE-level mock trial exams, high-difficulty doubt solving, and custom scoring tactics.' },
+      ];
+    } else if (nameLower.includes('neet') || codeLower.includes('neet') || nameLower.includes('medical') || nameLower.includes('biology')) {
+      return [
+        { month: 1, title: 'Cell Biology & Plant Science', desc: 'Cell architecture, active biomolecules, cell division stages, and plant taxonomy.' },
+        { month: 2, title: 'Human Physiology', desc: 'Gastrointestinal, cardiac, and neural mechanisms paired with foundational chemistry bounds.' },
+        { month: 3, title: 'Genetics & Biophysics', desc: 'Mendelian inheritances, molecular genetic structures, and key electrostatic currents.' },
+        { month: 4, title: 'Reproduction & Evolution', desc: 'Human/plant gametogenesis, Darwinian theories, and organic chemistry synthesis.' },
+        { month: 5, title: 'Full NEET Mock Drills', desc: 'High-speed diagnostic MCQs, comprehensive NCERT syllabus review, and paper-solving tricks.' },
+      ];
+    } else {
+      return [
+        { month: 1, title: 'Core Foundations & Induction', desc: 'Introduction to standard academic databases, program tools, grading rubrics, and workspace setups.' },
+        { month: 2, title: 'Intermediate Case Studies', desc: 'Detailed look into complex modules, collaborative work environments, and progressive test sessions.' },
+        { month: 3, title: 'Advanced Methods', desc: 'Tackling complex systems, industry standard theories, and specialized custom approaches.' },
+        { month: 4, title: 'Real-world Capstones', desc: 'Executing a holistic mock industrial project to test technical knowledge and agility.' },
+        { month: 5, title: 'Review & Certification', desc: 'Direct faculty assessment, active peer discussions, final portfolio checkout, and official badges.' },
+      ];
+    }
+  };
+
+  const selectedCourse = courses.find(c => c.id === selectedCourseId);
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#E0E6ED_0%,#EDF2F7_50%,#E2E8F0_100%)] dark:bg-[linear-gradient(135deg,#0E131F_0%,#151D30_50%,#090D16_100%)] text-[#1E293B] dark:text-slate-200 transition-colors duration-300 flex flex-col justify-between relative overflow-hidden font-sans z-0">
       
@@ -235,44 +277,134 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">Please sign in as staff or administrator to build and publish learning programs into the registry.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     {courses.map((course, idx) => {
-                      const isActive = activeCourseId === course.id;
+                      const isSelected = selectedCourseId === course.id;
+                      const isHovered = hoveredCourseId === course.id;
+                      const isActive = isSelected || isHovered;
+                      const roadmap = getCourseRoadmap(course.name, course.code);
+
                       return (
-                        <div 
+                        <motion.div 
                           key={course.id}
-                          onClick={() => onEnterPortal('fastReg')}
+                          layout
+                          className={`p-6 md:p-8 rounded-3xl bg-white dark:bg-[#15161A] border-2 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between ${
+                            isSelected 
+                              ? 'border-red-500 ring-2 ring-red-500/10 col-span-1 md:col-span-2' 
+                              : 'border-slate-100 dark:border-white/5 hover:border-red-400 col-span-1'
+                          }`}
+                          onClick={() => {
+                            setSelectedCourseId(isSelected ? null : course.id);
+                          }}
                           onMouseEnter={() => setHoveredCourseId(course.id)}
                           onMouseLeave={() => setHoveredCourseId(null)}
-                          className={`p-6 rounded-2xl bg-white dark:bg-[#15161A] border-2 transition-all duration-300 flex justify-between items-center group cursor-pointer shadow-sm hover:shadow-md ${
-                            isActive 
-                              ? 'border-red-500 ring-2 ring-red-500/10' 
-                              : 'border-slate-100 dark:border-white/5 hover:border-red-400'
-                          }`}
                         >
-                          <div className="flex-1 pr-4">
-                            <h3 className={`text-lg md:text-xl font-bold leading-tight transition-colors ${
+                          <div className="flex justify-between items-center w-full gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 border dark:border-white/5">
+                                  CODE: {course.code || 'COHORT'}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                                  {course.durationWeeks ? `${course.durationWeeks} Weeks` : '5 Months'}
+                                </span>
+                              </div>
+                              <h3 className={`text-lg md:text-xl font-bold leading-tight mt-3 transition-colors ${
+                                isActive 
+                                  ? 'text-red-600 dark:text-red-500 font-extrabold' 
+                                  : 'text-slate-900 dark:text-white group-hover:text-red-500'
+                              }`}>
+                                {course.name}
+                              </h3>
+                              {course.description && !isSelected && (
+                                <p className="text-xs text-slate-505 dark:text-slate-400 mt-2 line-clamp-1">
+                                  {course.description}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className={`w-16 h-16 flex items-center justify-center rounded-full transition-all duration-300 ${
                               isActive 
-                                ? 'text-red-600 dark:text-red-500 font-extrabold' 
-                                : 'text-slate-900 dark:text-white group-hover:text-red-500'
+                                ? 'bg-red-50 dark:bg-red-500/10 text-red-500 scale-105 shadow-sm' 
+                                : 'bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 group-hover:text-red-500 group-hover:scale-105'
                             }`}>
-                              {course.name}
-                            </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 font-medium">
-                              {course.durationWeeks ? `${course.durationWeeks} Months` : '1 Course'}
-                            </p>
+                              {idx % 3 === 0 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg> : 
+                               idx % 3 === 1 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> :
+                               <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>}
+                            </div>
                           </div>
 
-                          <div className={`w-16 h-16 flex items-center justify-center rounded-full transition-all duration-300 ${
-                            isActive 
-                              ? 'bg-red-50 dark:bg-red-500/10 text-red-500 scale-105 shadow-sm' 
-                              : 'bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 group-hover:text-red-500 group-hover:scale-105'
-                          }`}>
-                            {idx % 3 === 0 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg> : 
-                             idx % 3 === 1 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> :
-                             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>}
-                          </div>
-                        </div>
+                          {/* Expanded detail & 5-month learning path directly under clicked course */}
+                          {isSelected && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              transition={{ duration: 0.3 }}
+                              className="w-full mt-6 pt-6 border-t border-slate-100 dark:border-white/5 overflow-hidden"
+                              onClick={(e) => e.stopPropagation()} // Prevent clicking inner contents from closing card
+                            >
+                              {course.description && (
+                                <div className="mb-6">
+                                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+                                    Course Synopsis
+                                  </h4>
+                                  <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-sans">
+                                    {course.description}
+                                  </p>
+                                </div>
+                              )}
+
+                              <div className="mb-4 flex items-center justify-between">
+                                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                  5-Month Specialized Curriculum Roadmap
+                                </h4>
+                                <span className="text-[10px] font-mono bg-red-105 text-red-500 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
+                                  Step-by-Step
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-2">
+                                {roadmap.map((step) => (
+                                  <div key={step.month} className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5 flex flex-col justify-between hover:border-red-300 dark:hover:border-red-900/30 transition-all duration-300">
+                                    <div>
+                                      <div className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-mono font-extrabold text-xs mb-3">
+                                        M0{step.month}
+                                      </div>
+                                      <h5 className="font-bold text-xs text-slate-900 dark:text-white leading-tight font-sans">
+                                        {step.title}
+                                      </h5>
+                                      <p className="text-[11px] text-slate-500 dark:text-slate-405 mt-2 leading-relaxed">
+                                        {step.desc}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="mt-8 pt-4 border-t border-slate-150 dark:border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <p className="text-xs text-slate-550 dark:text-slate-450 italic font-serif">
+                                  Click elsewhere or "Collapse" to return. Ready to begin your journey?
+                                </p>
+                                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedCourseId(null)}
+                                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 rounded-xl font-bold transition-all text-xs cursor-pointer"
+                                  >
+                                    Collapse Details
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => onEnterPortal('fastReg')}
+                                    className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-extrabold shadow-md hover:shadow-red-500/15 text-xs flex items-center gap-1.5 transition-all duration-300 cursor-pointer"
+                                  >
+                                    Register & Appraise <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -281,51 +413,84 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
 
               {/* Roadmap Section */}
               <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:border-l border-slate-200 dark:border-white/10 lg:pl-12 xl:pl-16 pt-12 lg:pt-0">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
-                  Admission Roadmap
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                  {selectedCourse ? `${selectedCourse.name} Path` : 'Admission Roadmap'}
                 </h3>
+                {selectedCourse && (
+                   <p className="text-xs text-slate-500 mb-8">5-Month Technology Curriculum</p>
+                )}
+                {!selectedCourse && (
+                   <p className="text-xs text-slate-500 mb-8">Follow these steps to get enrolled.</p>
+                )}
                 
                 <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto lg:before:ml-5 lg:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-red-500 before:via-red-300 before:to-transparent">
-                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                      1
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
-                      <h4 className="font-bold text-slate-900 dark:text-white">Apply Online</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fill out the quick registration form and submit your basic details.</p>
-                    </div>
-                  </div>
+                  {selectedCourse ? (
+                    getCourseRoadmap(selectedCourse.name).map((step, idx) => (
+                      <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
+                          {step.month}
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Month {step.month}: {step.title}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
+                          1
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Apply Online</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fill out the quick registration form and submit your basic details.</p>
+                        </div>
+                      </div>
 
-                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                      2
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                      <h4 className="font-bold text-slate-900 dark:text-white">Entrance Test</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Take our online aptitude assessment to evaluate your foundation.</p>
-                    </div>
-                  </div>
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
+                          2
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Entrance Test</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Take our online aptitude assessment to evaluate your foundation.</p>
+                        </div>
+                      </div>
 
-                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                      3
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                      <h4 className="font-bold text-slate-900 dark:text-white">Counseling</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Discuss your goals and pick the right course track with our advisors.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                      4
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                      <h4 className="font-bold text-slate-900 dark:text-white">Enrollment</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Complete your registration, receive credentials and get onboarded.</p>
-                    </div>
-                  </div>
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
+                          3
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Counseling</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Discuss your goals and pick the right course track with our advisors.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
+                          4
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Enrollment</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Complete your registration, receive credentials and get onboarded.</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
+                
+                {selectedCourse && (
+                   <div className="mt-8 relative z-10">
+                     <button
+                       onClick={() => onEnterPortal('fastReg')}
+                       className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm"
+                     >
+                       Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />
+                     </button>
+                   </div>
+                )}
               </div>
             </div>
           </div>

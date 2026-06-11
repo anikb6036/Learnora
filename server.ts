@@ -65,7 +65,8 @@ async function startServer() {
          console.error("Resend API Error:", error);
          
          const errorMsg = error.message || "";
-         const isRestriction = errorMsg.includes("testing emails") || 
+         const isRestriction = error.name === "validation_error" ||
+                               errorMsg.includes("testing emails") || 
                                errorMsg.includes("own email address") ||
                                errorMsg.includes("resend.com/domains");
          
@@ -86,7 +87,8 @@ async function startServer() {
     } catch (err: any) {
        console.error("Failed to send OTP:", err);
        const errMsg = err.message || "";
-       const isRestriction = errMsg.includes("testing emails") || 
+       const isRestriction = err.name === "validation_error" ||
+                             errMsg.includes("testing emails") || 
                              errMsg.includes("own email address") ||
                              errMsg.includes("resend.com/domains");
 
