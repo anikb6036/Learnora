@@ -22,11 +22,11 @@ async function startServer() {
       return res.status(400).json({ error: "Valid email is required" });
     }
 
-    const API_KEY = process.env.RESEND_API_KEY;
+    const API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
     if (!API_KEY) {
       // Allow testing without API key by returning an error message that instructs the user.
       return res.status(500).json({ 
-        error: "RESEND_API_KEY is not configured. Please add it in your AI Studio settings to enable real email sending." 
+        error: "RESEND_API_KEY is not configured. Please add it in your AI Studio settings (Secrets panel) to enable real email sending." 
       });
     }
 
