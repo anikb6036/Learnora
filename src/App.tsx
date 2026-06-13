@@ -1592,12 +1592,8 @@ function AppContent() {
                   {/* Simulated Mail Client Mini-App */}
                   <div className="p-4 rounded-2xl bg-slate-500/5 dark:bg-[#161618] border border-slate-200 dark:border-white/5 space-y-3 mt-6">
                     <div className="flex items-center gap-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-duration-1000"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                      </span>
                       <p className="text-xs font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1.5">
-                        📧 Student Mailbox Simulator
+                        Student Mailbox Simulator
                       </p>
                     </div>
                     <p className="text-[10.5px] text-slate-500 dark:text-gray-400 leading-snug">

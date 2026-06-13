@@ -173,10 +173,6 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         {/* Left Side: Typography & Calls to Action */}
         <div className="flex flex-col items-start gap-8 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-widest">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-            </span>
             Admissions Open 2026
           </div>
 
