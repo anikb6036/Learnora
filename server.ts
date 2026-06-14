@@ -9,6 +9,37 @@ dotenv.config();
 // Simple in-memory store for OTPs (In production, use Redis or a DB)
 const otpStore: Record<string, { code: string, expiresAt: number, attempts: number, lastSentAt: number }> = {};
 
+const cleanEnv = (val: string | undefined): string => {
+  if (!val) return "";
+  return val.trim().replace(/^['"]|['"]$/g, "").trim();
+};
+
+const isPublicEmailDomain = (email: string): boolean => {
+  const lowercase = email.toLowerCase().trim();
+  const publicDomains = [
+    'gmail.com', 'yahoo.', 'hotmail.', 'outlook.', 'aol.com', 'icloud.com', 
+    'msn.com', 'live.com', 'mail.ru', 'yandex.', 'zoho.', 'protonmail.', 'proton.me'
+  ];
+  return publicDomains.some(domain => lowercase.includes(domain));
+};
+
+const getFriendlyResendError = (resendError: any, targetEmail: string): string => {
+  if (!resendError) return "An unknown error occurred with the email provider.";
+  
+  const msg = resendError.message || "";
+  const name = resendError.name || "";
+  
+  if (name.toLowerCase().includes("validation") || msg.toLowerCase().includes("sandbox") || msg.toLowerCase().includes("verify") || msg.toLowerCase().includes("recipient")) {
+    return `Resend Sandbox Restriction: Since your Resend account is in Sandbox mode, you can only send emails to the registered email address of your Resend account. To send verification emails to '${targetEmail}', please enter your registered Resend email address, or add '${targetEmail}' to your Single Recipient list in your Resend Dashboard, or verify your custom domain in Resend.`;
+  }
+  
+  if (name.toLowerCase().includes("unauthorized") || msg.toLowerCase().includes("api key") || msg.toLowerCase().includes("invalid")) {
+    return "Resend Unauthorized Error: Your RESEND_API_KEY is invalid or expired. Please check your credentials in the AI Studio settings.";
+  }
+  
+  return msg || "Failed to send email via Resend.";
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -48,17 +79,13 @@ async function startServer() {
       lastSentAt: now
     };
 
-    // Fallback to ensuring learnora.in is the default, but if user has process.env.SENDER_EMAIL that contains learnora.com, we should override it.
-    let senderEmail = process.env.SENDER_EMAIL || 'admissions@learnora.in';
-    if (senderEmail.includes('learnora.com')) {
-      senderEmail = 'admissions@learnora.in';
-    }
-    const senderName = process.env.SENDER_NAME || 'Learnora Admissions';
-    const fromAddress = senderEmail.includes('resend.dev') ? senderEmail : `${senderName} <${senderEmail}>`;
+    const fromAddress = 'Learnora Admissions <admissions@learnora.in>';
+    let finalFrom = fromAddress;
+    let fallbackAttempted = false;
 
     try {
-      const { data, error } = await resend.emails.send({
-        from: fromAddress,
+      let resendResult = await resend.emails.send({
+        from: finalFrom,
         to: [email],
         subject: 'Learnora Admissions OTP Verification',
         html: `
@@ -71,15 +98,43 @@ async function startServer() {
         `
       });
 
-      if (error) {
-         console.error("Resend API Error details:", JSON.stringify(error, null, 2));
-         return res.status(500).json({ error: error.message || "Failed to send OTP via email provider." });
+      if (resendResult.error && !fallbackAttempted) {
+        const errType = resendResult.error.name?.toLowerCase() || "";
+        const errText = resendResult.error.message?.toLowerCase() || "";
+        const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain") || errText.includes("unauthorized");
+
+        if (isSenderError) {
+          console.warn(`Unverified custom sender domain error: ${resendResult.error.message}. Retrying sending OTP with admissions@learnora.in fallback...`);
+          finalFrom = 'admissions@learnora.in';
+          fallbackAttempted = true;
+
+          resendResult = await resend.emails.send({
+            from: finalFrom,
+            to: [email],
+            subject: 'Learnora Admissions OTP Verification',
+            html: `
+              <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
+                <h2>Learnora Admissions</h2>
+                <p>Your one-time verification code is:</p>
+                <h1 style="font-size: 32px; letter-spacing: 4px; color: #333;">${code}</h1>
+                <p>This code expires in 10 minutes. If you didn't request this, you can ignore this email.</p>
+              </div>
+            `
+          });
+        }
+      }
+
+      if (resendResult.error) {
+        console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
+        const friendlyMessage = getFriendlyResendError(resendResult.error, email);
+        return res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code });
       }
 
       res.status(200).json({ success: true, message: "OTP sent successfully" });
     } catch (err: any) {
-       console.error("Failed to send OTP:", err);
-       res.status(500).json({ error: err.message || "Failed to send OTP via email provider. Please try again." });
+      console.error("Exception caught in send-otp:", err);
+      const friendlyMessage = getFriendlyResendError(err, email);
+      res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code });
     }
   });
 
@@ -112,6 +167,69 @@ async function startServer() {
     // Success! Clear the OTP.
     delete otpStore[email];
     res.status(200).json({ success: true, message: "Email successfully verified." });
+  });
+
+  app.post("/api/send-email", async (req, res) => {
+    const { email, subject, text, html } = req.body;
+    
+    if (!email || !subject || (!text && !html)) {
+      return res.status(400).json({ error: "Email, subject, and body (text or html) are required." });
+    }
+
+    const API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+    if (!API_KEY) {
+      return res.status(500).json({ 
+        error: "RESEND_API_KEY is not configured. Email could not be sent." 
+      });
+    }
+
+    const resend = new Resend(API_KEY);
+
+    const fromAddress = 'Learnora Admissions <admissions@learnora.in>';
+    let finalFrom = fromAddress;
+    let fallbackAttempted = false;
+
+    try {
+      let resendResult = await resend.emails.send({
+        from: finalFrom,
+        to: [email],
+        subject: subject,
+        text: text,
+        html: html
+      });
+
+      if (resendResult.error && !fallbackAttempted) {
+        const errType = resendResult.error.name?.toLowerCase() || "";
+        const errText = resendResult.error.message?.toLowerCase() || "";
+        const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain") || errText.includes("unauthorized");
+
+        if (isSenderError) {
+          console.warn(`Unverified custom sender domain error in send-email: ${resendResult.error.message}. Retrying with admissions@learnora.in fallback...`);
+          finalFrom = 'admissions@learnora.in';
+          fallbackAttempted = true;
+
+          resendResult = await resend.emails.send({
+            from: finalFrom,
+            to: [email],
+            subject: subject,
+            text: text,
+            html: html
+          });
+        }
+      }
+
+      if (resendResult.error) {
+         console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
+         const friendlyMessage = getFriendlyResendError(resendResult.error, email);
+         return res.status(500).json({ error: friendlyMessage });
+      }
+
+      res.status(200).json({ success: true, message: "Email dispatched successfully" });
+    } catch (err: any) {
+       console.error("Failed to send email:", err);
+       const friendlyMessage = getFriendlyResendError(err, email);
+       res.status(500).json({ error: friendlyMessage });
+    }
   });
 
   // Vite middleware for development

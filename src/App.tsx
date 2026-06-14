@@ -19,6 +19,28 @@ import {
 } from './utils';
 import { ThemeProvider, useTheme } from './components/ThemeContext';
 import { compressImage } from './imageUtils';
+
+const sendSystemEmail = async (to: string, subject: string, text: string, html?: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email: to, subject, text, html })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("Real email failed:", data.error);
+      return { success: false, error: data.error || "Failed to send email" };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to call send-email API:", err);
+    return { success: false, error: err.message || "Network error communicating with mail API" };
+  }
+};
+
 import NotificationCenter from './components/NotificationCenter';
 import EnrollmentManager from './components/EnrollmentManager';
 import ScheduleManager from './components/ScheduleManager';
@@ -246,11 +268,14 @@ function AppContent() {
   const [fastFatherName, setFastFatherName] = useState('');
   const [fastAddress, setFastAddress] = useState('');
   const [fastCourse, setFastCourse] = useState('');
+  const [lastEmailStatus, setLastEmailStatus] = useState<{ success: boolean; error?: string; sending: boolean } | null>(null);
+  const [sandboxOtp, setSandboxOtp] = useState<string | null>(null);
 
 
   const [fastFirstNameError, setFastFirstNameError] = useState('');
   const [fastLastNameError, setFastLastNameError] = useState('');
   const [fastEmailError, setFastEmailError] = useState('');
+  const [fastEmailSuccess, setFastEmailSuccess] = useState('');
   const [fastGenderError, setFastGenderError] = useState('');
   const [fastDobError, setFastDobError] = useState('');
   const [fastFatherNameError, setFastFatherNameError] = useState('');
@@ -308,7 +333,7 @@ function AppContent() {
     
     // Check if email already registered
     const isRegistered = users.some(u => u.email.toLowerCase() === emailLower);
-    const isPending = registrationRequests.some(r => r.email.toLowerCase() === emailLower);
+    const isPending = registrationRequests.some(r => r.email.toLowerCase() === emailLower && r.status === 'pending');
     
     if (isRegistered || isPending) {
       setFastEmailError("Mail id is already register");
@@ -316,6 +341,8 @@ function AppContent() {
     }
 
     setFastEmailError("");
+    setFastEmailSuccess("");
+    setSandboxOtp(null);
     setEmailVerState('sending');
     
     try {
@@ -327,11 +354,22 @@ function AppContent() {
       const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.error || "Failed to send OTP");
+        if (data.developerSandboxOtp) {
+          setSandboxOtp(data.developerSandboxOtp);
+          setEmailVerState('sent');
+          setFastEmailError(data.error || "Sandbox restriction detected");
+          return;
+        } else {
+          setEmailVerState('idle');
+          throw new Error(data.error || "Failed to send OTP");
+        }
       }
       
       setEmailVerState('sent');
       setEmailOtpCooldown(60);
+      if (data.note) {
+        setFastEmailSuccess(data.note);
+      }
     } catch (err: any) {
       setEmailVerState('idle');
       setFastEmailError(err.message || 'Error communicating with server');
@@ -359,6 +397,7 @@ function AppContent() {
       setEmailVerified(true);
       setEmailVerState('idle');
       setFastEmailError('');
+      setFastEmailSuccess('');
     } catch (err: any) {
       setFastEmailError(err.message || 'Invalid OTP');
       if (err.message?.toLowerCase().includes("request a new one")) {
@@ -399,6 +438,21 @@ function AppContent() {
 
   // Push notifications toast overlay state
   const [toastAlert, setToastAlert] = useState<AppNotification | null>(null);
+
+  useEffect(() => {
+    // Look for exam link in URL to trigger admission exam automatically
+    const params = new URLSearchParams(window.location.search);
+    const examEmail = params.get('examemail');
+    if (examEmail && registrationRequests.length > 0 && !showExamModal && !examRequest) {
+      const q = registrationRequests.find(r => r.email.toLowerCase() === examEmail.toLowerCase() && r.status === 'pending');
+      if (q) {
+        setExamRequest(q);
+        setShowExamModal(true);
+        // Clear param from URL so it doesn't trigger again continuously on re-renders if closed
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [registrationRequests, showExamModal, examRequest]);
 
   // Synchronize state of currently logged-in user with active database records or invalidate if deleted
   useEffect(() => {
@@ -529,17 +583,25 @@ function AppContent() {
 
     setUsers(prev => [...prev, newStudent]);
 
-    // Send Simulated Welcome/Login Credentials Email to the student
-    const welcomeEmail: SimulatedEmail = {
-      id: generateUniqueId('mail'),
-      to: newStudent.email,
-      from: 'admissions@learnora.edu',
-      subject: 'Welcome to Learnora! - Access Credentials & Quick Start',
-      body: `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`,
-      timestamp: new Date().toISOString()
-    };
-
-    setSimulatedEmails(prev => [welcomeEmail, ...prev]);
+    const emailBodyTxt = `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    sendSystemEmail(
+      newStudent.email,
+      'Welcome to Learnora! - Access Credentials & Quick Start',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Welcome to Learnora!</h2>
+        <p>Dear ${newStudent.name},</p>
+        <p>Welcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.</p>
+        <p>Your profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.</p>
+        <p>Please find your secure system access credentials below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${generatedUsername}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${generatedPassword}</p>
+        </div>
+        <p>You can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.</p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
 
     // System Notification Action
     const notif: AppNotification = {
@@ -600,6 +662,10 @@ function AppContent() {
   };
 
   const handleRemoveStudent = (studentId: string) => {
+    const student = users.find(u => u.id === studentId);
+    if (student) {
+      setRegistrationRequests(prev => prev.filter(r => r.email.toLowerCase() !== student.email.toLowerCase()));
+    }
     setUsers(prev => prev.filter(u => u.id !== studentId));
     // Remove student enrollment from other schedules
     setSchedules(prev => prev.map(s => ({
@@ -983,16 +1049,31 @@ function AppContent() {
 
     setRegistrationRequests(prev => [newRequest, ...prev]);
 
-    // Send simulated email containing the Placement Exam Link
-    const testEmail: SimulatedEmail = {
-      id: generateUniqueId('mail'),
-      to: cleanEmail,
-      from: 'admissions@learnora.edu',
-      subject: 'Learnora Admissions: Mandatory English Placement Exam Link',
-      body: `Dear ${cleanName},\n\nThank you for applying to Learnora Institute. We've received your fast student admission registration details!\n\nTo complete your enrollment automatically, you are required to take a brief, mandatory English Placement Examination. This test evaluates:\n\n1. English Reading Comprehension Test (2 multiple choice questions)\n2. English Speaking voice articulation evaluation test (read passage aloud)\n\nPassing Criteria: A score of 25% or more on this test will triggers INSTANT AUTOMATIC ADMISSION under the administration rules. Your permanent student username and login credentials will then be automatically generated and sent to you!\n\nClick the "Launch Admission Exam Now" button in this simulation screen to take the exam and claim automatic enrollment.`,
-      timestamp: new Date().toISOString()
-    };
-    setSimulatedEmails(prev => [testEmail, ...prev]);
+    // Send a real email with the placement exam link
+    const examUrl = `${window.location.protocol}//${window.location.host}/?examemail=${encodeURIComponent(cleanEmail)}`;
+    setLastEmailStatus({ success: false, error: undefined, sending: true });
+    sendSystemEmail(
+      cleanEmail,
+      'Learnora Admissions: Mandatory English Placement Exam Link',
+      `Dear ${cleanName},\n\nThank you for applying to Learnora Institute. We've received your fast student admission registration details!\n\nTo complete your enrollment automatically, you are required to take a brief, mandatory English Placement Examination. This test evaluates:\n\n1. English Reading Comprehension Test (2 multiple choice questions)\n2. English Speaking voice articulation evaluation test (read passage aloud)\n\nPassing Criteria: A score of 25% or more on this test will trigger INSTANT AUTOMATIC ADMISSION.\n\nTake the exam now by clicking this link:\n${examUrl}\n\nGood luck!`,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #f59e0b;">Learnora Admissions</h2>
+        <p>Dear ${cleanName},</p>
+        <p>Thank you for applying to Learnora Institute. We've received your fast student admission registration details!</p>
+        <p>To complete your enrollment automatically, you are required to take a brief, mandatory English Placement Examination. This test evaluates:</p>
+        <ol>
+          <li>English Reading Comprehension Test (2 multiple choice questions)</li>
+          <li>English Speaking voice articulation evaluation test (read passage aloud)</li>
+        </ol>
+        <p><strong>Passing Criteria:</strong> A score of 25% or more on this test will trigger <strong>INSTANT AUTOMATIC ADMISSION</strong> under the administration rules. Your permanent student username and login credentials will then be automatically generated and sent to you!</p>
+        <div style="margin: 30px 0;">
+          <a href="${examUrl}" style="background-color: #f59e0b; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;">Launch Admission Exam Now &rarr;</a>
+        </div>
+        <p><small>If the button doesn't work, copy and paste this link into your browser:<br>${examUrl}</small></p>
+      </div>`
+    ).then(res => {
+      setLastEmailStatus({ success: res.success, error: res.error, sending: false });
+    });
 
     // Send a system event notice to the logs
     const notif: AppNotification = {
@@ -1036,21 +1117,31 @@ function AppContent() {
       course: r.course
     };
 
-    // Send simulated email
-    const newEmail: SimulatedEmail = {
-      id: generateUniqueId('mail'),
-      to: r.email,
-      from: 'admissions@learnora.edu',
-      subject: 'Learnora Enrollment Accepted! - Your Credentials Enclosed',
-      body: `Dear ${r.name},\n\nWe are absolutely delighted to inform you that your Enrollment & Fast Student Registration Request has been reviewed and APPROVED by our Administration panel!\n\nYour profile has been fully instantiated into our student information database. You can now log in using the newly auto-generated security credentials enclosed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease keep these credentials secure. Once signed in, you will be able to enroll into classes, audit tutor feedback records, and track your ongoing learning achievements.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`,
-      timestamp: new Date().toISOString()
-    };
+    const loginUrl = `${window.location.protocol}//${window.location.host}/`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that your Enrollment Request has been APPROVED and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    
+    sendSystemEmail(
+      r.email,
+      'Learnora Admission Approved! - Credentials Enclosed',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Learnora Admissions</h2>
+        <p>Dear ${r.name},</p>
+        <p>We are absolutely delighted to inform you that your Enrollment Request has been <strong>APPROVED</strong> and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
+        </div>
+        <p><a href="${loginUrl}" style="background-color: #10b981; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In Now</a></p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
 
     // Trigger Notification
     const notif: AppNotification = {
       id: generateUniqueId('notif-appr'),
       title: 'Admissions Request Accepted',
-      message: `Student account created for ${r.name}. Security credentials dispatched via simulated mail.`,
+      message: `Student account created for ${r.name}. Security credentials dispatched to email.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'enrollment',
@@ -1058,7 +1149,6 @@ function AppContent() {
     };
 
     setUsers(u => [...u, newStudent]);
-    setSimulatedEmails(m => [newEmail, ...m]);
     setNotifications(n => [notif, ...n]);
     triggerToast(notif);
 
@@ -1096,15 +1186,26 @@ function AppContent() {
       course: r.course
     };
 
-    // Send simulated email
-    const newEmail: SimulatedEmail = {
-      id: generateUniqueId('mail'),
-      to: r.email,
-      from: 'admissions@learnora.edu',
-      subject: 'Learnora Admission Automatic Approval! - Credentials Enclosed',
-      body: `Dear ${r.name},\n\nWe are absolutely delighted to inform you that you have PASSED the Mandatory English Placement Exam with a qualifying score of ${score}% (Threshold: 25% for auto-admission)!\n\nAs a result, your enrollment has been AUTOMATICALLY APPROVED and instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease use these details to log in to the student onboarding portal (Approved Sign In) where you can track schedules, attend lectures, and receive mentor feedback.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`,
-      timestamp: new Date().toISOString()
-    };
+    const loginUrl = `${window.location.protocol}//${window.location.host}/`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that you have PASSED the Mandatory English Placement Exam with a qualifying score of ${score}% (Threshold: 25% for auto-admission)!\n\nAs a result, your enrollment has been AUTOMATICALLY APPROVED and instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    
+    sendSystemEmail(
+      r.email,
+      'Learnora Admission Automatic Approval! - Credentials Enclosed',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Learnora Admissions</h2>
+        <p>Dear ${r.name},</p>
+        <p>We are absolutely delighted to inform you that you have <strong>PASSED</strong> the Mandatory English Placement Exam with a qualifying score of <strong>${score}%</strong> (Threshold: 25% for auto-admission)!</p>
+        <p>As a result, your enrollment has been <strong>AUTOMATICALLY APPROVED</strong> and instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
+        </div>
+        <p><a href="${loginUrl}" style="background-color: #10b981; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In Now</a></p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
 
     // Trigger Notification
     const notif: AppNotification = {
@@ -1118,7 +1219,6 @@ function AppContent() {
     };
 
     setUsers(u => [...u, newStudent]);
-    setSimulatedEmails(m => [newEmail, ...m]);
     setNotifications(n => [notif, ...n]);
     triggerToast(notif);
 
@@ -1139,24 +1239,15 @@ function AppContent() {
     const r = registrationRequests.find(req => req.id === requestId);
     if (!r || r.status !== 'pending') return;
 
-    // Send simulated email
-    const newEmail: SimulatedEmail = {
-      id: generateUniqueId('mail'),
-      to: r.email,
-      from: 'admissions@learnora.edu',
-      subject: 'Learnora Registration Status Update',
-      body: `Dear ${r.name},\n\nThank you for submitting your Fast Student Registration Request with Learnora.\n\nAfter reviewing your application coordinates, we regret to inform you that our classes are currently at maximum capacity, and we cannot approve your enrollment at this time.\n\nWe have retained your interest profile on our priority waiting list. Should seats open up in upcoming sessions, we will reach out immediately.\n\nBest regards,\nCenter Administration,\nLearnora Institute`,
-      timestamp: new Date().toISOString()
-    };
+    const emailBodyTxt = `Dear ${r.name},\n\nThank you for submitting your Fast Student Registration Request with Learnora.\n\nAfter reviewing your application coordinates, we regret to inform you that our classes are currently at maximum capacity, and we cannot approve your enrollment at this time.\n\nWe have retained your interest profile on our priority waiting list. Should seats open up in upcoming sessions, we will reach out immediately.\n\nBest regards,\nCenter Administration,\nLearnora Institute`;
 
-    setSimulatedEmails(m => [newEmail, ...m]);
+    sendSystemEmail(
+      r.email,
+      'Learnora Registration Status Update',
+      emailBodyTxt
+    );
 
-    setRegistrationRequests(prev => prev.map(req => {
-      if (req.id === requestId) {
-        return { ...req, status: 'rejected' };
-      }
-      return req;
-    }));
+    setRegistrationRequests(prev => prev.filter(req => req.id !== requestId));
   };
 
   const handleUpdateRegistrationRequest = (updatedReq: RegistrationRequest) => {
@@ -1165,16 +1256,13 @@ function AppContent() {
     const statusChanged = originalReq?.interviewStatus !== updatedReq.interviewStatus;
 
     if (updatedReq.interviewStatus === 'scheduled' && (dateChanged || statusChanged)) {
-      // Send simulated interview invite email
-      const newEmail: SimulatedEmail = {
-        id: generateUniqueId('mail'),
-        to: updatedReq.email,
-        from: 'admissions@learnora.edu',
-        subject: `Learnora Admission - Interview Scheduled for ${updatedReq.name}`,
-        body: `Dear ${updatedReq.name},\n\nWe are pleased to inform you that we have scheduled an interview regarding your admission application at Learnora Institute.\n\nHere are your scheduled details:\n\n- Date: ${updatedReq.interviewDate || 'To be selected'}\n- Time: ${updatedReq.interviewTime || 'To be selected'}\n- Status: Scheduled\n- Notes: ${updatedReq.interviewNotes || 'No notes provided.'}\n\nOur system will simulate this interview session. Please make sure to be available at this designated slot.\n\nBest regards,\nAdmissions Office,\nLearnora Institute`,
-        timestamp: new Date().toISOString()
-      };
-      setSimulatedEmails(m => [newEmail, ...m]);
+      // Send real interview invite email
+      const emailBodyTxt = `Dear ${updatedReq.name},\n\nWe are pleased to inform you that we have scheduled an interview regarding your admission application at Learnora Institute.\n\nHere are your scheduled details:\n\n- Date: ${updatedReq.interviewDate || 'To be selected'}\n- Time: ${updatedReq.interviewTime || 'To be selected'}\n- Status: Scheduled\n- Notes: ${updatedReq.interviewNotes || 'No notes provided.'}\n\nPlease make sure to be available at this designated slot.\n\nBest regards,\nAdmissions Office,\nLearnora Institute`;
+      sendSystemEmail(
+        updatedReq.email,
+        `Learnora Admission - Interview Scheduled for ${updatedReq.name}`,
+        emailBodyTxt
+      );
     }
 
     setRegistrationRequests(prev => prev.map(req => req.id === updatedReq.id ? updatedReq : req));
@@ -1203,6 +1291,10 @@ function AppContent() {
       timestamp: new Date().toISOString()
     };
 
+    // Send real email
+    sendSystemEmail(toEmail, subject, body, body.replace(/\n/g, '<br>'));
+
+    // Record in local database/state for visual mailbox tracking
     setSimulatedEmails(prev => [newEmail, ...prev]);
 
     // If the recipient is indeed in our system, let's trigger a push notice
@@ -1328,8 +1420,15 @@ function AppContent() {
     if (!fastEmail.trim()) {
       setFastEmailError('Email address is required');
       hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(fastEmail)) {
+      setFastEmailError('Please enter a valid email address');
+      hasError = true;
     } else if (!emailVerified) {
       setFastEmailError('Please verify your email address via OTP');
+      hasError = true;
+    } else if (users.some(u => u.email.toLowerCase() === fastEmail.toLowerCase()) || 
+               registrationRequests.some(r => r.email.toLowerCase() === fastEmail.toLowerCase() && r.status === 'pending')) {
+      setFastEmailError('Mail id is already register');
       hasError = true;
     }
 
@@ -1768,40 +1867,6 @@ function AppContent() {
                       Interactive educational control center. Experience our multi-role workflows: student registers, administrators review/accept, and credentials dispatch automatically.
                     </p>
                   </div>
-
-                  {/* Simulated Mail Client Mini-App */}
-                  <div className="p-4 rounded-2xl bg-slate-500/5 dark:bg-[#161618] border border-slate-200 dark:border-white/5 space-y-3 mt-6">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1.5">
-                        Student Mailbox Simulator
-                      </p>
-                    </div>
-                    <p className="text-[10.5px] text-slate-500 dark:text-gray-400 leading-snug">
-                      Inspect secure admissions emails containing login details. Type any registered email (e.g. <b>samantha.wilson@demo.com</b> or your newly registered email) and click Open.
-                    </p>
-                    
-                    <div className="flex gap-1.5">
-                      <input
-                        type="email"
-                        placeholder="student.email@demo.com"
-                        value={mailSearchEmail}
-                        onChange={(e) => setMailSearchEmail(e.target.value)}
-                        className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-[#0F0F11] border border-slate-250 dark:border-white/5 rounded-xl text-slate-900 dark:text-gray-200 focus:outline-none placeholder-slate-400 dark:placeholder-gray-600 font-mono"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (mailSearchEmail.trim()) {
-                            setActiveMailboxEmail(mailSearchEmail.trim().toLowerCase());
-                            setShowMailbox(true);
-                          }
-                        }}
-                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-xl text-xs transition cursor-pointer font-sans"
-                      >
-                        Open Mail
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -1854,27 +1919,108 @@ function AppContent() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-5 rounded-2xl bg-emerald-500/[0.02] border border-emerald-500/20 space-y-4 text-xs text-slate-705 dark:text-emerald-400 shadow-inner"
+                        className="p-6 rounded-2xl bg-slate-50 dark:bg-[#070709] border border-slate-200/60 dark:border-white/5 space-y-5 text-xs text-slate-700 dark:text-gray-300 shadow-xl"
                       >
-                        <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm">
-                          <span className="p-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                        <div className="flex items-center gap-2.5 text-emerald-500 font-extrabold text-sm font-sans uppercase tracking-wider">
+                          <span className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                             <Check className="w-4 h-4" />
                           </span>
-                          <span>Admission Form Logged Successfully!</span>
+                          <span>Admission Enrolled Successfully!</span>
                         </div>
-                        <p className="leading-relaxed text-slate-650 dark:text-gray-300">
-                          The admissions queue ticket for student <b className="text-slate-800 dark:text-white">{fastRegSuccess.name}</b> has been securely enqueued in the active admin ledger.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFastRegSuccess(null);
-                            setCurrentRegStep(1);
-                          }}
-                          className="text-[11px] font-bold text-emerald-500 hover:text-emerald-400 hover:underline cursor-pointer block transition-all"
-                        >
-                          Submit another fast onboarding request &rarr;
-                        </button>
+                        
+                        <div className="space-y-2 leading-relaxed">
+                          <p>
+                            Student admission application details for <b className="text-slate-900 dark:text-white">{fastRegSuccess.name}</b> have been securely enqueued in the active admin queue.
+                          </p>
+                          <div className="p-3 bg-slate-100/50 dark:bg-white/[0.02] border border-slate-200/40 dark:border-white/5 rounded-xl font-mono text-[10.5px] space-y-1">
+                            <div><span className="text-slate-400 dark:text-gray-500 font-bold uppercase mr-2">Assigned Name:</span>{fastRegSuccess.name}</div>
+                            <div><span className="text-slate-400 dark:text-gray-500 font-bold uppercase mr-2">Email Address:</span>{fastRegSuccess.email}</div>
+                            <div><span className="text-slate-400 dark:text-gray-500 font-bold uppercase mr-2">Course Choice:</span>{fastRegSuccess.course || "Default"}</div>
+                          </div>
+                        </div>
+
+                        {/* Real-time Email Dispatch Ledger Section */}
+                        <div className="p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0A0A0F] space-y-3 shadow-inner">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500">
+                              Admission Welcome Packet Email
+                            </span>
+                            <span className="text-[9px] font-mono uppercase bg-slate-100 dark:bg-[#1C1C24] text-slate-500 px-2 py-0.5 rounded-full font-semibold border border-slate-200/20">
+                              Resend dispatch API
+                            </span>
+                          </div>
+
+                          {lastEmailStatus?.sending && (
+                            <div className="flex items-center gap-2.5 py-1 text-slate-500 dark:text-gray-400 animate-pulse">
+                              <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                              <span className="font-medium">Contacting Resend server, generating secure English placement voucher...</span>
+                            </div>
+                          )}
+
+                          {lastEmailStatus && !lastEmailStatus.sending && lastEmailStatus.success && (
+                            <div className="space-y-2">
+                              <p className="text-emerald-500 font-bold flex items-center gap-1.5 font-sans">
+                                <Check className="w-4 h-4 shrink-0" /> Dispatch Completed successfully!
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-gray-400 font-normal">
+                                The real email welcome packet containing the placement exam link was sent via Resend. The student should receive it in their inbox shortly.
+                              </p>
+                            </div>
+                          )}
+
+                          {((lastEmailStatus && !lastEmailStatus.sending && !lastEmailStatus.success) || (!lastEmailStatus && !fastEmailError)) && (
+                            <div className="space-y-3">
+                              <p className="text-amber-500 font-bold flex items-center gap-1.5 font-sans uppercase tracking-wider text-[10px] bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg w-fit">
+                                <AlertCircle className="w-4 h-4 shrink-0" /> Sandbox / Delivery Restriction Alert
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-gray-400 font-normal leading-relaxed">
+                                {lastEmailStatus?.error || "Your Resend API key is configured but restricted from delivering emails to unregistered inbox addresses."}
+                              </p>
+                              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-2">
+                                <p className="font-bold text-amber-500 text-[10.5px]">
+                                  🚀 Continue Testing without Interruption:
+                                </p>
+                                <p className="text-slate-600 dark:text-gray-300 font-normal">
+                                  Because this is a development preview on AI Studio, you don't need real emails! You can launch the student's mandatory exam screen directly within the workspace below:
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-2 mt-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExamRequest(fastRegSuccess);
+                                      setShowExamModal(true);
+                                    }}
+                                    className="flex-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-amber-950 font-extrabold text-[11px] tracking-wide uppercase px-4 py-2.5 rounded-xl transition cursor-pointer text-center font-sans shadow-md shadow-amber-500/10"
+                                  >
+                                    ✍️ Launch English Admission Exam Now
+                                  </button>
+                                  <a
+                                    href={`/?examemail=${encodeURIComponent(fastRegSuccess.email)}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="px-4 py-2.5 bg-slate-100 dark:bg-[#1A1A22] border border-slate-200 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-[#252530] text-slate-700 dark:text-gray-200 hover:text-slate-850 font-bold text-[11px] uppercase rounded-xl tracking-wide text-center transition block active:scale-95"
+                                  >
+                                    🌐 Open Exam in New Tab
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFastRegSuccess(null);
+                              setCurrentRegStep(1);
+                              setLastEmailStatus(null);
+                            }}
+                            className="bg-[#1C1C24] hover:bg-[#282834] border border-white/5 text-slate-300 px-4 py-2 rounded-xl text-[11.5px] font-bold cursor-pointer transition active:scale-95"
+                          >
+                            New Student Application &rarr;
+                          </button>
+                        </div>
                       </motion.div>
                     ) : (
                       <div className="space-y-6">
@@ -2084,14 +2230,17 @@ function AppContent() {
                                         </p>
                                       </div>
                                     )}
+                                    {emailVerified && (
+                                      <p className="text-[10.5px] text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
+                                        <Check className="w-3.5 h-3.5" /> Email successfully verified.
+                                      </p>
+                                    )}
+                                    {fastEmailError && (
+                                      <p className="text-[10px] text-rose-500 mt-1.5 font-medium px-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fastEmailError}</p>
+                                    )}
                                   </div>
-                                  {emailVerified && (
-                                    <p className="text-[10.5px] text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
-                                      <Check className="w-3.5 h-3.5" /> Email successfully verified.
-                                    </p>
-                                  )}
-                                  {fastEmailError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastEmailError}</p>
+                                  {fastEmailSuccess && (
+                                    <p className="text-[10px] text-amber-500 mt-1.5 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-normal">{fastEmailSuccess}</p>
                                   )}
                                 </div>
 
@@ -2368,7 +2517,7 @@ function AppContent() {
                     <div>
                       <h3 className="text-xl font-serif italic text-amber-500 font-bold tracking-tight">Approved Account Login</h3>
                       <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
-                        Access your profile, courses, and educational schedules using the verified credentials (USERNAME & PASSWORD) delivered to your simulated student inbox.
+                        Access your profile, courses, and educational schedules using the verified credentials (USERNAME & PASSWORD) delivered to your registered email address.
                       </p>
                     </div>
 
@@ -3578,7 +3727,7 @@ function AppContent() {
                     };
                     triggerToast(notif);
                     
-                    setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to the simulated mailbox: ${matchedUser.email}. Please use the Student Mailbox Simulator on the login screen, enter your email address to open the mailbox, and retrieve your credentials.`);
+                    setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to your registered email address: ${matchedUser.email}. Please check your email inbox to retrieve your credentials.`);
                   } else {
                     setForgotModalError('No active student, teacher, or administrative record matches this registered email address within our master databases.');
                   }
@@ -3599,7 +3748,7 @@ function AppContent() {
                     />
                   </div>
                   <p className="text-[9.5px] text-slate-400 dark:text-gray-500 leading-relaxed font-sans mt-1">
-                    Once sent, you can log in to your email inbox using the **Student Mailbox Simulator** at the bottom of the landing page's left panel to audit the dispatch message.
+                    Once requested, you will receive an email shortly with your recovery credentials containing your username and password.
                   </p>
                 </div>
 
