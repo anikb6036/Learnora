@@ -315,7 +315,7 @@ export default function AdmissionsExamModal({
                   {/* Reading Passage Container */}
                   <div className="p-5 rounded-2xl bg-amber-550/[0.02] border border-amber-500/10 text-sm font-normal leading-relaxed text-slate-800 dark:text-gray-200 select-none relative">
                     <div className="absolute top-4 left-0 w-1 h-3/4 bg-amber-500 rounded-r" />
-                    "Language is not merely a structured system of symbols, but the primary architectural matrix of shared human consciousness. Through syntax and rhythmic expression, individuals formulate the delicate bridges of cross-cultural connectivity. At Learnora, precision speaking and active vocabulary mastery represent the ultimate portals to scholastic excellence."
+                    "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
                   </div>
 
                   {/* MCQ Questions list */}
@@ -323,14 +323,14 @@ export default function AdmissionsExamModal({
                     {/* Q1 */}
                     <div className="space-y-2">
                       <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
-                        Q1. According to the text, language is described as:
+                        Q1. Why is the Amazon Rainforest called the 'lungs of the Earth'?
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
-                          { key: 'A', text: 'A simple dictionary script' },
-                          { key: 'B', text: 'The architectural matrix of shared human consciousness' },
-                          { key: 'C', text: 'A mechanical code for computer terminals' },
-                          { key: 'D', text: 'An optional historical translation custom' }
+                          { key: 'A', text: 'It has many rivers.' },
+                          { key: 'B', text: 'It breathes out oxygen and helps the planet.' },
+                          { key: 'C', text: 'It is very large.' },
+                          { key: 'D', text: 'It has a lot of trees for climbing.' }
                         ].map(opt => (
                           <button
                             key={opt.key}
@@ -350,14 +350,14 @@ export default function AdmissionsExamModal({
                     {/* Q2 */}
                     <div className="space-y-2 pt-1">
                       <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
-                        Q2. What represents the ultimate portals to scholastic excellence at Learnora?
+                        Q2. Which two animals are mentioned as living in the rainforest?
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
-                          { key: 'A', text: 'Passive listening and writing drills' },
-                          { key: 'B', text: 'Memory retention games' },
-                          { key: 'C', text: 'Precision speaking and active vocabulary mastery' },
-                          { key: 'D', text: 'Rote translation and fast typing tests' }
+                          { key: 'A', text: 'Lions and elephants' },
+                          { key: 'B', text: 'Bears and wolves' },
+                          { key: 'C', text: 'Toucans and sloths' },
+                          { key: 'D', text: 'Monkeys and snakes' }
                         ].map(opt => (
                           <button
                             key={opt.key}
@@ -411,7 +411,7 @@ export default function AdmissionsExamModal({
                       Sentence to read aloud into your microphone:
                     </p>
                     <div className="p-6 rounded-3xl bg-slate-100 dark:bg-[#151516] border dark:border-white/5 text-sm font-normal leading-relaxed text-slate-900 dark:text-white text-center select-none shadow-inner">
-                      "Educational excellence empowers global leadership and sparks intellectual breakthroughs. By reciting this aloud, I confirm my commitment to master the English phonetic spectrum under professional mentor advisement."
+                      "I am very excited to join Learnora! Learning new things is fun, and I want to read, write, and speak better every day. I promise to do my best in all my classes."
                     </div>
                   </div>
 
