@@ -366,7 +366,10 @@ function AppContent() {
         }
       }
       
-      setOtpHash(data.hash);
+      setOtpHash(data.hash || "");
+      if (data.developerSandboxOtp) {
+        setSandboxOtp(data.developerSandboxOtp);
+      }
       setEmailVerState('sent');
       setEmailOtpCooldown(60);
       if (data.note) {
