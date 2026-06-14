@@ -313,6 +313,7 @@ function AppContent() {
   const [emailVerState, setEmailVerState] = useState<'idle' | 'sending' | 'sent' | 'verifying'>('idle');
   const [emailOtpCooldown, setEmailOtpCooldown] = useState(0);
   const [otpCode, setOtpCode] = useState('');
+  const [otpHash, setOtpHash] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   useEffect(() => {
@@ -365,6 +366,7 @@ function AppContent() {
         }
       }
       
+      setOtpHash(data.hash);
       setEmailVerState('sent');
       setEmailOtpCooldown(60);
       if (data.note) {
@@ -382,11 +384,21 @@ function AppContent() {
       return;
     }
     
+    // Developer Sandbox Bypass
+    if (sandboxOtp) {
+      if (otpCode === sandboxOtp) {
+        setEmailVerified(true);
+        setFastEmailSuccess("Sandbox Email Verified!");
+        setEmailVerState('idle');
+        return;
+      }
+    }
+    
     try {
       const res = await fetch('/api/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: fastEmail, code: otpCode })
+        body: JSON.stringify({ email: fastEmail, code: otpCode, hash: otpHash })
       });
       const data = await res.json();
       

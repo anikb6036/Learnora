@@ -55,6 +55,7 @@ async function startServer() {
 
     const now = Date.now();
     if (otpStore[email] && (now - otpStore[email].lastSentAt < 60000)) {
+       // Just to prevent spam, memory store is okay for throttle
       return res.status(400).json({ error: "Please wait 60 seconds before requesting a new OTP." });
     }
 
@@ -71,7 +72,7 @@ async function startServer() {
     // Generate a secure 6 digit OTP Code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store code to verify later (valid for 10 minutes)
+    // Store temporarily for throttle
     otpStore[email] = {
       code,
       expiresAt: Date.now() + 10 * 60 * 1000,
@@ -79,36 +80,18 @@ async function startServer() {
       lastSentAt: now
     };
 
-    const fromAddress = 'Learnora Admissions <admissions@learnora.in>';
-    let finalFrom = fromAddress;
-    let fallbackAttempted = false;
+    // Calculate stateless hash
+    const SECRET = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || 'default_secret';
+    import('crypto').then(crypto => {
+      const hash = crypto.createHash('sha256').update(email + code + SECRET).digest('hex');
 
-    try {
-      let resendResult = await resend.emails.send({
-        from: finalFrom,
-        to: [email],
-        subject: 'Learnora Admissions OTP Verification',
-        html: `
-          <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
-            <h2>Learnora Admissions</h2>
-            <p>Your one-time verification code is:</p>
-            <h1 style="font-size: 32px; letter-spacing: 4px; color: #333;">${code}</h1>
-            <p>This code expires in 10 minutes. If you didn't request this, you can ignore this email.</p>
-          </div>
-        `
-      });
+      const fromAddress = 'Learnora Admissions <admissions@learnora.in>';
+      let finalFrom = fromAddress;
+      let fallbackAttempted = false;
 
-      if (resendResult.error && !fallbackAttempted) {
-        const errType = resendResult.error.name?.toLowerCase() || "";
-        const errText = resendResult.error.message?.toLowerCase() || "";
-        const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain") || errText.includes("unauthorized");
-
-        if (isSenderError) {
-          console.warn(`Unverified custom sender domain error: ${resendResult.error.message}. Retrying sending OTP with admissions@learnora.in fallback...`);
-          finalFrom = 'admissions@learnora.in';
-          fallbackAttempted = true;
-
-          resendResult = await resend.emails.send({
+      (async () => {
+        try {
+          let resendResult = await resend.emails.send({
             from: finalFrom,
             to: [email],
             subject: 'Learnora Admissions OTP Verification',
@@ -121,52 +104,77 @@ async function startServer() {
               </div>
             `
           });
+
+          if (resendResult.error && !fallbackAttempted) {
+             console.warn(`Unverified custom sender domain error: ${resendResult.error.message}. Retrying sending OTP...`);
+             finalFrom = 'admissions@learnora.in';
+             
+             resendResult = await resend.emails.send({
+               from: finalFrom,
+               to: [email],
+               subject: 'Learnora Admissions OTP Verification',
+               html: `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;"><h2>Learnora Admissions</h2><p>Your one-time verification code is:</p><h1 style="font-size: 32px; letter-spacing: 4px; color: #333;">${code}</h1></div>`
+             });
+          }
+
+          if (resendResult.error) {
+            console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
+            const friendlyMessage = getFriendlyResendError(resendResult.error, email);
+            return res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code, hash });
+          }
+
+          res.status(200).json({ success: true, message: "OTP sent successfully", hash });
+        } catch (err: any) {
+          console.error("Exception caught in send-otp:", err);
+          const friendlyMessage = getFriendlyResendError(err, email);
+          res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code, hash });
         }
-      }
-
-      if (resendResult.error) {
-        console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
-        const friendlyMessage = getFriendlyResendError(resendResult.error, email);
-        return res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code });
-      }
-
-      res.status(200).json({ success: true, message: "OTP sent successfully" });
-    } catch (err: any) {
-      console.error("Exception caught in send-otp:", err);
-      const friendlyMessage = getFriendlyResendError(err, email);
-      res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code });
-    }
+      })();
+    });
   });
 
-  app.post("/api/verify-otp", (req, res) => {
-    const { email, code } = req.body;
+  app.post("/api/verify-otp", async (req, res) => {
+    const { email, code, hash } = req.body;
     
     if (!email || !code) {
       return res.status(400).json({ error: "Email and code are required." });
     }
 
-    const storedOtp = otpStore[email];
-    if (!storedOtp) {
-      return res.status(400).json({ error: "No OTP found for this email. Please request a new one." });
-    }
-
-    if (Date.now() > storedOtp.expiresAt) {
-      delete otpStore[email];
-      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
-    }
-
-    if (storedOtp.code !== code) {
-      storedOtp.attempts = (storedOtp.attempts || 0) + 1;
-      if (storedOtp.attempts >= 3) {
-        delete otpStore[email];
-        return res.status(400).json({ error: "Maximum attempts reached. please wait 60 seconds and request a new one." });
+    if (hash) {
+       // Stateless verification
+       const SECRET = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || 'default_secret';
+       const crypto = await import('crypto');
+       const validHash = crypto.createHash('sha256').update(email + code + SECRET).digest('hex');
+       if (validHash === hash) {
+          return res.status(200).json({ success: true, message: "Email successfully verified." });
+       } else {
+          return res.status(400).json({ error: "Invalid OTP code." });
+       }
+    } else {
+       // Fallback to memory store if hash not provided (legacy)
+      const storedOtp = otpStore[email];
+      if (!storedOtp) {
+        return res.status(400).json({ error: "No OTP found for this email. Please request a new one." });
       }
-      return res.status(400).json({ error: `Invalid OTP code. ${3 - storedOtp.attempts} attempts remaining.` });
-    }
 
-    // Success! Clear the OTP.
-    delete otpStore[email];
-    res.status(200).json({ success: true, message: "Email successfully verified." });
+      if (Date.now() > storedOtp.expiresAt) {
+        delete otpStore[email];
+        return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+      }
+
+      if (storedOtp.code !== code) {
+        storedOtp.attempts = (storedOtp.attempts || 0) + 1;
+        if (storedOtp.attempts >= 3) {
+          delete otpStore[email];
+          return res.status(400).json({ error: "Maximum attempts reached. please wait 60 seconds and request a new one." });
+        }
+        return res.status(400).json({ error: `Invalid OTP code. ${3 - storedOtp.attempts} attempts remaining.` });
+      }
+
+      // Success! Clear the OTP.
+      delete otpStore[email];
+      res.status(200).json({ success: true, message: "Email successfully verified." });
+    }
   });
 
   app.post("/api/send-email", async (req, res) => {
