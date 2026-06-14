@@ -313,7 +313,7 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* Reading Passage Container */}
-                  <div className="p-5 rounded-2xl bg-amber-550/[0.02] border border-amber-500/10 italic text-xs leading-relaxed text-slate-800 dark:text-gray-200 select-none relative">
+                  <div className="p-5 rounded-2xl bg-amber-550/[0.02] border border-amber-500/10 text-sm font-normal leading-relaxed text-slate-800 dark:text-gray-200 select-none relative">
                     <div className="absolute top-4 left-0 w-1 h-3/4 bg-amber-500 rounded-r" />
                     "Language is not merely a structured system of symbols, but the primary architectural matrix of shared human consciousness. Through syntax and rhythmic expression, individuals formulate the delicate bridges of cross-cultural connectivity. At Learnora, precision speaking and active vocabulary mastery represent the ultimate portals to scholastic excellence."
                   </div>
@@ -322,7 +322,7 @@ export default function AdmissionsExamModal({
                   <div className="space-y-4">
                     {/* Q1 */}
                     <div className="space-y-2">
-                      <p className="text-xs font-bold text-slate-800 dark:text-gray-200">
+                      <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
                         Q1. According to the text, language is described as:
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -349,7 +349,7 @@ export default function AdmissionsExamModal({
 
                     {/* Q2 */}
                     <div className="space-y-2 pt-1">
-                      <p className="text-xs font-bold text-slate-800 dark:text-gray-200">
+                      <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
                         Q2. What represents the ultimate portals to scholastic excellence at Learnora?
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -407,10 +407,10 @@ export default function AdmissionsExamModal({
                   </div>
 
                   <div className="space-y-2 text-center md:px-6">
-                    <p className="text-xs font-bold text-slate-800 dark:text-gray-200">
+                    <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
                       Sentence to read aloud into your microphone:
                     </p>
-                    <div className="p-6 rounded-3xl bg-slate-100 dark:bg-[#151516] border dark:border-white/5 text-sm leading-relaxed text-slate-900 dark:text-white font-serif italic text-center select-none shadow-inner">
+                    <div className="p-6 rounded-3xl bg-slate-100 dark:bg-[#151516] border dark:border-white/5 text-sm font-normal leading-relaxed text-slate-900 dark:text-white text-center select-none shadow-inner">
                       "Educational excellence empowers global leadership and sparks intellectual breakthroughs. By reciting this aloud, I confirm my commitment to master the English phonetic spectrum under professional mentor advisement."
                     </div>
                   </div>
