@@ -19,14 +19,8 @@ export default async function handler(req: any, res: any) {
   const hash = crypto.createHash('sha256').update(email + code + SECRET).digest('hex');
 
   if (!API_KEY) {
-    // Sandbox mode
-    console.warn("RESEND_API_KEY is not configured. Running in sandbox mode.");
-    return res.status(200).json({ 
-      success: true, 
-      message: "Sandbox mode active", 
-      developerSandboxOtp: code, 
-      hash, 
-      note: "Sandbox mode: Please enter the sandbox OTP." 
+    return res.status(500).json({ 
+      error: "RESEND_API_KEY is not configured on Vercel. Please add it to your Environment Variables setting in Vercel to enable real emails." 
     });
   }
 
@@ -74,9 +68,9 @@ export default async function handler(req: any, res: any) {
       console.error("Resend API Error:", resendResult.error);
       let friendlyMessage = resendResult.error.message;
       if (resendResult.error.name?.toLowerCase().includes("validation") || friendlyMessage.includes("verify")) {
-         friendlyMessage = "Resend Sandbox Restriction: You can only send to your verified email or domain. Please configure Resend properly.";
+         friendlyMessage = "Resend Sandbox Restriction: You can only send to your verified email or domain. Please verify your domain in Resend.";
       }
-      return res.status(200).json({ success: true, error: friendlyMessage, developerSandboxOtp: code, hash, note: "Sandbox limit reached. Using sandbox OTP." });
+      return res.status(500).json({ error: friendlyMessage });
     }
 
     res.status(200).json({ success: true, message: "OTP sent successfully", hash });
@@ -84,6 +78,6 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     console.error("OTP send error:", error);
     let friendlyMessage = error.message;
-    return res.status(200).json({ success: true, error: friendlyMessage, developerSandboxOtp: code, hash, note: "Sandbox error. Using sandbox OTP." });
+    return res.status(500).json({ error: friendlyMessage });
   }
 }

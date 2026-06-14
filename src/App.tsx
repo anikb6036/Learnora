@@ -27,7 +27,7 @@ const sendSystemEmail = async (to: string, subject: string, text: string, html?:
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ email: to, subject, text, html })
+      body: JSON.stringify({ to, subject, text, html })
     });
     const data = await res.json();
     if (!res.ok) {

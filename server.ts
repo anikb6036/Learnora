@@ -78,14 +78,8 @@ async function startServer() {
       const hash = crypto.createHash('sha256').update(email + code + SECRET).digest('hex');
 
       if (!API_KEY) {
-        // Allow testing without API key by returning the sandbox code
-        console.warn("RESEND_API_KEY is not configured. Running in sandbox mode.");
-        return res.status(200).json({ 
-          success: true, 
-          message: "Sandbox mode active", 
-          developerSandboxOtp: code, 
-          hash, 
-          note: "Sandbox mode: Please enter the sandbox OTP." 
+        return res.status(500).json({ 
+          error: "RESEND_API_KEY is not configured. Please add it in your AI Studio settings (Secrets panel)." 
         });
       }
 
@@ -125,14 +119,14 @@ async function startServer() {
           if (resendResult.error) {
             console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
             const friendlyMessage = getFriendlyResendError(resendResult.error, email);
-            return res.status(200).json({ success: true, error: friendlyMessage, developerSandboxOtp: code, hash, note: "Sandbox limit reached. Using sandbox OTP." });
+            return res.status(500).json({ error: friendlyMessage });
           }
 
           res.status(200).json({ success: true, message: "OTP sent successfully", hash });
         } catch (err: any) {
           console.error("Exception caught in send-otp:", err);
           const friendlyMessage = getFriendlyResendError(err, email);
-          res.status(200).json({ success: true, error: friendlyMessage, developerSandboxOtp: code, hash, note: "Sandbox error. Using sandbox OTP." });
+          res.status(500).json({ error: friendlyMessage });
         }
       })();
     });
@@ -183,16 +177,17 @@ async function startServer() {
   });
 
   app.post("/api/send-email", async (req, res) => {
-    const { email, subject, text, html } = req.body;
+    const { to, subject, text, html } = req.body;
     
-    if (!email || !subject || (!text && !html)) {
-      return res.status(400).json({ error: "Email, subject, and body (text or html) are required." });
+    if (!to || !subject || (!text && !html)) {
+      return res.status(400).json({ error: "missing recipient(to), subject, and body (text or html)." });
     }
+
+    const email = to; // for backwards compat in logging
 
     const API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
     if (!API_KEY) {
-      console.warn("RESEND_API_KEY is not configured. Simulating email send for sandbox.");
-      return res.status(200).json({ success: true, message: "Sandbox mode: Email simulated." });
+      return res.status(500).json({ success: false, error: "RESEND_API_KEY is not configured on Vercel." });
     }
 
     const resend = new Resend(API_KEY);
@@ -204,7 +199,7 @@ async function startServer() {
     try {
       let resendResult = await resend.emails.send({
         from: finalFrom,
-        to: [email],
+        to: Array.isArray(email) ? email : [email],
         subject: subject,
         text: text,
         html: html
@@ -222,7 +217,7 @@ async function startServer() {
 
           resendResult = await resend.emails.send({
             from: finalFrom,
-            to: [email],
+            to: Array.isArray(email) ? email : [email],
             subject: subject,
             text: text,
             html: html
@@ -233,14 +228,15 @@ async function startServer() {
       if (resendResult.error) {
          console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
          const friendlyMessage = getFriendlyResendError(resendResult.error, email);
-         return res.status(200).json({ success: true, error: friendlyMessage, message: "Sandbox simulated send." });
+         return res.status(500).json({ error: friendlyMessage });
       }
 
       res.status(200).json({ success: true, message: "Email dispatched successfully" });
+
     } catch (err: any) {
        console.error("Failed to send email:", err);
        const friendlyMessage = getFriendlyResendError(err, email);
-       res.status(200).json({ success: true, error: friendlyMessage, message: "Sandbox simulated send." });
+       res.status(500).json({ error: friendlyMessage });
     }
   });
 
