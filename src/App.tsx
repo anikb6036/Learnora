@@ -1866,6 +1866,7 @@ function AppContent() {
 
       {!currentUser ? (
         showPortal ? (
+
           /* Dynamic Role-Based Sandbox Access & Create Account Page */
           <div className="min-h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 px-4 bg-[#cfd1d4] dark:bg-[#0A0A0B] dark:text-gray-200 animate-fadeIn font-sans z-0">
             {/* Background Blob - Orange/Peach top right */}
@@ -1937,8 +1938,8 @@ function AppContent() {
                       onClick={() => { setOnboardingTab('authLogin'); setLoginError(''); }}
                       className={`py-3 px-3 rounded-xl text-center font-bold text-xs transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
                         onboardingTab === 'authLogin'
-                          ? 'bg-white dark:bg-[#1C1C1E] text-amber-500 dark:text-amber-500 shadow-md border border-slate-100 dark:border-white/5 scale-[1.02]'
-                          : 'text-slate-500 dark:text-gray-400 hover:text-amber-500 hover:bg-slate-50/50 dark:hover:bg-white/5'
+                          ? 'bg-white dark:bg-[#1C1C1E] text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/5 scale-[1.02]'
+                          : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/5'
                       }`}
                     >
                       <Lock className="w-3.5 h-3.5" />
@@ -1949,8 +1950,8 @@ function AppContent() {
                       onClick={() => { setOnboardingTab('adminLogin'); setLoginError(''); }}
                       className={`py-3 px-3 rounded-xl text-center font-bold text-xs transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
                         onboardingTab === 'adminLogin'
-                          ? 'bg-white dark:bg-[#1C1C1E] text-amber-500 dark:text-amber-500 shadow-md border border-slate-100 dark:border-white/5 scale-[1.02]'
-                          : 'text-slate-500 dark:text-gray-400 hover:text-amber-500 hover:bg-slate-50/50 dark:hover:bg-white/5'
+                          ? 'bg-white dark:bg-[#1C1C1E] text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/5 scale-[1.02]'
+                          : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/5'
                       }`}
                     >
                       <Shield className="w-3.5 h-3.5" />
@@ -1963,9 +1964,9 @@ function AppContent() {
               {onboardingTab === 'fastReg' && (
                 <div className="space-y-5 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <div>
-                      <h3 className="text-xl font-serif italic text-amber-500 font-bold tracking-tight">Student Admission Portal</h3>
-                      <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    <div className="mb-6">
+                      <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Student Admission Portal</h3>
+                      <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
                         Register to enter our coaching workflow. Administrators dynamically review queue requests, issue verified account records upon acceptance, and securely dispatch login details to your inbox.
                       </p>
                     </div>
@@ -2070,7 +2071,7 @@ function AppContent() {
                                     />
                                     <label
                                       htmlFor="fast-student-avatar-upload"
-                                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 text-amber-950 text-xs font-extrabold rounded-xl border border-amber-500/20 hover:bg-amber-600 transition shadow-sm cursor-pointer"
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-[#111112] hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-black font-bold text-xs rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                                     >
                                       <Upload className="w-3.5 h-3.5" />
                                       {fastAvatarUrl ? 'Change Avatar Asset' : 'Upload Student Photo'}
@@ -2477,7 +2478,7 @@ function AppContent() {
                               <button
                                 type="submit"
                                 disabled={!emailVerified}
-                                className={`px-6 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-150 shadow-md flex items-center gap-1.5 font-sans ml-auto ${emailVerified ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-950 active:scale-95 shadow-amber-500/10 cursor-pointer' : 'bg-slate-200 dark:bg-[#1C1C1F] text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
+                                className={`px-6 py-3.5 rounded-xl text-xs font-bold transition-all duration-150 shadow-md flex items-center justify-center w-full sm:w-auto gap-2 ml-auto ${emailVerified ? 'bg-[#111112] hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-black active:scale-[0.98] cursor-pointer' : 'bg-slate-200 dark:bg-[#1C1C1F] text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
                               >
                                 <Sparkles className="w-3.5 h-3.5" />
                                 Submit Admission Application
@@ -2506,10 +2507,10 @@ function AppContent() {
               {onboardingTab === 'authLogin' && (
                 <div className="space-y-5 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <div>
-                      <h3 className="text-xl font-serif italic text-amber-500 font-bold tracking-tight">Approved Account Login</h3>
-                      <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
-                        Access your profile, courses, and educational schedules using the verified credentials (USERNAME & PASSWORD) delivered to your registered email address.
+                    <div className="mb-6">
+                      <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Approved Account Login</h3>
+                      <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
+                        Access your profile, courses, and educational schedules using the verified credentials (USERNAME &amp; PASSWORD) delivered to your registered email address.
                       </p>
                     </div>
 
@@ -2522,7 +2523,7 @@ function AppContent() {
 
                     <form onSubmit={handleCredentialsLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Approved Username</label>
+                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Approved Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2533,13 +2534,13 @@ function AppContent() {
                             placeholder="e.g. samantha_wilson_822"
                             value={loginUsername}
                             onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
+                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-2">
                           <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Security Password</label>
                           <button
                             type="button"
@@ -2549,7 +2550,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-[10px] text-amber-500 hover:underline hover:text-amber-600 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-[11px] text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2564,14 +2565,14 @@ function AppContent() {
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
+                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
 
                       <button
                         type="submit"
-                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 font-extrabold rounded-xl text-xs shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/15 transition-all active:scale-98 cursor-pointer mt-3 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 bg-[#111112] hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer mt-4 flex items-center justify-center gap-2"
                       >
                         <Lock className="w-3.5 h-3.5" />
                         Sign In with Credentials &rarr;
@@ -2583,9 +2584,9 @@ function AppContent() {
                       <button
                         type="button"
                         onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); }}
-                        className="text-xs text-slate-500 hover:text-amber-500 transition-colors cursor-pointer font-medium"
+                        className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-medium"
                       >
-                        Need admission? <span className="text-amber-500 hover:underline font-bold">Apply for Learnora admission &rarr;</span>
+                        Need admission? <span className="text-slate-900 dark:text-white hover:underline font-bold">Apply for Learnora admission &rarr;</span>
                       </button>
                     </div>
 
@@ -2597,14 +2598,14 @@ function AppContent() {
               {onboardingTab === 'adminLogin' && (
                 <div className="space-y-5 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="p-0.5 px-2 bg-amber-500/15 border border-amber-500/25 text-amber-500 rounded-lg text-[9px] font-mono font-bold uppercase select-none tracking-wider">
-                          🛡️ RESTRICTED ENTRY
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="p-0.5 px-2 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-gray-300 rounded-md text-[9px] font-sans font-bold uppercase tracking-widest border border-slate-200 dark:border-white/5 shadow-sm">
+                          🛡️ Restricted Entry
                         </span>
                       </div>
-                      <h3 className="text-xl font-serif italic text-amber-500 font-bold tracking-tight">Admin Terminal Sign In</h3>
-                      <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                      <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Administrator Terminal</h3>
+                      <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
                         Access Learnora's administrative panel, review student profiles, dispatch registration emails, and perform full ledger cleanups.
                       </p>
                     </div>
@@ -2618,7 +2619,7 @@ function AppContent() {
 
                     <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Admin Username</label>
+                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Admin Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2629,14 +2630,14 @@ function AppContent() {
                             placeholder="e.g. anik"
                             value={loginUsername}
                             onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
+                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Security Password</label>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Override Password</label>
                           <button
                             type="button"
                             onClick={() => {
@@ -2645,7 +2646,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-[10px] text-amber-500 hover:underline hover:text-amber-600 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-[11px] text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2660,7 +2661,7 @@ function AppContent() {
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
+                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
@@ -2669,7 +2670,7 @@ function AppContent() {
 
                       <button
                         type="submit"
-                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 font-extrabold rounded-xl text-xs shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/15 transition-all active:scale-98 cursor-pointer mt-3 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 bg-[#111112] hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer mt-4 flex items-center justify-center gap-2"
                       >
                         <Shield className="w-3.5 h-3.5" />
                         Acknowledge & Sign In to Console &rarr;
