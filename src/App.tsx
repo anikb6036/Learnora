@@ -3239,7 +3239,7 @@ function AppContent() {
                               {(() => {
                                 const today = new Date();
                                 const endDate = new Date();
-                                endDate.setDate(today.getDate() + 6);
+                                endDate.setDate(today.getDate() + 13);
                                 const startMonth = today.toLocaleString('default', { month: 'short' });
                                 const endMonth = endDate.toLocaleString('default', { month: 'short' });
                                 if (startMonth === endMonth) {
@@ -3250,7 +3250,7 @@ function AppContent() {
                             </div>
 
                             <div className="space-y-3">
-                              {Array.from({ length: 7 }).map((_, i) => {
+                              {Array.from({ length: 14 }).map((_, i) => {
                                 const d = new Date();
                                 d.setDate(d.getDate() + i);
                                 const yyyy = d.getFullYear();
@@ -3324,7 +3324,13 @@ function AppContent() {
                                                 <div className="md:col-span-4 min-w-0 flex items-center justify-between gap-4">
                                                   <div className="min-w-0">
                                                     <p className="font-semibold text-slate-800 dark:text-slate-200 text-[13px] truncate">{cl.title}</p>
-                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{cl.location}</p>
+                                                    {cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google')) ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <a href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-md text-[10.5px] font-bold transition">Join Meeting URL</a>
+                                                      </div>
+                                                    ) : (
+                                                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5"><span className="opacity-75">Location:</span> {cl.location}</p>
+                                                    )}
                                                   </div>
                                                   <div className="text-right shrink-0">
                                                     <div className="text-[13px] font-bold text-slate-900 dark:text-white">{cl.time}</div>
