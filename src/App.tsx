@@ -44,6 +44,7 @@ const sendSystemEmail = async (to: string, subject: string, text: string, html?:
 import NotificationCenter from './components/NotificationCenter';
 import EnrollmentManager from './components/EnrollmentManager';
 import ScheduleManager from './components/ScheduleManager';
+import { CourseDirectory } from './components/CourseDirectory';
 import ProgressTracker from './components/ProgressTracker';
 import ReportingDashboard from './components/ReportingDashboard';
 import CloudBackup from './components/CloudBackup';
@@ -183,7 +184,7 @@ function AppContent() {
                        backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded;
 
   // Navigation tab state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
 
   // Filter option state for course directory categories inside dashboard
   const [dashboardCourseFilter, setDashboardCourseFilter] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
@@ -192,6 +193,7 @@ function AppContent() {
   const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
   const [scheduleShowBatchManager, setScheduleShowBatchManager] = useState(false);
   const [scheduleShowCourseDashboard, setScheduleShowCourseDashboard] = useState(false);
+  const [sharedEditingCourse, setSharedEditingCourse] = useState<Course | null>(null);
 
   // Vercel-style dashboard states
   const [adminDashboardSubTab, setAdminDashboardSubTab] = useState<'deployments' | 'overview' | 'logs' | 'env' | 'domains'>('deployments');
@@ -2998,6 +3000,27 @@ function AppContent() {
                           {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Courses Publish Dashboard</span>}
                         </button>
                       )}
+
+                      {/* First-level: Scheduled Lectures */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('lectures');
+                          setScheduleShowAddForm(false);
+                          setScheduleShowCourseDashboard(false);
+                          setScheduleShowBatchManager(false);
+                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                        }}
+                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                          activeTab === 'lectures'
+                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                        }`}
+                        title={isActuallyCollapsed ? "Scheduled Lectures" : undefined}
+                      >
+                        <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
+                      </button>
                     </>
                   )}
 
@@ -3006,6 +3029,26 @@ function AppContent() {
                       <p className="text-[11px] font-sans text-slate-500 dark:text-slate-400 mb-0.5">System Categories</p>
                     </div>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('courses-directory');
+                      setScheduleShowAddForm(false);
+                      setScheduleShowCourseDashboard(false);
+                      setScheduleShowBatchManager(false);
+                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                    }}
+                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                      activeTab === 'courses-directory'
+                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                    }`}
+                    title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
+                  >
+                    <BookOpen className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
+                  </button>
 
                   <button
                     type="button"
@@ -3811,6 +3854,45 @@ function AppContent() {
                 setShowBatchManager={setScheduleShowBatchManager}
                 showCourseDashboard={scheduleShowCourseDashboard}
                 setShowCourseDashboard={setScheduleShowCourseDashboard}
+                editingCourse={sharedEditingCourse}
+                setEditingCourse={setSharedEditingCourse}
+              />
+            )}
+
+            {activeTab === 'lectures' && (
+              <ScheduleManager
+                currentUser={currentUser}
+                schedules={schedules}
+                instructors={users.filter(u => u.role === 'instructor')}
+                students={users.filter(u => u.role === 'student')}
+                batches={batches}
+                courses={courses}
+                onAddClass={handleAddClass}
+                onUpdateClass={handleUpdateClass}
+                onUpdateStatus={handleUpdateClassStatus}
+                onSelfEnroll={handleSelfEnroll}
+                onAddBatch={handleAddBatch}
+                onDeleteBatch={handleDeleteBatch}
+                onAddCourse={handleAddCourse}
+                onUpdateCourse={handleUpdateCourse}
+                onDeleteCourse={handleDeleteCourse}
+                showAddForm={false}
+                showBatchManager={false}
+                showCourseDashboard={false}
+              />
+            )}
+
+            {activeTab === 'courses-directory' && (
+              <CourseDirectory
+                currentUser={currentUser}
+                courses={courses}
+                onUpdateCourse={handleUpdateCourse}
+                onDeleteCourse={handleDeleteCourse}
+                onTriggerEdit={(course) => {
+                  setSharedEditingCourse(course);
+                  setScheduleShowCourseDashboard(true);
+                  setActiveTab('schedule');
+                }}
               />
             )}
 

@@ -136,5 +136,12 @@ export interface Course {
   durationWeeks?: string;
   createdDate: string;
   status?: 'completed' | 'ongoing' | 'upcoming';
+  publishDate?: string;
+  durationMonths?: number;
+  roadmap?: {
+    month: number;
+    title: string;
+    description: string;
+  }[];
 }
 

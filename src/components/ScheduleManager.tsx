@@ -30,6 +30,8 @@ interface ScheduleManagerProps {
   setShowBatchManager?: (val: boolean) => void;
   showCourseDashboard?: boolean;
   setShowCourseDashboard?: (val: boolean) => void;
+  editingCourse?: Course | null;
+  setEditingCourse?: (val: Course | null) => void;
 }
 
 const getSubjectIconObj = (subject?: string) => {
@@ -70,6 +72,8 @@ export default function ScheduleManager({
   setShowBatchManager: controlledSetShowBatchManager,
   showCourseDashboard: controlledShowCourseDashboard,
   setShowCourseDashboard: controlledSetShowCourseDashboard,
+  editingCourse: propsEditingCourse,
+  setEditingCourse: propsSetEditingCourse,
 }: ScheduleManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
@@ -110,7 +114,44 @@ export default function ScheduleManager({
   const [newCourseWeeks, setNewCourseWeeks] = useState('');
   const [newCourseDesc, setNewCourseDesc] = useState('');
   const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('ongoing');
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
+  const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
+  const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
+  const editingCourse = propsEditingCourse !== undefined ? propsEditingCourse : internalEditingCourse;
+  const setEditingCourse = propsSetEditingCourse !== undefined ? propsSetEditingCourse : setInternalEditingCourse;
+  const [courseDashboardTab, setCourseDashboardTab] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
+  const [expandedCourseRoadmapId, setExpandedCourseRoadmapId] = useState<string | null>(null);
+
+  // Synchronize roadmap milestones with the durationMonths (represented by newCourseWeeks)
+  React.useEffect(() => {
+    const numMonths = parseInt(newCourseWeeks);
+    if (!isNaN(numMonths) && numMonths > 0 && numMonths <= 36) {
+      setRoadmapDetails(prev => {
+        const updated = Array.from({ length: numMonths }, (_, idx) => {
+          const monthNum = idx + 1;
+          const existing = prev.find(p => p.month === monthNum);
+          if (existing) return existing;
+          
+          let defaultTitle = `Month ${monthNum} Milestone`;
+          let defaultDesc = `Objectives and syllabus for month ${monthNum}.`;
+          
+          if (newCourseName.trim()) {
+            defaultTitle = `Month ${monthNum}: Core ${newCourseName.trim()} Concepts`;
+            defaultDesc = `Advanced modules and practical assignments regarding ${newCourseName.trim()} in month ${monthNum}.`;
+          }
+          
+          return {
+            month: monthNum,
+            title: defaultTitle,
+            description: defaultDesc
+          };
+        });
+        return updated;
+      });
+    } else {
+      setRoadmapDetails([]);
+    }
+  }, [newCourseWeeks, newCourseName]);
 
   // New Class Form State
   const [editingSchedule, setEditingSchedule] = useState<ClassSchedule | null>(null);
@@ -249,6 +290,8 @@ export default function ScheduleManager({
     e.preventDefault();
     if (!newCourseName.trim() || !newCourseCode.trim()) return;
     
+    const parsedDurationMonths = parseInt(newCourseWeeks) || undefined;
+    
     if (editingCourse) {
       if (onUpdateCourse) {
         onUpdateCourse({
@@ -257,7 +300,10 @@ export default function ScheduleManager({
           code: newCourseCode.trim().toUpperCase(),
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
-          status: newCourseStatus
+          status: newCourseStatus,
+          publishDate: newCoursePublishDate,
+          durationMonths: parsedDurationMonths,
+          roadmap: roadmapDetails
         });
       }
       setEditingCourse(null);
@@ -268,7 +314,10 @@ export default function ScheduleManager({
           code: newCourseCode.trim().toUpperCase(),
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
-          status: newCourseStatus
+          status: newCourseStatus,
+          publishDate: newCoursePublishDate,
+          durationMonths: parsedDurationMonths,
+          roadmap: roadmapDetails
         });
       }
     }
@@ -277,6 +326,8 @@ export default function ScheduleManager({
     setNewCourseWeeks('');
     setNewCourseDesc('');
     setNewCourseStatus('ongoing');
+    setNewCoursePublishDate('2026-06-15');
+    setRoadmapDetails([]);
   };
 
   const startEditCourse = (course: Course) => {
@@ -286,6 +337,8 @@ export default function ScheduleManager({
     setNewCourseWeeks(course.durationWeeks || '');
     setNewCourseDesc(course.description || '');
     setNewCourseStatus(course.status || 'ongoing');
+    setNewCoursePublishDate(course.publishDate || course.createdDate || '2026-06-15');
+    setRoadmapDetails(course.roadmap || []);
   };
 
   const cancelEditCourse = () => {
@@ -295,6 +348,8 @@ export default function ScheduleManager({
     setNewCourseWeeks('');
     setNewCourseDesc('');
     setNewCourseStatus('ongoing');
+    setNewCoursePublishDate('2026-06-15');
+    setRoadmapDetails([]);
   };
 
   const filteredSchedules = schedules.filter(cl => {
@@ -341,12 +396,18 @@ export default function ScheduleManager({
         <div className="border-b border-slate-100 dark:border-white/5 pb-4.5 mb-6">
           <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-500" />
-            {currentUser.role === 'student' ? 'Class Schedules' : 'Class Scheduling & Timekeeping'}
+            {showAddForm 
+              ? 'Schedule New Live Class' 
+              : showCourseDashboard 
+                ? 'Courses Publish Dashboard' 
+                : 'Scheduled Lectures & History'}
           </h1>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-            {currentUser.role === 'student' 
-              ? 'View upcoming classes, manage your timetable, and join live sessions.'
-              : 'Set schedules, coordinate instructor workloads, or reserve online/offline study spaces.'}
+            {showAddForm 
+              ? 'Create and launch a new live interactive session, complete with lecturer assignments and target batched classrooms.' 
+              : showCourseDashboard 
+                ? 'Deploy curriculum schedules, register primary courses, and manage the student academy directories.' 
+                : 'Manage class workflows, coordinate instructor sessions, and analyze course progress histories.'}
           </p>
         </div>
 
@@ -372,9 +433,9 @@ export default function ScheduleManager({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="max-w-2xl mx-auto">
                   {/* Course creation form */}
-                  <form onSubmit={handleCourseSubmit} className="space-y-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 p-4 rounded-xl">
+                  <form onSubmit={handleCourseSubmit} className="space-y-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 p-5 rounded-xl shadow-xs">
                     <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                       {editingCourse ? 'Edit Published Course' : 'Publish New Course'}
@@ -404,15 +465,30 @@ export default function ScheduleManager({
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
-                      <input
-                        type="number"
-                        placeholder="e.g. 12"
-                        value={newCourseWeeks}
-                        onChange={e => setNewCourseWeeks(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                      />
+                     <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 5"
+                          min="1"
+                          max="36"
+                          value={newCourseWeeks}
+                          onChange={e => setNewCourseWeeks(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Publish Date</label>
+                        <input
+                          type="date"
+                          required
+                          value={newCoursePublishDate}
+                          onChange={e => setNewCoursePublishDate(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-1">
@@ -439,6 +515,47 @@ export default function ScheduleManager({
                       </select>
                     </div>
 
+                    {roadmapDetails.length > 0 && (
+                      <div className="space-y-3 border-t border-slate-150 dark:border-white/10 pt-3 mt-2 font-sans">
+                        <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                          <GitBranch className="w-3.5 h-3.5" />
+                          <span>{roadmapDetails.length}-Month Interactive Roadmap Options:</span>
+                        </div>
+                        
+                        <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                          {roadmapDetails.map((milestone) => (
+                            <div key={milestone.month} className="p-2.5 bg-slate-100/50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-lg space-y-1.5 shadow-2xs">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-extrabold text-slate-500 dark:text-zinc-400">
+                                  Month {milestone.month} Roadmap Title
+                                </span>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder={`Month ${milestone.month} Target`}
+                                value={milestone.title}
+                                onChange={e => {
+                                  const newVal = e.target.value;
+                                  setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
+                                }}
+                                className="w-full px-2 py-1 text-[11px] border border-slate-250 dark:border-white/5 rounded-md bg-white dark:bg-[#060608] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
+                              />
+                              <textarea
+                                placeholder={`Milestone Description / Objectives`}
+                                rows={1}
+                                value={milestone.description}
+                                onChange={e => {
+                                  const newVal = e.target.value;
+                                  setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
+                                }}
+                                className="w-full px-2 py-1 text-[11px] border border-slate-250 dark:border-white/5 rounded-md bg-white dark:bg-[#060608] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-amber-500/25 resize-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       <button
                         type="submit"
@@ -457,74 +574,6 @@ export default function ScheduleManager({
                       )}
                     </div>
                   </form>
-
-                  {/* List of active courses */}
-                  <div className="lg:col-span-2 space-y-6 max-h-[500px] overflow-y-auto pr-1">
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-350 font-sans mb-2 flex items-center justify-between border-b border-slate-200/50 dark:border-white/10 pb-2">
-                      Registered Faculty Courses ({courses.length})
-                    </h4>
-
-                    {[
-                      { title: 'Current Courses (Ongoing)', data: courses.filter(c => !c.status || c.status === 'ongoing'), badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border-emerald-500/20' },
-                      { title: 'Upcoming Courses', data: courses.filter(c => c.status === 'upcoming'), badgeColor: 'bg-blue-500/10 text-blue-600 dark:text-blue-450 border-blue-500/10' },
-                      { title: 'Completed Courses', data: courses.filter(c => c.status === 'completed'), badgeColor: 'bg-slate-500/10 text-slate-500 dark:text-gray-400 border-slate-500/20' }
-                    ].map(sect => (
-                      <div key={sect.title} className="space-y-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-1.5 h-1.5 rounded-full ${sect.title.includes('Current') ? 'bg-emerald-500' : sect.title.includes('Upcoming') ? 'bg-blue-500' : 'bg-slate-400'}`} />
-                          <h5 className="text-[11px] font-bold text-slate-600 dark:text-slate-400 font-sans select-none">
-                            {sect.title} ({sect.data.length})
-                          </h5>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                          {sect.data.map(c => (
-                            <div key={c.id} className="p-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 rounded-xl flex justify-between items-start gap-4 hover:shadow-xs transition duration-200">
-                              <div className="space-y-1">
-                                <div className="flex flex-wrap gap-1 items-center">
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded font-sans">
-                                    {c.code}
-                                  </span>
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-zinc-300 rounded font-sans">
-                                    {c.durationWeeks ? `${c.durationWeeks} Months` : 'Ongoing'}
-                                  </span>
-                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border font-sans ${sect.badgeColor}`}>
-                                    {c.status || 'ongoing'}
-                                  </span>
-                                </div>
-                                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{c.name}</p>
-                                <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-normal">{c.description || 'No summary overview provided.'}</p>
-                                <p className="text-[9px] text-slate-400 font-sans">Date Published: {c.createdDate}</p>
-                              </div>
-
-                              <div className="flex flex-col gap-1 flex-shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => startEditCourse(c)}
-                                  className="p-1.5 hover:bg-amber-500/10 text-slate-400 hover:text-amber-500 rounded transition cursor-pointer"
-                                  title="Edit Course Details"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setCourseToDelete(c)}
-                                  className="p-1.5 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded transition cursor-pointer"
-                                  title="Decommission Course"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {sect.data.length === 0 && (
-                            <div className="col-span-full py-4 text-center text-[10.5px] text-slate-400 dark:text-slate-500 font-sans border border-dashed border-slate-200/50 dark:border-white/5 rounded-xl">
-                              No active courses in this section.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </motion.div>
@@ -687,8 +736,10 @@ export default function ScheduleManager({
           )}
         </AnimatePresence>
 
-        {/* Sending / Receiving Tab buttons mimicking Resend.com layout */}
-        <div className="flex items-center gap-4 mb-5 border-b border-zinc-100 dark:border-white/5 pb-2.5 font-sans select-none animate-fade-in">
+        {!showAddForm && !showCourseDashboard && (
+          <>
+            {/* Sending / Receiving Tab buttons mimicking Resend.com layout */}
+            <div className="flex items-center gap-4 mb-5 border-b border-zinc-100 dark:border-white/5 pb-2.5 font-sans select-none animate-fade-in">
           <button
             type="button"
             onClick={() => setStatusFilter('scheduled')}
@@ -991,6 +1042,8 @@ export default function ScheduleManager({
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       {courseToDelete && (
