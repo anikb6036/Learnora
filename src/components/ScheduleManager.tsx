@@ -341,10 +341,12 @@ export default function ScheduleManager({
         <div className="border-b border-slate-100 dark:border-white/5 pb-4.5 mb-6">
           <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-500" />
-            Class Scheduling & Timekeeping
+            {currentUser.role === 'student' ? 'Class Schedules' : 'Class Scheduling & Timekeeping'}
           </h1>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-            Set schedules, coordinate instructor workloads, or reserve online/offline study spaces.
+            {currentUser.role === 'student' 
+              ? 'View upcoming classes, manage your timetable, and join live sessions.'
+              : 'Set schedules, coordinate instructor workloads, or reserve online/offline study spaces.'}
           </p>
         </div>
 

@@ -96,6 +96,7 @@ import {
   GitBranch,
   ExternalLink,
   Eye,
+  CheckCircle,
   EyeOff,
   Cpu,
   Layers,
@@ -167,7 +168,7 @@ function AppContent() {
   // Pending admission registration requests state
   const [registrationRequests, setRegistrationRequests, registrationLoaded] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
 
-  const [studentScheduleTab, setStudentScheduleTab] = useState<'schedule'|'tasks'>('schedule');
+  const [studentScheduleTab, setStudentScheduleTab] = useState<'schedule'|'tasks'|'completed'>('schedule');
 
   // Simulated student mailbox communications
   const [simulatedEmails, setSimulatedEmails, emailsLoaded] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
@@ -2944,28 +2945,6 @@ function AppContent() {
                     </>
                   )}
 
-                  {currentUser.role === 'student' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('schedule');
-                        setScheduleShowAddForm(false);
-                        setScheduleShowBatchManager(false);
-                        setScheduleShowCourseDashboard(false);
-                        if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                      }}
-                      className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                        activeTab === 'schedule'
-                          ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                          : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                      }`}
-                      title={isActuallyCollapsed ? "Class Timetable Scheduling" : undefined}
-                    >
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Class Timetable Scheduling</span>}
-                    </button>
-                  )}
-
                   {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
                     <>
                       {/* First-level: Schedule New Live Class */}
@@ -3402,6 +3381,19 @@ function AppContent() {
                             Pending Tasks
                           </span>
                         </button>
+                        <button
+                          onClick={() => setStudentScheduleTab('completed')}
+                          className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
+                            studentScheduleTab === 'completed'
+                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400'
+                              : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-zinc-900 dark:text-slate-400 dark:hover:bg-white/[0.02]'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4" />
+                            Completed Classes
+                          </span>
+                        </button>
                       </div>
 
                       <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#070708] p-4 md:p-6 shadow-sm">
@@ -3547,9 +3539,84 @@ function AppContent() {
                               })}
                             </div>
                           </div>
-                        ) : (
+                        ) : studentScheduleTab === 'tasks' ? (
                           <div className="py-24 text-center">
                             <p className="text-sm text-slate-500 dark:text-slate-400">No pending tasks found</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <div className="text-sm font-medium text-slate-700 dark:text-slate-300 pb-2 border-b border-slate-100 dark:border-white/5 inline-block pr-12">
+                              Past Completed Classes
+                            </div>
+                            <div className="space-y-3">
+                              {(() => {
+                                const completedClasses = schedules.filter(s => {
+                                  if (s.status !== 'completed') return false;
+                                  const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
+                                  const isMyCourse = s.course && currentUser.course && s.course.toLowerCase() === currentUser.course.toLowerCase();
+                                  const isAllCourse = !s.course || s.course === 'All';
+                                  const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+                                  const isMyBatch = s.batch && currentUser.batch && s.batch.toLowerCase() === currentUser.batch.toLowerCase();
+                                  const isAllBatch = !s.batch || s.batch === 'All';
+                                  const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+                                  return matchesCourse && matchesBatch;
+                                });
+
+                                if (completedClasses.length === 0) {
+                                  return (
+                                    <div className="py-24 text-center">
+                                      <p className="text-sm text-slate-500 dark:text-slate-400">No completed classes found</p>
+                                    </div>
+                                  );
+                                }
+
+                                return completedClasses.map(cl => {
+                                  const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
+                                  return (
+                                    <div key={cl.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-5 py-4 bg-white border border-slate-200 rounded-[10px] hover:border-blue-200 transition-colors dark:bg-[#161618] dark:border-white/10 dark:hover:border-blue-500/30 items-center">
+                                      <div className="md:col-span-4 flex items-center gap-3">
+                                        <div className={`w-9 h-9 rounded-lg ${iconBg} border border-zinc-250/30 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+                                          <SubjectIcon className="w-4.5 h-4.5" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <h4 className="font-bold text-slate-900 dark:text-white text-[13.5px] truncate opacity-60 line-through decoration-slate-400" title={cl.title}>
+                                              {cl.title}
+                                            </h4>
+                                            <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
+                                              Done
+                                            </span>
+                                          </div>
+                                          <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                            by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="md:col-span-3">
+                                         <span className="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-tight bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10">
+                                            Completed
+                                          </span>
+                                      </div>
+
+                                      <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
+                                        <div className="min-w-0">
+                                          <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Date & Time</p>
+                                          <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+                                            {cl.date} at {cl.time} ({cl.duration}m)
+                                          </div>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                          <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[10.5px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                            ✓ Completed
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
                           </div>
                         )}
                       </div>
