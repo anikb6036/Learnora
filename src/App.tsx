@@ -3261,7 +3261,21 @@ function AppContent() {
                                 const dayAbbr = d.toLocaleString('default', { weekday: 'short' });
                                 const dayNum = d.getDate();
 
-                                const daySchedules = schedules.filter(s => s.enrolledStudentIds.includes(currentUser.id) && s.date === dateStr);
+                                const daySchedules = schedules.filter(s => {
+                                  if (s.date !== dateStr) return false;
+                                  
+                                  const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
+                                  
+                                  const isMyCourse = s.course && currentUser.course && s.course.toLowerCase() === currentUser.course.toLowerCase();
+                                  const isAllCourse = !s.course || s.course === 'All';
+                                  const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+                                  const isMyBatch = s.batch && currentUser.batch && s.batch.toLowerCase() === currentUser.batch.toLowerCase();
+                                  const isAllBatch = !s.batch || s.batch === 'All';
+                                  const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+                                  return matchesCourse && matchesBatch;
+                                });
 
                                 return (
                                   <div key={dateStr} className="flex flex-col md:flex-row gap-4">

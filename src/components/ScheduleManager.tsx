@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, StudentBatch, Course } from '../types';
-import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ScheduleManagerProps {
@@ -112,7 +112,7 @@ export default function ScheduleManager({
 
   // New Class Form State
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState('Physics');
+  const [subject, setSubject] = useState('General');
   const [instructorId, setInstructorId] = useState('');
   const [date, setDate] = useState('2026-06-01');
   const [time, setTime] = useState('14:00');
@@ -121,6 +121,18 @@ export default function ScheduleManager({
   const [location, setLocation] = useState('');
   const [classBatch, setClassBatch] = useState('All');
   const [classCourse, setClassCourse] = useState('All');
+
+  // Pre-select instructor if current logged in user has the role 'instructor'
+  React.useEffect(() => {
+    if (currentUser && currentUser.role === 'instructor') {
+      const match = instructors.find(i => i.id === currentUser.id || i.email === currentUser.email);
+      if (match) {
+        setInstructorId(match.id);
+      } else if (currentUser.id) {
+        setInstructorId(currentUser.id);
+      }
+    }
+  }, [currentUser, instructors]);
 
   // State for internal delete confirmation
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
@@ -150,7 +162,12 @@ export default function ScheduleManager({
 
     // Reset Form
     setTitle('');
-    setInstructorId('');
+    if (currentUser && currentUser.role === 'instructor') {
+      const match = instructors.find(i => i.id === currentUser.id || i.email === currentUser.email);
+      setInstructorId(match ? match.id : (currentUser.id || ''));
+    } else {
+      setInstructorId('');
+    }
     setLocation('');
     setClassBatch('All');
     setClassCourse('All');
@@ -285,7 +302,7 @@ export default function ScheduleManager({
               <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 space-y-4">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 dark:border-white/5 pb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider font-mono flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2 font-sans">
                       <GraduationCap className="w-4 h-4 text-amber-500" />
                       Dynamic Course Publish Dashboard
                     </h3>
@@ -298,13 +315,13 @@ export default function ScheduleManager({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Course creation form */}
                   <form onSubmit={handleCourseSubmit} className="space-y-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 p-4 rounded-xl">
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                       {editingCourse ? 'Edit Published Course' : 'Publish New Course'}
                     </h4>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Course Name</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Name</label>
                       <input
                         type="text"
                         required
@@ -316,7 +333,7 @@ export default function ScheduleManager({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Course Code</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Code</label>
                       <input
                         type="text"
                         required
@@ -328,7 +345,7 @@ export default function ScheduleManager({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Duration (Months)</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
                       <input
                         type="number"
                         placeholder="e.g. 12"
@@ -339,7 +356,7 @@ export default function ScheduleManager({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Description State</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Description State</label>
                       <input
                         type="text"
                         placeholder="e.g. Entrance preparation"
@@ -350,7 +367,7 @@ export default function ScheduleManager({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Course Academic Status</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Academic Status</label>
                       <select
                         value={newCourseStatus}
                         onChange={e => setNewCourseStatus(e.target.value as any)}
@@ -383,7 +400,7 @@ export default function ScheduleManager({
 
                   {/* List of active courses */}
                   <div className="lg:col-span-2 space-y-6 max-h-[500px] overflow-y-auto pr-1">
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-350 uppercase tracking-widest font-mono mb-2 flex items-center justify-between border-b border-slate-200/50 dark:border-white/10 pb-1 pb-2">
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-350 font-sans mb-2 flex items-center justify-between border-b border-slate-200/50 dark:border-white/10 pb-2">
                       Registered Faculty Courses ({courses.length})
                     </h4>
 
@@ -395,7 +412,7 @@ export default function ScheduleManager({
                       <div key={sect.title} className="space-y-2.5">
                         <div className="flex items-center gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full ${sect.title.includes('Current') ? 'bg-emerald-500' : sect.title.includes('Upcoming') ? 'bg-blue-500' : 'bg-slate-400'}`} />
-                          <h5 className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans select-none">
+                          <h5 className="text-[11px] font-bold text-slate-600 dark:text-slate-400 font-sans select-none">
                             {sect.title} ({sect.data.length})
                           </h5>
                         </div>
@@ -404,19 +421,19 @@ export default function ScheduleManager({
                             <div key={c.id} className="p-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 rounded-xl flex justify-between items-start gap-4 hover:shadow-xs transition duration-200">
                               <div className="space-y-1">
                                 <div className="flex flex-wrap gap-1 items-center">
-                                  <span className="text-[10px] uppercase font-mono font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded">
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded font-sans">
                                     {c.code}
                                   </span>
-                                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-zinc-300 rounded">
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-zinc-300 rounded font-sans">
                                     {c.durationWeeks ? `${c.durationWeeks} Months` : 'Ongoing'}
                                   </span>
-                                  <span className={`text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 rounded border ${sect.badgeColor}`}>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border font-sans ${sect.badgeColor}`}>
                                     {c.status || 'ongoing'}
                                   </span>
                                 </div>
                                 <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{c.name}</p>
                                 <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-normal">{c.description || 'No summary overview provided.'}</p>
-                                <p className="text-[9px] text-slate-400 font-mono">Date Published: {c.createdDate}</p>
+                                <p className="text-[9px] text-slate-400 font-sans">Date Published: {c.createdDate}</p>
                               </div>
 
                               <div className="flex flex-col gap-1 flex-shrink-0">
@@ -440,7 +457,7 @@ export default function ScheduleManager({
                             </div>
                           ))}
                           {sect.data.length === 0 && (
-                            <div className="col-span-full py-4 text-center text-[10.5px] text-slate-400 dark:text-slate-500 font-mono border border-dashed border-slate-200/50 dark:border-white/5 rounded-xl">
+                            <div className="col-span-full py-4 text-center text-[10.5px] text-slate-400 dark:text-slate-500 font-sans border border-dashed border-slate-200/50 dark:border-white/5 rounded-xl">
                               No active courses in this section.
                             </div>
                           )}
@@ -469,8 +486,8 @@ export default function ScheduleManager({
                 onSubmit={handleSubmit}
                 className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
               >
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Session Title</label>
+                <div className="space-y-1.5 md:col-span-3">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Session Title</label>
                   <input
                     type="text"
                     required
@@ -482,22 +499,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Course Domain / Subject</label>
-                  <select
-                    value={subject}
-                    onChange={e => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-white dark:bg-[#0A0A0B] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                  >
-                    <option value="Physics">Physics</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Coding">Coding</option>
-                    <option value="Logic">Logic</option>
-                    <option value="Biology">Biology</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Lecturer / Instructor</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Lecturer / Instructor</label>
                   <select
                     value={instructorId}
                     onChange={e => setInstructorId(e.target.value)}
@@ -515,7 +517,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Date</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Date</label>
                   <input
                     type="date"
                     required
@@ -526,7 +528,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Time</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Time</label>
                   <input
                     type="time"
                     required
@@ -537,7 +539,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Duration (min)</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Duration (min)</label>
                   <input
                     type="number"
                     required
@@ -549,7 +551,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Max Students Capacity</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Max Students Capacity</label>
                   <input
                     type="number"
                     required
@@ -561,7 +563,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Target Student Course</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Target Student Course</label>
                   <select
                     value={classCourse}
                     onChange={e => setClassCourse(e.target.value)}
@@ -575,7 +577,7 @@ export default function ScheduleManager({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-1">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Location (Room or Online link)</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Location (Room or Online link)</label>
                   <input
                     type="text"
                     required
@@ -715,146 +717,168 @@ export default function ScheduleManager({
           </div>
         </div>
 
-        {/* Schedules Grid / List styled like Resend layout */}
-        <div className="space-y-0.5 animate-fade-in font-sans">
-          {/* Table Header Row looking like the Resend.com layout */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center">
-            <div className="col-span-4 md:col-span-3">Lecturer / Subject</div>
-            <div className="col-span-3 md:col-span-2">Status</div>
-            <div className="col-span-5 md:col-span-5">Class Session Details</div>
-            <div className="hidden md:block md:col-span-2 text-right pr-4">Scheduled Time</div>
-          </div>
-
+        {/* Schedules Grid / List styled like Vercel Deployments layout */}
+        <div className="space-y-3 animate-fade-in font-sans">
           {filteredSchedules.length === 0 ? (
-            <div className="p-12 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
+            <div className="p-12 text-center text-xs text-slate-400 font-sans border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
               No active classes found matching the parameters.
             </div>
           ) : (
-            filteredSchedules.map(cl => {
-              const fullCapacity = cl.enrolledStudentIds.length >= cl.maxStudents;
-              const isUserEnrolledVal = isEnrolled(cl);
-              const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
+            <div className="border border-slate-200/60 dark:border-white/5 rounded-xl bg-white dark:bg-[#070708] overflow-hidden divide-y divide-slate-100 dark:divide-white/5 shadow-xs">
+              {filteredSchedules.map(cl => {
+                const fullCapacity = cl.enrolledStudentIds.length >= cl.maxStudents;
+                const isUserEnrolledVal = isEnrolled(cl);
 
-              return (
-                <div
-                  key={cl.id}
-                  className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-zinc-100 dark:border-white/5 hover:bg-slate-50/40 dark:hover:bg-white/[0.01] items-center text-xs group"
-                >
-                  {/* Subject and Lecturer Info */}
-                  <div className="col-span-4 md:col-span-3 flex items-center gap-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-lg ${iconBg} border border-zinc-250/30 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor} shadow-2xs`}>
-                      <SubjectIcon className="w-4 h-4" />
+                return (
+                  <div
+                    key={cl.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-150 text-xs group"
+                  >
+                    {/* Left block: Title, status dot, and tag */}
+                    <div className="flex items-start md:items-center gap-3.5 min-w-0 flex-1 md:mr-6">
+                      {/* Pulse Status Bullet */}
+                      <div className="flex-shrink-0 mt-1 md:mt-0">
+                        {cl.status === 'scheduled' ? (
+                          <div className="flex items-center justify-center">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                          </div>
+                        ) : cl.status === 'completed' ? (
+                          <span className="w-2.5 h-2.5 rounded-full bg-slate-450 dark:bg-zinc-550 block" />
+                        ) : (
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block" />
+                        )}
+                      </div>
+
+                      {/* Title & Status Metadata */}
+                      <div className="min-w-0 flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                        <span className="font-semibold text-slate-850 dark:text-zinc-100 text-[13.5px] truncate max-w-[280px] md:max-w-[360px]" title={cl.title}>
+                          {cl.title}
+                        </span>
+
+                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium whitespace-nowrap bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                          {cl.status === 'scheduled' ? 'Ready' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
+                        </span>
+
+                        {cl.course && cl.course !== 'All' ? (
+                          <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight ${
+                            isUserEnrolledVal
+                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/10'
+                              : 'bg-slate-50 dark:bg-[#0c0c0e] text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-white/10'
+                          }`}>
+                            <span className={`w-1 h-1 rounded-full ${isUserEnrolledVal ? 'bg-blue-500' : 'bg-slate-405'}`} />
+                            {cl.course}
+                            {isUserEnrolledVal && (
+                              <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Enrolled</span>
+                            )}
+                          </div>
+                        ) : isUserEnrolledVal ? (
+                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/10">
+                            <span className="w-1 h-1 rounded-full bg-blue-500" />
+                            Enrolled
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-800 dark:text-slate-150 truncate" title={cl.subject}>
-                        {cl.subject}
-                      </p>
-                      <p className="text-[10px] text-slate-400 dark:text-gray-500 truncate" title={cl.instructorName}>
-                        by {cl.instructorName}
-                      </p>
+
+                    {/* Middle block: Instructor & Location details mapped as Git commit/branch */}
+                    <div className="flex flex-wrap items-center gap-y-1.5 gap-x-5 text-[11px] text-slate-500 dark:text-zinc-400 font-medium md:flex-shrink-0">
+                      <div className="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-zinc-200 transition">
+                        <GitCommit className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-550" />
+                        <span className="font-mono text-[11.5px] text-slate-500 dark:text-zinc-400">{cl.instructorName || 'Unassigned'}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-zinc-200 transition">
+                        <GitBranch className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-555" />
+                        <span className="text-[11px] font-mono">{cl.location}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Status column */}
-                  <div className="col-span-3 md:col-span-2">
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-tight ${
-                      cl.status === 'scheduled'
-                        ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/10'
-                        : cl.status === 'completed'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/10'
-                          : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
-                    }`}>
-                      {cl.status}
-                    </span>
-                    {isUserEnrolledVal && (
-                      <span className="ml-1.5 inline-flex items-center px-1 text-[8.5px] font-extrabold uppercase bg-amber-500 text-amber-950 rounded-sm">
-                        Enrolled
-                      </span>
-                    )}
-                  </div>
+                    {/* Right block: Time relative, Avatars, Actions */}
+                    <div className="flex items-center justify-between md:justify-end gap-4 md:flex-shrink-0">
+                      {/* Date details */}
+                      <div className="text-left md:text-right flex flex-col">
+                        <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300">
+                          {cl.date}
+                        </span>
+                        <span className="text-[10px] text-slate-450 dark:text-zinc-455 font-sans mt-0.5 flex items-center justify-start md:justify-end gap-1">
+                          <Clock className="w-3 h-3" />
+                          {cl.time} ({cl.duration}m)
+                        </span>
+                      </div>
 
-                  {/* Session Detail Information */}
-                  <div className="col-span-5 md:col-span-5 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-slate-850 dark:text-zinc-200 truncate leading-snug" title={cl.title}>
-                        {cl.title}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-mono mt-0.5">
-                        <span className="truncate">{cl.location}</span>
-                        <span>•</span>
-                        <span>{cl.enrolledStudentIds.length}/{cl.maxStudents} cap</span>
-                        {cl.course && cl.course !== 'All' && (
-                          <>
-                            <span>•</span>
-                            <span className="text-amber-500 font-semibold">{cl.course}</span>
-                          </>
+                      {/* Instructor Avatar with letter initials + student counter bubble */}
+                      <div className="flex items-center -space-x-1.5">
+                        <div 
+                          className="w-6.5 h-6.5 rounded-full border border-white dark:border-[#070708] bg-amber-500 text-white flex items-center justify-center font-bold text-[10px] uppercase shadow-xs select-none"
+                          title={`Instructor: ${cl.instructorName}`}
+                        >
+                          {(cl.instructorName || 'U')[0]}
+                        </div>
+                        <div 
+                          className="w-6.5 h-6.5 rounded-full border border-white dark:border-[#070708] bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 flex items-center justify-center text-[10px] font-bold shadow-xs select-none"
+                          title={`${cl.enrolledStudentIds.length} enrolled / max ${cl.maxStudents}`}
+                        >
+                          {cl.enrolledStudentIds.length}
+                        </div>
+                      </div>
+
+                      {/* Vercel-style Actions */}
+                      <div className="flex items-center gap-2">
+                        {cl.status === 'scheduled' && (
+                          <div className="flex items-center gap-2">
+                            {((['admin', 'sub-admin'].includes(currentUser.role)) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId)) ? (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateStatus(cl.id, 'completed');
+                                  }}
+                                  className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10.5px] font-bold transition flex items-center gap-0.5 cursor-pointer font-sans"
+                                  title="Mark completed"
+                                >
+                                  ✓ Done
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateStatus(cl.id, 'cancelled');
+                                  }}
+                                  className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg text-[10.5px] font-bold transition flex items-center gap-0.5 cursor-pointer font-sans"
+                                  title="Cancel session"
+                                >
+                                  ✕ Cancel
+                                </button>
+                              </div>
+                            ) : currentUser.role === 'student' ? (
+                              <button
+                                onClick={(e) => {
+                                  if (isUserEnrolledVal) return;
+                                  e.stopPropagation();
+                                  onSelfEnroll(cl.id);
+                                }}
+                                disabled={isUserEnrolledVal || fullCapacity}
+                                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                  isUserEnrolledVal
+                                    ? 'bg-slate-100 dark:bg-white/5 text-slate-400 cursor-default'
+                                    : fullCapacity
+                                      ? 'bg-slate-150 text-slate-400 cursor-not-allowed dark:bg-white/5'
+                                      : 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95'
+                                }`}
+                              >
+                                {isUserEnrolledVal ? 'Enrolled' : fullCapacity ? 'Full' : 'Join Class'}
+                              </button>
+                            ) : null}
+                          </div>
                         )}
                       </div>
                     </div>
-
-                    {/* Action buttons (revealed on hover for desktop) */}
-                    {cl.status === 'scheduled' && (
-                      <div className="flex items-center gap-1.5 flex-shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
-                        {((['admin', 'sub-admin'].includes(currentUser.role)) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId)) ? (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onUpdateStatus(cl.id, 'completed');
-                              }}
-                              className="px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-450 rounded-md text-[10px] uppercase font-bold transition flex items-center gap-0.5 cursor-pointer"
-                              title="Mark session completed"
-                            >
-                              ✓ Done
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onUpdateStatus(cl.id, 'cancelled');
-                              }}
-                              className="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-455 rounded-md text-[10px] uppercase font-bold transition flex items-center gap-0.5 cursor-pointer"
-                              title="Cancel Session"
-                            >
-                              ✕ Cancel
-                            </button>
-                          </>
-                        ) : currentUser.role === 'student' ? (
-                          <button
-                            onClick={(e) => {
-                              if (isUserEnrolledVal) return;
-                              e.stopPropagation();
-                              onSelfEnroll(cl.id);
-                            }}
-                            disabled={isUserEnrolledVal || fullCapacity}
-                            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                              isUserEnrolledVal
-                                ? 'bg-zinc-100 dark:bg-white/5 text-zinc-400 cursor-default'
-                                : fullCapacity
-                                  ? 'bg-zinc-150 text-slate-400 cursor-not-allowed dark:bg-white/5'
-                                  : 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95'
-                            }`}
-                          >
-                            {isUserEnrolledVal ? 'Enrolled' : fullCapacity ? 'Full' : 'Join Class'}
-                          </button>
-                        ) : null}
-                      </div>
-                    )}
                   </div>
-
-                  {/* Scheduled date as time indicator */}
-                  <div className="hidden md:flex md:col-span-2 items-center justify-end text-right gap-2.5">
-                    <div className="flex flex-col items-end">
-                      <span className="text-[11px] text-slate-705 dark:text-zinc-300 font-medium">
-                        {cl.date}
-                      </span>
-                      <span className="text-[9.5px] text-slate-400 font-mono mt-0.5">
-                        {cl.time} ({cl.duration}m)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
