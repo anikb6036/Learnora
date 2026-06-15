@@ -830,7 +830,9 @@ export default function ScheduleManager({
                             </span>
                           </div>
                         ) : cl.status === 'completed' ? (
-                          <span className="w-2.5 h-2.5 rounded-full bg-slate-450 dark:bg-zinc-550 block" />
+                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-500 dark:bg-blue-500/25 dark:text-blue-400 font-bold text-[10px]">
+                            ✓
+                          </div>
                         ) : (
                           <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block" />
                         )}
@@ -838,11 +840,17 @@ export default function ScheduleManager({
 
                       {/* Title & Status Metadata */}
                       <div className="min-w-0 flex-1 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
-                        <span className="font-bold text-slate-950 dark:text-white text-[14px]" title={cl.title}>
+                        <span className={`font-bold text-slate-950 dark:text-white text-[14px] ${cl.status === 'completed' ? 'opacity-65 line-through decoration-slate-400/55' : ''}`} title={cl.title}>
                           {cl.title}
                         </span>
 
-                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-semibold whitespace-nowrap bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 rounded">
+                        <span className={`text-[11px] font-semibold whitespace-nowrap px-2.5 py-0.5 rounded border ${
+                          cl.status === 'scheduled'
+                            ? 'bg-slate-100 text-slate-500 border-slate-200/60 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5'
+                            : cl.status === 'completed'
+                              ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10'
+                              : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
+                        }`}>
                           {cl.status === 'scheduled' ? 'Ready' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
                         </span>
 

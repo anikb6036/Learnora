@@ -3481,7 +3481,16 @@ function AppContent() {
                                                     <SubjectIcon className="w-4.5 h-4.5" />
                                                   </div>
                                                   <div className="min-w-0 flex-1">
-                                                    <h4 className="font-bold text-slate-900 dark:text-white text-[13.5px] truncate" title={cl.title}>{cl.title}</h4>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                      <h4 className={`font-bold text-slate-900 dark:text-white text-[13.5px] truncate ${cl.status === 'completed' ? 'opacity-60 line-through decoration-slate-400' : ''}`} title={cl.title}>
+                                                        {cl.title}
+                                                      </h4>
+                                                      {cl.status === 'completed' && (
+                                                        <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
+                                                          Done
+                                                        </span>
+                                                      )}
+                                                    </div>
                                                     <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
                                                       by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
                                                     </p>
@@ -3496,7 +3505,7 @@ function AppContent() {
                                                           ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10'
                                                           : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
                                                     }`}>
-                                                      {cl.status}
+                                                      {cl.status === 'scheduled' ? 'Scheduled' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
                                                     </span>
                                                 </div>
 
@@ -3577,14 +3586,14 @@ function AppContent() {
                           </p>
                         </div>
 
-                        {schedules.filter(s => s.instructorId === currentUser.id && s.status === 'scheduled').length === 0 ? (
+                        {schedules.filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed')).length === 0 ? (
                           <div className="p-12 text-center text-xs text-slate-400 font-sans border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-[#fafafa] dark:bg-[#080809]">
-                            No active classes currently assigned to you.
+                            No active or completed classes currently assigned to you.
                           </div>
                         ) : (
                           <div className="border border-slate-200/60 dark:border-white/5 rounded-xl bg-[#fafafa] dark:bg-[#080809] overflow-hidden divide-y divide-slate-100 dark:divide-white/5 shadow-xs">
                             {schedules
-                              .filter(s => s.instructorId === currentUser.id && s.status === 'scheduled')
+                              .filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed'))
                               .map(cl => {
                                 const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
                                 const isLinkLocation = cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google'));
@@ -3601,9 +3610,14 @@ function AppContent() {
                                       </div>
                                       <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                          <span className="font-semibold text-slate-850 dark:text-zinc-150 text-sm leading-snug">
+                                          <span className={`font-semibold text-slate-850 dark:text-zinc-150 text-sm leading-snug ${cl.status === 'completed' ? 'opacity-60 line-through decoration-slate-400' : ''}`}>
                                             {cl.title}
                                           </span>
+                                          {cl.status === 'completed' && (
+                                            <span className="text-[10px] font-bold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/10 dark:text-blue-450 uppercase tracking-tight">
+                                              Completed
+                                            </span>
+                                          )}
                                           {cl.course && cl.course !== 'All' && (
                                             <span className="text-[10px] font-bold text-amber-605 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10 dark:text-amber-400">
                                               {cl.course}
@@ -3620,7 +3634,7 @@ function AppContent() {
                                         </p>
                                       </div>
                                     </div>
-
+ 
                                     {/* Middle: Details (Date & Time) */}
                                     <div className="flex flex-col md:items-end justify-start">
                                       <span className="text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
@@ -3631,10 +3645,14 @@ function AppContent() {
                                         {cl.time} ({cl.duration} mins)
                                       </span>
                                     </div>
-
+ 
                                     {/* Right: Location & Join button */}
                                     <div className="flex items-center gap-3 shrink-0">
-                                      {isLinkLocation ? (
+                                      {cl.status === 'completed' ? (
+                                        <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-lg text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                          ✓ Class Completed
+                                        </div>
+                                      ) : isLinkLocation ? (
                                         <a
                                           href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`}
                                           target="_blank"
