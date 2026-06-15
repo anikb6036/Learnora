@@ -58,22 +58,38 @@
   --shadow-xl: 0 20px 35px -5px rgba(10, 42, 102, 0.1), 0 8px 15px -6px rgba(10, 42, 102, 0.08);
 }
 
-/* Custom scrollbars for a cleaner dark design */
+/* Custom scrollbars for a cleaner design */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0B;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1F1F23;
-  border-radius: 3px;
+  background: #E2E8F0; /* Light mode thumb */
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1F1F23;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #2D2D33;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 

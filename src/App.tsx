@@ -2746,7 +2746,7 @@ function AppContent() {
         )
       ) : (
         /* Core UI Application Shell */
-        <div className="min-h-screen flex flex-col md:flex-row relative z-0 overflow-hidden font-sans bg-white dark:bg-[#070708]">
+        <div className="h-screen flex flex-col md:flex-row relative z-0 overflow-hidden font-sans bg-white dark:bg-[#070708]">
 
           
           {/* Responsive Navigation Rail */}
@@ -2760,7 +2760,7 @@ function AppContent() {
               setIsSidebarHovered(false);
               setIgnoreHover(false);
             }}
-            className={`w-full ${isActuallyCollapsed ? 'md:w-20' : 'md:w-64'} relative z-10 bg-[#fafafa] dark:bg-[#080809] border-b md:border-b-0 md:border-r border-slate-200/50 dark:border-white/5 flex flex-col justify-between p-5 mr-0 transition-all duration-300 ease-in-out select-none`}
+            className={`w-full ${isActuallyCollapsed ? 'md:w-20' : 'md:w-64'} relative z-10 bg-[#fafafa] dark:bg-[#080809] border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 flex flex-col justify-between p-5 mr-0 transition-all duration-300 ease-in-out select-none overflow-y-auto`}
           >
             <div className="space-y-6">
               {/* Header Branding */}
