@@ -812,6 +812,10 @@ export default function ScheduleManager({
               {filteredSchedules.map(cl => {
                 const fullCapacity = cl.enrolledStudentIds.length >= cl.maxStudents;
                 const isUserEnrolledVal = isEnrolled(cl);
+                const classStart = new Date(`${cl.date}T${cl.time}`);
+                const now = new Date();
+                const timeDiffMinutes = (classStart.getTime() - now.getTime()) / (1000 * 60);
+                const isTimeOver = -timeDiffMinutes > Number(cl.duration);
 
                 return (
                   <div
@@ -955,23 +959,25 @@ export default function ScheduleManager({
                                 </button>
                               </div>
                             ) : currentUser.role === 'student' ? (
-                              <button
-                                onClick={(e) => {
-                                  if (isUserEnrolledVal) return;
-                                  e.stopPropagation();
-                                  onSelfEnroll(cl.id);
-                                }}
-                                disabled={isUserEnrolledVal || fullCapacity}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                                  isUserEnrolledVal
-                                    ? 'bg-slate-100 dark:bg-white/5 text-slate-400 cursor-default'
-                                    : fullCapacity
-                                      ? 'bg-slate-150 text-slate-400 cursor-not-allowed dark:bg-white/5'
-                                      : 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95'
-                                }`}
-                              >
-                                {isUserEnrolledVal ? 'Enrolled' : fullCapacity ? 'Full' : 'Join Class'}
-                              </button>
+                              isTimeOver ? null : (
+                                <button
+                                  onClick={(e) => {
+                                    if (isUserEnrolledVal) return;
+                                    e.stopPropagation();
+                                    onSelfEnroll(cl.id);
+                                  }}
+                                  disabled={isUserEnrolledVal || fullCapacity}
+                                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                    isUserEnrolledVal
+                                      ? 'bg-slate-100 dark:bg-white/5 text-slate-400 cursor-default'
+                                      : fullCapacity
+                                        ? 'bg-slate-150 text-slate-400 cursor-not-allowed dark:bg-white/5'
+                                        : 'bg-amber-500 hover:bg-amber-600 text-amber-950 active:scale-95'
+                                  }`}
+                                >
+                                  {isUserEnrolledVal ? 'Enrolled' : fullCapacity ? 'Full' : 'Join Class'}
+                                </button>
+                              )
                             ) : null}
                           </div>
                         )}

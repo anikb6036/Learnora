@@ -3472,7 +3472,8 @@ function AppContent() {
                                             const classStart = new Date(`${cl.date}T${cl.time}`);
                                             const now = new Date();
                                             const timeDiffMinutes = (classStart.getTime() - now.getTime()) / (1000 * 60);
-                                            const isLinkActive = timeDiffMinutes <= 5 && cl.status === 'scheduled';
+                                            const isTimeOver = -timeDiffMinutes > Number(cl.duration);
+                                            const isLinkActive = timeDiffMinutes <= 5 && !isTimeOver && cl.status === 'scheduled';
 
                                             return (
                                               <div key={cl.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-5 py-4 bg-white border border-slate-200 rounded-[10px] hover:border-blue-200 transition-colors dark:bg-[#161618] dark:border-white/10 dark:hover:border-blue-500/30 items-center">
@@ -3512,7 +3513,13 @@ function AppContent() {
                                                 <div className="md:col-span-4 min-w-0 flex items-center justify-between gap-4">
                                                   <div className="min-w-0">
                                                     <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Room / Link</p>
-                                                    {cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google')) ? (
+                                                    {cl.status === 'completed' || isTimeOver ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[10.5px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                                          ✓ Completed
+                                                        </div>
+                                                      </div>
+                                                    ) : cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google')) ? (
                                                       <div className="flex items-center gap-2 mt-1">
                                                         {isLinkActive ? (
                                                           <a href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-md text-[10.5px] font-bold transition">Join Class</a>
@@ -3598,6 +3605,11 @@ function AppContent() {
                                 const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
                                 const isLinkLocation = cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google'));
                                 
+                                const classStart = new Date(`${cl.date}T${cl.time}`);
+                                const now = new Date();
+                                const timeDiffMinutes = (classStart.getTime() - now.getTime()) / (1000 * 60);
+                                const isTimeOver = -timeDiffMinutes > Number(cl.duration);
+
                                 return (
                                   <div
                                     key={cl.id}
@@ -3648,7 +3660,7 @@ function AppContent() {
  
                                     {/* Right: Location & Join button */}
                                     <div className="flex items-center gap-3 shrink-0">
-                                      {cl.status === 'completed' ? (
+                                      {cl.status === 'completed' || isTimeOver ? (
                                         <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-lg text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                           ✓ Class Completed
                                         </div>
