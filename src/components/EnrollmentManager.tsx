@@ -1150,280 +1150,292 @@ export default function EnrollmentManager({
 
         {/* Universal Filter Toolbar */}
         {currentUser.role !== 'student' && (
-          <div className="flex flex-col md:flex-row gap-3.5 mb-5 max-w-4xl font-sans">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-            <input
-              type="text"
-              placeholder={
-                activeListView === 'students'
-                  ? "Search students by name or email ID..."
-                  : activeListView === 'instructors'
-                    ? "Search instructors by name, email, or specialization topic..."
-                    : "Search sub-administrators by name or email..."
-              }
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-xs border border-slate-200 dark:border-white/5 dark:bg-[#0F0F11] rounded-xl text-slate-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            />
-          </div>
-
-          {activeListView === 'students' && (
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5 text-slate-400" />
-                <select
-                  value={selectedInstructorId}
-                  onChange={e => setSelectedInstructorId(e.target.value)}
-                  className="border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2.5 text-xs bg-white dark:bg-[#0F0F11] text-slate-705 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 font-sans"
-                >
-                  <option value="all">Mentor Filter: All</option>
-                  {instructors.map(ins => (
-                    <option key={ins.id} value={ins.id}>
-                      Mentor: {ins.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                <select
-                  value={selectedCourseName}
-                  onChange={e => setSelectedCourseName(e.target.value)}
-                  className="border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2.5 text-xs bg-white dark:bg-[#0F0F11] text-slate-705 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 font-sans"
-                >
-                  <option value="all">Course Filter: All</option>
-                  {courses.map(c => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-6 font-sans">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+              <input
+                type="text"
+                placeholder={
+                  activeListView === 'students'
+                    ? "Search students by name or email ID..."
+                    : activeListView === 'instructors'
+                      ? "Search instructors by name, email, or specialization topic..."
+                      : "Search sub-administrators by name or email..."
+                }
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0f0f12] rounded-lg text-xs text-slate-850 dark:text-gray-150 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500/25 dark:focus:ring-white/20 transition-all shadow-2xs"
+              />
             </div>
-          )}
-        </div>
+
+            {activeListView === 'students' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <select
+                    value={selectedInstructorId}
+                    onChange={e => setSelectedInstructorId(e.target.value)}
+                    className="appearance-none pl-3 pr-8 py-2 block border border-slate-200 dark:border-white/5 rounded-lg text-xs bg-white dark:bg-[#0f0f12] text-slate-600 dark:text-gray-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-500/25 dark:focus:ring-white/20 font-medium transition shadow-2xs"
+                  >
+                    <option value="all">Mentor: All</option>
+                    {instructors.map(ins => (
+                      <option key={ins.id} value={ins.id}>
+                        {ins.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <select
+                    value={selectedCourseName}
+                    onChange={e => setSelectedCourseName(e.target.value)}
+                    className="appearance-none pl-3 pr-8 py-2 block border border-slate-200 dark:border-white/5 rounded-lg text-xs bg-white dark:bg-[#0f0f12] text-slate-600 dark:text-gray-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-500/25 dark:focus:ring-white/20 font-medium transition shadow-2xs"
+                  >
+                    <option value="all">Course: All</option>
+                    {courses.map(c => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {activeListView === 'students' ? (
           <>
+            {/* Table Header Row looking like the Vercel/Resend layout */}
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center font-sans">
+              <div className="col-span-5 md:col-span-4">Student Profile</div>
+              <div className="col-span-3 md:col-span-2">Status</div>
+              <div className="col-span-4 md:col-span-4">Assigned Advisor & Courses</div>
+              <div className="hidden md:block md:col-span-2 text-right pr-4">Registered</div>
+            </div>
 
-            {/* Students Table/Grid */}
-            <div className="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800">
-                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Student Profile</th>
-                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Contact Info</th>
-                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Assigned Advisor</th>
-                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Active Enrollment Courses</th>
-                    {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
-                      <th className="p-4 text-xs font-bold text-slate-550 dark:text-slate-400 text-right">Actions</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                  {filteredStudents.length === 0 ? (
-                    <tr>
-                      <td colSpan={['admin', 'sub-admin', 'instructor'].includes(currentUser.role) ? 5 : 4} className="p-10 text-center text-slate-400 font-mono">
-                        No student registrations found matching filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredStudents.map(student => {
-                      const enrolled = getEnrolledClasses(student.id);
-                      return (
-                        <tr key={student.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-950/5 transition">
-                          <td className="p-4 flex items-center gap-3">
-                            <img
-                              src={student.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                              alt={student.name}
-                              referrerPolicy="no-referrer"
-                              className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-800"
-                            />
-                            <div>
-                              <p className="font-semibold text-slate-900 dark:text-white text-sm">{student.name}</p>
-                              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                <p className="text-[10px] font-mono text-slate-400">ID: {student.id}</p>
-                                {student.course && (
-                                  <span className="text-[9px] font-mono font-bold px-1.5 py-0 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                    {student.course}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="p-4">
-                            <div className="space-y-1.5 text-slate-650 dark:text-slate-400">
-                              <p className="flex items-center gap-1.5">
-                                <Mail className="w-3.5 h-3.5 text-slate-400" />
-                                {student.email}
-                              </p>
-                              {student.phone && (
-                                <p className="flex items-center gap-1.5">
-                                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                                  {student.phone}
-                                </p>
-                              )}
-                              <p className="flex items-center gap-1.5 font-mono text-[10px]">
-                                <Calendar className="w-3 h-3 text-slate-41" /> Registered: {student.joinedDate}
-                              </p>
-
-                              {(student.fatherName || student.address || student.lastQualification || student.gender || student.dob) && (
-                                <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5 space-y-1 text-[10.5px]">
-                                  {student.gender && (
-                                    <p className="text-slate-600 dark:text-gray-400">
-                                      <strong className="text-slate-500">Gender:</strong> {student.gender}
-                                    </p>
-                                  )}
-                                  {student.dob && (
-                                    <p className="text-slate-600 dark:text-gray-400">
-                                      <strong className="text-slate-500">D.O.B:</strong> {student.dob}
-                                    </p>
-                                  )}
-                                  {student.fatherName && (
-                                    <p className="text-slate-600 dark:text-gray-400" title={`Father's phone: ${student.fatherPhone || 'N/A'}`}>
-                                      <strong className="text-slate-500">Father:</strong> {student.fatherName} {student.fatherPhone && `(${student.fatherPhone})`}
-                                    </p>
-                                  )}
-                                  {student.lastQualification && (
-                                    <p className="text-slate-600 dark:text-gray-400 truncate max-w-[220px]" title={student.lastQualification}>
-                                      <strong className="text-slate-500">Qual:</strong> {student.lastQualification}
-                                    </p>
-                                  )}
-                                  {student.address && (
-                                    <p className="text-slate-600 dark:text-gray-400 truncate max-w-[220px]" title={student.address}>
-                                      <strong className="text-slate-500">Addr:</strong> {student.address}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-
-                          <td className="p-4">
-                            <span className="inline-flex items-center gap-1.5 bg-amber-550/10 border border-amber-500/20 text-amber-500 px-2.5 py-1 rounded-full font-bold">
-                              <User className="w-3 h-3" />
-                              {getInstructorName(student.assignedInstructorId)}
+            <div className="space-y-1.5 animate-fade-in font-sans">
+              {filteredStudents.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
+                  No student registrations found matching filters.
+                </div>
+              ) : (
+                filteredStudents.map(student => {
+                  const enrolled = getEnrolledClasses(student.id);
+                  const getRelativeTime = (dateStr?: string) => {
+                    if (!dateStr) return 'about 23 hours ago';
+                    try {
+                      const joined = new Date(dateStr);
+                      const now = new Date('2026-06-15T01:47:11-07:00');
+                      const diffMs = now.getTime() - joined.getTime();
+                      if (isNaN(diffMs)) return 'about 23 hours ago';
+                      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                      if (diffHrs < 24) {
+                        return `about ${diffHrs > 0 ? diffHrs : 5} hours ago`;
+                      }
+                      const diffDays = Math.floor(diffHrs / 24);
+                      if (diffDays < 30) {
+                        return `about ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                      }
+                      const diffMonths = Math.floor(diffDays / 30);
+                      return `about ${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+                    } catch (e) {
+                      return 'about 2 days ago';
+                    }
+                  };
+                  
+                  const joinedRelative = getRelativeTime(student.joinedDate);
+                  
+                  return (
+                    <div
+                      key={student.id}
+                      className="grid grid-cols-12 gap-4 px-4 py-4 border border-slate-200/40 dark:border-white/5 rounded-xl bg-white dark:bg-[#080809] hover:bg-slate-50/40 dark:hover:bg-white/[0.01] transition duration-150 items-center text-xs group shadow-3xs"
+                    >
+                      {/* Name & Avatar */}
+                      <div className="col-span-5 md:col-span-4 flex items-center gap-3.5 min-w-0">
+                        <img
+                          src={student.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                          alt={student.name}
+                          referrerPolicy="no-referrer"
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-250/30 dark:border-white/5 bg-slate-50 dark:bg-zinc-850"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-850 dark:text-zinc-150 text-sm leading-snug truncate" title={student.name}>
+                            {student.name}
+                          </p>
+                          <p className="text-[10.5px] text-slate-400 dark:text-gray-500 truncate font-mono" title={student.email}>
+                            {student.email}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="text-[9.5px] font-mono font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                              ID: {student.id.slice(0, 8)}
                             </span>
-                          </td>
-
-                          <td className="p-4">
-                            <div className="flex flex-wrap gap-1.5 max-w-xs">
-                              {enrolled.map(cl => (
-                                <span
-                                  key={cl.id}
-                                  className="inline-flex items-center gap-1 border border-slate-150 bg-white dark:bg-[#161618] dark:border-white/5 text-slate-700 dark:text-gray-300 px-2 py-0.5 rounded text-[10px] h-fit"
-                                >
-                                  <BookOpen className="w-2.5 h-2.5 text-amber-500" />
-                                  {cl.subject}
-                                </span>
-                              ))}
-                              {currentUser.role !== 'student' && (
-                                <button
-                                  onClick={() => setEnrollmentStudentId(student.id)}
-                                  className="text-[10px] font-bold text-amber-500 hover:underline px-1.5 py-0.5"
-                                >
-                                  + Add class
-                                </button>
-                              )}
-                            </div>
-
-                            {/* Interactive Assign Classes Dropdown popover */}
-                            {enrollmentStudentId === student.id && (
-                              <div className="absolute z-10 mt-2 bg-white dark:bg-[#0F0F11] border border-slate-200 dark:border-white/5 p-3 rounded-xl shadow-lg w-52 max-h-48 overflow-y-auto">
-                                <div className="flex justify-between items-center mb-1 text-[10px] text-slate-400 font-mono border-b dark:border-white/5 pb-1">
-                                  <span>Choose Course:</span>
-                                  <button onClick={() => setEnrollmentStudentId(null)} className="text-rose-500 hover:underline">Close</button>
-                                </div>
-                                {schedules
-                                  .filter(cl => !cl.enrolledStudentIds.includes(student.id))
-                                  .map(cl => (
-                                    <button
-                                      key={cl.id}
-                                      onClick={() => {
-                                        onEnrollStudentInClass(student.id, cl.id);
-                                        setEnrollmentStudentId(null);
-                                      }}
-                                      className="w-full text-left py-1 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10.5px] text-slate-755 dark:text-slate-350 truncate block"
-                                    >
-                                      {cl.subject}: {cl.title}
-                                    </button>
-                                  ))}
-                                {schedules.filter(cl => !cl.enrolledStudentIds.includes(student.id)).length === 0 && (
-                                  <p className="p-1 pt-2 text-[10px] text-slate-400 text-center font-mono">Enrolled in everything</p>
-                                )}
-                              </div>
+                            {student.course && (
+                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/10">
+                                {student.course}
+                              </span>
                             )}
-                          </td>
+                            {student.batch && (
+                              <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 font-bold">
+                                {student.batch}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
 
-                          {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
-                            <td className="p-4 text-right">
-                              {['admin', 'sub-admin'].includes(currentUser.role) && (
-                                <button
-                                  onClick={() => {
-                                    setEditingStudent(student);
-                                    setEditName(student.name || '');
-                                    setEditEmail(student.email || '');
-                                    setEditAssignedInstructorId(student.assignedInstructorId || '');
-                                    setEditFatherName(student.fatherName || '');
-                                    setEditAddress(student.address || '');
-                                    setEditLastQualification(student.lastQualification || '');
-                                    setEditGender(student.gender || '');
-                                    setEditDob(student.dob || '');
-                                    setEditAvatarUrl(student.avatarUrl || '');
-                                    setEditUsername(student.username || '');
-                                    setEditPassword(student.password || '');
-                                    setEditBatch(student.batch || 'Batch A');
-                                    setEditCourse(student.course || '');
-                                    setEditPhoneError('');
-                                    setEditFatherPhoneError('');
-
-                                    if (student.phone) {
-                                      const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.phone?.startsWith(cfg.code));
-                                      setEditPhonePrefix(match ? match.code : '+91');
-                                      setEditPhoneRaw(match ? student.phone.slice(match.code.length) : student.phone);
-                                    } else {
-                                      setEditPhoneRaw('');
-                                      setEditPhonePrefix('+91');
-                                    }
-
-                                    if (student.fatherPhone) {
-                                      const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.fatherPhone?.startsWith(cfg.code));
-                                      setEditFatherPhonePrefix(match ? match.code : '+91');
-                                      setEditFatherPhoneRaw(match ? student.fatherPhone.slice(match.code.length) : student.fatherPhone);
-                                    } else {
-                                      setEditFatherPhoneRaw('');
-                                      setEditFatherPhonePrefix('+91');
-                                    }
-                                  }}
-                                  className="p-1.5 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 text-slate-444 hover:text-amber-500 rounded-lg transition mr-1.5"
-                                  title="Edit Student Details"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => setUserToDelete({ id: student.id, name: student.name, role: 'student' })}
-                                className="p-1.5 hover:bg-rose-50/10 dark:hover:bg-rose-950/20 text-slate-444 hover:text-rose-500 rounded-lg transition cursor-pointer"
-                                title="Remove Student Record"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
+                      {/* Status Column */}
+                      <div className="col-span-3 md:col-span-2">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-100 dark:border-teal-500/10 shadow-3xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                            Registered
+                          </span>
+                          {student.phone ? (
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-full font-mono" title={student.phone}>
+                              <Phone className="w-3" /> {student.phone}
+                            </span>
+                          ) : (
+                            <span className="text-[9px] text-slate-400 dark:text-gray-500 font-mono italic">No phone added</span>
                           )}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+
+                      {/* Advisor & Courses Column */}
+                      <div className="col-span-4 md:col-span-4 min-w-0">
+                        <div className="space-y-1.5">
+                          {/* Advisor name */}
+                          <p className="font-semibold text-slate-700 dark:text-slate-350 flex items-center gap-1.5 truncate">
+                            <GraduationCap className="w-4 h-4 text-amber-500" />
+                            Advisor: <span className="text-slate-900 dark:text-white font-medium">{getInstructorName(student.assignedInstructorId)}</span>
+                          </p>
+                          
+                          {/* Active courses tags */}
+                          <div className="flex flex-wrap gap-1 items-center">
+                            {enrolled.map(cl => (
+                              <span
+                                key={cl.id}
+                                className="inline-flex items-center gap-1.5 border border-slate-200/50 bg-white dark:bg-[#161618] dark:border-white/5 text-slate-705 dark:text-blue-300 px-2 py-0.5 rounded text-[10px] h-fit shadow-2xs"
+                              >
+                                <BookOpen className="w-2.5 h-2.5 text-amber-500" />
+                                {cl.subject}
+                              </span>
+                            ))}
+                            {currentUser.role !== 'student' && (
+                              <button
+                                onClick={() => setEnrollmentStudentId(student.id)}
+                                className="text-[10px] font-bold text-amber-500 hover:underline px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/10 text-amber-600 dark:text-amber-400 cursor-pointer flex items-center gap-0.5 whitespace-nowrap"
+                              >
+                                + Enroll Class
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Interactive Assign Classes Dropdown popover */}
+                        {enrollmentStudentId === student.id && (
+                          <div className="absolute z-50 mt-2 bg-white dark:bg-[#0F0F11] border border-slate-200 dark:border-white/5 p-3 rounded-xl shadow-lg w-52 max-h-48 overflow-y-auto">
+                            <div className="flex justify-between items-center mb-1 text-[10px] text-slate-400 font-mono border-b dark:border-white/5 pb-1">
+                              <span>Choose Course:</span>
+                              <button onClick={() => setEnrollmentStudentId(null)} className="text-rose-500 hover:underline">Close</button>
+                            </div>
+                            {schedules
+                              .filter(cl => !cl.enrolledStudentIds.includes(student.id))
+                              .map(cl => (
+                                <button
+                                  key={cl.id}
+                                  onClick={() => {
+                                    onEnrollStudentInClass(student.id, cl.id);
+                                    setEnrollmentStudentId(null);
+                                  }}
+                                  className="w-full text-left py-1 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10.5px] text-slate-755 dark:text-slate-350 truncate block cursor-pointer"
+                                >
+                                  {cl.subject}: {cl.title}
+                                </button>
+                              ))}
+                            {schedules.filter(cl => !cl.enrolledStudentIds.includes(student.id)).length === 0 && (
+                              <p className="p-1 pt-2 text-[10px] text-slate-400 text-center font-mono">Enrolled in everything</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Registered Date & Actions column */}
+                      <div className="hidden md:flex md:col-span-2 items-center justify-end text-right gap-3">
+                        <span className="text-[10.5px] text-slate-400 font-mono">
+                          {joinedRelative}
+                        </span>
+
+                        {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+                          <div className="flex items-center gap-1 opacity-85 group-hover:opacity-100 transition whitespace-nowrap">
+                            {['admin', 'sub-admin'].includes(currentUser.role) && (
+                              <button
+                                onClick={() => {
+                                  setEditingStudent(student);
+                                  setEditName(student.name || '');
+                                  setEditEmail(student.email || '');
+                                  setEditAssignedInstructorId(student.assignedInstructorId || '');
+                                  setEditFatherName(student.fatherName || '');
+                                  setEditAddress(student.address || '');
+                                  setEditLastQualification(student.lastQualification || '');
+                                  setEditGender(student.gender || '');
+                                  setEditDob(student.dob || '');
+                                  setEditAvatarUrl(student.avatarUrl || '');
+                                  setEditUsername(student.username || '');
+                                  setEditPassword(student.password || '');
+                                  setEditBatch(student.batch || 'Batch A');
+                                  setEditCourse(student.course || '');
+                                  setEditPhoneError('');
+                                  setEditFatherPhoneError('');
+
+                                  if (student.phone) {
+                                    const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.phone?.startsWith(cfg.code));
+                                    setEditPhonePrefix(match ? match.code : '+91');
+                                    setEditPhoneRaw(match ? student.phone.slice(match.code.length) : student.phone);
+                                  } else {
+                                    setEditPhoneRaw('');
+                                    setEditPhonePrefix('+91');
+                                  }
+
+                                  if (student.fatherPhone) {
+                                    const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.fatherPhone?.startsWith(cfg.code));
+                                    setEditFatherPhonePrefix(match ? match.code : '+91');
+                                    setEditFatherPhoneRaw(match ? student.fatherPhone.slice(match.code.length) : student.fatherPhone);
+                                  } else {
+                                    setEditFatherPhoneRaw('');
+                                    setEditFatherPhonePrefix('+91');
+                                  }
+                                }}
+                                className="p-1.5 hover:bg-amber-500/10 text-slate-444 hover:text-amber-500 rounded-lg transition"
+                                title="Edit Student Details"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setUserToDelete({ id: student.id, name: student.name, role: 'student' })}
+                              className="p-1.5 hover:bg-rose-500/10 text-slate-444 hover:text-rose-500 rounded-lg transition cursor-pointer"
+                              title="Remove Student Record"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </>
         ) : activeListView === 'instructors' ? (
-          <div className="space-y-0.5 animate-fade-in">
+          <div className="space-y-1.5 animate-fade-in font-sans">
             {/* Table Header Row looking like the Resend.com layout */}
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center font-sans">
               <div className="col-span-5 md:col-span-4">Instructor</div>
@@ -1465,7 +1477,7 @@ export default function EnrollmentManager({
                 return (
                   <div
                     key={ins.id}
-                    className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-zinc-100 dark:border-white/5 hover:bg-slate-50/40 dark:hover:bg-white/[0.01] items-center text-xs group font-sans"
+                    className="grid grid-cols-12 gap-4 px-4 py-4 border border-slate-200/40 dark:border-white/5 rounded-xl bg-white dark:bg-[#080809] hover:bg-slate-50/40 dark:hover:bg-white/[0.01] transition duration-150 items-center text-xs group shadow-3xs"
                   >
                     {/* TO/Profile Column */}
                     <div className="col-span-5 md:col-span-4 flex items-center gap-3 min-w-0">
@@ -1557,7 +1569,7 @@ export default function EnrollmentManager({
           </div>
         ) : (
           /* Sub-admins list view (Pixel-replica Resend grid layout) */
-          <div className="space-y-0.5 animate-fade-in font-sans">
+          <div className="space-y-1.5 animate-fade-in font-sans">
             {/* Table Header Row looking like the Resend.com layout */}
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center">
               <div className="col-span-5 md:col-span-4">Sub-Admin</div>
@@ -1599,7 +1611,7 @@ export default function EnrollmentManager({
                 return (
                   <div
                     key={sa.id}
-                    className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-zinc-100 dark:border-white/5 hover:bg-slate-50/40 dark:hover:bg-white/[0.01] items-center text-xs group"
+                    className="grid grid-cols-12 gap-4 px-4 py-4 border border-slate-200/40 dark:border-white/5 rounded-xl bg-white dark:bg-[#080809] hover:bg-slate-50/40 dark:hover:bg-white/[0.01] transition duration-150 items-center text-xs group shadow-3xs font-sans"
                   >
                     {/* TO/Profile Column */}
                     <div className="col-span-5 md:col-span-4 flex items-center gap-3 min-w-0">

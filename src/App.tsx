@@ -92,7 +92,17 @@ import {
   ChevronDown,
   Download,
   Code,
-  MoreHorizontal
+  MoreHorizontal,
+  GitBranch,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Cpu,
+  Layers,
+  Globe,
+  RefreshCw,
+  Play,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
@@ -181,6 +191,22 @@ function AppContent() {
   const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
   const [scheduleShowBatchManager, setScheduleShowBatchManager] = useState(false);
   const [scheduleShowCourseDashboard, setScheduleShowCourseDashboard] = useState(false);
+
+  // Vercel-style dashboard states
+  const [adminDashboardSubTab, setAdminDashboardSubTab] = useState<'deployments' | 'overview' | 'logs' | 'env' | 'domains'>('deployments');
+  const [vercelBranchFilter, setVercelBranchFilter] = useState('all');
+  const [vercelAuthorFilter, setVercelAuthorFilter] = useState('all');
+  const [vercelEnvironmentFilter, setVercelEnvironmentFilter] = useState('all');
+  const [vercelDateFilter, setVercelDateFilter] = useState('all');
+  const [vercelStatusFilter, setVercelStatusFilter] = useState('all');
+  const [customDeployments, setCustomDeployments] = useState<any[]>([]);
+  const [isSimulatedBuilding, setIsSimulatedBuilding] = useState(false);
+  const [revealedEnvSecrets, setRevealedEnvSecrets] = useState<Record<string, boolean>>({});
+  const [domainCheckStatus, setDomainCheckStatus] = useState<Record<string, 'idle' | 'checking' | 'active'>>({
+    'learnora.edu': 'active',
+    'learnora-preview.vercel.app': 'active',
+    'learnora-dev.vercel.app': 'active'
+  });
 
   useEffect(() => {
     if (activeTab !== 'schedule') {
@@ -3083,52 +3109,254 @@ function AppContent() {
             
             {/* Active Render Panels Routing based on Tab */}
             {activeTab === 'dashboard' && (
-              <div className="space-y-6 max-w-6xl mx-auto w-full pt-4 font-sans">
-                <div className="mb-8">
-                  <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight">Overview</h1>
-                  <p className="text-sm text-slate-500 dark:text-gray-400 mb-8">Welcome back, {currentUser.name}. Here's what's happening today.</p>
+              <div className="space-y-6 max-w-6xl mx-auto w-full pt-4 font-sans animate-fadeIn">
+                {['admin', 'sub-admin'].includes(currentUser.role) ? (
+                  <div className="space-y-6 max-w-6xl mx-auto w-full pt-2 font-sans">
+                    {/* Vercel Header Breadcrumb */}
+                    <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-[10px] leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
+                            ▲
+                          </div>
+                          <span className="text-sm font-semibold text-slate-500 dark:text-gray-400 font-mono">learnora</span>
+                          <span className="text-slate-300 dark:text-neutral-700">/</span>
+                          <span className="text-sm font-semibold text-slate-950 dark:text-white font-sans flex items-center gap-1.5">
+                            admin-centre
+                            <span className="text-[10px] bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">hobby</span>
+                          </span>
+                        </div>
 
-                  {/* Dashboard summary stats based on current user role */}
-                  {['admin', 'sub-admin'].includes(currentUser.role) && (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                      <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Total Students</p>
-                        <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">{users.filter(u => u.role === 'student').length}</p>
-                        <button onClick={() => setActiveTab('enrollments')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
-                          View students <ChevronRight className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs text-slate-450 dark:text-slate-500 font-mono flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live Ledger Containers Connected
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Greeting Header */}
+                    <div className="py-2">
+                      <h1 className="text-[28px] font-bold text-slate-950 dark:text-white mb-1 tracking-tight">Administrative Overview</h1>
+                      <p className="text-sm text-slate-500 dark:text-gray-400">
+                        Welcome, {currentUser.name}. Track students, study courses pathways, and manage schedules.
+                      </p>
+                    </div>
+
+                    {/* Premium Bento Grid Stats Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Card 1: Total Students */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Total Ledger Students</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {users.filter(u => u.role === 'student').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('enrollments')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          View Student Registry <ChevronRight className="w-3" />
                         </button>
                       </div>
 
-                      <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Instructors</p>
-                        <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">{users.filter(u => u.role === 'instructor').length}</p>
-                        <button onClick={() => setActiveTab('enrollments')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
-                          Manage faculty <ChevronRight className="w-3.5 h-3.5" />
+                      {/* Card 2: Instructors */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Faculty Instructors</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {users.filter(u => u.role === 'instructor').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('enrollments')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Manage Staff <ChevronRight className="w-3" />
                         </button>
                       </div>
 
-                      <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Scheduled Classes</p>
-                        <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">{schedules.filter(s => s.status === 'scheduled').length}</p>
-                        <button onClick={() => setActiveTab('schedule')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
-                          Open calendar <ChevronRight className="w-3.5 h-3.5" />
+                      {/* Card 3: Schedules */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Active Classes Scheduled</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {schedules.filter(s => s.status === 'scheduled').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('schedule')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Open Time Editor <ChevronRight className="w-3" />
                         </button>
                       </div>
 
-                      <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Academic Average</p>
-                        <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">
+                      {/* Card 4: Average Score */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Average Evaluation Grade</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
                           {progressRecords.length > 0 ? (progressRecords.reduce((acc, r) => acc + r.score, 0) / progressRecords.length).toFixed(0) : '0'}%
                         </p>
-                        <button onClick={() => setActiveTab('reports')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
-                          Explore insights <ChevronRight className="w-3.5 h-3.5" />
+                        <button
+                          onClick={() => setActiveTab('reports')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Explore Report Metrics <ChevronRight className="w-3" />
                         </button>
                       </div>
                     </div>
-                  )}
 
-                  {currentUser.role === 'student' && (
-                    <>
+                    {/* Academic Course Categories Section */}
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10 mt-8">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <h2 className="text-lg font-bold text-slate-950 dark:text-white flex items-center gap-2">
+                            <GraduationCap className="w-5 h-5 text-blue-500" />
+                            Academic Programs & Courses Directory
+                          </h2>
+                          <p className="text-xs text-slate-500 dark:text-gray-400">
+                            Structured directory tracking complete, ongoing (current), and impending (upcoming) curriculums.
+                          </p>
+                        </div>
+
+                        {/* Interactive Option Filters */}
+                        <div className="flex flex-wrap items-center gap-1.5 bg-slate-105/85 dark:bg-white/[0.03] p-1 rounded-xl border border-slate-200/40 dark:border-white/5">
+                          {[
+                            { id: 'all', label: 'Show All' },
+                            { id: 'ongoing', label: 'Current' },
+                            { id: 'upcoming', label: 'Upcoming' },
+                            { id: 'completed', label: 'Complete' }
+                          ].map(ctg => (
+                            <button
+                              key={ctg.id}
+                              onClick={() => setDashboardCourseFilter(ctg.id as any)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
+                                dashboardCourseFilter === ctg.id
+                                  ? 'bg-white dark:bg-white/10 text-slate-950 dark:text-white shadow-xs'
+                                  : 'text-slate-500 hover:text-slate-850 dark:hover:text-neutral-200'
+                              }`}
+                            >
+                              {ctg.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Course Directory Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* CURRENT */}
+                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'ongoing') && (
+                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                                <span className="text-xs font-bold text-emerald-650 dark:text-emerald-450 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                  Current Course (Ongoing)
+                                </span>
+                                <span className="text-xs font-semibold px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-mono">
+                                  {courses.filter(c => !c.status || c.status === 'ongoing').length}
+                                </span>
+                              </div>
+                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
+                                {courses.filter(c => !c.status || c.status === 'ongoing').length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic py-4 text-center">No ongoing courses.</p>
+                                ) : (
+                                  courses.filter(c => !c.status || c.status === 'ongoing').map(c => (
+                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-emerald-500/20 transition-all">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-750 dark:text-zinc-350 rounded">
+                                          {c.code}
+                                        </span>
+                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
+                                      {c.description && <p className="text-[10.5px] text-slate-550 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* UPCOMING */}
+                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'upcoming') && (
+                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                                <span className="text-xs font-bold text-blue-650 dark:text-blue-455 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                  Upcoming Course
+                                </span>
+                                <span className="text-xs font-semibold px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full font-mono">
+                                  {courses.filter(c => c.status === 'upcoming').length}
+                                </span>
+                              </div>
+                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
+                                {courses.filter(c => c.status === 'upcoming').length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic py-4 text-center">No upcoming courses planned.</p>
+                                ) : (
+                                  courses.filter(c => c.status === 'upcoming').map(c => (
+                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-blue-500/20 transition-all animate-fadeIn">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-755 dark:text-zinc-350 rounded">
+                                          {c.code}
+                                        </span>
+                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
+                                      {c.description && <p className="text-[10.5px] text-slate-555 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* COMPLETED */}
+                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'completed') && (
+                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                                <span className="text-xs font-bold text-slate-550 dark:text-slate-455 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                                  Complete Course
+                                </span>
+                                <span className="text-xs font-semibold px-2 py-0.5 bg-slate-500/10 text-slate-500 dark:text-slate-400 rounded-full font-mono">
+                                  {courses.filter(c => c.status === 'completed').length}
+                                </span>
+                              </div>
+                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
+                                {courses.filter(c => c.status === 'completed').length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic py-4 text-center">No completed archives yet.</p>
+                                ) : (
+                                  courses.filter(c => c.status === 'completed').map(c => (
+                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-slate-500/25 transition-all">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-755 dark:text-zinc-350 rounded">
+                                          {c.code}
+                                        </span>
+                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
+                                      {c.description && <p className="text-[10.5px] text-slate-555 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-8">
+                      <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight">Overview</h1>
+                      <p className="text-sm text-slate-500 dark:text-gray-400 mb-8">Welcome back, {currentUser.name}. Here's what's happening today.</p>
+                    </div>
+
+                    {currentUser.role === 'student' && (
+                      <>
                     {/* Enrolled Classes List for Student */}
                     <div className="space-y-4 pt-4 font-sans">
                       <div className="flex items-center gap-3 mb-6">
@@ -3416,190 +3644,9 @@ function AppContent() {
                     </>
                   )}
 
-
-
-                  {/* Academic Course Categories Section */}
-                  {['admin', 'sub-admin'].includes(currentUser.role) && (
-                    <div className="space-y-4 pt-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                          <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                          <GraduationCap className="w-5 h-5 text-blue-500" />
-                          Academic Programs & Courses Directory
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">
-                          Structured layout of complete, ongoing (current), and impending (upcoming) course frameworks.
-                        </p>
-                      </div>
-
-                      {/* Interactive Option Filters requested by user */}
-                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-100/80 dark:bg-white/[0.03] p-1 rounded-xl border border-slate-200/40 dark:border-white/5">
-                        <button
-                          type="button"
-                          onClick={() => setDashboardCourseFilter('all')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all duration-200 cursor-pointer ${
-                            dashboardCourseFilter === 'all'
-                              ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                              : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-                          }`}
-                        >
-                          Show All
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDashboardCourseFilter('ongoing')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                            dashboardCourseFilter === 'ongoing'
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-xs ring-1 ring-emerald-500/20'
-                              : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-                          }`}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          Current ({courses.filter(c => !c.status || c.status === 'ongoing').length})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDashboardCourseFilter('upcoming')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                            dashboardCourseFilter === 'upcoming'
-                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 shadow-xs ring-1 ring-blue-500/20'
-                              : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-                          }`}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                          Upcoming ({courses.filter(c => c.status === 'upcoming').length})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDashboardCourseFilter('completed')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                            dashboardCourseFilter === 'completed'
-                              ? 'bg-slate-500/15 text-slate-650 dark:text-zinc-300 shadow-xs ring-1 ring-slate-500/10'
-                              : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white'
-                          }`}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                          Complete ({courses.filter(c => c.status === 'completed').length})
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Ongoing / Current Courses */}
-                      {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'ongoing') && (
-                        <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3' : ''}`}>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Current Course (Ongoing)
-                              </span>
-                              <span className="text-xs font-semibold px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-mono">
-                                {courses.filter(c => !c.status || c.status === 'ongoing').length}
-                              </span>
-                            </div>
-                            <div className={`space-y-2 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                              {courses.filter(c => !c.status || c.status === 'ongoing').length === 0 ? (
-                                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-4 text-center col-span-full">No ongoing courses.</p>
-                              ) : (
-                                courses.filter(c => !c.status || c.status === 'ongoing').map(c => (
-                                  <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-emerald-500/20 transition-all">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-zinc-350 rounded">
-                                        {c.code}
-                                      </span>
-                                      {c.durationWeeks && (
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      )}
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{c.name}</p>
-                                    {c.description && <p className="text-[10.5px] text-slate-500 dark:text-gray-400 font-sans leading-relaxed">{c.description}</p>}
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Upcoming Courses */}
-                      {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'upcoming') && (
-                        <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3' : ''}`}>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                                Upcoming Course
-                              </span>
-                              <span className="text-xs font-semibold px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full font-mono">
-                                {courses.filter(c => c.status === 'upcoming').length}
-                              </span>
-                            </div>
-                            <div className={`space-y-2 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                              {courses.filter(c => c.status === 'upcoming').length === 0 ? (
-                                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-4 text-center col-span-full">No upcoming courses planned.</p>
-                              ) : (
-                                courses.filter(c => c.status === 'upcoming').map(c => (
-                                  <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-blue-500/20 transition-all">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-zinc-350 rounded">
-                                        {c.code}
-                                      </span>
-                                      {c.durationWeeks && (
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      )}
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{c.name}</p>
-                                    {c.description && <p className="text-[10.5px] text-slate-500 dark:text-gray-400 font-sans leading-relaxed">{c.description}</p>}
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Completed Courses */}
-                      {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'completed') && (
-                        <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3' : ''}`}>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-slate-400" />
-                                Complete Course
-                              </span>
-                              <span className="text-xs font-semibold px-2 py-0.5 bg-slate-500/10 text-slate-500 dark:text-slate-400 rounded-full font-mono">
-                                {courses.filter(c => c.status === 'completed').length}
-                              </span>
-                            </div>
-                            <div className={`space-y-2 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                              {courses.filter(c => c.status === 'completed').length === 0 ? (
-                                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-4 text-center col-span-full">No completed archives yet.</p>
-                              ) : (
-                                courses.filter(c => c.status === 'completed').map(c => (
-                                  <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-slate-500/25 transition-all">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-zinc-350 rounded">
-                                        {c.code}
-                                      </span>
-                                      {c.durationWeeks && (
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      )}
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{c.name}</p>
-                                    {c.description && <p className="text-[10.5px] text-slate-500 dark:text-gray-400 font-sans leading-relaxed">{c.description}</p>}
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
                   </div>
                   )}
                 </div>
-              </div>
             )}
 
             {activeTab === 'enrollments' && (
