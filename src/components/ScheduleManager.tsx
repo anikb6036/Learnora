@@ -23,6 +23,7 @@ interface ScheduleManagerProps {
   onAddCourse?: (newCourse: Omit<Course, 'id' | 'createdDate'>) => void;
   onUpdateCourse?: (updatedCourse: Course) => void;
   onDeleteCourse?: (id: string) => void;
+  onUpdateClass?: (updatedClass: ClassSchedule) => void;
   showAddForm?: boolean;
   setShowAddForm?: (val: boolean) => void;
   showBatchManager?: boolean;
@@ -62,6 +63,7 @@ export default function ScheduleManager({
   onAddCourse,
   onUpdateCourse,
   onDeleteCourse,
+  onUpdateClass,
   showAddForm: controlledShowAddForm,
   setShowAddForm: controlledSetShowAddForm,
   showBatchManager: controlledShowBatchManager,
@@ -111,6 +113,7 @@ export default function ScheduleManager({
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   // New Class Form State
+  const [editingSchedule, setEditingSchedule] = useState<ClassSchedule | null>(null);
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('General');
   const [instructorId, setInstructorId] = useState('');
@@ -138,6 +141,39 @@ export default function ScheduleManager({
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [batchToDelete, setBatchToDelete] = useState<StudentBatch | null>(null);
 
+  const startEditSchedule = (sch: ClassSchedule) => {
+    setEditingSchedule(sch);
+    setTitle(sch.title);
+    setSubject(sch.subject || 'General');
+    setInstructorId(sch.instructorId);
+    setDate(sch.date);
+    setTime(sch.time);
+    setDuration(String(sch.duration));
+    setMaxStudents(String(sch.maxStudents));
+    setLocation(sch.location);
+    setClassBatch(sch.batch || 'All');
+    setClassCourse(sch.course || 'All');
+    setShowAddForm(true);
+  };
+
+  const cancelEditSchedule = () => {
+    setEditingSchedule(null);
+    setTitle('');
+    setSubject('General');
+    if (currentUser && currentUser.role === 'instructor') {
+      const match = instructors.find(i => i.id === currentUser.id || i.email === currentUser.email);
+      setInstructorId(match ? match.id : (currentUser.id || ''));
+    } else {
+      setInstructorId('');
+    }
+    setDuration('90');
+    setMaxStudents('10');
+    setLocation('');
+    setClassBatch('All');
+    setClassCourse('All');
+    setShowAddForm(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !instructorId || !location) return;
@@ -145,20 +181,40 @@ export default function ScheduleManager({
     const chosenInstructor = instructors.find(i => i.id === instructorId);
     if (!chosenInstructor) return;
 
-    onAddClass({
-      title,
-      subject,
-      instructorId,
-      instructorName: chosenInstructor.name,
-      date,
-      time,
-      duration: parseInt(duration) || 60,
-      maxStudents: parseInt(maxStudents) || 10,
-      location,
-      status: 'scheduled',
-      batch: classBatch,
-      course: classCourse
-    });
+    if (editingSchedule) {
+      if (onUpdateClass) {
+        onUpdateClass({
+          ...editingSchedule,
+          title,
+          subject,
+          instructorId,
+          instructorName: chosenInstructor.name,
+          date,
+          time,
+          duration: parseInt(duration) || 60,
+          maxStudents: parseInt(maxStudents) || 10,
+          location,
+          batch: classBatch,
+          course: classCourse
+        });
+      }
+      setEditingSchedule(null);
+    } else {
+      onAddClass({
+        title,
+        subject,
+        instructorId,
+        instructorName: chosenInstructor.name,
+        date,
+        time,
+        duration: parseInt(duration) || 60,
+        maxStudents: parseInt(maxStudents) || 10,
+        location,
+        status: 'scheduled',
+        batch: classBatch,
+        course: classCourse
+      });
+    }
 
     // Reset Form
     setTitle('');
@@ -168,6 +224,8 @@ export default function ScheduleManager({
     } else {
       setInstructorId('');
     }
+    setDuration('90');
+    setMaxStudents('10');
     setLocation('');
     setClassBatch('All');
     setClassCourse('All');
@@ -486,6 +544,23 @@ export default function ScheduleManager({
                 onSubmit={handleSubmit}
                 className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
               >
+                {editingSchedule && (
+                  <div className="col-span-full flex items-center justify-between border-b border-slate-200/50 dark:border-white/5 pb-2.5 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                        Editing Scheduled Session: <span className="text-amber-600 dark:text-amber-400 font-mono text-[11.5px]">{editingSchedule.title}</span>
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={cancelEditSchedule}
+                      className="text-[10.5px] font-semibold text-slate-500 hover:text-slate-850 dark:text-zinc-400 dark:hover:text-white transition cursor-pointer"
+                    >
+                      Cancel Edit
+                    </button>
+                  </div>
+                )}
                 <div className="space-y-1.5 md:col-span-3">
                   <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Session Title</label>
                   <input
@@ -588,13 +663,22 @@ export default function ScheduleManager({
                   />
                 </div>
 
-                <div className="md:col-span-2 lg:col-span-2 flex justify-end gap-2.5 pt-2">
+                 <div className="md:col-span-2 lg:col-span-2 flex justify-end gap-2.5 pt-2">
                   <button
                     type="submit"
-                    className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-xs font-bold shadow transition cursor-pointer"
+                    className="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-xs font-bold shadow transition cursor-pointer"
                   >
-                    Publish to Classroom Calendar
+                    {editingSchedule ? 'Save Lecture Changes' : 'Publish to Classroom Calendar'}
                   </button>
+                  {editingSchedule && (
+                    <button
+                      type="button"
+                      onClick={cancelEditSchedule}
+                      className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
                 </div>
               </form>
             </motion.div>
@@ -753,12 +837,12 @@ export default function ScheduleManager({
                       </div>
 
                       {/* Title & Status Metadata */}
-                      <div className="min-w-0 flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                        <span className="font-semibold text-slate-850 dark:text-zinc-100 text-[13.5px] truncate max-w-[280px] md:max-w-[360px]" title={cl.title}>
+                      <div className="min-w-0 flex-1 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
+                        <span className="font-bold text-slate-950 dark:text-white text-[14px]" title={cl.title}>
                           {cl.title}
                         </span>
 
-                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium whitespace-nowrap bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-semibold whitespace-nowrap bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 rounded">
                           {cl.status === 'scheduled' ? 'Ready' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
                         </span>
 
@@ -831,6 +915,16 @@ export default function ScheduleManager({
                           <div className="flex items-center gap-2">
                             {((['admin', 'sub-admin'].includes(currentUser.role)) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId)) ? (
                               <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startEditSchedule(cl);
+                                  }}
+                                  className="px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 cursor-pointer font-sans"
+                                  title="Edit session details"
+                                >
+                                  <Pencil className="w-3 h-3" /> Edit
+                                </button>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();

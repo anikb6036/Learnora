@@ -827,6 +827,22 @@ function AppContent() {
     triggerToast(notif);
   };
 
+  const handleUpdateClass = (updatedClass: ClassSchedule) => {
+    setSchedules(prev => prev.map(cl => cl.id === updatedClass.id ? updatedClass : cl));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Class Schedule Updated',
+      message: `The details for "${updatedClass.title}" have been successfully updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
   const handleAddBatch = (newBatch: Omit<StudentBatch, 'id' | 'createdDate'>) => {
     const batch: StudentBatch = {
       ...newBatch,
@@ -3464,9 +3480,11 @@ function AppContent() {
                                                   <div className={`w-9 h-9 rounded-lg ${iconBg} border border-zinc-250/30 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor}`}>
                                                     <SubjectIcon className="w-4.5 h-4.5" />
                                                   </div>
-                                                  <div className="min-w-0">
-                                                    <p className="font-semibold text-slate-900 dark:text-white truncate">{cl.subject}</p>
-                                                    <p className="text-xs text-slate-500 dark:text-gray-400 truncate">by {cl.instructorName}</p>
+                                                  <div className="min-w-0 flex-1">
+                                                    <h4 className="font-bold text-slate-900 dark:text-white text-[13.5px] truncate" title={cl.title}>{cl.title}</h4>
+                                                    <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                      by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
+                                                    </p>
                                                   </div>
                                                 </div>
                                                 
@@ -3484,7 +3502,7 @@ function AppContent() {
 
                                                 <div className="md:col-span-4 min-w-0 flex items-center justify-between gap-4">
                                                   <div className="min-w-0">
-                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 text-[13px] truncate">{cl.title}</p>
+                                                    <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Room / Link</p>
                                                     {cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google')) ? (
                                                       <div className="flex items-center gap-2 mt-1">
                                                         {isLinkActive ? (
@@ -3682,6 +3700,7 @@ function AppContent() {
                 batches={batches}
                 courses={courses}
                 onAddClass={handleAddClass}
+                onUpdateClass={handleUpdateClass}
                 onUpdateStatus={handleUpdateClassStatus}
                 onSelfEnroll={handleSelfEnroll}
                 onAddBatch={handleAddBatch}
