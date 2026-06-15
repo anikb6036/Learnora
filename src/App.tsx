@@ -217,7 +217,7 @@ function AppContent() {
   }, [activeTab]);
 
   // Security Session Activity Auto-Logout
-  const AUTO_LOGOUT_TIME_MS = 15 * 60 * 1000; // 15 mins of inactivity
+  const AUTO_LOGOUT_TIME_MS = 4 * 60 * 60 * 1000; // 4 hours of inactivity
   const lastActivityRef = useRef<number>(Date.now());
 
   useEffect(() => {
