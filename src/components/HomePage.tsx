@@ -398,13 +398,13 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                               {course.name}
                             </h3>
                             <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-bold font-mono">
+                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-semibold font-sans">
                                 {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
                               </span>
                               {course.batchNumber && (
                                 <>
-                                  <span className="text-slate-300 dark:text-zinc-700 text-xs font-mono">•</span>
-                                  <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 font-bold font-mono px-1.5 py-0.5 rounded inline-flex items-center gap-1">
+                                  <span className="text-slate-300 dark:text-zinc-700 text-xs font-sans">•</span>
+                                  <span className="text-[10.5px] bg-red-500/10 text-red-600 dark:text-red-400 font-semibold font-sans px-2 py-0.5 rounded-md inline-flex items-center gap-1">
                                     Batch: {course.batchNumber}
                                   </span>
                                 </>
@@ -413,7 +413,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                             {(course.publishDate || course.createdDate) && (
                               <div className="mt-2.5 inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
                                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                                <p className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-semibold font-sans">
                                   Starts: {new Date(course.publishDate || course.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </p>
                               </div>

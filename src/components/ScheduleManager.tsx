@@ -324,6 +324,7 @@ export default function ScheduleManager({
   // State for internal delete confirmation
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [batchToDelete, setBatchToDelete] = useState<StudentBatch | null>(null);
+  const [masterToDelete, setMasterToDelete] = useState<MasterCourse | null>(null);
 
   const startEditSchedule = (sch: ClassSchedule) => {
     setEditingSchedule(sch);
@@ -1048,11 +1049,7 @@ export default function ScheduleManager({
                                 {onDeleteMasterCourse && (
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      if (confirm(`Are you sure you want to delete "${master.name}" from Curriculum Bank?`)) {
-                                        onDeleteMasterCourse(master.id);
-                                      }
-                                    }}
+                                    onClick={() => setMasterToDelete(master)}
                                     className="p-1 hover:bg-slate-200 dark:hover:bg-red-500/10 rounded text-rose-500 transition cursor-pointer"
                                     title="Delete from curriculum bank"
                                   >
@@ -1655,6 +1652,38 @@ export default function ScheduleManager({
                 onClick={() => {
                   if (onDeleteBatch) onDeleteBatch(batchToDelete.id);
                   setBatchToDelete(null);
+                }}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition cursor-pointer"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {masterToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-sm bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-sans font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-500" /> Delete Curriculum Template?
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-gray-400 leading-relaxed">
+              Are you sure you want to delete the base course curriculum template for <span className="font-bold text-slate-900 dark:text-white">{masterToDelete.name}</span>? This will remove it from the Curriculum Bank.
+            </p>
+             <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-white/5 font-sans">
+              <button
+                type="button"
+                onClick={() => setMasterToDelete(null)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-body/50 rounded-xl transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteMasterCourse) onDeleteMasterCourse(masterToDelete.id);
+                  setMasterToDelete(null);
                 }}
                 className="px-4 py-2 text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition cursor-pointer"
               >
