@@ -56,6 +56,7 @@ export default function EnrollmentManager({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInstructorId, setSelectedInstructorId] = useState<'all' | string>('all');
   const [selectedCourseName, setSelectedCourseName] = useState<'all' | string>('all');
+  const [selectedBatchName, setSelectedBatchName] = useState<'all' | string>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [addFormType, setAddFormType] = useState<'student' | 'instructor' | 'sub-admin'>('student');
   const [activeListView, setActiveListView] = useState<'students' | 'instructors' | 'sub-admins'>('students');
@@ -281,7 +282,8 @@ export default function EnrollmentManager({
                           student.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesInstructor = selectedInstructorId === 'all' || student.assignedInstructorId === selectedInstructorId;
     const matchesCourse = selectedCourseName === 'all' || student.course === selectedCourseName;
-    return matchesSearch && matchesInstructor && matchesCourse;
+    const matchesBatch = selectedBatchName === 'all' || student.batch === selectedBatchName;
+    return matchesSearch && matchesInstructor && matchesCourse && matchesBatch;
   });
 
   const filteredInstructors = instructors.filter(ins => {
@@ -1064,15 +1066,25 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Enrolled Professional Course</label>
+                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Enrolled Professional Course & Batch</label>
                       <select
-                        value={newCourse}
-                        onChange={e => setNewCourse(e.target.value)}
+                        value={newCourse && newBatch ? `${newCourse}::${newBatch}` : newCourse || ''}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val.includes('::')) {
+                            const [cName, cBatch] = val.split('::');
+                            setNewCourse(cName);
+                            setNewBatch(cBatch);
+                          } else {
+                            setNewCourse(val);
+                            setNewBatch('');
+                          }
+                        }}
                         className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-sans"
                       >
                         <option value="">-- No Enrolled Course/Optional --</option>
-                        {courses.map(c => (
-                          <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
+                        {courses.filter(c => c.status === 'upcoming').map(c => (
+                          <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                         ))}
                       </select>
                     </div>
@@ -1198,6 +1210,24 @@ export default function EnrollmentManager({
                     {courses.map(c => (
                       <option key={c.id} value={c.name}>
                         {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <select
+                    value={selectedBatchName}
+                    onChange={e => setSelectedBatchName(e.target.value)}
+                    className="appearance-none pl-3 pr-8 py-2 block border border-slate-200 dark:border-white/5 rounded-lg text-xs bg-white dark:bg-[#0f0f12] text-slate-600 dark:text-gray-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-500/25 dark:focus:ring-white/20 font-medium transition shadow-2xs"
+                  >
+                    <option value="all">Batch: All</option>
+                    {Array.from(new Set(courses.map(c => c.batchNumber).filter(Boolean))).map(batch => (
+                      <option key={batch} value={batch}>
+                        {batch}
                       </option>
                     ))}
                   </select>
@@ -1959,17 +1989,27 @@ export default function EnrollmentManager({
                     />
                   </div>
 
-                  {/* Enrolled Professional Course */}
+                  {/* Enrolled Professional Course & Batch */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Enrolled Professional Course</label>
+                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Enrolled Professional Course & Batch</label>
                     <select
-                      value={editCourse}
-                      onChange={e => setEditCourse(e.target.value)}
+                      value={editCourse && editBatch ? `${editCourse}::${editBatch}` : editCourse || ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val.includes('::')) {
+                          const [cName, cBatch] = val.split('::');
+                          setEditCourse(cName);
+                          setEditBatch(cBatch);
+                        } else {
+                          setEditCourse(val);
+                          setEditBatch('');
+                        }
+                      }}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-805 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                     >
                       <option value="">-- No Enrolled Course/Optional --</option>
-                      {courses.map(c => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
+                      {courses.filter(c => c.status === 'upcoming').map(c => (
+                        <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                       ))}
                     </select>
                   </div>

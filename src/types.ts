@@ -146,3 +146,17 @@ export interface Course {
   }[];
 }
 
+export interface MasterCourse {
+  id: string;
+  name: string;
+  durationMonths?: number;
+  description?: string;
+  roadmap?: {
+    month: number;
+    title: string;
+    description: string;
+  }[];
+  createdDate: string;
+}
+
+

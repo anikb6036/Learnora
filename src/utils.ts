@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse } from './types';
 
 // Initial seed data for the Coaching Center
 export const INITIAL_USERS: UserAccount[] = [
@@ -146,6 +146,42 @@ export const INITIAL_BATCHES: StudentBatch[] = [
   { id: 'batch-2', name: 'Batch B', description: 'Mid-Day Intensive Group', createdDate: '2024-05-21' },
   { id: 'batch-3', name: 'Batch C', description: 'Evening Fast-Track Group', createdDate: '2024-05-22' },
   { id: 'batch-4', name: 'Batch D', description: 'Weekend Practical Lab Group', createdDate: '2024-05-23' }
+];
+
+export const INITIAL_MASTER_COURSES: MasterCourse[] = [
+  {
+    id: 'master-1',
+    name: 'IIT-JEE Master Preparation',
+    durationMonths: 12,
+    description: 'Advanced Physics, Chemistry & Mathematics Prep',
+    roadmap: [
+      { month: 1, title: 'Mechanics & Stoichiometry', description: 'Core kinematics, Newton laws, mole concept, basic calculus.' },
+      { month: 2, title: 'Calculus & Quadratics', description: 'Limits, continuity, functions, quadratic equations, sequence and series.' },
+      { month: 3, title: 'Electrodynamics & Chemical Bonding', description: 'Electrostatics, Gauss Law, molecular shape, hybridisation, covalent bond.' }
+    ],
+    createdDate: '2024-05-18'
+  },
+  {
+    id: 'master-2',
+    name: 'Medical NEET Crash Course',
+    durationMonths: 6,
+    description: 'Intensive Biology, Organic Chemistry & Physics',
+    roadmap: [
+      { month: 1, title: 'Human Physiology & Mechanics', description: 'Digestion, respiration, motion in straight line, physical chemistry basics.' },
+      { month: 2, title: 'Plant Physiology & Thermodynamics', description: 'Photosynthesis, plant hormones, laws of thermodynamics, equilibrium.' }
+    ],
+    createdDate: '2024-05-19'
+  },
+  {
+    id: 'master-3',
+    name: 'Foundation Olympiad Prep',
+    durationMonths: 9,
+    description: 'Mathematics and Science Basics for Early Olympiad aspirants',
+    roadmap: [
+      { month: 1, title: 'Number Theory Logistics', description: 'Primes, divisibility, Euclid algorithms, basic indices structures.' }
+    ],
+    createdDate: '2024-05-19'
+  }
 ];
 
 export const INITIAL_COURSES: Course[] = [

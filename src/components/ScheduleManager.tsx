@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { UserAccount, ClassSchedule, StudentBatch, Course } from '../types';
+import { UserAccount, ClassSchedule, StudentBatch, Course, MasterCourse } from '../types';
 import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -15,6 +15,7 @@ interface ScheduleManagerProps {
   students: UserAccount[];
   batches?: StudentBatch[];
   courses?: Course[];
+  masterCourses?: MasterCourse[];
   onAddClass: (newClass: Omit<ClassSchedule, 'id' | 'enrolledStudentIds' | 'course'> & { course?: string }) => void;
   onUpdateStatus: (classId: string, status: 'scheduled' | 'completed' | 'cancelled') => void;
   onSelfEnroll: (classId: string) => void;
@@ -23,6 +24,9 @@ interface ScheduleManagerProps {
   onAddCourse?: (newCourse: Omit<Course, 'id' | 'createdDate'>) => void;
   onUpdateCourse?: (updatedCourse: Course) => void;
   onDeleteCourse?: (id: string) => void;
+  onAddMasterCourse?: (newMaster: Omit<MasterCourse, 'id' | 'createdDate'>) => void;
+  onUpdateMasterCourse?: (updatedMaster: MasterCourse) => void;
+  onDeleteMasterCourse?: (id: string) => void;
   onUpdateClass?: (updatedClass: ClassSchedule) => void;
   showAddForm?: boolean;
   setShowAddForm?: (val: boolean) => void;
@@ -57,6 +61,7 @@ export default function ScheduleManager({
   students,
   batches = [],
   courses = [],
+  masterCourses = [],
   onAddClass,
   onUpdateStatus,
   onSelfEnroll,
@@ -65,6 +70,9 @@ export default function ScheduleManager({
   onAddCourse,
   onUpdateCourse,
   onDeleteCourse,
+  onAddMasterCourse,
+  onUpdateMasterCourse,
+  onDeleteMasterCourse,
   onUpdateClass,
   showAddForm: controlledShowAddForm,
   setShowAddForm: controlledSetShowAddForm,
@@ -123,16 +131,70 @@ export default function ScheduleManager({
   const [courseDashboardTab, setCourseDashboardTab] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
   const [expandedCourseRoadmapId, setExpandedCourseRoadmapId] = useState<string | null>(null);
 
+  // Master Course registration form state
+  const [newMasterName, setNewMasterName] = useState('');
+  const [newMasterDuration, setNewMasterDuration] = useState('6');
+  const [newMasterDesc, setNewMasterDesc] = useState('');
+  const [masterRoadmap, setMasterRoadmap] = useState<{ month: number; title: string; description: string }[]>([]);
+  const [selectedMasterRoadmapMonth, setSelectedMasterRoadmapMonth] = useState<number>(1);
+  const [editingMasterCourse, setEditingMasterCourse] = useState<MasterCourse | null>(null);
+
+  // Publish Batch form state
+  const [selectedMasterId, setSelectedMasterId] = useState('');
+  const [customBatchName, setCustomBatchName] = useState('');
+  const [publishBatchDate, setPublishBatchDate] = useState('2026-06-15');
+  const [publishStatus, setPublishStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
+
+  const [courseDashboardSubTab, setCourseDashboardSubTab] = useState<'publish' | 'master'>('publish');
+
+  // Synchronize master roadmap milestones with the durationMonths (represented by newMasterDuration)
+  React.useEffect(() => {
+    const numMonths = parseInt(newMasterDuration);
+    if (!isNaN(numMonths) && numMonths > 0 && numMonths <= 36) {
+      if (selectedMasterRoadmapMonth > numMonths) {
+        setSelectedMasterRoadmapMonth(1);
+      }
+      setMasterRoadmap(prev => {
+        const updated = Array.from({ length: numMonths }, (_, idx) => {
+          const monthNum = idx + 1;
+          const existing = prev.find(p => p.month === monthNum);
+          if (existing) return existing;
+          
+          let defaultTitle = `Month ${monthNum} Milestone`;
+          let defaultDesc = `Objectives and syllabus for month ${monthNum}.`;
+          
+          if (newMasterName.trim()) {
+            defaultTitle = `Month ${monthNum}: Core ${newMasterName.trim()} Concepts`;
+            defaultDesc = `Advanced modules and practical assignments regarding ${newMasterName.trim()} in month ${monthNum}.`;
+          }
+          
+          return {
+            month: monthNum,
+            title: defaultTitle,
+            description: defaultDesc
+          };
+        });
+        return updated;
+      });
+    } else {
+      setMasterRoadmap([]);
+      setSelectedMasterRoadmapMonth(1);
+    }
+  }, [newMasterDuration, newMasterName, selectedMasterRoadmapMonth]);
+
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiInfo, setAiInfo] = useState<string | null>(null);
 
   const handleAiGenerateCourse = async () => {
-    if (!newCourseName.trim()) {
+    const activeName = courseDashboardSubTab === 'master' ? newMasterName : newCourseName;
+    const activeMonths = courseDashboardSubTab === 'master' ? newMasterDuration : newCourseWeeks;
+
+    if (!activeName.trim()) {
       setAiError("Please enter a Course Name first.");
       return;
     }
-    const months = parseInt(newCourseWeeks);
+    const months = parseInt(activeMonths);
     if (isNaN(months) || months < 1 || months > 36) {
       setAiError("Please specify a valid Duration (1-36 Months) first.");
       return;
@@ -149,7 +211,7 @@ export default function ScheduleManager({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          courseName: newCourseName,
+          courseName: activeName,
           durationMonths: months,
         }),
       });
@@ -162,30 +224,34 @@ export default function ScheduleManager({
       } else {
         const textResponse = await response.text();
         console.error("Non-JSON API Response received:", textResponse);
-        throw new Error("Server returned an unexpected non-JSON response (possibly standard router HTML or gateway timeout). Please ensure the backend is fully initialized.");
+        throw new Error("Server returned an unexpected non-JSON response.");
       }
 
       if (!response.ok) {
         throw new Error(data?.error || "Failed to generate AI data.");
       }
-      if (data.description) {
-        setNewCourseDesc(data.description);
-      }
-      if (Array.isArray(data.roadmap)) {
-        // Sort and map values safely
-        const sortedRoadmap = data.roadmap
-          .filter((item: any) => item && typeof item.month === "number")
-          .map((item: any) => ({
-            month: item.month,
-            title: String(item.title || `Month ${item.month} Topic`),
-            description: String(item.description || `Syllabus for Month ${item.month}`)
-          }))
-          .sort((a: any, b: any) => a.month - b.month);
+      
+      const mappedRoadmap = Array.isArray(data.roadmap)
+        ? data.roadmap
+            .filter((item: any) => item && typeof item.month === "number")
+            .map((item: any) => ({
+              month: item.month,
+              title: String(item.title || `Month ${item.month} Topic`),
+              description: String(item.description || `Syllabus for Month ${item.month}`)
+            }))
+            .sort((a: any, b: any) => a.month - b.month)
+        : [];
 
-        setRoadmapDetails(sortedRoadmap);
-        if (sortedRoadmap.length > 0) {
-          setSelectedRoadmapMonth(sortedRoadmap[0].month);
-        }
+      if (courseDashboardSubTab === 'master') {
+        if (data.description) setNewMasterDesc(data.description);
+        setMasterRoadmap(mappedRoadmap);
+        if (mappedRoadmap.length > 0) setSelectedMasterRoadmapMonth(mappedRoadmap[0].month);
+        setAiInfo("Syllabus details generated successfully for Master Course!");
+      } else {
+        if (data.description) setNewCourseDesc(data.description);
+        setRoadmapDetails(mappedRoadmap);
+        if (mappedRoadmap.length > 0) setSelectedRoadmapMonth(mappedRoadmap[0].month);
+        setAiInfo("Syllabus details generated successfully for Published Batch!");
       }
     } catch (err: any) {
       console.error("AI Generation Error:", err);
@@ -436,6 +502,89 @@ export default function ScheduleManager({
     setSelectedRoadmapMonth(1);
   };
 
+  const handleMasterCourseFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMasterName.trim()) return;
+
+    if (editingMasterCourse) {
+      if (onUpdateMasterCourse) {
+        onUpdateMasterCourse({
+          ...editingMasterCourse,
+          name: newMasterName.trim(),
+          durationMonths: parseInt(newMasterDuration) || undefined,
+          description: newMasterDesc.trim() || undefined,
+          roadmap: masterRoadmap
+        });
+      }
+      setEditingMasterCourse(null);
+    } else {
+      if (onAddMasterCourse) {
+        onAddMasterCourse({
+          name: newMasterName.trim(),
+          durationMonths: parseInt(newMasterDuration) || undefined,
+          description: newMasterDesc.trim() || undefined,
+          roadmap: masterRoadmap
+        });
+      }
+    }
+
+    setNewMasterName('');
+    setNewMasterDuration('6');
+    setNewMasterDesc('');
+    setMasterRoadmap([]);
+    setAiInfo("Master course registered successfully!");
+  };
+
+  const startEditMasterCourse = (master: MasterCourse) => {
+    setEditingMasterCourse(master);
+    setNewMasterName(master.name);
+    setNewMasterDuration(String(master.durationMonths || '6'));
+    setNewMasterDesc(master.description || '');
+    setMasterRoadmap(master.roadmap || []);
+    setCourseDashboardSubTab('master');
+  };
+
+  const cancelEditMasterCourse = () => {
+    setEditingMasterCourse(null);
+    setNewMasterName('');
+    setNewMasterDuration('6');
+    setNewMasterDesc('');
+    setMasterRoadmap([]);
+  };
+
+  const handlePublishBatchFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMasterId) return;
+
+    const matchedMaster = masterCourses.find(m => m.id === selectedMasterId);
+    if (!matchedMaster) return;
+
+    const writtenBatch = customBatchName.trim() || `stb_00${courses.length + 1}`;
+    
+    // Create an elegant custom course code from course initials and batch number
+    const initials = matchedMaster.name.split(' ').map(w => w[0]).join('').toUpperCase();
+    const generatedCode = `${initials}-${writtenBatch.toUpperCase()}`;
+
+    if (onAddCourse) {
+      onAddCourse({
+        name: matchedMaster.name,
+        code: generatedCode,
+        batchNumber: writtenBatch,
+        durationWeeks: matchedMaster.durationMonths ? String(matchedMaster.durationMonths * 4) : undefined,
+        durationMonths: matchedMaster.durationMonths,
+        description: matchedMaster.description,
+        status: publishStatus,
+        publishDate: publishBatchDate,
+        roadmap: matchedMaster.roadmap
+      });
+    }
+
+    setSelectedMasterId('');
+    setCustomBatchName('');
+    setPublishStatus('upcoming');
+    setAiInfo(`Successfully published batch "${writtenBatch}" for course "${matchedMaster.name}"!`);
+  };
+
   const filteredSchedules = schedules.filter(cl => {
     const matchesSearch = cl.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           cl.subject.toLowerCase().includes(searchTerm.toLowerCase());
@@ -514,16 +663,17 @@ export default function ScheduleManager({
                     </div>
                     <div>
                       <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-zinc-100 font-sans leading-none mb-1">
-                        Dynamic Course Publish Dashboard
+                        Academy Course & Batch Publisher
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Create, review, or edit academy courses and build customizable learning track roadmaps.
+                        First define the master curriculum template, then publish active or upcoming course batches for student enrollments.
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => {
                       cancelEditCourse();
+                      cancelEditMasterCourse();
                       setShowCourseDashboard(false);
                     }}
                     className="p-1.5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
@@ -534,201 +684,445 @@ export default function ScheduleManager({
                   </button>
                 </div>
 
-                {/* Left/Right Column Layout */}
-                <form onSubmit={handleCourseSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    
-                    {/* Left Column: Core Settings (5 out of 12 columns) */}
-                    <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
-                      <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                        {editingCourse ? 'Core Course Details' : 'Publish New Course'}
-                      </h4>
+                {/* Sub Tab selection between Define Base Course and Publish Batch */}
+                <div className="flex border-b border-slate-200 dark:border-white/5 pb-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCourseDashboardSubTab('master');
+                      cancelEditCourse();
+                    }}
+                    className={`px-5 py-2.5 font-bold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                      courseDashboardSubTab === 'master'
+                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                        : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    1. Define Course Curriculum
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCourseDashboardSubTab('publish');
+                      cancelEditMasterCourse();
+                      // Auto-select first masterCourse if available
+                      if (!selectedMasterId && masterCourses.length > 0) {
+                        setSelectedMasterId(masterCourses[0].id);
+                      }
+                    }}
+                    className={`px-5 py-2.5 font-bold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                      courseDashboardSubTab === 'publish'
+                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                        : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white'
+                    }`}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    2. Publish Batch Classrooms
+                  </button>
+                </div>
 
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Name</label>
-                          <button
-                            type="button"
-                            onClick={handleAiGenerateCourse}
-                            disabled={isAiGenerating}
-                            className={`text-[10px] font-bold flex items-center gap-1 px-2.5 py-0.5 rounded-md border transition-all cursor-pointer ${
-                              isAiGenerating
-                                ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 cursor-not-allowed"
-                                : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-600 dark:text-amber-400 hover:border-amber-500/40 shadow-3xs"
-                            }`}
-                            title="Generate description and interactive roadmap based on Course Name and Duration using Gemini AI"
-                          >
-                            <Sparkles className={`w-2.5 h-2.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
-                            {isAiGenerating ? 'Generating...' : 'Fill with Gemini AI'}
-                          </button>
+                {courseDashboardSubTab === 'master' ? (
+                  /* TAB 1: DEFINE MASTER CURRICULUM */
+                  <form onSubmit={handleMasterCourseFormSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      
+                      {/* Left Column: Core Definition details */}
+                      <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                          {editingMasterCourse ? 'Edit Master Definition' : 'Add New Curriculum Template'}
+                        </h4>
+
+                        <div className="space-y-1.5 font-sans">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Name</label>
+                            <button
+                              type="button"
+                              onClick={handleAiGenerateCourse}
+                              disabled={isAiGenerating}
+                              className={`text-[10px] font-bold flex items-center gap-1 px-2.5 py-0.5 rounded-md border transition-all cursor-pointer ${
+                                isAiGenerating
+                                  ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 cursor-not-allowed"
+                                  : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-600 dark:text-amber-400 hover:border-amber-500/40 shadow-3xs"
+                              }`}
+                              title="Generate description and syllabus milestone roadmap using Gemini"
+                            >
+                              <Sparkles className={`w-2.5 h-2.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
+                              {isAiGenerating ? 'Generating...' : 'Fill with Gemini AI'}
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Mechanical Engineering fundamentals"
+                            value={newMasterName}
+                            onChange={e => setNewMasterName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          />
+                          {aiError && (
+                            <p className="text-[10px] text-red-500 font-semibold font-sans mt-0.5 flex items-center gap-1 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10 animate-shake">
+                              <span>⚠️ {aiError}</span>
+                            </p>
+                          )}
+                          {aiInfo && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold font-sans mt-1 flex items-start gap-1 bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-500/10">
+                              <span>{aiInfo}</span>
+                            </p>
+                          )}
                         </div>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Medical NEET Prep"
-                          value={newCourseName}
-                          onChange={e => setNewCourseName(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
-                        {aiError && (
-                          <p className="text-[10px] text-red-500 font-semibold font-sans mt-0.5 flex items-center gap-1 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
-                            <span>⚠️ {aiError}</span>
-                          </p>
-                        )}
-                        {aiInfo && (
-                          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold font-sans mt-1 flex items-start gap-1 bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-500/10 leading-normal">
-                            <span>{aiInfo}</span>
-                          </p>
-                        )}
-                      </div>
 
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Batch Number</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. stb_001"
-                          value={newCourseBatchNumber}
-                          onChange={e => setNewCourseBatchNumber(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 pb-0.5">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
+                        <div className="space-y-1.5 font-sans">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Duration (Months)</label>
                           <input
                             type="number"
-                            placeholder="e.g. 5"
+                            required
                             min="1"
                             max="36"
-                            value={newCourseWeeks}
-                            onChange={e => setNewCourseWeeks(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            placeholder="e.g. 6"
+                            value={newMasterDuration}
+                            onChange={e => setNewMasterDuration(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                           />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Publish Date</label>
-                          <input
-                            type="date"
+                        <div className="space-y-1.5 font-sans">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Description</label>
+                          <textarea
+                            placeholder="Provide a comprehensive syllabus overview..."
+                            value={newMasterDesc}
+                            rows={4}
                             required
-                            value={newCoursePublishDate}
-                            onChange={e => setNewCoursePublishDate(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            onChange={e => setNewMasterDesc(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-y min-h-[96px]"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Description</label>
-                        <textarea
-                          placeholder="e.g. Detailed medical admissions physics, chemistry, biology preparation track."
-                          value={newCourseDesc}
-                          rows={3}
-                          onChange={e => setNewCourseDesc(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-y min-h-[72px]"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Academic Status</label>
-                        <select
-                          value={editingCourse ? newCourseStatus : 'upcoming'}
-                          disabled={!editingCourse}
-                          onChange={e => setNewCourseStatus(e.target.value as any)}
-                          className={`w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${!editingCourse ? 'opacity-75 cursor-not-allowed bg-slate-100 dark:bg-white/[0.04]' : ''}`}
-                        >
-                          {!editingCourse ? (
-                            <option value="upcoming">Upcoming Course (Required for New Publishing)</option>
-                          ) : (
-                            <>
-                              <option value="ongoing">Current Course (Ongoing)</option>
-                              <option value="upcoming">Upcoming Course</option>
-                              <option value="completed">Complete Course</option>
-                            </>
-                          )}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Right Column: Roadmap Progression Track (7 out of 12 columns) */}
-                    <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
-                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 font-sans">
-                          <GitBranch className="w-4 h-4" />
-                          <span>{roadmapDetails.length || 0}-Month Interactive Curriculum Roadmap</span>
+                      {/* Right Column: Roadmap Progression Track (7 out of 12 columns) */}
+                      <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 font-sans">
+                            <GitBranch className="w-4 h-4" />
+                            <span>{masterRoadmap.length || 0}-Month Interactive Curriculum Roadmap</span>
+                          </div>
+                          <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">
+                            Live Sync
+                          </span>
                         </div>
-                        <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">
-                          Live Sync
-                        </span>
-                      </div>
 
-                      {roadmapDetails.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/40">
-                          <GitBranch className="w-8 h-8 text-slate-300 dark:text-zinc-600 mb-2 animate-pulse" />
-                          <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-xs font-medium leading-relaxed">
-                            Curriculum milestone roadmaps will generate automatically once you specify a Duration, or let Gemini design it for you!
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4 max-h-[420px] overflow-y-auto pl-1 pr-3 py-1.5 bg-slate-50 dark:bg-black/15 border border-slate-150 dark:border-white/5 rounded-xl shadow-inner scrollbar-thin">
-                          {roadmapDetails.map((milestone) => (
-                            <div key={milestone.month} className="p-4 bg-white dark:bg-[#08080a] border border-slate-200/85 dark:border-white/10 rounded-xl space-y-2.5 shadow-2xs group transition-all hover:border-amber-500/20">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase flex items-center gap-1">
-                                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                  Month {milestone.month} Roadmap Title
-                                </span>
+                        {masterRoadmap.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/40">
+                            <GitBranch className="w-8 h-8 text-slate-300 dark:text-zinc-600 mb-2 animate-pulse" />
+                            <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-xs font-medium leading-relaxed">
+                              Syllabus milestones generate automatically. Specify Course Name and Duration, or use Gemini to outline high-quality targets.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4 max-h-[420px] overflow-y-auto pl-1 pr-3 py-1.5 bg-slate-50 dark:bg-black/15 border border-slate-150 dark:border-white/5 rounded-xl shadow-inner scrollbar-thin">
+                            {masterRoadmap.map((milestone) => (
+                              <div key={milestone.month} className="p-4 bg-white dark:bg-[#08080a] border border-slate-200/85 dark:border-white/10 rounded-xl space-y-2.5 shadow-2xs group transition-all hover:border-amber-500/20">
+                                <div className="flex items-center justify-between font-sans">
+                                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase flex items-center gap-1">
+                                    <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                    Month {milestone.month} Roadmap Title
+                                  </span>
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder={`Month ${milestone.month} Target Theme`}
+                                  value={milestone.title}
+                                  onChange={e => {
+                                    const newVal = e.target.value;
+                                    setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
+                                  }}
+                                  className="w-full px-3 py-2 text-xs font-semibold border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-805 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
+                                />
+                                <textarea
+                                  placeholder={`Milestone Objectives for Month ${milestone.month}`}
+                                  rows={3}
+                                  value={milestone.description}
+                                  onChange={e => {
+                                    const newVal = e.target.value;
+                                    setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
+                                  }}
+                                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-705 dark:text-zinc-350 focus:outline-none focus:ring-1 focus:ring-amber-500/25 leading-relaxed resize-y min-h-[64px]"
+                                />
                               </div>
-                              <input
-                                type="text"
-                                placeholder={`Month ${milestone.month} Target Theme`}
-                                value={milestone.title}
-                                onChange={e => {
-                                  const newVal = e.target.value;
-                                  setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
-                                }}
-                                className="w-full px-3 py-2 text-xs font-semibold border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
-                              />
-                              <textarea
-                                placeholder={`Milestone Description / Objectives for Month ${milestone.month}`}
-                                rows={3}
-                                value={milestone.description}
-                                onChange={e => {
-                                  const newVal = e.target.value;
-                                  setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
-                                }}
-                                className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-705 dark:text-zinc-350 focus:outline-none focus:ring-1 focus:ring-amber-500/25 leading-relaxed resize-y min-h-[64px]"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Unified Footer Controls */}
-                  <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        cancelEditCourse();
-                        setShowCourseDashboard(false);
-                      }}
-                      className="px-4.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
-                    >
-                      Close Registry
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
-                    >
-                      {editingCourse ? 'Save Changes' : 'Publish Course'}
-                    </button>
+                    {/* Unified Footer Controls */}
+                    <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
+                      {editingMasterCourse && (
+                        <button
+                          type="button"
+                          onClick={cancelEditMasterCourse}
+                          className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition cursor-pointer"
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="px-5.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
+                      >
+                        {editingMasterCourse ? 'Save Definition' : 'Save To Curriculum Bank'}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  /* TAB 2: PUBLISH BATCH WITH CHOSEN MASTER COURSE */
+                  <form onSubmit={handlePublishBatchFormSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      
+                      {/* Left Column: Select Master Course & write batch */}
+                      <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs animate-fade-in">
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                          Publish Custom Batch
+                        </h4>
+
+                        <div className="space-y-1.5 font-sans">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-355 block font-sans">1. Select Core Course Curriculum</label>
+                          <select
+                            required
+                            value={selectedMasterId}
+                            onChange={e => setSelectedMasterId(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          >
+                            <option value="">-- Choose Curriculum --</option>
+                            {masterCourses.map(m => (
+                              <option key={m.id} value={m.id}>
+                                {m.name} ({m.durationMonths || 6} Months Template)
+                              </option>
+                            ))}
+                          </select>
+                          {masterCourses.length === 0 && (
+                            <p className="text-[10px] text-red-500 font-semibold mt-1 bg-red-500/5 p-2 rounded">
+                              ⚠️ No course templates in curriculum bank. Define one in Tab 1 first!
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5 font-sans">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">2. Write Batch Name / Number</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Batch A, stb_02, Evening March"
+                            value={customBatchName}
+                            onChange={e => setCustomBatchName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 font-sans">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Publish Date</label>
+                            <input
+                              type="date"
+                              required
+                              value={publishBatchDate}
+                              onChange={e => setPublishBatchDate(e.target.value)}
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-355 block">Batch Status</label>
+                            <select
+                              value={publishStatus}
+                              onChange={e => setPublishStatus(e.target.value as any)}
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            >
+                              <option value="upcoming">Upcoming (Accepting Applications)</option>
+                              <option value="ongoing">Ongoing (Current Active Class)</option>
+                              <option value="completed">Completed (Archived Batch)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Selected template preview */}
+                      <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                          <span className="text-xs font-bold text-slate-705 dark:text-zinc-300">Linked Curriculum Syllabus Preview</span>
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                            Live Template Link
+                          </span>
+                        </div>
+
+                        {!selectedMasterId ? (
+                          <div className="p-8 text-center text-xs text-slate-400 dark:text-zinc-555 border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/20">
+                            Select a core course to preview its linked duration, curriculum, and target milestones.
+                          </div>
+                        ) : (() => {
+                          const linked = masterCourses.find(m => m.id === selectedMasterId);
+                          if (!linked) return null;
+                          return (
+                            <div className="space-y-3.5 animate-fade-in font-sans">
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{linked.name}</h5>
+                                <p className="text-[11px] text-slate-550 dark:text-zinc-405 leading-relaxed mt-1">{linked.description}</p>
+                              </div>
+                              <div className="border-t border-slate-100 dark:border-white/5 pt-3">
+                                <h6 className="text-[10.5px] font-bold text-amber-600 dark:text-amber-400 mb-2 font-mono uppercase tracking-wider">Milestone Roadmap ({linked.durationMonths || 6} Months)</h6>
+                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                                  {linked.roadmap && linked.roadmap.length > 0 ? (
+                                    linked.roadmap.map(rm => (
+                                      <div key={rm.month} className="p-2.5 bg-slate-50 dark:bg-black/25 rounded-lg border border-slate-150 dark:border-white/5">
+                                        <div className="text-[10px] font-bold text-slate-705 dark:text-zinc-300">Month {rm.month}: {rm.title}</div>
+                                        <div className="text-[9.5px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-snug">{rm.description}</div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="text-[10px] text-slate-400 italic">No milestones defined in template.</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Unified Footer Controls */}
+                    <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          cancelEditCourse();
+                          setShowCourseDashboard(false);
+                        }}
+                        className="px-4.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
+                      >
+                        Close Registry
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!selectedMasterId}
+                        className="px-5.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Publish Batch
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* DOUBLE MANAGEMENT VIEW PANELS */}
+                <div className="border-t border-slate-200/80 dark:border-white/5 pt-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Panel A: Curriculum Base Courses */}
+                    <div className="space-y-3 bg-white dark:bg-[#070709] border border-slate-150 dark:border-white/5 p-4.5 rounded-2xl shadow-xs">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <div className="flex items-center gap-1.5 flex-1 select-none">
+                          <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                          <span className="text-xs font-bold text-slate-805 dark:text-white">Curriculum Course Bank ({masterCourses.length})</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+                        {masterCourses.map(master => (
+                          <div key={master.id} className="p-3 bg-slate-50 dark:bg-[#0c0c0e] rounded-xl border border-slate-150 dark:border-white/5 group relative">
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{master.name}</h5>
+                                <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">{master.durationMonths || 6} Months Duration</div>
+                                <p className="text-[10px] text-slate-550 dark:text-zinc-405 mt-1 leading-normal line-clamp-2">{master.description}</p>
+                              </div>
+
+                              <div className="flex items-center gap-1 font-sans">
+                                <button
+                                  type="button"
+                                  onClick={() => startEditMasterCourse(master)}
+                                  className="p-1 hover:bg-slate-200 dark:hover:bg-white/5 rounded text-amber-600 dark:text-amber-400 transition cursor-pointer"
+                                  title="Edit Template Description"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                {onDeleteMasterCourse && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (confirm(`Are you sure you want to delete "${master.name}" from Curriculum Bank?`)) {
+                                        onDeleteMasterCourse(master.id);
+                                      }
+                                    }}
+                                    className="p-1 hover:bg-slate-200 dark:hover:bg-red-500/10 rounded text-rose-500 transition cursor-pointer"
+                                    title="Delete from curriculum bank"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {masterCourses.length === 0 && (
+                          <div className="text-center py-8 text-[11px] text-slate-400 font-sans">No core curricula templates registered.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Panel B: Active Published Batches */}
+                    <div className="space-y-3 bg-white dark:bg-[#070709] border border-slate-150 dark:border-white/5 p-4.5 rounded-2xl shadow-xs">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <div className="flex items-center gap-1.5 flex-1 select-none font-sans">
+                          <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                          <span className="text-xs font-bold text-slate-805 dark:text-white">Active Published Batches ({courses.length})</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+                        {courses.map(pub => (
+                          <div key={pub.id} className="p-3 bg-slate-50 dark:bg-[#0c0c0e] rounded-xl border border-slate-150 dark:border-white/5 relative hover:border-slate-300 dark:hover:border-zinc-700 transition">
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{pub.name}</h5>
+                                  <span className="text-[9px] font-extrabold uppercase font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-md tracking-wider">{pub.batchNumber || 'Batch A'}</span>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+                                    pub.status === 'ongoing'
+                                      ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                      : pub.status === 'upcoming'
+                                        ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                        : 'bg-slate-200 dark:bg-white/5 text-slate-500'
+                                  }`}>
+                                    {pub.status}
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-550 dark:text-zinc-405 font-mono mt-1">Course Code: {pub.code}</div>
+                                <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Launches: {pub.publishDate || pub.createdDate}</div>
+                              </div>
+
+                              <div className="flex items-center gap-1">
+                                {onDeleteCourse && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setCourseToDelete(pub)}
+                                    className="p-1 hover:bg-slate-200 dark:hover:bg-red-500/10 rounded text-rose-500 transition cursor-pointer"
+                                    title="Archive Published Batch"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {courses.length === 0 && (
+                          <div className="text-center py-8 text-[11px] text-slate-400 font-sans">No published batches listings exist.</div>
+                        )}
+                      </div>
+                    </div>
+
                   </div>
-                </form>
+                </div>
               </div>
             </motion.div>
           )}

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse } from './types';
 import {
   INITIAL_USERS,
   INITIAL_SCHEDULES,
@@ -13,6 +13,7 @@ import {
   INITIAL_BACKUPS,
   INITIAL_BATCHES,
   INITIAL_COURSES,
+  INITIAL_MASTER_COURSES,
   getSavedState,
   saveState,
   useFirebaseState
@@ -180,8 +181,11 @@ function AppContent() {
   // Student courses published by admin/sub-admin
   const [courses, setCourses, coursesLoaded] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
 
+  // Master base courses bank
+  const [masterCourses, setMasterCourses, masterCoursesLoaded] = useFirebaseState<MasterCourse[]>('db-master-courses', INITIAL_MASTER_COURSES);
+
   const isDataLoaded = usersLoaded && schedulesLoaded && progressLoaded && notificationsLoaded && 
-                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded;
+                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded;
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
@@ -898,6 +902,62 @@ function AppContent() {
       id: generateUniqueId('notif'),
       title: 'New Course Registered & Published',
       message: `Course "${course.name}" (${course.code}) has been successfully registered and is now available.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddMasterCourse = (newMaster: Omit<MasterCourse, 'id' | 'createdDate'>) => {
+    const master: MasterCourse = {
+      ...newMaster,
+      id: generateUniqueId('master-course'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setMasterCourses(prev => [...prev, master]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Base Course Added',
+      message: `Base Course "${master.name}" has been successfully added to the curriculum list.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleUpdateMasterCourse = (updatedMaster: MasterCourse) => {
+    setMasterCourses(prev => prev.map(m => m.id === updatedMaster.id ? updatedMaster : m));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Base Course Updated',
+      message: `Base Course "${updatedMaster.name}" has been updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteMasterCourse = (masterId: string) => {
+    const masterToDelete = masterCourses.find(m => m.id === masterId);
+    if (!masterToDelete) return;
+
+    setMasterCourses(prev => prev.filter(m => m.id !== masterId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Base Course Deleted',
+      message: `Base Course "${masterToDelete.name}" has been removed.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'general',
@@ -3956,6 +4016,7 @@ function AppContent() {
                 students={users.filter(u => u.role === 'student')}
                 batches={batches}
                 courses={courses}
+                masterCourses={masterCourses}
                 onAddClass={handleAddClass}
                 onUpdateClass={handleUpdateClass}
                 onUpdateStatus={handleUpdateClassStatus}
@@ -3965,6 +4026,9 @@ function AppContent() {
                 onAddCourse={handleAddCourse}
                 onUpdateCourse={handleUpdateCourse}
                 onDeleteCourse={handleDeleteCourse}
+                onAddMasterCourse={handleAddMasterCourse}
+                onUpdateMasterCourse={handleUpdateMasterCourse}
+                onDeleteMasterCourse={handleDeleteMasterCourse}
                 showAddForm={scheduleShowAddForm}
                 setShowAddForm={setScheduleShowAddForm}
                 showBatchManager={scheduleShowBatchManager}
@@ -3984,6 +4048,7 @@ function AppContent() {
                 students={users.filter(u => u.role === 'student')}
                 batches={batches}
                 courses={courses}
+                masterCourses={masterCourses}
                 onAddClass={handleAddClass}
                 onUpdateClass={handleUpdateClass}
                 onUpdateStatus={handleUpdateClassStatus}
@@ -3993,6 +4058,9 @@ function AppContent() {
                 onAddCourse={handleAddCourse}
                 onUpdateCourse={handleUpdateCourse}
                 onDeleteCourse={handleDeleteCourse}
+                onAddMasterCourse={handleAddMasterCourse}
+                onUpdateMasterCourse={handleUpdateMasterCourse}
+                onDeleteMasterCourse={handleDeleteMasterCourse}
                 showAddForm={false}
                 showBatchManager={false}
                 showCourseDashboard={false}
