@@ -154,12 +154,20 @@ export default function ScheduleManager({
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate AI data.");
+      const contentType = response.headers.get("content-type") || "";
+      let data: any = null;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const textResponse = await response.text();
+        console.error("Non-JSON API Response received:", textResponse);
+        throw new Error("Server returned an unexpected non-JSON response (possibly standard router HTML or gateway timeout). Please ensure the backend is fully initialized.");
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to generate AI data.");
+      }
       if (data.description) {
         setNewCourseDesc(data.description);
       }
