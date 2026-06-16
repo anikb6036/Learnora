@@ -75,10 +75,11 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
   // Get distinct course prefix categories (e.g., DEVELOPMENT, CYBERSECURITY etc.)
   const distinctCategories = Array.from(new Set(courses.map(c => {
-    if (c.code.includes('-')) {
-      return c.code.split('-')[0].trim();
+    const codeVal = c.code || c.batchNumber || 'ACADEMIC';
+    if (codeVal.includes('-')) {
+      return codeVal.split('-')[0].trim();
     }
-    return c.code.replace(/[0-9]/g, '').trim() || 'GENERAL';
+    return codeVal.replace(/[0-9]/g, '').replace(/_/g, '').trim().toUpperCase() || 'ACADEMIC';
   }))) as string[];
 
   // Filter courses based on Vercel controls
@@ -86,10 +87,11 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
     // 1. Search Query
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
-      const codeMatch = c.code.toLowerCase().includes(q);
+      const codeMatch = (c.code || '').toLowerCase().includes(q);
+      const batchMatch = (c.batchNumber || '').toLowerCase().includes(q);
       const nameMatch = c.name.toLowerCase().includes(q);
       const descMatch = (c.description || '').toLowerCase().includes(q);
-      if (!codeMatch && !nameMatch && !descMatch) return false;
+      if (!codeMatch && !batchMatch && !nameMatch && !descMatch) return false;
     }
 
     // 2. Status
@@ -104,9 +106,10 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
     }
 
     // 4. Category
-    const categoryName = c.code.includes('-') 
-      ? c.code.split('-')[0].trim() 
-      : c.code.replace(/[0-9]/g, '').trim() || 'GENERAL';
+    const codeVal = c.code || c.batchNumber || 'ACADEMIC';
+    const categoryName = codeVal.includes('-') 
+      ? codeVal.split('-')[0].trim() 
+      : codeVal.replace(/[0-9]/g, '').replace(/_/g, '').trim().toUpperCase() || 'ACADEMIC';
     if (selectedCategory !== 'all' && categoryName !== selectedCategory) return false;
 
     // 5. Date Range / Release Year
@@ -140,7 +143,8 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
   };
 
   // Helper for Category Colors in Vercel styling
-  const getAvatarColor = (code: string) => {
+  const getAvatarColor = (code?: string) => {
+    if (!code) return 'bg-slate-500 text-white dark:bg-zinc-600';
     const text = code.toLowerCase();
     if (text.includes('dev')) return 'bg-blue-500 text-white dark:bg-blue-600';
     if (text.includes('cyber') || text.includes('security')) return 'bg-purple-500 text-white dark:bg-purple-600';
@@ -462,12 +466,6 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                         <span className="text-slate-800 dark:text-zinc-200">{statusConfig.label}</span>
                       </div>
                       <span className="text-zinc-300 dark:text-zinc-800 text-xs select-none">|</span>
-                      
-                      {/* Commit hash look-alike Course Code badge */}
-                      <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-slate-100 group-hover/row:bg-slate-200 dark:bg-zinc-900 dark:group-hover/row:bg-zinc-850 px-2 py-0.5 rounded text-slate-600 dark:text-zinc-400 border border-zinc-200/50 dark:border-white/5">
-                        <GitBranch className="w-3 h-3 text-slate-500" />
-                        <span>{c.code.toLowerCase()}</span>
-                      </span>
 
                       {/* Mock branch name tag: Production or Preview Badge */}
                       {c.status === 'ongoing' ? (
@@ -628,7 +626,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                       <div className="flex items-center justify-between mb-3 bg-slate-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 px-3 py-1.5 rounded-lg">
                         <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-500 dark:text-zinc-400 font-bold select-none">
                           <Terminal className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                          <span>terminal_deployment_logs: ~/{c.code.toLowerCase()}/milestones</span>
+                          <span>terminal_deployment_logs: ~/{(c.batchNumber || 'batch').toLowerCase()}/milestones</span>
                         </div>
                         
                         {/* Interactive toggle of presentation mode */}

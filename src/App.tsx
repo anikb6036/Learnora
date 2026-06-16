@@ -2191,7 +2191,7 @@ function AppContent() {
                                 >
                                   <option value="">-- Select Course Program --</option>
                                   {courses.filter(c => c.status === 'upcoming').map(c => (
-                                    <option key={c.id} value={c.name}>{c.name} ({c.code} - {c.batchNumber || 'stb_001'})</option>
+                                    <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                                   ))}
                                 </select>
                                 {fastCourseError && (
@@ -3300,12 +3300,9 @@ function AppContent() {
                                     <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-emerald-500/20 transition-all">
                                       <div className="flex justify-between items-center">
                                         <div className="flex gap-1.5 items-center">
-                                          <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-750 dark:text-zinc-350 rounded">
-                                            {c.code}
-                                          </span>
                                           {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-650 dark:text-red-400 rounded">
-                                              {c.batchNumber}
+                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
+                                              Batch: {c.batchNumber}
                                             </span>
                                           )}
                                         </div>
@@ -3342,12 +3339,9 @@ function AppContent() {
                                     <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-blue-500/20 transition-all animate-fadeIn">
                                       <div className="flex justify-between items-center">
                                         <div className="flex gap-1.5 items-center">
-                                          <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-755 dark:text-zinc-350 rounded">
-                                            {c.code}
-                                          </span>
                                           {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-650 dark:text-red-400 rounded">
-                                              {c.batchNumber}
+                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
+                                              Batch: {c.batchNumber}
                                             </span>
                                           )}
                                         </div>
@@ -3384,12 +3378,9 @@ function AppContent() {
                                     <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-slate-500/25 transition-all">
                                       <div className="flex justify-between items-center">
                                         <div className="flex gap-1.5 items-center">
-                                          <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-white/10 text-slate-755 dark:text-zinc-350 rounded">
-                                            {c.code}
-                                          </span>
                                           {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-650 dark:text-red-400 rounded">
-                                              {c.batchNumber}
+                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
+                                              Batch: {c.batchNumber}
                                             </span>
                                           )}
                                         </div>

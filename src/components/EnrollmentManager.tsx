@@ -1072,7 +1072,7 @@ export default function EnrollmentManager({
                       >
                         <option value="">-- No Enrolled Course/Optional --</option>
                         {courses.map(c => (
-                          <option key={c.id} value={c.name}>{c.name} ({c.code})</option>
+                          <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                         ))}
                       </select>
                     </div>

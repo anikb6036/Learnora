@@ -110,7 +110,6 @@ export default function ScheduleManager({
 
   // Course Management Form State
   const [newCourseName, setNewCourseName] = useState('');
-  const [newCourseCode, setNewCourseCode] = useState('');
   const [newCourseWeeks, setNewCourseWeeks] = useState('');
   const [newCourseDesc, setNewCourseDesc] = useState('');
   const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('ongoing');
@@ -366,17 +365,18 @@ export default function ScheduleManager({
 
   const handleCourseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCourseName.trim() || !newCourseCode.trim()) return;
+    if (!newCourseName.trim()) return;
     
     const parsedDurationMonths = parseInt(newCourseWeeks) || undefined;
     
     const finalBatchNumber = newCourseBatchNumber.trim() || `stb_00${courses.length + 1}`;
+    const generatedCode = finalBatchNumber.toUpperCase();
     if (editingCourse) {
       if (onUpdateCourse) {
         onUpdateCourse({
           ...editingCourse,
           name: newCourseName.trim(),
-          code: newCourseCode.trim().toUpperCase(),
+          code: generatedCode,
           batchNumber: finalBatchNumber,
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
@@ -391,7 +391,7 @@ export default function ScheduleManager({
       if (onAddCourse) {
         onAddCourse({
           name: newCourseName.trim(),
-          code: newCourseCode.trim().toUpperCase(),
+          code: generatedCode,
           batchNumber: finalBatchNumber,
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
@@ -403,7 +403,6 @@ export default function ScheduleManager({
       }
     }
     setNewCourseName('');
-    setNewCourseCode('');
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
@@ -415,7 +414,6 @@ export default function ScheduleManager({
   const startEditCourse = (course: Course) => {
     setEditingCourse(course);
     setNewCourseName(course.name);
-    setNewCourseCode(course.code);
     setNewCourseBatchNumber(course.batchNumber || '');
     setNewCourseWeeks(course.durationWeeks || '');
     setNewCourseDesc(course.description || '');
@@ -427,7 +425,6 @@ export default function ScheduleManager({
   const cancelEditCourse = () => {
     setEditingCourse(null);
     setNewCourseName('');
-    setNewCourseCode('');
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
@@ -584,18 +581,6 @@ export default function ScheduleManager({
                             <span>{aiInfo}</span>
                           </p>
                         )}
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Code</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. NEET2026"
-                          value={newCourseCode}
-                          onChange={e => setNewCourseCode(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
                       </div>
 
                       <div className="space-y-1.5">
@@ -859,7 +844,7 @@ export default function ScheduleManager({
                   >
                     <option value="All">All Courses</option>
                     {courses.filter(c => c.status !== 'completed').map(c => (
-                      <option key={c.id} value={c.name}>{c.name} ({c.code})</option>
+                      <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                     ))}
                   </select>
                 </div>
