@@ -104,7 +104,7 @@ const FinanceIcon = () => (
 
 interface HomePageProps {
   isDark: boolean;
-  onEnterPortal: (tab: 'fastReg' | 'authLogin' | 'adminLogin') => void;
+  onEnterPortal: (tab: 'fastReg' | 'authLogin' | 'adminLogin', courseName?: string) => void;
   courses?: Course[];
 }
 
@@ -508,7 +508,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                 {selectedCourse && (
                    <div className="mt-8 relative z-10">
                      <button
-                       onClick={() => onEnterPortal('fastReg')}
+                       onClick={() => onEnterPortal('fastReg', selectedCourse.name)}
                        className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm"
                      >
                        Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />

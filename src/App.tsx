@@ -2740,9 +2740,12 @@ function AppContent() {
           <HomePage
             isDark={isDark}
             courses={courses}
-            onEnterPortal={(tab) => {
+            onEnterPortal={(tab, courseName) => {
               setShowPortal(true);
               setOnboardingTab(tab);
+              if (courseName) {
+                setFastCourse(courseName);
+              }
             }}
           />
         )
@@ -3409,7 +3412,9 @@ function AppContent() {
                       <>
                         {(() => {
                           const enrolledCourseConfig = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
-                          if (enrolledCourseConfig && enrolledCourseConfig.status === 'upcoming') {
+                          if (!enrolledCourseConfig) return null;
+
+                          if (enrolledCourseConfig.status === 'upcoming') {
                             return (
                                <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
                                   <div className="flex items-center gap-3">
@@ -3426,6 +3431,74 @@ function AppContent() {
                                </div>
                             );
                           }
+
+                          if (enrolledCourseConfig.status === 'ongoing') {
+                            return (
+                              <div className="mb-6 p-5 md:p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 dark:bg-emerald-500/5 dark:border-emerald-500/20 flex flex-col gap-4 animate-fadeIn">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 rounded-xl shrink-0">
+                                      <CheckCircle className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[9px] bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider font-mono">
+                                          Ongoing / Active
+                                        </span>
+                                        {enrolledCourseConfig.batchNumber && (
+                                          <span className="text-[9px] bg-red-500/10 text-red-500 dark:text-red-400 px-2   py-0.5 rounded font-bold font-mono">
+                                            Batch: {enrolledCourseConfig.batchNumber}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <h3 className="font-bold text-slate-900 dark:text-white text-base mt-1.5 leading-tight">
+                                        {enrolledCourseConfig.name}
+                                      </h3>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col items-start sm:items-end">
+                                    <p className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider">Duration</p>
+                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-350">
+                                      {enrolledCourseConfig.durationWeeks || enrolledCourseConfig.durationMonths || '12'} Months
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {enrolledCourseConfig.description && (
+                                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
+                                    {enrolledCourseConfig.description}
+                                  </p>
+                                )}
+
+                                {enrolledCourseConfig.roadmap && enrolledCourseConfig.roadmap.length > 0 && (
+                                  <div className="pt-2 space-y-3 font-sans">
+                                    <p className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider flex items-center gap-1.5">
+                                      <GitBranch className="w-3.5 h-3.5 text-emerald-500" />
+                                      Active Curriculum Roadmap & Milestones
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+                                      {enrolledCourseConfig.roadmap.map((m: any) => (
+                                        <div key={m.month} className="p-3 bg-white dark:bg-white/[0.02] border border-slate-150 dark:border-white/5 rounded-xl hover:border-emerald-500/20 dark:hover:border-emerald-500/20 transition-all">
+                                          <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold font-mono">
+                                              Month {m.month}
+                                            </span>
+                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                              {m.title}
+                                            </span>
+                                          </div>
+                                          <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
+                                            {m.desc}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+
                           return null;
                         })()}
                     {/* Enrolled Classes List for Student */}

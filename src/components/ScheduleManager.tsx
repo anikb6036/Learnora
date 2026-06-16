@@ -112,7 +112,7 @@ export default function ScheduleManager({
   const [newCourseName, setNewCourseName] = useState('');
   const [newCourseWeeks, setNewCourseWeeks] = useState('');
   const [newCourseDesc, setNewCourseDesc] = useState('');
-  const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('ongoing');
+  const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
   const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
   const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
@@ -395,7 +395,7 @@ export default function ScheduleManager({
           batchNumber: finalBatchNumber,
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
-          status: newCourseStatus,
+          status: 'upcoming',
           publishDate: newCoursePublishDate,
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails
@@ -406,7 +406,7 @@ export default function ScheduleManager({
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
-    setNewCourseStatus('ongoing');
+    setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setRoadmapDetails([]);
   };
@@ -417,7 +417,7 @@ export default function ScheduleManager({
     setNewCourseBatchNumber(course.batchNumber || '');
     setNewCourseWeeks(course.durationWeeks || '');
     setNewCourseDesc(course.description || '');
-    setNewCourseStatus(course.status || 'ongoing');
+    setNewCourseStatus(course.status || 'upcoming');
     setNewCoursePublishDate(course.publishDate || course.createdDate || '2026-06-15');
     setRoadmapDetails(course.roadmap || []);
   };
@@ -428,7 +428,7 @@ export default function ScheduleManager({
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
-    setNewCourseStatus('ongoing');
+    setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setRoadmapDetails([]);
     setAiError(null);
@@ -635,13 +635,20 @@ export default function ScheduleManager({
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Academic Status</label>
                         <select
-                          value={newCourseStatus}
+                          value={editingCourse ? newCourseStatus : 'upcoming'}
+                          disabled={!editingCourse}
                           onChange={e => setNewCourseStatus(e.target.value as any)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          className={`w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${!editingCourse ? 'opacity-75 cursor-not-allowed bg-slate-100 dark:bg-white/[0.04]' : ''}`}
                         >
-                          <option value="ongoing">Current Course (Ongoing)</option>
-                          <option value="upcoming">Upcoming Course</option>
-                          <option value="completed">Complete Course</option>
+                          {!editingCourse ? (
+                            <option value="upcoming">Upcoming Course (Required for New Publishing)</option>
+                          ) : (
+                            <>
+                              <option value="ongoing">Current Course (Ongoing)</option>
+                              <option value="upcoming">Upcoming Course</option>
+                              <option value="completed">Complete Course</option>
+                            </>
+                          )}
                         </select>
                       </div>
                     </div>
