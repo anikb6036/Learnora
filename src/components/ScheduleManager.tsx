@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, StudentBatch, Course } from '../types';
-import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ScheduleManagerProps {
@@ -116,16 +116,84 @@ export default function ScheduleManager({
   const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('ongoing');
   const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
+  const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
   const editingCourse = propsEditingCourse !== undefined ? propsEditingCourse : internalEditingCourse;
   const setEditingCourse = propsSetEditingCourse !== undefined ? propsSetEditingCourse : setInternalEditingCourse;
   const [courseDashboardTab, setCourseDashboardTab] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
   const [expandedCourseRoadmapId, setExpandedCourseRoadmapId] = useState<string | null>(null);
 
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiInfo, setAiInfo] = useState<string | null>(null);
+
+  const handleAiGenerateCourse = async () => {
+    if (!newCourseName.trim()) {
+      setAiError("Please enter a Course Name first.");
+      return;
+    }
+    const months = parseInt(newCourseWeeks);
+    if (isNaN(months) || months < 1 || months > 36) {
+      setAiError("Please specify a valid Duration (1-36 Months) first.");
+      return;
+    }
+
+    setIsAiGenerating(true);
+    setAiError(null);
+    setAiInfo(null);
+
+    try {
+      const response = await fetch("/api/generate-course-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseName: newCourseName,
+          durationMonths: months,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate AI data.");
+      }
+
+      const data = await response.json();
+      if (data.description) {
+        setNewCourseDesc(data.description);
+      }
+      if (Array.isArray(data.roadmap)) {
+        // Sort and map values safely
+        const sortedRoadmap = data.roadmap
+          .filter((item: any) => item && typeof item.month === "number")
+          .map((item: any) => ({
+            month: item.month,
+            title: String(item.title || `Month ${item.month} Topic`),
+            description: String(item.description || `Syllabus for Month ${item.month}`)
+          }))
+          .sort((a: any, b: any) => a.month - b.month);
+
+        setRoadmapDetails(sortedRoadmap);
+        if (sortedRoadmap.length > 0) {
+          setSelectedRoadmapMonth(sortedRoadmap[0].month);
+        }
+      }
+    } catch (err: any) {
+      console.error("AI Generation Error:", err);
+      setAiError(err.message || "An unexpected error occurred while generating course details.");
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
   // Synchronize roadmap milestones with the durationMonths (represented by newCourseWeeks)
   React.useEffect(() => {
     const numMonths = parseInt(newCourseWeeks);
     if (!isNaN(numMonths) && numMonths > 0 && numMonths <= 36) {
+      if (selectedRoadmapMonth > numMonths) {
+        setSelectedRoadmapMonth(1);
+      }
       setRoadmapDetails(prev => {
         const updated = Array.from({ length: numMonths }, (_, idx) => {
           const monthNum = idx + 1;
@@ -150,8 +218,9 @@ export default function ScheduleManager({
       });
     } else {
       setRoadmapDetails([]);
+      setSelectedRoadmapMonth(1);
     }
-  }, [newCourseWeeks, newCourseName]);
+  }, [newCourseWeeks, newCourseName, selectedRoadmapMonth]);
 
   // New Class Form State
   const [editingSchedule, setEditingSchedule] = useState<ClassSchedule | null>(null);
@@ -420,161 +489,224 @@ export default function ScheduleManager({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mb-6"
             >
-              <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100 dark:border-white/5 space-y-4">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 dark:border-white/5 pb-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2 font-sans">
-                      <GraduationCap className="w-4 h-4 text-amber-500" />
-                      Dynamic Course Publish Dashboard
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Create, review, or decommission active courses. Decommissioning a course will unpublish it from future admissions directory.
-                    </p>
+              <div className="p-5 md:p-6 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100/80 dark:border-white/5 space-y-6">
+                
+                {/* Dashboard Header */}
+                <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-white/5 pb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-zinc-100 font-sans leading-none mb-1">
+                        Dynamic Course Publish Dashboard
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Create, review, or edit academy courses and build customizable learning track roadmaps.
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      cancelEditCourse();
+                      setShowCourseDashboard(false);
+                    }}
+                    className="p-1.5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+                    type="button"
+                    title="Close Course Dashboard"
+                  >
+                    <X className="w-4.5 h-4.5" />
+                  </button>
                 </div>
 
-                <div className="max-w-2xl mx-auto">
-                  {/* Course creation form */}
-                  <form onSubmit={handleCourseSubmit} className="space-y-3 bg-white dark:bg-[#060608] border border-slate-200/60 dark:border-white/5 p-5 rounded-xl shadow-xs">
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                      {editingCourse ? 'Edit Published Course' : 'Publish New Course'}
-                    </h4>
+                {/* Left/Right Column Layout */}
+                <form onSubmit={handleCourseSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    {/* Left Column: Core Settings (5 out of 12 columns) */}
+                    <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                        {editingCourse ? 'Core Course Details' : 'Publish New Course'}
+                      </h4>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Name</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Medical NEET Prep"
-                        value={newCourseName}
-                        onChange={e => setNewCourseName(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Code</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. NEET2026"
-                        value={newCourseCode}
-                        onChange={e => setNewCourseCode(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                      />
-                    </div>
-
-                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 5"
-                          min="1"
-                          max="36"
-                          value={newCourseWeeks}
-                          onChange={e => setNewCourseWeeks(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Publish Date</label>
-                        <input
-                          type="date"
-                          required
-                          value={newCoursePublishDate}
-                          onChange={e => setNewCoursePublishDate(e.target.value)}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Description State</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Entrance preparation"
-                        value={newCourseDesc}
-                        onChange={e => setNewCourseDesc(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Academic Status</label>
-                      <select
-                        value={newCourseStatus}
-                        onChange={e => setNewCourseStatus(e.target.value as any)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-895 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                      >
-                        <option value="ongoing">Current Course (Ongoing)</option>
-                        <option value="upcoming">Upcoming Course</option>
-                        <option value="completed">Complete Course</option>
-                      </select>
-                    </div>
-
-                    {roadmapDetails.length > 0 && (
-                      <div className="space-y-3 border-t border-slate-150 dark:border-white/10 pt-3 mt-2 font-sans">
-                        <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                          <GitBranch className="w-3.5 h-3.5" />
-                          <span>{roadmapDetails.length}-Month Interactive Roadmap Options:</span>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Name</label>
+                          <button
+                            type="button"
+                            onClick={handleAiGenerateCourse}
+                            disabled={isAiGenerating}
+                            className={`text-[10px] font-bold flex items-center gap-1 px-2.5 py-0.5 rounded-md border transition-all cursor-pointer ${
+                              isAiGenerating
+                                ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 cursor-not-allowed"
+                                : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-600 dark:text-amber-400 hover:border-amber-500/40 shadow-3xs"
+                            }`}
+                            title="Generate description and interactive roadmap based on Course Name and Duration using Gemini AI"
+                          >
+                            <Sparkles className={`w-2.5 h-2.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
+                            {isAiGenerating ? 'Generating...' : 'Fill with Gemini AI'}
+                          </button>
                         </div>
-                        
-                        <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Medical NEET Prep"
+                          value={newCourseName}
+                          onChange={e => setNewCourseName(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                        {aiError && (
+                          <p className="text-[10px] text-red-500 font-semibold font-sans mt-0.5 flex items-center gap-1 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
+                            <span>⚠️ {aiError}</span>
+                          </p>
+                        )}
+                        {aiInfo && (
+                          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold font-sans mt-1 flex items-start gap-1 bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-500/10 leading-normal">
+                            <span>{aiInfo}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Code</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. NEET2026"
+                          value={newCourseCode}
+                          onChange={e => setNewCourseCode(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pb-0.5">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Duration (Months)</label>
+                          <input
+                            type="number"
+                            placeholder="e.g. 5"
+                            min="1"
+                            max="36"
+                            value={newCourseWeeks}
+                            onChange={e => setNewCourseWeeks(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Publish Date</label>
+                          <input
+                            type="date"
+                            required
+                            value={newCoursePublishDate}
+                            onChange={e => setNewCoursePublishDate(e.target.value)}
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Description</label>
+                        <textarea
+                          placeholder="e.g. Detailed medical admissions physics, chemistry, biology preparation track."
+                          value={newCourseDesc}
+                          rows={3}
+                          onChange={e => setNewCourseDesc(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-y min-h-[72px]"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Course Academic Status</label>
+                        <select
+                          value={newCourseStatus}
+                          onChange={e => setNewCourseStatus(e.target.value as any)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        >
+                          <option value="ongoing">Current Course (Ongoing)</option>
+                          <option value="upcoming">Upcoming Course</option>
+                          <option value="completed">Complete Course</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Roadmap Progression Track (7 out of 12 columns) */}
+                    <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 font-sans">
+                          <GitBranch className="w-4 h-4" />
+                          <span>{roadmapDetails.length || 0}-Month Interactive Curriculum Roadmap</span>
+                        </div>
+                        <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">
+                          Live Sync
+                        </span>
+                      </div>
+
+                      {roadmapDetails.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/40">
+                          <GitBranch className="w-8 h-8 text-slate-300 dark:text-zinc-600 mb-2 animate-pulse" />
+                          <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-xs font-medium leading-relaxed">
+                            Curriculum milestone roadmaps will generate automatically once you specify a Duration, or let Gemini design it for you!
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-[420px] overflow-y-auto pl-1 pr-3 py-1.5 bg-slate-50 dark:bg-black/15 border border-slate-150 dark:border-white/5 rounded-xl shadow-inner scrollbar-thin">
                           {roadmapDetails.map((milestone) => (
-                            <div key={milestone.month} className="p-2.5 bg-slate-100/50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-lg space-y-1.5 shadow-2xs">
+                            <div key={milestone.month} className="p-4 bg-white dark:bg-[#08080a] border border-slate-200/85 dark:border-white/10 rounded-xl space-y-2.5 shadow-2xs group transition-all hover:border-amber-500/20">
                               <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-extrabold text-slate-500 dark:text-zinc-400">
+                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase flex items-center gap-1">
+                                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
                                   Month {milestone.month} Roadmap Title
                                 </span>
                               </div>
                               <input
                                 type="text"
-                                placeholder={`Month ${milestone.month} Target`}
+                                placeholder={`Month ${milestone.month} Target Theme`}
                                 value={milestone.title}
                                 onChange={e => {
                                   const newVal = e.target.value;
                                   setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
                                 }}
-                                className="w-full px-2 py-1 text-[11px] border border-slate-250 dark:border-white/5 rounded-md bg-white dark:bg-[#060608] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
+                                className="w-full px-3 py-2 text-xs font-semibold border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
                               />
                               <textarea
-                                placeholder={`Milestone Description / Objectives`}
-                                rows={1}
+                                placeholder={`Milestone Description / Objectives for Month ${milestone.month}`}
+                                rows={3}
                                 value={milestone.description}
                                 onChange={e => {
                                   const newVal = e.target.value;
                                   setRoadmapDetails(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
                                 }}
-                                className="w-full px-2 py-1 text-[11px] border border-slate-250 dark:border-white/5 rounded-md bg-white dark:bg-[#060608] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-amber-500/25 resize-none"
+                                className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-705 dark:text-zinc-350 focus:outline-none focus:ring-1 focus:ring-amber-500/25 leading-relaxed resize-y min-h-[64px]"
                               />
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        className="flex-1 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 rounded-xl text-xs font-bold shadow-md transition cursor-pointer mt-2"
-                      >
-                        {editingCourse ? 'Update Course Details' : 'Publish Course Registry'}
-                      </button>
-                      {editingCourse && (
-                        <button
-                          type="button"
-                          onClick={cancelEditCourse}
-                          className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-650 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer mt-2"
-                        >
-                          Cancel
-                        </button>
                       )}
                     </div>
-                  </form>
-                </div>
+                  </div>
+
+                  {/* Unified Footer Controls */}
+                  <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        cancelEditCourse();
+                        setShowCourseDashboard(false);
+                      }}
+                      className="px-4.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
+                    >
+                      Close Registry
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
+                    >
+                      {editingCourse ? 'Save Changes' : 'Publish Course'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </motion.div>
           )}
