@@ -384,7 +384,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                           key={course.id}
                           className={`p-6 rounded-[1.5rem] bg-white dark:bg-[#15161A] border-2 transition-all duration-300 flex items-center justify-between cursor-pointer select-none group relative ${
                             isSelected
-                              ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg col-span-1 md:col-span-2'
+                              ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg col-span-1'
                               : 'border-slate-100 dark:border-white/5 hover:border-red-400 dark:hover:border-red-500/30 shadow-xs col-span-1'
                           }`}
                           onClick={() => {
@@ -400,6 +400,14 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 font-bold font-mono">
                               {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
                             </p>
+                            {(course.publishDate || course.createdDate) && (
+                              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                                  Starts: {new Date(course.publishDate || course.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                              </div>
+                            )}
                           </div>
                       
                           <div className="shrink-0 flex items-center justify-center mix-blend-multiply dark:mix-blend-normal">

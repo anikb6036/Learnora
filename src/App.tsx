@@ -3470,6 +3470,7 @@ function AppContent() {
 
                                 const daySchedules = schedules.filter(s => {
                                   if (s.date !== dateStr) return false;
+                                  if (s.status === 'completed') return false;
                                   
                                   const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
                                   
@@ -3548,7 +3549,13 @@ function AppContent() {
                                                 <div className="md:col-span-4 min-w-0 flex items-center justify-between gap-4">
                                                   <div className="min-w-0">
                                                     <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Room / Link</p>
-                                                    {cl.status === 'completed' || isTimeOver ? (
+                                                    {cl.status === 'cancelled' ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <div className="px-3 py-1 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-md text-[10.5px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
+                                                          ❌ Cancelled
+                                                        </div>
+                                                      </div>
+                                                    ) : cl.status === 'completed' || isTimeOver ? (
                                                       <div className="flex items-center gap-2 mt-1">
                                                         <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[10.5px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                                           ✓ Completed
@@ -3703,14 +3710,14 @@ function AppContent() {
                           </p>
                         </div>
 
-                        {schedules.filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed')).length === 0 ? (
+                        {schedules.filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed' || s.status === 'cancelled')).length === 0 ? (
                           <div className="p-12 text-center text-xs text-slate-400 font-sans border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-[#fafafa] dark:bg-[#080809]">
-                            No active or completed classes currently assigned to you.
+                            No active, completed, or cancelled classes currently assigned to you.
                           </div>
                         ) : (
                           <div className="border border-slate-200/60 dark:border-white/5 rounded-xl bg-[#fafafa] dark:bg-[#080809] overflow-hidden divide-y divide-slate-100 dark:divide-white/5 shadow-xs">
                             {schedules
-                              .filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed'))
+                              .filter(s => s.instructorId === currentUser.id && (s.status === 'scheduled' || s.status === 'completed' || s.status === 'cancelled'))
                               .map(cl => {
                                 const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
                                 const isLinkLocation = cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google'));
@@ -3770,7 +3777,11 @@ function AppContent() {
  
                                     {/* Right: Location & Join button */}
                                     <div className="flex items-center gap-3 shrink-0">
-                                      {cl.status === 'completed' || isTimeOver ? (
+                                      {cl.status === 'cancelled' ? (
+                                        <div className="px-3 py-1.5 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-lg text-[10px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
+                                          ❌ Cancelled
+                                        </div>
+                                      ) : cl.status === 'completed' || isTimeOver ? (
                                         <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-lg text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                           ✓ Class Completed
                                         </div>

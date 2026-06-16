@@ -427,6 +427,9 @@ export default function ScheduleManager({
     setNewCourseStatus('ongoing');
     setNewCoursePublishDate('2026-06-15');
     setRoadmapDetails([]);
+    setAiError(null);
+    setAiInfo(null);
+    setSelectedRoadmapMonth(1);
   };
 
   const filteredSchedules = schedules.filter(cl => {
@@ -890,6 +893,17 @@ export default function ScheduleManager({
             }`}
           >
             Scheduled Lectures
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('completed')}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              statusFilter === 'completed'
+                ? 'bg-[#f4f4f5] dark:bg-white/[0.08] text-slate-900 dark:text-zinc-100 font-bold'
+                : 'text-slate-500 hover:text-slate-850 dark:text-zinc-400 dark:hover:text-zinc-200'
+            }`}
+          >
+            Completed Classes
           </button>
           <button
             type="button"
