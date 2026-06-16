@@ -3395,6 +3395,27 @@ function AppContent() {
 
                     {currentUser.role === 'student' && (
                       <>
+                        {(() => {
+                          const enrolledCourseConfig = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
+                          if (enrolledCourseConfig && enrolledCourseConfig.status === 'upcoming') {
+                            return (
+                               <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 rounded-lg shrink-0">
+                                      <Calendar className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-bold text-blue-800 dark:text-blue-300 text-sm">You are enrolled in an Upcoming Program!</h3>
+                                      <p className="text-xs text-blue-700 dark:text-blue-400/80 mt-0.5">
+                                        <strong className="font-semibold">{enrolledCourseConfig.name}</strong> will commence on <span className="font-bold underline decoration-blue-500/30 underline-offset-2">{new Date(enrolledCourseConfig.publishDate || enrolledCourseConfig.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>.
+                                      </p>
+                                    </div>
+                                  </div>
+                               </div>
+                            );
+                          }
+                          return null;
+                        })()}
                     {/* Enrolled Classes List for Student */}
                     <div className="space-y-4 pt-4 font-sans">
                       <div className="flex items-center gap-3 mb-6">
