@@ -132,6 +132,7 @@ export interface Course {
   id: string;
   name: string;
   code: string;
+  batchNumber?: string;
   description?: string;
   durationWeeks?: string;
   createdDate: string;

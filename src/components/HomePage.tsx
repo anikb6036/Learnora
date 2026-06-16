@@ -397,9 +397,19 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                             <h3 className={`font-extrabold text-base md:text-md leading-snug transition-colors ${isSelected ? 'text-red-500 dark:text-red-400' : 'text-slate-800 dark:text-zinc-100 group-hover:text-red-500'}`}>
                               {course.name}
                             </h3>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 font-bold font-mono">
-                              {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-bold font-mono">
+                                {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
+                              </span>
+                              {course.batchNumber && (
+                                <>
+                                  <span className="text-slate-300 dark:text-zinc-700 text-xs font-mono">•</span>
+                                  <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 font-bold font-mono px-1.5 py-0.5 rounded inline-flex items-center gap-1">
+                                    Batch: {course.batchNumber}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                             {(course.publishDate || course.createdDate) && (
                               <div className="mt-2.5 inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
                                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>

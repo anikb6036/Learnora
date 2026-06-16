@@ -480,6 +480,13 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                           <span>PREVIEW</span>
                         </span>
                       )}
+
+                      {/* Decisive Batch Number Indicator badge */}
+                      {c.batchNumber && (
+                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-extrabold px-2 py-0.5 text-rose-800 dark:text-rose-455 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded font-mono">
+                          <span>BATCH: {c.batchNumber}</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Deployment Message - Custom structured Course details */}
@@ -652,7 +659,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                           {/* Live compilation header logs mimicking real vercel deployers */}
                           <div className="space-y-0.5 select-none border-b border-zinc-800/80 pb-2">
                             <p className="text-zinc-500">▲ vercel-cli/deployer-v14.1.26 - compilation targets parsed successfully</p>
-                            <p className="text-zinc-550">▲ syllabus code: <span className="text-emerald-500">"{c.code}"</span> | sequence index hash: {c.id.substring(0,8)}</p>
+                            <p className="text-zinc-550">▲ syllabus code: <span className="text-emerald-500">"{c.code}"</span> | batch group: <span className="text-rose-450">"{c.batchNumber || 'stb_001'}"</span> | sequence index hash: {c.id.substring(0,8)}</p>
                             <p className="text-zinc-500">▲ duration: {durationText} semester blocks | launch date: {c.publishDate || c.createdDate}</p>
                             <p className="text-emerald-500">✓ build static dependencies targets resolved... Ready!</p>
                           </div>

@@ -115,6 +115,7 @@ export default function ScheduleManager({
   const [newCourseDesc, setNewCourseDesc] = useState('');
   const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('ongoing');
   const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
+  const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
@@ -369,12 +370,14 @@ export default function ScheduleManager({
     
     const parsedDurationMonths = parseInt(newCourseWeeks) || undefined;
     
+    const finalBatchNumber = newCourseBatchNumber.trim() || `stb_00${courses.length + 1}`;
     if (editingCourse) {
       if (onUpdateCourse) {
         onUpdateCourse({
           ...editingCourse,
           name: newCourseName.trim(),
           code: newCourseCode.trim().toUpperCase(),
+          batchNumber: finalBatchNumber,
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
           status: newCourseStatus,
@@ -389,6 +392,7 @@ export default function ScheduleManager({
         onAddCourse({
           name: newCourseName.trim(),
           code: newCourseCode.trim().toUpperCase(),
+          batchNumber: finalBatchNumber,
           durationWeeks: newCourseWeeks.trim() || undefined,
           description: newCourseDesc.trim() || undefined,
           status: newCourseStatus,
@@ -400,6 +404,7 @@ export default function ScheduleManager({
     }
     setNewCourseName('');
     setNewCourseCode('');
+    setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
     setNewCourseStatus('ongoing');
@@ -411,6 +416,7 @@ export default function ScheduleManager({
     setEditingCourse(course);
     setNewCourseName(course.name);
     setNewCourseCode(course.code);
+    setNewCourseBatchNumber(course.batchNumber || '');
     setNewCourseWeeks(course.durationWeeks || '');
     setNewCourseDesc(course.description || '');
     setNewCourseStatus(course.status || 'ongoing');
@@ -422,6 +428,7 @@ export default function ScheduleManager({
     setEditingCourse(null);
     setNewCourseName('');
     setNewCourseCode('');
+    setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
     setNewCourseStatus('ongoing');
@@ -587,6 +594,18 @@ export default function ScheduleManager({
                           placeholder="e.g. NEET2026"
                           value={newCourseCode}
                           onChange={e => setNewCourseCode(e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block font-sans">Batch Number</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. stb_001"
+                          value={newCourseBatchNumber}
+                          onChange={e => setNewCourseBatchNumber(e.target.value)}
                           className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                         />
                       </div>
