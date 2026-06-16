@@ -1,9 +1,106 @@
 import React, { useState } from 'react';
 import Logo from './Logo';
-import { ArrowRight, BookOpen, Users, Shield } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Shield, Code2, Atom, Target } from 'lucide-react';
 import { Course } from '../types';
 import { motion } from 'motion/react';
 import admissionHeroImg from '../assets/images/admission_hero_1781153839906.png';
+
+// Dynamic Area of Interest Categorizer
+const getCourseCategory = (courseName: string): string => {
+  const nameLower = courseName.toLowerCase();
+  if (nameLower.includes('product') || nameLower.includes('management') || nameLower.includes('business') || nameLower.includes('mba') || nameLower.includes('pm')) {
+    return 'Product Management with AI';
+  }
+  if (nameLower.includes('data science') || nameLower.includes('machine learning') || nameLower.includes('ml') || nameLower.includes('biology') || nameLower.includes('neet') || nameLower.includes('medical') || nameLower.includes('chemistry') || nameLower.includes('science')) {
+    return 'Data Science and AI-ML';
+  }
+  if (nameLower.includes('analytics') || nameLower.includes('analysis') || nameLower.includes('statistics') || nameLower.includes('stats')) {
+    return 'Analytics and AI';
+  }
+  if (nameLower.includes('software') || nameLower.includes('engineering') || nameLower.includes('web') || nameLower.includes('frontend') || nameLower.includes('backend') || nameLower.includes('cse') || nameLower.includes('coding') || nameLower.includes('jee') || nameLower.includes('physics') || nameLower.includes('math')) {
+    return 'Software Development Engineering';
+  }
+  if (nameLower.includes('marketing') || nameLower.includes('seo') || nameLower.includes('sales')) {
+    return 'Marketing and Analytics';
+  }
+  if (nameLower.includes('finance') || nameLower.includes('fintech') || nameLower.includes('accounting') || nameLower.includes('blockchain') || nameLower.includes('money') || nameLower.includes('technology')) {
+    return 'Finance and Technology';
+  }
+  return 'Software Development Engineering';
+};
+
+interface AreaOfInterest {
+  id: string;
+  name: string;
+  defaultCount: number;
+}
+
+const areasOfInterest: AreaOfInterest[] = [
+  { id: 'pm', name: 'Product Management with AI', defaultCount: 8 },
+  { id: 'analytics', name: 'Analytics and AI', defaultCount: 9 },
+  { id: 'datascience', name: 'Data Science and AI-ML', defaultCount: 15 },
+  { id: 'sde', name: 'Software Development Engineering', defaultCount: 11 },
+  { id: 'marketing', name: 'Marketing and Analytics', defaultCount: 8 },
+  { id: 'finance', name: 'Finance and Technology', defaultCount: 5 },
+];
+
+const PMIcon = () => (
+  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
+    <div className="grid grid-cols-2 gap-1 w-11 h-11">
+      <div className="bg-[#8E8EF0] rounded-md shadow-xs"></div>
+      <div className="bg-amber-400 rounded-md shadow-xs flex items-center justify-center relative">
+        <span className="text-white font-black text-sm leading-none">+</span>
+      </div>
+      <div className="bg-[#5D7BEE] rounded-md shadow-xs"></div>
+      <div className="bg-[#C96CEB] rounded-md shadow-xs"></div>
+    </div>
+  </div>
+);
+
+const AnalyticsIcon = () => (
+  <div className="relative w-16 h-16 flex items-end justify-center pb-2.5 shrink-0 select-none">
+    <div className="flex items-end gap-1.5 h-11">
+      <div className="w-3 h-5 bg-[#3B82F6] rounded-sm shadow-xs" />
+      <div className="w-3 h-8 bg-[#A855F7] rounded-sm shadow-xs" />
+      <div className="w-3 h-11 bg-[#EF4444] rounded-sm shadow-xs" />
+    </div>
+  </div>
+);
+
+const DataScienceIcon = () => (
+  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
+    <div className="relative w-12 h-12 rounded-full bg-[#1F2937] dark:bg-slate-800 flex items-center justify-center border-2 border-slate-500 shadow-sm">
+      <Atom className="w-7 h-7 text-white animate-[spin_20s_linear_infinite]" />
+    </div>
+  </div>
+);
+
+const SDEIcon = () => (
+  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
+    <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25" />
+    </svg>
+  </div>
+);
+
+const MarketingIcon = () => (
+  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
+    <div className="relative w-12 h-12 rounded-full border-4 border-[#EF4444] bg-white flex items-center justify-center shadow-xs">
+      <div className="w-7 h-7 rounded-full border-2 border-[#EF4444] bg-white flex items-center justify-center">
+        <div className="w-3.5 h-3.5 rounded-full bg-[#EF4444] flex items-center justify-center" />
+      </div>
+      <div className="absolute top-0 left-0 w-3 h-3 bg-amber-400 rotate-45 transform -translate-x-0.5 -translate-y-0.5 rounded-xs shadow-xs" />
+    </div>
+  </div>
+);
+
+const FinanceIcon = () => (
+  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
+    <div className="w-12 h-12 rounded-full bg-[#2563EB] flex items-center justify-center border-2 border-blue-300 shadow-md">
+      <span className="text-white font-extrabold text-[#FFFFFF] text-lg font-sans leading-none">$</span>
+    </div>
+  </div>
+);
 
 interface HomePageProps {
   isDark: boolean;
@@ -14,6 +111,7 @@ interface HomePageProps {
 export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePageProps) {
   const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const activeCourseId = selectedCourseId || hoveredCourseId;
 
   const getCourseRoadmap = (courseName: string = '', courseCode: string = '') => {
@@ -260,34 +358,34 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
       <section className="w-full bg-[#fbd4d6] dark:bg-[#1a0e10] py-12 md:py-20 relative z-10 border-t border-slate-200/50 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="bg-white dark:bg-[#0B0C10] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 relative overflow-hidden">
+            
+            {/* Choose Your Area of Interest Section */}
             <div className="flex flex-col lg:flex-row gap-12 xl:gap-16">
               <div className="flex-1">
                 <h2 className="text-3xl md:text-5xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mb-12">
-                  Upcoming Best Course
+                  Choose Your Program
                 </h2>
 
-                {courses.length === 0 ? (
+                {courses.filter(c => c.status === 'upcoming').length === 0 ? (
                   <div className="p-8 md:p-12 text-center rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5">
                     <BookOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-slate-600 dark:text-gray-305">No active academic cohorts published yet.</p>
-                    <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">Please sign in as staff or administrator to build and publish learning programs into the registry.</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-gray-305">
+                      No upcoming academic programs available yet.
+                    </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    {courses.map((course, idx) => {
+                    {courses.filter(c => c.status === 'upcoming').map((course, idx) => {
                       const isSelected = selectedCourseId === course.id;
                       const isHovered = hoveredCourseId === course.id;
                       const isActive = isSelected || isHovered;
-                      const roadmap = getCourseRoadmap(course.name, course.code);
-
                       return (
-                        <motion.div 
+                        <div
                           key={course.id}
-                          layout
-                          className={`p-6 md:p-8 rounded-3xl bg-white dark:bg-[#15161A] border-2 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between ${
-                            isSelected 
-                              ? 'border-red-500 ring-2 ring-red-500/10 col-span-1 md:col-span-2' 
-                              : 'border-slate-100 dark:border-white/5 hover:border-red-400 col-span-1'
+                          className={`p-6 rounded-[1.5rem] bg-white dark:bg-[#15161A] border-2 transition-all duration-300 flex items-center justify-between cursor-pointer select-none group relative ${
+                            isSelected
+                              ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg col-span-1 md:col-span-2'
+                              : 'border-slate-100 dark:border-white/5 hover:border-red-400 dark:hover:border-red-500/30 shadow-xs col-span-1'
                           }`}
                           onClick={() => {
                             setSelectedCourseId(isSelected ? null : course.id);
@@ -295,112 +393,24 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                           onMouseEnter={() => setHoveredCourseId(course.id)}
                           onMouseLeave={() => setHoveredCourseId(null)}
                         >
-                          <div className="flex justify-between items-center w-full gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 border dark:border-white/5">
-                                  CODE: {course.code || 'COHORT'}
-                                </span>
-                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
-                                  {course.durationWeeks ? `${course.durationWeeks} Weeks` : '5 Months'}
-                                </span>
-                              </div>
-                              <h3 className={`text-lg md:text-xl font-bold leading-tight mt-3 transition-colors ${
-                                isActive 
-                                  ? 'text-red-600 dark:text-red-500 font-extrabold' 
-                                  : 'text-slate-900 dark:text-white group-hover:text-red-500'
-                              }`}>
-                                {course.name}
-                              </h3>
-                              {course.description && !isSelected && (
-                                <p className="text-xs text-slate-505 dark:text-slate-400 mt-2 line-clamp-1">
-                                  {course.description}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className={`w-16 h-16 flex items-center justify-center rounded-full transition-all duration-300 ${
-                              isActive 
-                                ? 'bg-red-50 dark:bg-red-500/10 text-red-500 scale-105 shadow-sm' 
-                                : 'bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 group-hover:text-red-500 group-hover:scale-105'
-                            }`}>
-                              {idx % 3 === 0 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg> : 
-                               idx % 3 === 1 ? <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> :
-                               <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>}
-                            </div>
+                          <div className="flex-1 pr-4">
+                            <h3 className={`font-extrabold text-base md:text-md leading-snug transition-colors ${isSelected ? 'text-red-500 dark:text-red-400' : 'text-slate-800 dark:text-zinc-100 group-hover:text-red-500'}`}>
+                              {course.name}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 font-bold font-mono">
+                              {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
+                            </p>
                           </div>
-
-                          {/* Expanded detail & 5-month learning path directly under clicked course */}
-                          {isSelected && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              transition={{ duration: 0.3 }}
-                              className="w-full mt-6 pt-6 border-t border-slate-100 dark:border-white/5 overflow-hidden"
-                              onClick={(e) => e.stopPropagation()} // Prevent clicking inner contents from closing card
-                            >
-                              {course.description && (
-                                <div className="mb-6">
-                                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
-                                    Course Synopsis
-                                  </h4>
-                                  <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-sans">
-                                    {course.description}
-                                  </p>
-                                </div>
-                              )}
-
-                              <div className="mb-4 flex items-center justify-between">
-                                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                                  5-Month Specialized Curriculum Roadmap
-                                </h4>
-                                <span className="text-[10px] font-mono bg-red-105 text-red-500 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
-                                  Step-by-Step
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-2">
-                                {roadmap.map((step) => (
-                                  <div key={step.month} className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5 flex flex-col justify-between hover:border-red-300 dark:hover:border-red-900/30 transition-all duration-300">
-                                    <div>
-                                      <div className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-mono font-extrabold text-xs mb-3">
-                                        M0{step.month}
-                                      </div>
-                                      <h5 className="font-bold text-xs text-slate-900 dark:text-white leading-tight font-sans">
-                                        {step.title}
-                                      </h5>
-                                      <p className="text-[11px] text-slate-500 dark:text-slate-405 mt-2 leading-relaxed">
-                                        {step.desc}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="mt-8 pt-4 border-t border-slate-150 dark:border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                                <p className="text-xs text-slate-550 dark:text-slate-450 italic font-serif">
-                                  Click elsewhere or "Collapse" to return. Ready to begin your journey?
-                                </p>
-                                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                                  <button
-                                    type="button"
-                                    onClick={() => setSelectedCourseId(null)}
-                                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 rounded-xl font-bold transition-all text-xs cursor-pointer"
-                                  >
-                                    Collapse Details
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => onEnterPortal('fastReg')}
-                                    className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-extrabold shadow-md hover:shadow-red-500/15 text-xs flex items-center gap-1.5 transition-all duration-300 cursor-pointer"
-                                  >
-                                    Register & Appraise <ArrowRight className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </motion.div>
+                      
+                          <div className="shrink-0 flex items-center justify-center mix-blend-multiply dark:mix-blend-normal">
+                            {getCourseCategory(course.name) === 'Product Management with AI' && <PMIcon />}
+                            {getCourseCategory(course.name) === 'Analytics and AI' && <AnalyticsIcon />}
+                            {getCourseCategory(course.name) === 'Data Science and AI-ML' && <DataScienceIcon />}
+                            {getCourseCategory(course.name) === 'Software Development Engineering' && <SDEIcon />}
+                            {getCourseCategory(course.name) === 'Marketing and Analytics' && <MarketingIcon />}
+                            {getCourseCategory(course.name) === 'Finance and Technology' && <FinanceIcon />}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
