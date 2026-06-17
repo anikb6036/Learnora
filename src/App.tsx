@@ -2137,16 +2137,22 @@ function AppContent() {
                         </div>
 
                         <div className="pt-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setExamRequest(fastRegSuccess);
-                              setShowExamModal(true);
-                            }}
-                            className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium text-base px-8 py-4 rounded-full transition-all cursor-pointer hover:opacity-90 w-full sm:w-auto"
-                          >
-                            Launch Exam Now
-                          </button>
+                          {registrationRequests.find(r => r.id === fastRegSuccess.id)?.status === 'approved' ? (
+                            <div className="bg-emerald-50 max-w-sm dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium px-8 py-4 rounded-full border border-emerald-200 dark:border-emerald-500/20 text-center">
+                              You have already cleared the exam.
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExamRequest(fastRegSuccess);
+                                setShowExamModal(true);
+                              }}
+                              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium text-base px-8 py-4 rounded-full transition-all cursor-pointer hover:opacity-90 w-full sm:w-auto flex-shrink-0"
+                            >
+                              Launch Exam Now
+                            </button>
+                          )}
 
                           <button
                             type="button"
