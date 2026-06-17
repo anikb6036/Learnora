@@ -666,7 +666,7 @@ function AppContent() {
 
   // State modification Handlers
   const handleAddStudent = (studentData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
-    const generatedUsername = studentData.username || `stu_${studentData.name.toLowerCase().replace(/\s+/g, '_')}_${Math.floor(100 + Math.random() * 900)}`;
+    const generatedUsername = studentData.username || studentData.email.toLowerCase();
     const generatedPassword = studentData.password || `pass_${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newStudent: UserAccount = {
@@ -1229,11 +1229,10 @@ function AppContent() {
     const cleanEmail = email.trim().toLowerCase();
     
     // Auto-generate credentials
-    const usernamePrefix = cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const randomNum = Math.floor(100 + Math.random() * 900);
-    const username = `${usernamePrefix}_${randomNum}`;
+    const username = cleanEmail;
     
     const titleName = cleanName.split(' ')[0] || 'Student';
+    const randomNum = Math.floor(100 + Math.random() * 900);
     const password = `Learn@${titleName}${randomNum}`;
   
     const newRequest: RegistrationRequest = {
