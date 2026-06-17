@@ -190,9 +190,6 @@ function AppContent() {
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
 
-  // Filter option state for course directory categories inside dashboard
-  const [dashboardCourseFilter, setDashboardCourseFilter] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
-
   // Control individual show variables inside ScheduleManager from the main sidebar
   const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
   const [scheduleShowBatchManager, setScheduleShowBatchManager] = useState(false);
@@ -1873,7 +1870,7 @@ function AppContent() {
             <Smartphone className="w-5 h-5 text-amber-500 mt-0.5 animate-bounce flex-shrink-0" />
             <div className="flex-1">
               <p className="text-xs font-bold font-sans tracking-wide text-amber-500 uppercase">PUSH ALERT: {toastAlert.title}</p>
-              <p className="text-[11px] text-gray-300 leading-relaxed mt-0.5">{toastAlert.message}</p>
+              <p className="text-sm text-gray-300 leading-relaxed mt-0.5">{toastAlert.message}</p>
             </div>
           </motion.div>
         )}
@@ -1947,7 +1944,7 @@ function AppContent() {
                         <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
                           Learnora Admissions Online Placement System
                         </p>
-                        <p className="text-[11px] text-slate-500 dark:text-gray-400 max-w-md leading-relaxed">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 max-w-md leading-relaxed">
                           Clicking this button opens the remote examination interface, administering synchronous English Reading and Vocal speaking modules.
                         </p>
                         <button
@@ -1980,11 +1977,11 @@ function AppContent() {
                 ) : (
                   /* Emails List View */
                   <div className="space-y-3">
-                    <p className="text-[10px] font-mono uppercase text-slate-400 tracking-wider">Simulated Inbound Transmissions ({simulatedEmails.filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase()).length})</p>
+                    <p className="text-sm font-mono uppercase text-slate-400 tracking-wider">Simulated Inbound Transmissions ({simulatedEmails.filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase()).length})</p>
                     {simulatedEmails.filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase()).length === 0 ? (
                       <div className="text-center py-12 text-slate-400 dark:text-gray-500 font-mono text-xs">
                         No emails detected in this sandbox ledger yet.<br />
-                        <span className="text-[11px] block mt-2.5 text-amber-500 font-bold bg-amber-500/5 p-3 rounded-xl max-w-sm mx-auto border border-amber-500/10">
+                        <span className="text-sm block mt-2.5 text-amber-500 font-bold bg-amber-500/5 p-3 rounded-xl max-w-sm mx-auto border border-amber-500/10">
                           If you submitted an application, switch simulator profile to Admin (Anik Baidya) on the landing page, open Student Profiles, and approve it.
                         </span>
                       </div>
@@ -2000,11 +1997,11 @@ function AppContent() {
                               className="w-full text-left py-3.5 px-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 flex flex-col gap-1 transition block border border-transparent hover:border-slate-150 dark:hover:border-white/5 cursor-pointer"
                             >
                               <div className="flex justify-between items-center mb-1">
-                                <span className="font-mono text-[10px] text-amber-500 font-bold">{mail.from}</span>
-                                <span className="text-[10px] text-slate-400">{new Date(mail.timestamp).toLocaleTimeString()}</span>
+                                <span className="font-mono text-sm text-amber-500 font-bold">{mail.from}</span>
+                                <span className="text-sm text-slate-400">{new Date(mail.timestamp).toLocaleTimeString()}</span>
                               </div>
                               <p className="text-xs font-bold text-slate-900 dark:text-gray-200 truncate">{mail.subject}</p>
-                              <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate leading-none mt-1">{mail.body.substring(0, 90)}...</p>
+                              <p className="text-sm text-slate-500 dark:text-gray-400 truncate leading-none mt-1">{mail.body.substring(0, 90)}...</p>
                             </button>
                           ))}
                       </div>
@@ -2045,7 +2042,7 @@ function AppContent() {
                   <button
                     type="button"
                     onClick={() => setShowPortal(false)}
-                    className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
+                    className="text-sm font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
                   >
                     ← Back To Home
                   </button>
@@ -2063,7 +2060,7 @@ function AppContent() {
                       <button
                         type="button"
                         onClick={() => setShowPortal(false)}
-                        className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
+                        className="text-sm font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
                       >
                         ← Back To Home
                       </button>
@@ -2225,11 +2222,11 @@ function AppContent() {
                                       <Upload className="w-3.5 h-3.5" />
                                       {fastAvatarUrl ? 'Change Avatar Asset' : 'Upload Student Photo'}
                                     </label>
-                                    <p className="text-[9.5px] text-slate-450 dark:text-gray-500 leading-snug">
+                                    <p className="text-sm text-slate-450 dark:text-gray-500 leading-snug">
                                       Supports JPEG, PNG, WebP format. Maximum file size budget: 2MB.
                                     </p>
                                     {fastAvatarError && (
-                                      <p className="text-[10.5px] text-rose-500 dark:text-rose-455 font-bold leading-tight mt-1">
+                                      <p className="text-sm text-rose-500 dark:text-rose-455 font-bold leading-tight mt-1">
                                         {fastAvatarError}
                                       </p>
                                     )}
@@ -2258,7 +2255,7 @@ function AppContent() {
                                     />
                                   </div>
                                   {fastFirstNameError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastFirstNameError}</p>
+                                    <p className="text-sm text-rose-500 mt-1 font-semibold">{fastFirstNameError}</p>
                                   )}
                                 </div>
                                 <div className="space-y-1.5">
@@ -2280,7 +2277,7 @@ function AppContent() {
                                     />
                                   </div>
                                   {fastLastNameError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastLastNameError}</p>
+                                    <p className="text-sm text-rose-500 mt-1 font-semibold">{fastLastNameError}</p>
                                   )}
                                 </div>
                               </div>
@@ -2303,7 +2300,7 @@ function AppContent() {
                                   ))}
                                 </select>
                                 {fastCourseError && (
-                                  <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastCourseError}</p>
+                                  <p className="text-sm text-rose-500 mt-1 font-semibold">{fastCourseError}</p>
                                 )}
                               </div>
 
@@ -2367,22 +2364,22 @@ function AppContent() {
                                             Verify
                                           </button>
                                         </div>
-                                        <p className="text-[10px] text-amber-500 font-medium px-1">
+                                        <p className="text-sm text-amber-500 font-medium px-1">
                                           An OTP has been sent to your email.
                                         </p>
                                       </div>
                                     )}
                                     {emailVerified && (
-                                      <p className="text-[10.5px] text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
+                                      <p className="text-sm text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
                                         <Check className="w-3.5 h-3.5" /> Email successfully verified.
                                       </p>
                                     )}
                                     {fastEmailError && (
-                                      <p className="text-[10px] text-rose-500 mt-1.5 font-medium px-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fastEmailError}</p>
+                                      <p className="text-sm text-rose-500 mt-1.5 font-medium px-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fastEmailError}</p>
                                     )}
                                   </div>
                                   {fastEmailSuccess && (
-                                    <p className="text-[10px] text-amber-500 mt-1.5 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-normal">{fastEmailSuccess}</p>
+                                    <p className="text-sm text-amber-500 mt-1.5 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-normal">{fastEmailSuccess}</p>
                                   )}
                                 </div>
 
@@ -2430,7 +2427,7 @@ function AppContent() {
                                     </div>
                                   </div>
                                   {fastPhoneError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastPhoneError}</p>
+                                    <p className="text-sm text-rose-500 mt-1 font-semibold">{fastPhoneError}</p>
                                   )}
                                 </div>
                               </div>
@@ -2455,7 +2452,7 @@ function AppContent() {
                                     <option value="Prefer not to say">Prefer not to say</option>
                                   </select>
                                   {fastGenderError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastGenderError}</p>
+                                    <p className="text-sm text-rose-500 mt-1 font-semibold">{fastGenderError}</p>
                                   )}
                                 </div>
 
@@ -2473,7 +2470,7 @@ function AppContent() {
                                     className={`w-full px-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastDobError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 transition-all font-sans select-none`}
                                   />
                                   {fastDobError && (
-                                    <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastDobError}</p>
+                                    <p className="text-sm text-rose-500 mt-1 font-semibold">{fastDobError}</p>
                                   )}
                                 </div>
                               </div>
@@ -2498,7 +2495,7 @@ function AppContent() {
                                   />
                                 </div>
                                 {fastFatherNameError && (
-                                  <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastFatherNameError}</p>
+                                  <p className="text-sm text-rose-500 mt-1 font-semibold">{fastFatherNameError}</p>
                                 )}
                               </div>
 
@@ -2594,7 +2591,7 @@ function AppContent() {
                                 </AnimatePresence>
 
                                 {fastLastQualificationError && (
-                                  <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastLastQualificationError}</p>
+                                  <p className="text-sm text-rose-500 mt-1 font-semibold">{fastLastQualificationError}</p>
                                 )}
                               </div>
 
@@ -2618,7 +2615,7 @@ function AppContent() {
                                   />
                                 </div>
                                 {fastAddressError && (
-                                  <p className="text-[10px] text-rose-500 mt-1 font-semibold">{fastAddressError}</p>
+                                  <p className="text-sm text-rose-500 mt-1 font-semibold">{fastAddressError}</p>
                                 )}
                               </div>
 
@@ -2672,7 +2669,7 @@ function AppContent() {
 
                     <form onSubmit={handleCredentialsLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Approved Username</label>
+                        <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Approved Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2690,7 +2687,7 @@ function AppContent() {
 
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Security Password</label>
+                          <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Security Password</label>
                           <button
                             type="button"
                             onClick={() => {
@@ -2699,7 +2696,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-[11px] text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-sm text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2749,7 +2746,7 @@ function AppContent() {
                   <div className="space-y-4">
                     <div className="mb-6">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="p-0.5 px-2 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-gray-300 rounded-md text-[9px] font-sans font-bold uppercase tracking-widest border border-slate-200 dark:border-white/5 shadow-sm">
+                        <span className="p-0.5 px-2 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-gray-300 rounded-md text-sm font-sans font-bold uppercase tracking-widest border border-slate-200 dark:border-white/5 shadow-sm">
                           🛡️ Restricted Entry
                         </span>
                       </div>
@@ -2768,7 +2765,7 @@ function AppContent() {
 
                     <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Admin Username</label>
+                        <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Admin Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2786,7 +2783,7 @@ function AppContent() {
 
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Override Password</label>
+                          <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Override Password</label>
                           <button
                             type="button"
                             onClick={() => {
@@ -2795,7 +2792,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-[11px] text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-sm text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2884,7 +2881,7 @@ function AppContent() {
                       <div className="origin-left scale-[0.65] -mb-1 relative -left-1">
                         <Logo size="sm" withStrapline={false} />
                       </div>
-                      <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 font-sans ml-1 text-slate-400 dark:text-gray-500">Active Scheduler</p>
+                      <p className="text-sm text-gray-500 uppercase tracking-widest mt-0.5 font-sans ml-1 text-slate-400 dark:text-gray-500">Active Scheduler</p>
                     </div>
                   ) : (
                     <div className="scale-[0.45] origin-center -ml-3 -mb-1">
@@ -2975,7 +2972,7 @@ function AppContent() {
                   {!isActuallyCollapsed && (
                     <div className="min-w-0 flex-1 animate-fadeIn">
                       <p className="text-xs font-bold text-slate-900 dark:text-gray-200 truncate">{currentUser.name}</p>
-                      <span className="inline-flex items-center text-[9px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded mt-0.5">
+                      <span className="inline-flex items-center text-sm uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded mt-0.5">
                         {currentUser.role}
                       </span>
                     </div>
@@ -3027,7 +3024,7 @@ function AppContent() {
                     <>
                       {!isActuallyCollapsed && (
                         <div className="pt-4 pb-1 pl-3.5 pr-2">
-                          <p className="text-[11px] font-sans text-slate-500 dark:text-slate-400 mb-0.5">Academic shortcuts</p>
+                          <p className="text-sm font-sans text-slate-500 dark:text-slate-400 mb-0.5">Academic shortcuts</p>
                         </div>
                       )}
 
@@ -3137,7 +3134,7 @@ function AppContent() {
 
                   {!isActuallyCollapsed && (
                     <div className="pt-4 pb-1 pl-3.5 pr-2">
-                      <p className="text-[11px] font-sans text-slate-500 dark:text-slate-400 mb-0.5">System Categories</p>
+                      <p className="text-sm font-sans text-slate-500 dark:text-slate-400 mb-0.5">System Categories</p>
                     </div>
                   )}
 
@@ -3213,7 +3210,7 @@ function AppContent() {
                     <Mail className="w-4 h-4 flex-shrink-0" />
                     {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Mailbox</span>}
                     {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length > 0 && (
-                      <span className={`absolute ${isActuallyCollapsed ? 'top-1 right-1' : 'right-3.5 top-1/2 -translate-y-1/2'} min-w-[16px] h-4 leading-none text-[9.5px] font-mono font-bold bg-amber-500 text-amber-950 px-1 rounded-full flex items-center justify-center border border-white dark:border-[#161618] transition-all`}>
+                      <span className={`absolute ${isActuallyCollapsed ? 'top-1 right-1' : 'right-3.5 top-1/2 -translate-y-1/2'} min-w-[16px] h-4 leading-none text-sm font-mono font-bold bg-amber-500 text-amber-950 px-1 rounded-full flex items-center justify-center border border-white dark:border-[#161618] transition-all`}>
                         {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length}
                       </span>
                     )}
@@ -3267,14 +3264,14 @@ function AppContent() {
                     <div className="border-b border-slate-200 dark:border-white/10 pb-4">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-[10px] leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
+                          <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-sm leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
                             ▲
                           </div>
                           <span className="text-sm font-semibold text-slate-500 dark:text-gray-400 font-mono">learnora</span>
                           <span className="text-slate-300 dark:text-neutral-700">/</span>
                           <span className="text-sm font-semibold text-slate-950 dark:text-white font-sans flex items-center gap-1.5">
                             admin-centre
-                            <span className="text-[10px] bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">hobby</span>
+                            <span className="text-sm bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">hobby</span>
                           </span>
                         </div>
 
@@ -3353,163 +3350,6 @@ function AppContent() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Academic Course Categories Section */}
-                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10 mt-8">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                          <h2 className="text-lg font-bold text-slate-950 dark:text-white flex items-center gap-2">
-                            <GraduationCap className="w-5 h-5 text-blue-500" />
-                            Academic Programs & Courses Directory
-                          </h2>
-                          <p className="text-xs text-slate-500 dark:text-gray-400">
-                            Structured directory tracking complete, ongoing (current), and impending (upcoming) curriculums.
-                          </p>
-                        </div>
-
-                        {/* Interactive Option Filters */}
-                        <div className="flex flex-wrap items-center gap-1.5 bg-slate-105/85 dark:bg-white/[0.03] p-1 rounded-xl border border-slate-200/40 dark:border-white/5">
-                          {[
-                            { id: 'all', label: 'Show All' },
-                            { id: 'ongoing', label: 'Current' },
-                            { id: 'upcoming', label: 'Upcoming' },
-                            { id: 'completed', label: 'Complete' }
-                          ].map(ctg => (
-                            <button
-                              key={ctg.id}
-                              onClick={() => setDashboardCourseFilter(ctg.id as any)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
-                                dashboardCourseFilter === ctg.id
-                                  ? 'bg-white dark:bg-white/10 text-slate-950 dark:text-white shadow-xs'
-                                  : 'text-slate-500 hover:text-slate-850 dark:hover:text-neutral-200'
-                              }`}
-                            >
-                              {ctg.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Course Directory Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* CURRENT */}
-                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'ongoing') && (
-                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                                <span className="text-xs font-bold text-emerald-650 dark:text-emerald-450 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                  Current Course (Ongoing)
-                                </span>
-                                <span className="text-xs font-semibold px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-mono">
-                                  {courses.filter(c => !c.status || c.status === 'ongoing').length}
-                                </span>
-                              </div>
-                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                                {courses.filter(c => !c.status || c.status === 'ongoing').length === 0 ? (
-                                  <p className="text-xs text-slate-400 italic py-4 text-center">No ongoing courses.</p>
-                                ) : (
-                                  courses.filter(c => !c.status || c.status === 'ongoing').map(c => (
-                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-emerald-500/20 transition-all">
-                                      <div className="flex justify-between items-center">
-                                        <div className="flex gap-1.5 items-center">
-                                          {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
-                                              Batch: {c.batchNumber}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      </div>
-                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
-                                      {c.description && <p className="text-[10.5px] text-slate-550 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
-                                    </div>
-                                  ))
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* UPCOMING */}
-                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'upcoming') && (
-                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                                <span className="text-xs font-bold text-blue-650 dark:text-blue-455 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                                  Upcoming Course
-                                </span>
-                                <span className="text-xs font-semibold px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full font-mono">
-                                  {courses.filter(c => c.status === 'upcoming').length}
-                                </span>
-                              </div>
-                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                                {courses.filter(c => c.status === 'upcoming').length === 0 ? (
-                                  <p className="text-xs text-slate-400 italic py-4 text-center">No upcoming courses planned.</p>
-                                ) : (
-                                  courses.filter(c => c.status === 'upcoming').map(c => (
-                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-blue-500/20 transition-all animate-fadeIn">
-                                      <div className="flex justify-between items-center">
-                                        <div className="flex gap-1.5 items-center">
-                                          {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
-                                              Batch: {c.batchNumber}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      </div>
-                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
-                                      {c.description && <p className="text-[10.5px] text-slate-555 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
-                                    </div>
-                                  ))
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* COMPLETED */}
-                        {(dashboardCourseFilter === 'all' || dashboardCourseFilter === 'completed') && (
-                          <div className={`p-5 rounded-2xl bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between ${dashboardCourseFilter !== 'all' ? 'md:col-span-3 font-sans' : 'font-sans'}`}>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                                <span className="text-xs font-bold text-slate-550 dark:text-slate-455 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                  <span className="w-2 h-2 rounded-full bg-slate-400" />
-                                  Complete Course
-                                </span>
-                                <span className="text-xs font-semibold px-2 py-0.5 bg-slate-500/10 text-slate-500 dark:text-slate-400 rounded-full font-mono">
-                                  {courses.filter(c => c.status === 'completed').length}
-                                </span>
-                              </div>
-                              <div className={`space-y-2.5 max-h-[350px] overflow-y-auto pr-1 ${dashboardCourseFilter !== 'all' ? 'grid grid-cols-1 md:grid-cols-3 gap-4 space-y-0' : ''}`}>
-                                {courses.filter(c => c.status === 'completed').length === 0 ? (
-                                  <p className="text-xs text-slate-400 italic py-4 text-center">No completed archives yet.</p>
-                                ) : (
-                                  courses.filter(c => c.status === 'completed').map(c => (
-                                    <div key={c.id} className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl space-y-1.5 hover:border-slate-500/25 transition-all">
-                                      <div className="flex justify-between items-center">
-                                        <div className="flex gap-1.5 items-center">
-                                          {c.batchNumber && (
-                                            <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 bg-red-500/10 text-red-655 dark:text-red-400 rounded">
-                                              Batch: {c.batchNumber}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <span className="text-[10px] font-mono text-slate-400">{c.durationWeeks} Months</span>
-                                      </div>
-                                      <p className="text-xs font-bold text-slate-850 dark:text-zinc-200">{c.name}</p>
-                                      {c.description && <p className="text-[10.5px] text-slate-555 dark:text-zinc-400 leading-relaxed font-sans">{c.description}</p>}
-                                    </div>
-                                  ))
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 ) : (
                   <div>
@@ -3552,11 +3392,11 @@ function AppContent() {
                                     </div>
                                     <div>
                                       <div className="flex items-center gap-2">
-                                        <span className="text-[9px] bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider font-mono">
+                                        <span className="text-sm bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider font-mono">
                                           Ongoing / Active
                                         </span>
                                         {enrolledCourseConfig.batchNumber && (
-                                          <span className="text-[9px] bg-red-500/10 text-red-500 dark:text-red-400 px-2   py-0.5 rounded font-bold font-mono">
+                                          <span className="text-sm bg-red-500/10 text-red-500 dark:text-red-400 px-2   py-0.5 rounded font-bold font-mono">
                                             Batch: {enrolledCourseConfig.batchNumber}
                                           </span>
                                         )}
@@ -3567,7 +3407,7 @@ function AppContent() {
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-start sm:items-end">
-                                    <p className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider">Duration</p>
+                                    <p className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider">Duration</p>
                                     <p className="text-xs font-bold text-slate-700 dark:text-slate-350">
                                       {enrolledCourseConfig.durationWeeks || enrolledCourseConfig.durationMonths || '12'} Months
                                     </p>
@@ -3582,7 +3422,7 @@ function AppContent() {
 
                                 {enrolledCourseConfig.roadmap && enrolledCourseConfig.roadmap.length > 0 && (
                                   <div className="pt-2 space-y-3 font-sans">
-                                    <p className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider flex items-center gap-1.5">
+                                    <p className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider flex items-center gap-1.5">
                                       <GitBranch className="w-3.5 h-3.5 text-emerald-500" />
                                       Active Curriculum Roadmap & Milestones
                                     </p>
@@ -3590,14 +3430,14 @@ function AppContent() {
                                       {enrolledCourseConfig.roadmap.map((m: any) => (
                                         <div key={m.month} className="p-3 bg-white dark:bg-white/[0.02] border border-slate-150 dark:border-white/5 rounded-xl hover:border-emerald-500/20 dark:hover:border-emerald-500/20 transition-all">
                                           <div className="flex items-center gap-2 mb-1.5">
-                                            <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold font-mono">
+                                            <span className="text-sm bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold font-mono">
                                               Month {m.month}
                                             </span>
                                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                                               {m.title}
                                             </span>
                                           </div>
-                                          <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
+                                          <p className="text-sm text-slate-500 dark:text-gray-400 leading-normal">
                                             {m.desc}
                                           </p>
                                         </div>
@@ -3739,19 +3579,19 @@ function AppContent() {
                                                         {cl.title}
                                                       </h4>
                                                       {cl.status === 'completed' && (
-                                                        <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
+                                                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
                                                           Done
                                                         </span>
                                                       )}
                                                     </div>
-                                                    <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                    <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mt-0.5">
                                                       by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
                                                     </p>
                                                   </div>
                                                 </div>
                                                 
                                                 <div className="md:col-span-3">
-                                                   <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-tight ${
+                                                   <span className={`inline-flex items-center px-2 py-0.5 rounded border text-sm font-bold uppercase tracking-tight ${
                                                       cl.status === 'scheduled'
                                                         ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/10'
                                                         : cl.status === 'completed'
@@ -3764,34 +3604,34 @@ function AppContent() {
 
                                                 <div className="md:col-span-4 min-w-0 flex items-center justify-between gap-4">
                                                   <div className="min-w-0">
-                                                    <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Room / Link</p>
+                                                    <p className="font-semibold text-slate-400 dark:text-zinc-500 text-sm uppercase tracking-wider mb-0.5">Room / Link</p>
                                                     {cl.status === 'cancelled' ? (
                                                       <div className="flex items-center gap-2 mt-1">
-                                                        <div className="px-3 py-1 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-md text-[10.5px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
+                                                        <div className="px-3 py-1 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-md text-sm text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
                                                           ❌ Cancelled
                                                         </div>
                                                       </div>
                                                     ) : cl.status === 'completed' || isTimeOver ? (
                                                       <div className="flex items-center gap-2 mt-1">
-                                                        <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[10.5px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                                        <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-sm text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                                           ✓ Completed
                                                         </div>
                                                       </div>
                                                     ) : cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google')) ? (
                                                       <div className="flex items-center gap-2 mt-1">
                                                         {isLinkActive ? (
-                                                          <a href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-md text-[10.5px] font-bold transition">Join Class</a>
+                                                          <a href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-md text-sm font-bold transition">Join Class</a>
                                                         ) : (
-                                                          <button disabled className="px-3 py-1 bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 rounded-md text-[10.5px] font-bold cursor-not-allowed">Join Class</button>
+                                                          <button disabled className="px-3 py-1 bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 rounded-md text-sm font-bold cursor-not-allowed">Join Class</button>
                                                         )}
                                                       </div>
                                                     ) : (
-                                                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5"><span className="opacity-75">Location:</span> {cl.location}</p>
+                                                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5"><span className="opacity-75">Location:</span> {cl.location}</p>
                                                     )}
                                                   </div>
                                                   <div className="text-right shrink-0">
                                                     <div className="text-[13px] font-bold text-slate-900 dark:text-white">{cl.time}</div>
-                                                    <div className="text-[10px] text-slate-500">{cl.duration}m</div>
+                                                    <div className="text-sm text-slate-500">{cl.duration}m</div>
                                                   </div>
                                                 </div>
                                               </div>
@@ -3849,31 +3689,31 @@ function AppContent() {
                                             <h4 className="font-bold text-slate-900 dark:text-white text-[13.5px] truncate opacity-60 line-through decoration-slate-400" title={cl.title}>
                                               {cl.title}
                                             </h4>
-                                            <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
+                                            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
                                               Done
                                             </span>
                                           </div>
-                                          <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                          <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mt-0.5">
                                             by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
                                           </p>
                                         </div>
                                       </div>
                                       
                                       <div className="md:col-span-3">
-                                         <span className="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-tight bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10">
+                                         <span className="inline-flex items-center px-2 py-0.5 rounded border text-sm font-bold uppercase tracking-tight bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10">
                                             Completed
                                           </span>
                                       </div>
 
                                       <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
                                         <div className="min-w-0">
-                                          <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Date & Time</p>
-                                          <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+                                          <p className="font-semibold text-slate-400 dark:text-zinc-500 text-sm uppercase tracking-wider mb-0.5">Date & Time</p>
+                                          <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                                             {cl.date} at {cl.time} ({cl.duration}m)
                                           </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                          <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[10.5px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                          <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-sm text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                             ✓ Completed
                                           </div>
                                         </div>
@@ -3959,22 +3799,22 @@ function AppContent() {
                                             {cl.title}
                                           </span>
                                           {cl.status === 'completed' && (
-                                            <span className="text-[10px] font-bold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/10 dark:text-blue-450 uppercase tracking-tight">
+                                            <span className="text-sm font-bold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/10 dark:text-blue-450 uppercase tracking-tight">
                                               Completed
                                             </span>
                                           )}
                                           {cl.course && cl.course !== 'All' && (
-                                            <span className="text-[10px] font-bold text-amber-605 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10 dark:text-amber-400">
+                                            <span className="text-sm font-bold text-amber-605 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10 dark:text-amber-400">
                                               {cl.course}
                                             </span>
                                           )}
                                           {cl.batch && cl.batch !== 'All' && (
-                                            <span className="text-[10px] font-semibold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/10 dark:text-blue-400">
+                                            <span className="text-sm font-semibold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/10 dark:text-blue-400">
                                               {cl.batch}
                                             </span>
                                           )}
                                         </div>
-                                        <p className="text-[10.5px] text-slate-400 dark:text-gray-500 mt-0.5 font-medium">
+                                        <p className="text-sm text-slate-400 dark:text-gray-500 mt-0.5 font-medium">
                                           Subject: <span className="text-slate-600 dark:text-zinc-350">{cl.subject}</span>
                                         </p>
                                       </div>
@@ -3982,10 +3822,10 @@ function AppContent() {
  
                                     {/* Middle: Details (Date & Time) */}
                                     <div className="flex flex-col md:items-end justify-start">
-                                      <span className="text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
+                                      <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
                                         {cl.date}
                                       </span>
-                                      <span className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1 leading-none">
+                                      <span className="text-sm text-slate-400 mt-0.5 flex items-center gap-1 leading-none">
                                         <Clock className="w-3.5 h-3.5 text-slate-400" />
                                         {cl.time} ({cl.duration} mins)
                                       </span>
@@ -3994,11 +3834,11 @@ function AppContent() {
                                     {/* Right: Location & Join button */}
                                     <div className="flex items-center gap-3 shrink-0">
                                       {cl.status === 'cancelled' ? (
-                                        <div className="px-3 py-1.5 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-lg text-[10px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
+                                        <div className="px-3 py-1.5 bg-rose-500/10 border border-rose-200/50 dark:border-rose-500/10 rounded-lg text-sm text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight">
                                           ❌ Cancelled
                                         </div>
                                       ) : cl.status === 'completed' || isTimeOver ? (
-                                        <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-lg text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                        <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-lg text-sm text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                           ✓ Class Completed
                                         </div>
                                       ) : isLinkLocation ? (
@@ -4006,17 +3846,17 @@ function AppContent() {
                                           href={cl.location.startsWith('http') ? cl.location : `https://${cl.location}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1"
+                                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-amber-950 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-500 rounded-lg text-sm font-bold transition flex items-center gap-1"
                                         >
                                           Host Class
                                         </a>
                                       ) : (
-                                        <div className="px-3 py-1.5 bg-neutral-100 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 rounded-lg text-[10px] text-slate-600 dark:text-zinc-450 font-mono">
+                                        <div className="px-3 py-1.5 bg-neutral-100 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 rounded-lg text-sm text-slate-600 dark:text-zinc-450 font-mono">
                                           Location: {cl.location}
                                         </div>
                                       )}
                                       
-                                      <div className="px-2 py-1 bg-blue-550/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 rounded-lg text-[10px] font-semibold">
+                                      <div className="px-2 py-1 bg-blue-550/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 rounded-lg text-sm font-semibold">
                                         {cl.enrolledStudentIds?.length || 0} enrolled
                                       </div>
                                     </div>
@@ -4262,7 +4102,7 @@ function AppContent() {
                 className="space-y-4"
               >
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Registered Email Address</label>
+                  <label className="text-sm font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Registered Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -4274,7 +4114,7 @@ function AppContent() {
                       className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800 dark:text-gray-100 font-sans"
                     />
                   </div>
-                  <p className="text-[9.5px] text-slate-400 dark:text-gray-500 leading-relaxed font-sans mt-1">
+                  <p className="text-sm text-slate-400 dark:text-gray-500 leading-relaxed font-sans mt-1">
                     Once requested, you will receive an email shortly with your recovery credentials containing your username and password.
                   </p>
                 </div>

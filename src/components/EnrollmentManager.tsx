@@ -313,7 +313,7 @@ export default function EnrollmentManager({
       {currentUser.role !== 'student' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-            <p className="text-xs font-mono uppercase tracking-widest text-slate-400">Total Enrolled</p>
+            <p className="text-xs    text-slate-400">Total Enrolled</p>
             <p className="text-3xl font-bold font-sans text-slate-800 dark:text-white mt-1.5">{students.length}</p>
             <div className="mt-2 text-xs text-blue-500 font-semibold flex items-center gap-1">
               <span>All records permanently stored</span>
@@ -321,7 +321,7 @@ export default function EnrollmentManager({
           </div>
 
           <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-            <p className="text-xs font-mono uppercase tracking-widest text-slate-400">No Primary Mentor Assigned</p>
+            <p className="text-xs    text-slate-400">No Primary Mentor Assigned</p>
             <p className="text-3xl font-bold font-sans text-slate-800 dark:text-white mt-1.5">
               {students.filter(s => !s.assignedInstructorId || !instructors.some(i => i.id === s.assignedInstructorId)).length}
             </p>
@@ -329,7 +329,7 @@ export default function EnrollmentManager({
           </div>
 
           <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-            <p className="text-xs font-mono uppercase tracking-widest text-slate-400">Average Courses / Student</p>
+            <p className="text-xs    text-slate-400">Average Courses / Student</p>
             <p className="text-3xl font-bold font-sans text-slate-800 dark:text-white mt-1.5">
               {students.length > 0
                 ? (students.reduce((acc, s) => acc + getEnrolledClasses(s.id).length, 0) / students.length).toFixed(1)
@@ -355,7 +355,7 @@ export default function EnrollmentManager({
           </div>
 
           {registrationRequests.filter(r => r.status === 'pending').length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-400 dark:text-gray-500 font-mono bg-slate-50/50 dark:bg-[#0F0F11]/50 border border-dashed border-slate-200 dark:border-white/5 rounded-2xl select-none">
+            <div className="p-8 text-center text-xs text-slate-400 dark:text-gray-500  bg-slate-50/50 dark:bg-[#0F0F11]/50 border border-dashed border-slate-200 dark:border-white/5 rounded-2xl select-none">
               No pending student registration tickets in queue. Use "Fast Student Registration" on the login screen to submit requests.
             </div>
           ) : (
@@ -381,11 +381,11 @@ export default function EnrollmentManager({
                           </div>
                         )}
                         <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-gray-100 font-serif leading-tight">{req.name}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mt-0.5">Submitted: {req.submittedDate}</p>
+                          <p className="text-xs font-bold text-slate-900 dark:text-gray-100 font-serif leading-tight">{req.name}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-0.5">Submitted: {req.submittedDate}</p>
                         </div>
                       </div>
-                      <span className="text-[9px] font-mono font-bold tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase flex-shrink-0">
+                      <span className="text-xs  font-bold  text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full  flex-shrink-0">
                         PENDING
                       </span>
                     </div>
@@ -451,21 +451,21 @@ export default function EnrollmentManager({
                       {/* Interview Schedule information */}
                       <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#161618] border dark:border-white/5 space-y-2 mt-2">
                         <div className="flex items-center justify-between">
-                          <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500 font-mono">Admission Interview</p>
+                          <p className="text-xs font-bold   text-slate-400 dark:text-gray-500 ">Admission Interview</p>
                           {req.interviewStatus === 'scheduled' ? (
-                            <span className="text-[9px] font-mono font-bold tracking-wider text-blue-500 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full uppercase">
+                            <span className="text-xs  font-bold  text-blue-500 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full ">
                               Scheduled
                             </span>
                           ) : req.interviewStatus === 'completed' ? (
-                            <span className="text-[9px] font-mono font-bold tracking-wider text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
+                            <span className="text-xs  font-bold  text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full ">
                               Completed
                             </span>
                           ) : req.interviewStatus === 'cancelled' ? (
-                            <span className="text-[9px] font-mono font-bold tracking-wider text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full uppercase">
+                            <span className="text-xs  font-bold  text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full ">
                               Cancelled
                             </span>
                           ) : (
-                            <span className="text-[9px] font-mono font-bold tracking-wider text-slate-400 bg-slate-550/10 border border-slate-500/25 px-2 py-0.5 rounded-full uppercase">
+                            <span className="text-xs  font-bold  text-slate-400 bg-slate-550/10 border border-slate-500/25 px-2 py-0.5 rounded-full ">
                               Not Scheduled
                             </span>
                           )}
@@ -486,20 +486,20 @@ export default function EnrollmentManager({
                               </p>
                             )}
                             {req.interviewNotes && (
-                              <p className="text-[10.5px] bg-white dark:bg-black/20 p-1.5 rounded-md text-slate-500 dark:text-gray-400 font-sans italic border border-slate-150/50 dark:border-white/5">
+                              <p className="text-xs bg-white dark:bg-black/20 p-1.5 rounded-md text-slate-500 dark:text-gray-400 font-sans italic border border-slate-150/50 dark:border-white/5">
                                 "{req.interviewNotes}"
                               </p>
                             )}
                           </div>
                         ) : (
-                          <p className="text-[10px] text-slate-400 dark:text-gray-500 leading-snug">
+                          <p className="text-xs text-slate-400 dark:text-gray-500 leading-snug">
                             No interview details configured. Use the scheduler below to record interview slots or feedback.
                           </p>
                         )}
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-orange-500/[0.02] border border-amber-500/10 mt-2 font-mono text-[10px] space-y-1 select-none">
-                        <p className="font-bold text-amber-500 text-[9px] uppercase tracking-wider">Security Credentials Drafted:</p>
+                      <div className="p-2.5 rounded-xl bg-orange-500/[0.02] border border-amber-500/10 mt-2  text-xs space-y-1 select-none">
+                        <p className="font-bold text-amber-500 text-xs  ">Security Credentials Drafted:</p>
                         <div className="flex justify-between text-slate-500 dark:text-gray-400 border-t dark:border-white/5 pt-1">
                           <span>User: <strong className="text-slate-800 dark:text-gray-200">{req.username}</strong></span>
                           <span>Pass: <strong className="text-slate-800 dark:text-gray-200">{req.password}</strong></span>
@@ -546,7 +546,7 @@ export default function EnrollmentManager({
               <User className="w-5 h-5 text-blue-500" />
               Student Enrollment & Profiles
             </h1>
-            <p className="text-sm text-slate-500 dark:text-gray-400">
+            <p className="text-xs text-slate-500 dark:text-gray-400">
               Archive records, modify primary instructors, or view courses specific to each student.
             </p>
           </div>
@@ -578,7 +578,7 @@ export default function EnrollmentManager({
                 {/* Manual Photo Upload Section */}
                 <div className="md:col-span-2 lg:col-span-4">
                   <div className="space-y-1.5 max-w-xl">
-                    <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Profile Photo (Maximum 150KB)</label>
+                    <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Profile Photo (Maximum 150KB)</label>
                     <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                       {newAvatarUrl ? (
                         <div className="relative">
@@ -632,11 +632,11 @@ export default function EnrollmentManager({
                           <Upload className="w-3 h-3" />
                           {newAvatarUrl ? 'Change' : 'Select Photo'}
                         </label>
-                        <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">
+                        <p className="text-xs text-slate-400 dark:text-gray-500 font-medium">
                           Strictly maximum file size 150KB.
                         </p>
                         {newAvatarError && (
-                          <p className="text-[10px] text-rose-500 font-bold">
+                          <p className="text-xs text-rose-500 font-bold">
                             {newAvatarError}
                           </p>
                         )}
@@ -686,7 +686,7 @@ export default function EnrollmentManager({
                 {addFormType === 'instructor' ? (
                   <>
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Instructor Full Name</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Instructor Full Name</label>
                       <input
                         type="text"
                         required
@@ -698,7 +698,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Work Email Address</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Work Email Address</label>
                       <input
                         type="email"
                         required
@@ -710,7 +710,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Phone (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Phone (Optional)</label>
                       <div className="flex gap-1.5">
                         <select
                           value={newPhonePrefix}
@@ -740,16 +740,16 @@ export default function EnrollmentManager({
                               setNewPhoneError('');
                             }
                           }}
-                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono`}
+                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 `}
                         />
                       </div>
                       {newPhoneError && (
-                        <p className="text-[10px] text-rose-500 font-semibold">{newPhoneError}</p>
+                        <p className="text-xs text-rose-500 font-semibold">{newPhoneError}</p>
                       )}
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Specialization Topic</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Specialization Topic</label>
                       <input
                         type="text"
                         placeholder="e.g. Calculus & Linear Algebra"
@@ -760,7 +760,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-amber-500 dark:text-amber-500 block font-bold">
+                      <label className="text-xs   text-amber-500 dark:text-amber-500 block font-bold">
                         Instructor Username
                       </label>
                       <input
@@ -769,12 +769,12 @@ export default function EnrollmentManager({
                         placeholder="e.g. sarah_math"
                         value={newInstructorUsername}
                         onChange={e => setNewInstructorUsername(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 "
                       />
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-amber-500 dark:text-amber-500 block font-bold">
+                      <label className="text-xs   text-amber-500 dark:text-amber-500 block font-bold">
                         Instructor Password
                       </label>
                       <input
@@ -783,14 +783,14 @@ export default function EnrollmentManager({
                         placeholder="Access password"
                         value={newInstructorPassword}
                         onChange={e => setNewInstructorPassword(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 "
                       />
                     </div>
                   </>
                 ) : addFormType === 'sub-admin' ? (
                   <>
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Sub-Admin Full Name</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Sub-Admin Full Name</label>
                       <input
                         type="text"
                         required
@@ -802,7 +802,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Work Email Address</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Work Email Address</label>
                       <input
                         type="email"
                         required
@@ -814,7 +814,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block font-bold">Phone (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block font-bold">Phone (Optional)</label>
                       <div className="flex gap-1.5">
                         <select
                           value={newPhonePrefix}
@@ -844,23 +844,23 @@ export default function EnrollmentManager({
                               setNewPhoneError('');
                             }
                           }}
-                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono`}
+                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 `}
                         />
                       </div>
                       {newPhoneError && (
-                        <p className="text-[10px] text-rose-500 font-semibold">{newPhoneError}</p>
+                        <p className="text-xs text-rose-500 font-semibold">{newPhoneError}</p>
                       )}
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2 col-span-1">
-                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Operational Scope</span>
-                      <div className="text-[10.5px] p-2 bg-amber-500/5 border border-amber-500/10 text-amber-600 dark:text-amber-500 rounded-xl font-medium leading-relaxed">
+                      <span className="text-xs  text-slate-400   block font-bold">Operational Scope</span>
+                      <div className="text-xs p-2 bg-amber-500/5 border border-amber-500/10 text-amber-600 dark:text-amber-500 rounded-xl font-medium leading-relaxed">
                         Authorized to manage class schedules and evaluate student progress folders. Cannot build other sub-admin or faculty credentials.
                       </div>
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-amber-500 dark:text-amber-500 block font-bold">
+                      <label className="text-xs   text-amber-500 dark:text-amber-500 block font-bold">
                         Sub-Admin Username
                       </label>
                       <input
@@ -869,12 +869,12 @@ export default function EnrollmentManager({
                         placeholder="e.g. john_assistant"
                         value={newInstructorUsername}
                         onChange={e => setNewInstructorUsername(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 "
                       />
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-amber-500 dark:text-amber-500 block font-bold">
+                      <label className="text-xs   text-amber-500 dark:text-amber-500 block font-bold">
                         Sub-Admin Password
                       </label>
                       <input
@@ -883,14 +883,14 @@ export default function EnrollmentManager({
                         placeholder="Access password"
                         value={newInstructorPassword}
                         onChange={e => setNewInstructorPassword(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 "
                       />
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Full Name</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Full Name</label>
                       <input
                         type="text"
                         required
@@ -902,7 +902,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Email Address</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Email Address</label>
                       <input
                         type="email"
                         required
@@ -914,7 +914,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Phone Number (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Phone Number (Optional)</label>
                       <div className="flex gap-1.5">
                         <select
                           value={newPhonePrefix}
@@ -944,16 +944,16 @@ export default function EnrollmentManager({
                               setNewPhoneError('');
                             }
                           }}
-                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono`}
+                          className={`flex-1 px-3 py-2 text-xs border ${newPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 `}
                         />
                       </div>
                       {newPhoneError && (
-                        <p className="text-[10px] text-rose-500 font-semibold">{newPhoneError}</p>
+                        <p className="text-xs text-rose-500 font-semibold">{newPhoneError}</p>
                       )}
                     </div>
 
                     <div className="space-y-1.5 md:col-span-1 lg:col-span-2">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Assign Advisor Mentor</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Assign Advisor Mentor</label>
                       <select
                         value={newInstructorId}
                         onChange={e => setNewInstructorId(e.target.value)}
@@ -969,7 +969,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Gender</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Gender</label>
                       <select
                         value={newGender}
                         onChange={e => setNewGender(e.target.value)}
@@ -984,7 +984,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Date of Birth</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Date of Birth</label>
                       <input
                         type="date"
                         value={newDob}
@@ -994,7 +994,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Father's Name (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Father's Name (Optional)</label>
                       <input
                         type="text"
                         placeholder="Father's Legal Name"
@@ -1005,7 +1005,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Father's Phone (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Father's Phone (Optional)</label>
                       <div className="flex gap-1.5">
                         <select
                           value={newFatherPhonePrefix}
@@ -1035,16 +1035,16 @@ export default function EnrollmentManager({
                               setNewFatherPhoneError('');
                             }
                           }}
-                          className={`flex-1 px-3 py-2 text-xs border ${newFatherPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-mono`}
+                          className={`flex-1 px-3 py-2 text-xs border ${newFatherPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 `}
                         />
                       </div>
                       {newFatherPhoneError && (
-                        <p className="text-[10px] text-rose-500 font-semibold">{newFatherPhoneError}</p>
+                        <p className="text-xs text-rose-500 font-semibold">{newFatherPhoneError}</p>
                       )}
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Residential Address (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Residential Address (Optional)</label>
                       <input
                         type="text"
                         placeholder="Permanent Address"
@@ -1055,7 +1055,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Last Qualification (Optional)</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Last Qualification (Optional)</label>
                       <input
                         type="text"
                         placeholder="Academic degree/diploma"
@@ -1066,7 +1066,7 @@ export default function EnrollmentManager({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Enrolled Professional Course & Batch</label>
+                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Enrolled Professional Course & Batch</label>
                       <select
                         value={newCourse && newBatch ? `${newCourse}::${newBatch}` : newCourse || ''}
                         onChange={e => {
@@ -1243,7 +1243,7 @@ export default function EnrollmentManager({
         {activeListView === 'students' ? (
           <>
             {/* Table Header Row looking like the Vercel/Resend layout */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center font-sans">
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400  tracking-tight select-none mb-3 items-center font-sans">
               <div className="col-span-5 md:col-span-4">Student Profile</div>
               <div className="col-span-3 md:col-span-2">Status</div>
               <div className="col-span-4 md:col-span-4">Assigned Advisor & Courses</div>
@@ -1252,7 +1252,7 @@ export default function EnrollmentManager({
 
             <div className="space-y-1.5 animate-fade-in font-sans">
               {filteredStudents.length === 0 ? (
-                <div className="p-12 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
+                <div className="p-12 text-center text-xs text-slate-400  border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
                   No student registrations found matching filters.
                 </div>
               ) : (
@@ -1296,23 +1296,23 @@ export default function EnrollmentManager({
                           className="w-10 h-10 rounded-lg object-cover border border-slate-250/30 dark:border-white/5 bg-slate-50 dark:bg-zinc-850"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-slate-850 dark:text-zinc-150 text-sm leading-snug truncate" title={student.name}>
+                          <p className="font-bold text-slate-850 dark:text-zinc-150 text-[13px] leading-snug truncate" title={student.name}>
                             {student.name}
                           </p>
-                          <p className="text-[10.5px] text-slate-400 dark:text-gray-500 truncate font-mono" title={student.email}>
+                          <p className="text-[11px] text-slate-400 dark:text-gray-500 truncate " title={student.email}>
                             {student.email}
                           </p>
                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                            <span className="text-[9.5px] font-mono font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
                               ID: {student.id.slice(0, 8)}
                             </span>
                             {student.course && (
-                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/10">
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/10">
                                 {student.course}
                               </span>
                             )}
                             {student.batch && (
-                              <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 font-bold">
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 font-bold">
                                 {student.batch}
                               </span>
                             )}
@@ -1328,11 +1328,11 @@ export default function EnrollmentManager({
                             Registered
                           </span>
                           {student.phone ? (
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-full font-mono" title={student.phone}>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-full " title={student.phone}>
                               <Phone className="w-3" /> {student.phone}
                             </span>
                           ) : (
-                            <span className="text-[9px] text-slate-400 dark:text-gray-500 font-mono italic">No phone added</span>
+                            <span className="text-xs text-slate-400 dark:text-gray-500  italic">No phone added</span>
                           )}
                         </div>
                       </div>
@@ -1351,7 +1351,7 @@ export default function EnrollmentManager({
                             {enrolled.map(cl => (
                               <span
                                 key={cl.id}
-                                className="inline-flex items-center gap-1.5 border border-slate-200/50 bg-white dark:bg-[#161618] dark:border-white/5 text-slate-705 dark:text-blue-300 px-2 py-0.5 rounded text-[10px] h-fit shadow-2xs"
+                                className="inline-flex items-center gap-1.5 border border-slate-200/50 bg-white dark:bg-[#161618] dark:border-white/5 text-slate-705 dark:text-blue-300 px-2 py-0.5 rounded text-xs h-fit shadow-2xs"
                               >
                                 <BookOpen className="w-2.5 h-2.5 text-amber-500" />
                                 {cl.subject}
@@ -1360,7 +1360,7 @@ export default function EnrollmentManager({
                             {currentUser.role !== 'student' && (
                               <button
                                 onClick={() => setEnrollmentStudentId(student.id)}
-                                className="text-[10px] font-bold text-amber-500 hover:underline px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/10 text-amber-600 dark:text-amber-400 cursor-pointer flex items-center gap-0.5 whitespace-nowrap"
+                                className="text-xs font-bold text-amber-500 hover:underline px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/10 text-amber-600 dark:text-amber-400 cursor-pointer flex items-center gap-0.5 whitespace-nowrap"
                               >
                                 + Enroll Class
                               </button>
@@ -1371,7 +1371,7 @@ export default function EnrollmentManager({
                         {/* Interactive Assign Classes Dropdown popover */}
                         {enrollmentStudentId === student.id && (
                           <div className="absolute z-50 mt-2 bg-white dark:bg-[#0F0F11] border border-slate-200 dark:border-white/5 p-3 rounded-xl shadow-lg w-52 max-h-48 overflow-y-auto">
-                            <div className="flex justify-between items-center mb-1 text-[10px] text-slate-400 font-mono border-b dark:border-white/5 pb-1">
+                            <div className="flex justify-between items-center mb-1 text-xs text-slate-400  border-b dark:border-white/5 pb-1">
                               <span>Choose Course:</span>
                               <button onClick={() => setEnrollmentStudentId(null)} className="text-rose-500 hover:underline">Close</button>
                             </div>
@@ -1384,13 +1384,13 @@ export default function EnrollmentManager({
                                     onEnrollStudentInClass(student.id, cl.id);
                                     setEnrollmentStudentId(null);
                                   }}
-                                  className="w-full text-left py-1 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10.5px] text-slate-755 dark:text-slate-350 truncate block cursor-pointer"
+                                  className="w-full text-left py-1 hover:bg-slate-50 dark:hover:bg-slate-900 text-xs text-slate-755 dark:text-slate-350 truncate block cursor-pointer"
                                 >
                                   {cl.subject}: {cl.title}
                                 </button>
                               ))}
                             {schedules.filter(cl => !cl.enrolledStudentIds.includes(student.id)).length === 0 && (
-                              <p className="p-1 pt-2 text-[10px] text-slate-400 text-center font-mono">Enrolled in everything</p>
+                              <p className="p-1 pt-2 text-xs text-slate-400 text-center ">Enrolled in everything</p>
                             )}
                           </div>
                         )}
@@ -1398,7 +1398,7 @@ export default function EnrollmentManager({
 
                       {/* Registered Date & Actions column */}
                       <div className="hidden md:flex md:col-span-2 items-center justify-end text-right gap-3">
-                        <span className="text-[10.5px] text-slate-400 font-mono">
+                        <span className="text-xs text-slate-400 ">
                           {joinedRelative}
                         </span>
 
@@ -1467,7 +1467,7 @@ export default function EnrollmentManager({
         ) : activeListView === 'instructors' ? (
           <div className="space-y-1.5 animate-fade-in font-sans">
             {/* Table Header Row looking like the Resend.com layout */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center font-sans">
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400  tracking-tight select-none mb-3 items-center font-sans">
               <div className="col-span-5 md:col-span-4">Instructor</div>
               <div className="col-span-3 md:col-span-2">Status</div>
               <div className="col-span-4 md:col-span-4">Specialization</div>
@@ -1475,7 +1475,7 @@ export default function EnrollmentManager({
             </div>
 
             {filteredInstructors.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
+              <div className="p-12 text-center text-xs text-slate-400  border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
                 No instructors registered.
               </div>
             ) : (
@@ -1527,7 +1527,7 @@ export default function EnrollmentManager({
                         <p className="font-semibold text-slate-800 dark:text-slate-150 truncate" title={ins.email}>
                           {ins.email}
                         </p>
-                        <p className="text-[10px] text-slate-400 dark:text-gray-500 truncate">
+                        <p className="text-xs text-slate-400 dark:text-gray-500 truncate">
                           {ins.name}
                         </p>
                       </div>
@@ -1545,14 +1545,14 @@ export default function EnrollmentManager({
                       <p className="font-semibold text-slate-850 dark:text-zinc-200 truncate">
                         {ins.specialization || 'General Mentor / Coach'}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      <p className="text-xs text-slate-400  mt-0.5">
                         User: {ins.username} • Pass: {ins.password}
                       </p>
                     </div>
 
                     {/* SENT/Joined Column + Actions */}
                     <div className="hidden md:flex md:col-span-2 items-center justify-end text-right gap-3">
-                      <span className="text-[10.5px] text-slate-400 font-mono">
+                      <span className="text-xs text-slate-400 ">
                         {joinedRelative}
                       </span>
 
@@ -1601,7 +1601,7 @@ export default function EnrollmentManager({
           /* Sub-admins list view (Pixel-replica Resend grid layout) */
           <div className="space-y-1.5 animate-fade-in font-sans">
             {/* Table Header Row looking like the Resend.com layout */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight select-none mb-3 items-center">
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-[#f4f4f5]/70 dark:bg-white/[0.02] border border-slate-200/30 dark:border-white/5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400  tracking-tight select-none mb-3 items-center">
               <div className="col-span-5 md:col-span-4">Sub-Admin</div>
               <div className="col-span-3 md:col-span-2">Status</div>
               <div className="col-span-4 md:col-span-4">Authority Role</div>
@@ -1609,7 +1609,7 @@ export default function EnrollmentManager({
             </div>
 
             {filteredSubAdmins.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
+              <div className="p-12 text-center text-xs text-slate-400  border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#070708]/50">
                 No sub-admins found matching search criteria.
               </div>
             ) : (
@@ -1661,7 +1661,7 @@ export default function EnrollmentManager({
                         <p className="font-semibold text-slate-800 dark:text-slate-150 truncate" title={sa.email}>
                           {sa.email}
                         </p>
-                        <p className="text-[10px] text-slate-400 dark:text-gray-500 truncate">
+                        <p className="text-xs text-slate-400 dark:text-gray-500 truncate">
                           {sa.name}
                         </p>
                       </div>
@@ -1679,14 +1679,14 @@ export default function EnrollmentManager({
                       <p className="font-semibold text-slate-850 dark:text-zinc-200 truncate">
                         Coordinating Officer / Sub-Administrator
                       </p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      <p className="text-xs text-slate-400  mt-0.5">
                         User: {sa.username} • Pass: {sa.password}
                       </p>
                     </div>
 
                     {/* SENT/Joined Column + Actions */}
                     <div className="hidden md:flex md:col-span-2 items-center justify-end text-right gap-3">
-                      <span className="text-[10.5px] text-slate-400 font-mono">
+                      <span className="text-xs text-slate-400 ">
                         {joinedRelative}
                       </span>
 
@@ -1808,7 +1808,7 @@ export default function EnrollmentManager({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">
                       {editingStudent.role === 'instructor' ? 'Instructor Name' : editingStudent.role === 'sub-admin' ? 'Sub-Admin Name' : 'Student Name'}
                     </label>
                     <input
@@ -1822,7 +1822,7 @@ export default function EnrollmentManager({
 
                   {/* Email */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Email Address</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Email Address</label>
                     <input
                       type="email"
                       required
@@ -1834,7 +1834,7 @@ export default function EnrollmentManager({
 
                   {/* Phone */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Primary Contact Phone</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Primary Contact Phone</label>
                     <div className="flex gap-1.5">
                       <select
                         value={editPhonePrefix}
@@ -1853,13 +1853,13 @@ export default function EnrollmentManager({
                         className="flex-1 px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
                       />
                     </div>
-                    {editPhoneError && <p className="text-[9px] text-rose-500 font-mono mt-0.5">{editPhoneError}</p>}
+                    {editPhoneError && <p className="text-xs text-rose-500  mt-0.5">{editPhoneError}</p>}
                   </div>
 
                   {/* Instructor only fields */}
                   {editingStudent.role === 'instructor' && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Specialization</label>
+                      <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Specialization</label>
                       <input
                         type="text"
                         value={editSpecialization}
@@ -1875,7 +1875,7 @@ export default function EnrollmentManager({
                   <>
                   {/* Tutor Assignment */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Assigned Instructor / Tutor</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Assigned Instructor / Tutor</label>
                     <select
                       value={editAssignedInstructorId}
                       onChange={e => setEditAssignedInstructorId(e.target.value)}
@@ -1892,7 +1892,7 @@ export default function EnrollmentManager({
 
                   {/* Username */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Username for Login</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Username for Login</label>
                     <input
                       type="text"
                       required
@@ -1904,7 +1904,7 @@ export default function EnrollmentManager({
 
                   {/* Password */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Password for Login</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Password for Login</label>
                     <input
                       type="text"
                       required
@@ -1918,7 +1918,7 @@ export default function EnrollmentManager({
                   <>
                   {/* Father Name */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Father / Guardian Name</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Father / Guardian Name</label>
                     <input
                       type="text"
                       value={editFatherName}
@@ -1929,7 +1929,7 @@ export default function EnrollmentManager({
 
                   {/* Father Phone */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Father / Guardian Phone</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Father / Guardian Phone</label>
                     <div className="flex gap-1.5">
                       <select
                         value={editFatherPhonePrefix}
@@ -1948,12 +1948,12 @@ export default function EnrollmentManager({
                         className="flex-1 px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
                       />
                     </div>
-                    {editFatherPhoneError && <p className="text-[9px] text-rose-500 font-mono mt-0.5">{editFatherPhoneError}</p>}
+                    {editFatherPhoneError && <p className="text-xs text-rose-500  mt-0.5">{editFatherPhoneError}</p>}
                   </div>
 
                   {/* Last Qualification */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Last Academic Qualification</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Last Academic Qualification</label>
                     <input
                       type="text"
                       value={editLastQualification}
@@ -1965,7 +1965,7 @@ export default function EnrollmentManager({
 
                   {/* Gender */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Gender</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Gender</label>
                     <select
                       value={editGender}
                       onChange={e => setEditGender(e.target.value)}
@@ -1980,7 +1980,7 @@ export default function EnrollmentManager({
 
                   {/* Date of Birth */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Date of Birth</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Date of Birth</label>
                     <input
                       type="date"
                       value={editDob}
@@ -1991,7 +1991,7 @@ export default function EnrollmentManager({
 
                   {/* Enrolled Professional Course & Batch */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Enrolled Professional Course & Batch</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Enrolled Professional Course & Batch</label>
                     <select
                       value={editCourse && editBatch ? `${editCourse}::${editBatch}` : editCourse || ''}
                       onChange={e => {
@@ -2018,7 +2018,7 @@ export default function EnrollmentManager({
 
                   {/* Profile Photo Upload Section */}
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Profile Photo (Maximum 150KB)</label>
+                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Profile Photo (Maximum 150KB)</label>
                     <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/5">
                       {editAvatarUrl ? (
                         <div className="relative">
@@ -2073,7 +2073,7 @@ export default function EnrollmentManager({
                           {editAvatarUrl ? 'Change' : 'Select Photo'}
                         </label>
                         {editAvatarError && (
-                          <p className="text-[10px] text-rose-500 font-bold mt-1">
+                          <p className="text-xs text-rose-500 font-bold mt-1">
                             {editAvatarError}
                           </p>
                         )}
@@ -2084,7 +2084,7 @@ export default function EnrollmentManager({
 
                 {/* Address - spans full width */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase font-semibold">Postal / Residental Address</label>
+                  <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Postal / Residental Address</label>
                   <textarea
                     value={editAddress}
                     onChange={e => setEditAddress(e.target.value)}
@@ -2132,7 +2132,7 @@ export default function EnrollmentManager({
                     <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
                       Confirm Permanent Deletion
                     </h3>
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                    <p className="text-xs    text-slate-400">
                       Irreversible Operation
                     </p>
                   </div>
@@ -2190,7 +2190,7 @@ export default function EnrollmentManager({
                     <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
                       Confirm Profile Modifications
                     </h3>
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                    <p className="text-xs    text-slate-400">
                       Directory Updates
                     </p>
                   </div>
@@ -2251,7 +2251,7 @@ export default function EnrollmentManager({
                     <h3 className="text-base font-serif font-bold text-slate-900 dark:text-gray-100 font-sans">
                       Admission Interview Scheduler
                     </h3>
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold">
+                    <p className="text-xs    text-slate-400 font-bold">
                       Prospect: {schedulingRequest.name}
                     </p>
                   </div>
@@ -2267,7 +2267,7 @@ export default function EnrollmentManager({
                 <div className="space-y-4 my-4">
                   {/* Status Selection */}
                   <div className="space-y-1.5 animate-fadeIn">
-                    <label className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase font-semibold">Interview Status *</label>
+                    <label className="text-xs  text-slate-400 dark:text-gray-500  font-semibold">Interview Status *</label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -2304,7 +2304,7 @@ export default function EnrollmentManager({
                   {interviewStatus !== 'not_scheduled' && (
                     <div className="grid grid-cols-2 gap-3 pb-1">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase font-semibold">Interview Date</label>
+                        <label className="text-xs  text-slate-400 dark:text-gray-500  font-semibold">Interview Date</label>
                         <input
                           type="date"
                           value={interviewDate}
@@ -2313,7 +2313,7 @@ export default function EnrollmentManager({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase font-semibold">Interview Time</label>
+                        <label className="text-xs  text-slate-400 dark:text-gray-500  font-semibold">Interview Time</label>
                         <input
                           type="time"
                           value={interviewTime}
@@ -2326,7 +2326,7 @@ export default function EnrollmentManager({
 
                   {/* Interviewer Notes */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase font-semibold">Interviewer Comments / Notes</label>
+                    <label className="text-xs  text-slate-400 dark:text-gray-500  font-semibold">Interviewer Comments / Notes</label>
                     <textarea
                       value={interviewNotes}
                       onChange={(e) => setInterviewNotes(e.target.value)}
@@ -2337,7 +2337,7 @@ export default function EnrollmentManager({
                   </div>
 
                   {interviewStatus === 'scheduled' && (
-                    <div className="p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10 text-[10px] text-blue-500 dark:text-blue-400 flex gap-2">
+                    <div className="p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10 text-xs text-blue-500 dark:text-blue-400 flex gap-2">
                       <Video className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                       <span>Saving with 'Scheduled' status will trigger educational email notifications to {schedulingRequest.email}.</span>
                     </div>
