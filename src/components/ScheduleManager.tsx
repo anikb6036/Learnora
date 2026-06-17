@@ -311,6 +311,24 @@ export default function ScheduleManager({
   const [classBatch, setClassBatch] = useState('All');
   const [classCourse, setClassCourse] = useState('All');
 
+  const uniqueActiveCourseNames = Array.from(
+    new Set(courses.filter(c => c.status !== 'completed').map(c => c.name))
+  );
+
+  const availableBatchesForSelectedCourse = classCourse === 'All'
+    ? ['All']
+    : [
+        'All',
+        ...Array.from(
+          new Set(
+            courses
+              .filter(c => c.name === classCourse)
+              .map(c => c.batchNumber)
+              .filter(Boolean) as string[]
+          )
+        )
+      ];
+
   // Pre-select instructor if current logged in user has the role 'instructor'
   React.useEffect(() => {
     if (currentUser && currentUser.role === 'instructor') {
@@ -617,6 +635,7 @@ export default function ScheduleManager({
     }
 
     const matchesCourseFilter = courseFilter === 'all' || cl.course === courseFilter;
+    const matchesBatchFilter = batchFilter === 'all' || cl.batch === batchFilter;
 
     // Do not show sessions / timetables for courses that are completed
     if (cl.course && cl.course !== 'All') {
@@ -626,7 +645,7 @@ export default function ScheduleManager({
       }
     }
 
-    return matchesSearch && matchesSubject && matchesInstructor && matchesStatus && matchesCourseFilter;
+    return matchesSearch && matchesSubject && matchesInstructor && matchesStatus && matchesCourseFilter && matchesBatchFilter;
   });
 
   const isEnrolled = (cl: ClassSchedule) => {
@@ -1260,17 +1279,45 @@ export default function ScheduleManager({
                   <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Target Student Course</label>
                   <select
                     value={classCourse}
-                    onChange={e => setClassCourse(e.target.value)}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setClassCourse(val);
+                      setClassBatch('All'); // Reset batch selection when class/course changes
+                    }}
                     className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-white dark:bg-[#0A0A0B] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   >
                     <option value="All">All Courses</option>
-                    {courses.filter(c => c.status !== 'completed').map(c => (
-                      <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
+                    {uniqueActiveCourseNames.map(courseName => (
+                      <option key={courseName} value={courseName}>{courseName}</option>
                     ))}
                   </select>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-1">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Target Student Batch</label>
+                  <select
+                    value={classBatch}
+                    onChange={e => setClassBatch(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-white dark:bg-[#0A0A0B] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  >
+                    {classCourse === 'All' ? (
+                      <>
+                        <option value="All">All Batches</option>
+                        {Array.from(new Set(courses.map(c => c.batchNumber).filter(Boolean))).map(batchNumber => (
+                          <option key={batchNumber} value={batchNumber}>{batchNumber}</option>
+                        ))}
+                      </>
+                    ) : (
+                      availableBatchesForSelectedCourse.map(batchNumber => (
+                        <option key={batchNumber} value={batchNumber}>
+                          {batchNumber === 'All' ? 'All Batches of Course' : `Batch ${batchNumber}`}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 lg:col-span-2 md:col-span-2">
                   <label className="text-xs font-semibold text-slate-600 dark:text-zinc-300 block font-sans">Location (Room or Online link)</label>
                   <input
                     type="text"
@@ -1401,16 +1448,37 @@ export default function ScheduleManager({
               </select>
             )}
 
-            {/* Course Filter */}
+             {/* Course Filter */}
             <select
               value={courseFilter}
-              onChange={e => setCourseFilter(e.target.value)}
+              onChange={e => {
+                setCourseFilter(e.target.value);
+                setBatchFilter('all'); // Reset batch filter when changing active course filters
+              }}
               className="px-3 py-2.5 text-xs bg-[#f4f4f5]/60 dark:bg-zinc-900/40 border border-slate-200/40 dark:border-white/5 rounded-xl text-slate-650 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer font-medium font-sans"
             >
               <option value="all">All Active Courses</option>
-              {courses.filter(c => c.status !== 'completed').map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
+              {Array.from(new Set(courses.filter(c => c.status !== 'completed').map(c => c.name))).map(courseName => (
+                <option key={courseName} value={courseName}>{courseName}</option>
               ))}
+            </select>
+
+            {/* Batch Filter */}
+            <select
+              value={batchFilter}
+              onChange={e => setBatchFilter(e.target.value)}
+              className="px-3 py-2.5 text-xs bg-[#f4f4f5]/60 dark:bg-zinc-900/40 border border-slate-200/40 dark:border-white/5 rounded-xl text-slate-650 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer font-medium font-sans"
+            >
+              <option value="all">All Batches</option>
+              {courseFilter === 'all' ? (
+                Array.from(new Set(courses.map(c => c.batchNumber).filter(Boolean))).map(batchNumber => (
+                  <option key={batchNumber} value={batchNumber}>Batch {batchNumber}</option>
+                ))
+              ) : (
+                Array.from(new Set(courses.filter(c => c.name === courseFilter).map(c => c.batchNumber).filter(Boolean))).map(batchNumber => (
+                  <option key={batchNumber} value={batchNumber}>Batch {batchNumber}</option>
+                ))
+              )}
             </select>
 
             {/* Export data button replicating the download button */}
@@ -1496,18 +1564,24 @@ export default function ScheduleManager({
                               ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/10'
                               : 'bg-slate-50 dark:bg-[#0c0c0e] text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-white/10'
                           }`}>
-                            <span className={`w-1 h-1 rounded-full ${isUserEnrolledVal ? 'bg-blue-500' : 'bg-slate-405'}`} />
+                            <span className={`w-1 h-1 rounded-full ${isUserEnrolledVal ? 'bg-blue-505' : 'bg-slate-405'}`} />
                             {cl.course}
                             {isUserEnrolledVal && (
                               <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Enrolled</span>
                             )}
                           </div>
                         ) : isUserEnrolledVal ? (
-                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/10">
+                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight bg-blue-500/10 text-blue-650 dark:text-blue-400 border-blue-200 dark:border-blue-500/10">
                             <span className="w-1 h-1 rounded-full bg-blue-500" />
                             Enrolled
                           </div>
                         ) : null}
+
+                        {cl.batch && cl.batch !== 'All' && (
+                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border border-purple-200/50 bg-purple-500/10 text-purple-600 dark:text-purple-400 dark:border-purple-500/10 tracking-tight">
+                            Batch: {cl.batch}
+                          </div>
+                        )}
                       </div>
                     </div>
 
