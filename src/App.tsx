@@ -2172,7 +2172,7 @@ function AppContent() {
                         
                           {/* Profile Photo Upload */}
                           <div className="space-y-2 p-4 bg-slate-50 dark:bg-[#080809] rounded-2xl border border-slate-200/60 dark:border-white/5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Profile Photo Asset (Maximum 2MB) *</label>
+                                <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Profile Photo Asset (Maximum 2MB) *</label>
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
                                   {fastAvatarUrl ? (
                                     <div className="relative group/avatar">
@@ -2241,7 +2241,7 @@ function AppContent() {
                               {/* Student Legal Name */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">First Name *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">First Name *</label>
                                   <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                       <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2263,7 +2263,7 @@ function AppContent() {
                                   )}
                                 </div>
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Last Name *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Last Name *</label>
                                   <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                       <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2288,7 +2288,7 @@ function AppContent() {
 
                               {/* Student Target Program Course Selection */}
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Desired Professional Course *</label>
+                                <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Desired Professional Course *</label>
                                 <select
                                   required
                                   value={fastCourse}
@@ -2311,7 +2311,7 @@ function AppContent() {
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Email address */}
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Email Address *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Email Address *</label>
                                   <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
                                       <div className="relative flex-1">
@@ -2389,7 +2389,7 @@ function AppContent() {
 
                                 {/* Phone number */}
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Phone Number *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Phone Number *</label>
                                   <div className="flex gap-2">
                                     <select
                                       value={fastPhonePrefix}
@@ -2439,7 +2439,7 @@ function AppContent() {
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Gender selection */}
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Gender *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Gender *</label>
                                   <select
                                     required
                                     value={fastGender}
@@ -2462,7 +2462,7 @@ function AppContent() {
 
                                 {/* Date of Birth */}
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Date of Birth *</label>
+                                  <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Date of Birth *</label>
                                   <input
                                     type="date"
                                     required
@@ -2481,7 +2481,7 @@ function AppContent() {
 
                               {/* Father's name */}
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Father's Full Name *</label>
+                                <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Father's Full Name *</label>
                                 <div className="relative">
                                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                     <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2505,7 +2505,7 @@ function AppContent() {
 
                               {/* Prior Academic background status */}
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Last Completed Qualification *</label>
+                                <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Last Completed Qualification *</label>
                                 <div className="grid grid-cols-2 gap-2">
                                   <button
                                     type="button"
@@ -2549,7 +2549,7 @@ function AppContent() {
                                       transition={{ duration: 0.15 }}
                                       className="space-y-1 mt-1.5 overflow-hidden"
                                     >
-                                      <label className="text-[9px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold">Standard Class Level *</label>
+                                      <label className="text-xs font-medium text-slate-550 dark:text-gray-400 block mb-1">Standard Class Level *</label>
                                       <select
                                         required
                                         value={schoolClassInput}
@@ -2578,7 +2578,7 @@ function AppContent() {
                                       transition={{ duration: 0.15 }}
                                       className="space-y-1 mt-1.5 overflow-hidden"
                                     >
-                                      <label className="text-[9px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold">Degree / Specialization Name *</label>
+                                      <label className="text-xs font-medium text-slate-550 dark:text-gray-400 block mb-1">Degree / Specialization Name *</label>
                                       <input
                                         type="text"
                                         required
@@ -2601,7 +2601,7 @@ function AppContent() {
 
                               {/* Address */}
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider">Full Residential Address *</label>
+                                <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Full Residential Address *</label>
                                 <div className="relative">
                                   <div className="absolute top-3 left-0 pl-3.5 flex items-start pointer-events-none">
                                     <MapPin className="h-4 w-4 text-slate-400 dark:text-gray-500" />

@@ -208,13 +208,29 @@ export default function AdmissionsExamModal({
     setSpeakingScore(speakResult);
     const finalTotal = readingScore + speakResult;
     setTotalScore(finalTotal);
+
+    // Stop and release camera/mic recording and monitoring streams when exam is complete
+    if (monitoringStream) {
+      monitoringStream.getTracks().forEach(track => track.stop());
+      setMonitoringStream(null);
+    }
+
     setStep('result');
+  };
+
+  const handleClose = () => {
+    if (monitoringStream) {
+      monitoringStream.getTracks().forEach(track => track.stop());
+      setMonitoringStream(null);
+    }
+    setIsRecording(false);
+    onClose();
   };
 
   const handleCompleteAssessment = () => {
     // Notify main app to automatically enroll student since totalScore >= 25 is guaranteed if completed!
     onExamPass(totalScore, { reading: readingScore, speaking: speakingScore });
-    onClose();
+    handleClose();
   };
 
   const handleResetExam = () => {
@@ -252,7 +268,7 @@ export default function AdmissionsExamModal({
             </div>
             {(step === 'intro' || step === 'result') && (
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-1 px-3 bg-black/15 hover:bg-black/30 border border-white/10 text-white rounded-lg text-xs font-bold cursor-pointer transition active:scale-95 flex items-center gap-1"
               >
                 <X className="w-3.5 h-3.5" /> Close
