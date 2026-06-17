@@ -1,29 +1,29 @@
 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- White circle background as seen in the search snippet -->
+  <!-- White circle background container as seen in Google search results -->
   <circle cx="50" cy="50" r="48" fill="#FFFFFF" />
   
-  <!-- Deep branding Navy Blue Background Card (Squircle) -->
-  <rect x="15" y="15" width="70" height="70" rx="16" fill="#142B49" />
+  <!-- Deep branding Navy Blue Background Card (Squircle) centered inside the white circle -->
+  <rect x="15" y="15" width="70" height="70" rx="16" fill="#0A2A66" />
   
   <!-- Bold White Sans-Serif Capital "L" with precise geometry -->
-  <path d="M 30 35 L 38 35 L 38 65 L 50 65 L 50 72 L 30 72 Z" fill="#FFFFFF" />
+  <path d="M 31 33 H 40 V 56 H 49 V 65 H 31 Z" fill="#FFFFFF" />
   
   <!-- Lowercase connected "oa" in vibrant brand coral red -->
   <text 
-    x="45" 
-    y="72" 
-    fill="#ED1C24" 
+    x="46" 
+    y="64" 
+    fill="#FF3B5C" 
     font-family="system-ui, -apple-system, sans-serif" 
     font-weight="950" 
-    font-size="28px" 
+    font-size="25px" 
     letter-spacing="-1px"
   >oa</text>
   
   <!-- High-Fidelity White Graduation Cap hovering above "oa" -->
-  <path d="M 60 28 L 78 35 L 60 42 L 42 35 Z" fill="#FFFFFF" />
-  <path d="M 48 38 Q 60 41 72 38 L 72 44 Q 60 48 48 44 Z" fill="#FFFFFF" />
+  <path d="M 60 27 L 80 35 L 60 43 L 40 35 Z" fill="#FFFFFF" />
+  <path d="M 48 37 Q 60 41 72 37 L 72 42 Q 60 46 48 42 Z" fill="#FFFFFF" />
   
   <!-- Hanging Tassel in branding Coral Red matching "oa" -->
-  <path d="M 76 34 L 76 43" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" />
-  <circle cx="76" cy="46" r="2.5" fill="#ED1C24" />
+  <path d="M 77 34 L 77 42" stroke="#FF3B5C" stroke-width="2" stroke-linecap="round" />
+  <circle cx="77" cy="45" r="2.2" fill="#FF3B5C" />
 </svg>

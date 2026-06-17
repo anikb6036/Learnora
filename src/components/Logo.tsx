@@ -11,12 +11,12 @@ interface LogoProps {
 export default function Logo({ 
   className = '', 
   size = 'md', 
-  withStrapline = true,
+  withStrapline = false,
   onlyIcon = false,
   inverse = false
 }: LogoProps) {
   
-  // Icon dimensions for onlyIcon
+  // Icon dimensions
   const iconSizes = {
     sm: 'w-8 h-8',
     md: 'w-12 h-12',
@@ -24,32 +24,43 @@ export default function Logo({
     xl: 'w-24 h-24',
   };
 
-  // Text font-size mappings for full logo
+  // Text font-size mappings
   const textSizes = {
-    sm: 'text-xl',
-    md: 'text-3xl',
-    lg: 'text-5xl',
-    xl: 'text-[72px]',
-  };
-  
-  const capSizes = {
-    sm: 'w-7 -mt-2',
-    md: 'w-10 -mt-3',
-    lg: 'w-16 -mt-5',
-    xl: 'w-24 -mt-7',
+    sm: 'text-lg',
+    md: 'text-2xl',
+    lg: 'text-4xl',
+    xl: 'text-6xl',
   };
 
-  // Render the favicon style just for onlyIcon mode
   const renderIcon = () => (
-    <div className={`${iconSizes[size]} shrink-0 overflow-hidden transition-transform duration-300 hover:scale-105 rounded-full bg-white flex items-center justify-center p-1shadow-sm ring-1 ring-slate-200 dark:ring-white/10`}>
+    <div className={`${iconSizes[size]} shrink-0 shadow-sm rounded-xl overflow-hidden transition-transform duration-300 hover:scale-105`}>
       <svg viewBox="0 0 100 100" className="w-full h-full select-none" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="5" y="5" width="90" height="90" rx="18" fill="#142B49" />
-        <path d="M 28 30 L 38 30 L 38 65 L 53 65 L 53 74 L 28 74 Z" fill="#FFFFFF" />
-        <text x="46" y="74" fill="#ED1C24" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="950" fontSize="34px" letterSpacing="-1.5px">oa</text>
-        <path d="M 64 22 L 85 30 L 64 38 L 43 30 Z" fill="#FFFFFF" />
-        <path d="M 50 33 Q 64 37 78 33 L 78 40 Q 64 45 50 40 Z" fill="#FFFFFF" />
-        <path d="M 82 29 L 82 40" stroke="#ED1C24" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="82" cy="44" r="3.5" fill="#ED1C24" />
+        {/* Deep branding Navy Blue Background Card (Squircle) */}
+        <rect width="100" height="100" rx="22" fill="#0A2A66" />
+        
+        {/* Bold White Sans-Serif Capital "L" with precise geometry */}
+        <path d="M 24 24 L 36 24 L 36 70 L 54 70 L 54 80 L 24 80 Z" fill="#FFFFFF" />
+        
+        {/* Lowercase connected "oa" in vibrant brand coral red */}
+        <text 
+          x="46" 
+          y="78" 
+          fill="#FF3B5C" 
+          fontFamily="system-ui, -apple-system, sans-serif" 
+          fontWeight="900" 
+          fontSize="33px" 
+          letterSpacing="-1.5px"
+        >
+          oa
+        </text>
+        
+        {/* High-Fidelity White Graduation Cap hovering above "oa" */}
+        <path d="M 68 15 L 94 25 L 68 35 L 42 25 Z" fill="#FFFFFF" />
+        <path d="M 52 28 Q 68 32 84 28 L 84 34 Q 68 40 52 34 Z" fill="#FFFFFF" />
+        
+        {/* Hanging Tassel in branding Coral Red matching "oa" */}
+        <path d="M 90 23 L 90 35" stroke="#FF3B5C" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="90" cy="39" r="3.5" fill="#FF3B5C" />
       </svg>
     </div>
   );
@@ -61,42 +72,30 @@ export default function Logo({
   // Choose colors based on the inverse prop (forced dark container)
   const prefixColorClass = inverse 
     ? 'text-white' 
-    : 'text-[#142B49] dark:text-white';
+    : 'text-[#0A2A66] dark:text-white';
     
   const straplineColorClass = inverse
     ? 'text-slate-300'
-    : 'text-[#142B49] dark:text-slate-400';
+    : 'text-slate-500 dark:text-slate-400';
 
   return (
-    <div className={`flex flex-col items-center justify-center font-sans select-none ${className}`}>
-      {/* Structured Wordmark branding with embedded cap */}
-      <div className={`relative flex items-center font-black tracking-tight leading-none ${textSizes[size]}`}>
-        <span className={`${prefixColorClass} transition-colors`}>Learn</span>
-        <span className="text-[#ED1C24] relative">
-          {/* Graduation Cap floating exactly over "ora" */}
-          <div className={`absolute top-0 right-0 left-0 flex justify-center translate-y-[-70%] pointer-events-none`}>
-            <svg viewBox="0 0 100 60" className={`${capSizes[size]} drop-shadow-sm`} fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Cap base in Navy */}
-              <path d="M 50 10 L 95 24 L 50 38 L 5 24 Z" fill={inverse ? "#FFFFFF" : "#142B49"} />
-              <path d="M 22 29 Q 50 36 78 29 L 78 42 Q 50 50 22 42 Z" fill={inverse ? "#FFFFFF" : "#142B49"} />
-              {/* Tassel in Coral Red */}
-              <path d="M 88 22 L 88 42" stroke="#ED1C24" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="88" cy="48" r="4.5" fill="#ED1C24" />
-            </svg>
-          </div>
-          ora
-        </span>
-      </div>
-      
-      {withStrapline && (
-        <div className="flex items-center gap-2 mt-2 md:mt-3 px-1 w-full max-w-[90%] mx-auto">
-          <div className="h-[1px] flex-grow bg-slate-300 dark:bg-slate-700"></div>
-          <p className={`text-[6px] md:text-[8px] lg:text-[11px] tracking-[0.25em] lg:tracking-[0.3em] font-bold uppercase ${straplineColorClass} whitespace-nowrap`}>
-            LEARN <span className="text-[#ED1C24]">.</span> GROW <span className="text-[#ED1C24]">.</span> SUCCEED <span className="text-[#ED1C24]">.</span>
-          </p>
-          <div className="h-[1px] flex-grow bg-slate-300 dark:bg-slate-700"></div>
+    <div className={`flex items-center gap-3 font-sans select-none ${className}`}>
+      {/* Sleek brand emblem */}
+      {renderIcon()}
+
+      {/* Structured Wordmark branding */}
+      <div className="flex flex-col justify-center text-left">
+        <div className={`flex items-baseline font-black tracking-tight leading-none ${textSizes[size]}`}>
+          <span className={`${prefixColorClass} transition-colors`}>Learn</span>
+          <span className="text-[#FF3B5C]">ora</span>
         </div>
-      )}
+        
+        {withStrapline && (
+          <p className={`text-[5px] md:text-[5.5px] tracking-[0.18em] uppercase ${straplineColorClass} font-extrabold mt-1 leading-none`}>
+            Learn Beyond Limits
+          </p>
+        )}
+      </div>
     </div>
   );
 }
