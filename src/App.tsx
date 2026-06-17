@@ -2027,8 +2027,8 @@ function AppContent() {
           <div className="min-h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 px-4 bg-white dark:bg-[#070708] dark:text-gray-200 animate-fadeIn font-sans z-0">
             {/* Background elements removed for a clean look */}
 
-            <div className={`w-full bg-white/80 backdrop-blur-xl dark:bg-[#0F0F11]/90 border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden transition-all duration-300 z-10 ${
-              onboardingTab === 'fastReg' ? 'max-w-2xl' : 'max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch'
+            <div className={`w-full bg-white/80 backdrop-blur-xl dark:bg-[#0F0F11]/90 border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden transition-all duration-300 z-10 ${
+              onboardingTab === 'fastReg' ? 'max-w-2xl' : 'max-w-[460px] flex flex-col gap-6'
             }`}>
 
               
@@ -2057,29 +2057,27 @@ function AppContent() {
 
               {/* Left section: Sandbox switch, quick profiles accounts, and student mail client */}
               {onboardingTab !== 'fastReg' && (
-                <div className="md:col-span-12 lg:col-span-5 space-y-6 flex flex-col justify-between">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="text-slate-800 mb-2 origin-left scale-90 sm:scale-100">
-                        <Logo size="md" />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowPortal(false)}
-                        className="text-sm font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
-                      >
-                        ← Back To Home
-                      </button>
+                <div className="w-full space-y-3 flex flex-col">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-slate-800 origin-left scale-90">
+                      <Logo size="sm" />
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-2 pr-2 leading-relaxed">
-                      Interactive educational control center. Experience our multi-role workflows: student registers, administrators review/accept, and credentials dispatch automatically.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowPortal(false)}
+                      className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-white/5 shadow-2xs"
+                    >
+                      ← Back
+                    </button>
                   </div>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
+                    Interactive educational control center. Experience student sandbox, administrators, and automated flows.
+                  </p>
                 </div>
               )}
 
               {/* Right section: Signup workspace and authentication */}
-              <div className={onboardingTab === 'fastReg' ? 'w-full' : 'md:col-span-12 lg:col-span-7 bg-white dark:bg-[#111112] p-8 rounded-3xl border border-slate-150 dark:border-white/5 space-y-6 flex flex-col justify-start shadow-xl relative animate-fadeIn'}>
+              <div className={onboardingTab === 'fastReg' ? 'w-full' : 'w-full bg-white dark:bg-[#111112] p-6 rounded-2xl border border-slate-150 dark:border-white/5 space-y-5 flex flex-col justify-start shadow-md relative animate-fadeIn'}>
                 <div className="absolute top-0 right-0 h-32 w-32 bg-radial-gradient from-amber-500/10 to-transparent rounded-full pointer-events-none" />
                 
                 {/* Onboarding Mode Selection Tabs */}
@@ -2666,8 +2664,8 @@ function AppContent() {
                 <div className="space-y-5 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div className="mb-6">
-                      <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Approved Account Login</h3>
-                      <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
+                      <h3 className="text-2xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Approved Account Login</h3>
+                      <p className="text-[9px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
                         Access your profile, courses, and educational schedules using the verified credentials (USERNAME &amp; PASSWORD) delivered to your registered email address.
                       </p>
                     </div>
@@ -2681,7 +2679,7 @@ function AppContent() {
 
                     <form onSubmit={handleCredentialsLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Approved Username</label>
+                        <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold mb-1">Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2689,17 +2687,17 @@ function AppContent() {
                           <input
                             type="text"
                             required
-                            placeholder="e.g. samantha_wilson_822"
+                            placeholder="Username"
                             value={loginUsername}
                             onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
+                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Security Password</label>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold">Security Password</label>
                           <button
                             type="button"
                             onClick={() => {
@@ -2708,7 +2706,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-sm text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-xs text-slate-500 dark:text-amber-500 hover:text-slate-800 dark:hover:text-amber-400 font-semibold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2723,7 +2721,7 @@ function AppContent() {
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
+                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
@@ -2759,11 +2757,11 @@ function AppContent() {
                     <div className="mb-6">
                       <div className="flex items-center gap-2 mb-3">
                         <span className="p-0.5 px-2 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-gray-300 rounded-md text-sm font-sans font-bold uppercase tracking-widest border border-slate-200 dark:border-white/5 shadow-sm">
-                          🛡️ Restricted Entry
+                           Restricted Entry
                         </span>
                       </div>
                       <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Administrator Terminal</h3>
-                      <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
+                      <p className="text-[9px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
                         Access Learnora's administrative panel, review student profiles, dispatch registration emails, and perform full ledger cleanups.
                       </p>
                     </div>
@@ -2777,7 +2775,7 @@ function AppContent() {
 
                     <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider mb-2">Admin Username</label>
+                        <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold mb-1">Admin Username</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
@@ -2785,17 +2783,17 @@ function AppContent() {
                           <input
                             type="text"
                             required
-                            placeholder="e.g. anik"
+                            placeholder="e.g. Admin"
                             value={loginUsername}
                             onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-mono"
+                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold tracking-wider font-semibold">Override Password</label>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold">Override Password</label>
                           <button
                             type="button"
                             onClick={() => {
@@ -2804,7 +2802,7 @@ function AppContent() {
                               setForgotModalError('');
                               setForgotEmailModalOpen(true);
                             }}
-                            className="text-sm text-slate-800 dark:text-amber-500 hover:text-black dark:hover:text-amber-400 font-bold transition cursor-pointer select-none outline-none"
+                            className="text-xs text-slate-500 dark:text-amber-500 hover:text-slate-800 dark:hover:text-amber-400 font-semibold transition cursor-pointer select-none outline-none"
                           >
                             Forgot Password?
                           </button>
@@ -2819,7 +2817,7 @@ function AppContent() {
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans"
+                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
                           />
                         </div>
                       </div>
