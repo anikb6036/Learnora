@@ -1220,7 +1220,8 @@ function AppContent() {
     gender?: string,
     dob?: string,
     avatarUrl?: string,
-    course?: string
+    course?: string,
+    batch?: string
   ) => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -1249,7 +1250,8 @@ function AppContent() {
       gender: gender?.trim() || undefined,
       dob: dob?.trim() || undefined,
       avatarUrl: avatarUrl || undefined,
-      course: course
+      course: course,
+      batch: batch
     };
 
     setRegistrationRequests(prev => [newRequest, ...prev]);
@@ -1713,6 +1715,9 @@ function AppContent() {
     const calculatedPhone = `${fastPhonePrefix} ${fastPhone}`;
     const assembledAddress = fastAddress.trim();
 
+    const parsedCourse = fastCourse.includes('::') ? fastCourse.split('::')[0] : fastCourse;
+    const parsedBatch = fastCourse.includes('::') ? fastCourse.split('::')[1] : 'Batch A';
+
     const req = handleCreateRegistrationRequest(
       `${fastFirstName.trim()} ${fastLastName.trim()}`, 
       fastEmail, 
@@ -1725,7 +1730,8 @@ function AppContent() {
       fastGender,
       fastDob,
       fastAvatarUrl,
-      fastCourse
+      parsedCourse,
+      parsedBatch
     );
     setFastRegSuccess(req);
     
@@ -2302,7 +2308,7 @@ function AppContent() {
                                 >
                                   <option value="">-- Select Course Program --</option>
                                   {courses.filter(c => c.status === 'upcoming').map(c => (
-                                    <option key={c.id} value={c.name}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
+                                    <option key={c.id} value={`${c.name}::${c.batchNumber || 'stb_001'}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
                                   ))}
                                 </select>
                                 {fastCourseError && (
