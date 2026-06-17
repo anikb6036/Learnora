@@ -223,6 +223,55 @@ function AppContent() {
     }
   }, [activeTab]);
 
+  const getCurrentDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Automatically move upcoming courses to ongoing when start date or admission deadline is met
+  useEffect(() => {
+    if (!coursesLoaded || !courses || courses.length === 0) return;
+
+    const todayStr = getCurrentDateString();
+    let hasChanges = false;
+    const updatedCourses = courses.map(course => {
+      if (course.status === 'upcoming') {
+        const hasStarted = course.publishDate && todayStr >= course.publishDate;
+        const admissionClosed = course.admissionLastDate && todayStr > course.admissionLastDate;
+
+        if (hasStarted || admissionClosed) {
+          hasChanges = true;
+          const reason = hasStarted ? "course start date reached" : "admission last date has passed";
+          console.log(`Auto-transitioning course "${course.name}" to 'ongoing' status because ${reason}.`);
+          return {
+            ...course,
+            status: 'ongoing' as const
+          };
+        }
+      }
+      return course;
+    });
+
+    if (hasChanges) {
+      setCourses(updatedCourses);
+
+      const notif: AppNotification = {
+        id: generateUniqueId('notif'),
+        title: 'Class Cohort Auto-Transitioned',
+        message: 'One or more upcoming courses have officially started or passed their admission deadline, transferring them to current ongoing courses and closing new admissions.',
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+      triggerToast(notif);
+    }
+  }, [courses, coursesLoaded]);
+
   // Security Session Activity Auto-Logout
   const AUTO_LOGOUT_TIME_MS = 4 * 60 * 60 * 1000; // 4 hours of inactivity
   const lastActivityRef = useRef<number>(Date.now());
@@ -3093,25 +3142,27 @@ function AppContent() {
                     </div>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('courses-directory');
-                      setScheduleShowAddForm(false);
-                      setScheduleShowCourseDashboard(false);
-                      setScheduleShowBatchManager(false);
-                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                    }}
-                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                      activeTab === 'courses-directory'
-                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                    }`}
-                    title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
-                  >
-                    <BookOpen className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
-                  </button>
+                  {['admin', 'sub-admin'].includes(currentUser.role) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('courses-directory');
+                        setScheduleShowAddForm(false);
+                        setScheduleShowCourseDashboard(false);
+                        setScheduleShowBatchManager(false);
+                        if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                      }}
+                      className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                        activeTab === 'courses-directory'
+                          ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                          : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                      }`}
+                      title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
+                    >
+                      <BookOpen className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
+                    </button>
+                  )}
 
                   <button
                     type="button"
@@ -4067,7 +4118,7 @@ function AppContent() {
               />
             )}
 
-            {activeTab === 'courses-directory' && (
+            {activeTab === 'courses-directory' && ['admin', 'sub-admin'].includes(currentUser.role) && (
               <CourseDirectory
                 currentUser={currentUser}
                 courses={courses}

@@ -410,14 +410,24 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                                 </>
                               )}
                             </div>
-                            {(course.publishDate || course.createdDate) && (
-                              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <p className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-semibold font-sans">
-                                  Starts: {new Date(course.publishDate || course.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                </p>
-                              </div>
-                            )}
+                            <div className="flex flex-wrap gap-2 mt-2.5">
+                              {(course.publishDate || course.createdDate) && (
+                                <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
+                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                  <p className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-semibold font-sans">
+                                    Starts: {new Date(course.publishDate || course.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                </div>
+                              )}
+                              {course.admissionLastDate && (
+                                <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-md">
+                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                  <p className="text-[10.5px] text-amber-700 dark:text-amber-400 font-semibold font-sans">
+                                    Admission Closes: {new Date(course.admissionLastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           </div>
                       
                           <div className="shrink-0 flex items-center justify-center mix-blend-multiply dark:mix-blend-normal">

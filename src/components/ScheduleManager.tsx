@@ -122,6 +122,7 @@ export default function ScheduleManager({
   const [newCourseDesc, setNewCourseDesc] = useState('');
   const [newCourseStatus, setNewCourseStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
   const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
+  const [newCourseAdmissionLastDate, setNewCourseAdmissionLastDate] = useState('2026-06-14');
   const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
@@ -143,6 +144,7 @@ export default function ScheduleManager({
   const [selectedMasterId, setSelectedMasterId] = useState('');
   const [customBatchName, setCustomBatchName] = useState('');
   const [publishBatchDate, setPublishBatchDate] = useState('2026-06-15');
+  const [publishAdmissionLastDate, setPublishAdmissionLastDate] = useState('2026-06-14');
   const [publishStatus, setPublishStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
 
   const [courseDashboardSubTab, setCourseDashboardSubTab] = useState<'publish' | 'master'>('publish');
@@ -449,6 +451,7 @@ export default function ScheduleManager({
           description: newCourseDesc.trim() || undefined,
           status: newCourseStatus,
           publishDate: newCoursePublishDate,
+          admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails
         });
@@ -464,6 +467,7 @@ export default function ScheduleManager({
           description: newCourseDesc.trim() || undefined,
           status: 'upcoming',
           publishDate: newCoursePublishDate,
+          admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails
         });
@@ -475,6 +479,7 @@ export default function ScheduleManager({
     setNewCourseDesc('');
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
+    setNewCourseAdmissionLastDate('2026-06-14');
     setRoadmapDetails([]);
   };
 
@@ -486,6 +491,7 @@ export default function ScheduleManager({
     setNewCourseDesc(course.description || '');
     setNewCourseStatus(course.status || 'upcoming');
     setNewCoursePublishDate(course.publishDate || course.createdDate || '2026-06-15');
+    setNewCourseAdmissionLastDate(course.admissionLastDate || '2026-06-14');
     setRoadmapDetails(course.roadmap || []);
   };
 
@@ -497,6 +503,7 @@ export default function ScheduleManager({
     setNewCourseDesc('');
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
+    setNewCourseAdmissionLastDate('2026-06-14');
     setRoadmapDetails([]);
     setAiError(null);
     setAiInfo(null);
@@ -576,6 +583,7 @@ export default function ScheduleManager({
         description: matchedMaster.description,
         status: publishStatus,
         publishDate: publishBatchDate,
+        admissionLastDate: publishAdmissionLastDate,
         roadmap: matchedMaster.roadmap
       });
     }
@@ -583,6 +591,7 @@ export default function ScheduleManager({
     setSelectedMasterId('');
     setCustomBatchName('');
     setPublishStatus('upcoming');
+    setPublishAdmissionLastDate('2026-06-14');
     setAiInfo(`Successfully published batch "${writtenBatch}" for course "${matchedMaster.name}"!`);
   };
 
@@ -921,14 +930,25 @@ export default function ScheduleManager({
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 font-sans">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans">
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Publish Date</label>
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Publish Date (Start)</label>
                             <input
                               type="date"
                               required
                               value={publishBatchDate}
                               onChange={e => setPublishBatchDate(e.target.value)}
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Admission Last Date</label>
+                            <input
+                              type="date"
+                              required
+                              value={publishAdmissionLastDate}
+                              onChange={e => setPublishAdmissionLastDate(e.target.value)}
                               className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                             />
                           </div>
@@ -1095,6 +1115,9 @@ export default function ScheduleManager({
                                 </div>
                                 <div className="text-[10px] text-slate-550 dark:text-zinc-405 font-mono mt-1">Course Code: {pub.code}</div>
                                 <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Launches: {pub.publishDate || pub.createdDate}</div>
+                                {pub.admissionLastDate && (
+                                  <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Admission Deadline: {pub.admissionLastDate}</div>
+                                )}
                               </div>
 
                               <div className="flex items-center gap-1">

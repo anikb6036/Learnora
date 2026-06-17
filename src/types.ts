@@ -138,6 +138,7 @@ export interface Course {
   createdDate: string;
   status?: 'completed' | 'ongoing' | 'upcoming';
   publishDate?: string;
+  admissionLastDate?: string;
   durationMonths?: number;
   roadmap?: {
     month: number;

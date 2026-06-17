@@ -185,8 +185,8 @@ export const INITIAL_MASTER_COURSES: MasterCourse[] = [
 ];
 
 export const INITIAL_COURSES: Course[] = [
-  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing' },
-  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming' },
+  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18' },
+  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming', publishDate: '2026-07-01', admissionLastDate: '2026-06-30' },
   { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', batchNumber: 'stb_003', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '9', createdDate: '2024-05-19', status: 'completed' }
 ];
 
