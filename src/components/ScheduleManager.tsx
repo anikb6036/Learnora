@@ -148,6 +148,7 @@ export default function ScheduleManager({
   const [publishStatus, setPublishStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
 
   const [courseDashboardSubTab, setCourseDashboardSubTab] = useState<'publish' | 'master'>('publish');
+  const [courseSearchQuery, setCourseSearchQuery] = useState('');
 
   // Synchronize master roadmap milestones with the durationMonths (represented by newMasterDuration)
   React.useEffect(() => {
@@ -682,20 +683,20 @@ export default function ScheduleManager({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mb-6"
             >
-              <div className="p-5 md:p-6 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-100/80 dark:border-white/5 space-y-6">
+              <div className="p-5 md:p-6 rounded-2xl bg-white dark:bg-[#08080a] border border-slate-200/80 dark:border-white/5 space-y-6">
                 
                 {/* Dashboard Header */}
-                <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-white/5 pb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
+                    <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
                       <GraduationCap className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-zinc-100 font-sans leading-none mb-1">
+                      <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-zinc-100 font-sans leading-none mb-1">
                         Academy Course & Batch Publisher
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        First define the master curriculum template, then publish active or upcoming course batches for student enrollments.
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 font-sans">
+                        First define any master curriculum template, then publish active or upcoming course batches for student enrollments.
                       </p>
                     </div>
                   </div>
@@ -705,7 +706,7 @@ export default function ScheduleManager({
                       cancelEditMasterCourse();
                       setShowCourseDashboard(false);
                     }}
-                    className="p-1.5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-705 dark:hover:text-white transition cursor-pointer"
                     type="button"
                     title="Close Course Dashboard"
                   >
@@ -714,7 +715,7 @@ export default function ScheduleManager({
                 </div>
 
                 {/* Sub Tab selection between Define Base Course and Publish Batch */}
-                <div className="flex border-b border-slate-200 dark:border-white/5 pb-0">
+                <div className="flex border-b border-slate-100 dark:border-white/5 pb-0">
                   <button
                     type="button"
                     onClick={() => {
@@ -723,7 +724,7 @@ export default function ScheduleManager({
                     }}
                     className={`px-5 py-2.5 font-bold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                       courseDashboardSubTab === 'master'
-                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                        ? 'border-amber-500 text-amber-605 dark:text-amber-400 font-bold'
                         : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white'
                     }`}
                   >
@@ -742,7 +743,7 @@ export default function ScheduleManager({
                     }}
                     className={`px-5 py-2.5 font-bold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                       courseDashboardSubTab === 'publish'
-                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                        ? 'border-amber-500 text-amber-605 dark:text-amber-400 font-bold'
                         : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white'
                     }`}
                   >
@@ -757,7 +758,7 @@ export default function ScheduleManager({
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       
                       {/* Left Column: Core Definition details */}
-                      <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
+                      <div className="lg:col-span-5 space-y-4 bg-slate-50/50 dark:bg-[#070709]/30 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl shadow-3xs">
                         <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
                           <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                           {editingMasterCourse ? 'Edit Master Definition' : 'Add New Curriculum Template'}
@@ -765,7 +766,7 @@ export default function ScheduleManager({
 
                         <div className="space-y-1.5 font-sans">
                           <div className="flex justify-between items-center">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Name</label>
+                            <label className="text-xs font-semibold text-slate-650 dark:text-zinc-350 block">Course Name</label>
                             <button
                               type="button"
                               onClick={handleAiGenerateCourse}
@@ -787,7 +788,7 @@ export default function ScheduleManager({
                             placeholder="e.g. Mechanical Engineering fundamentals"
                             value={newMasterName}
                             onChange={e => setNewMasterName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                           />
                           {aiError && (
                             <p className="text-[10px] text-red-500 font-semibold font-sans mt-0.5 flex items-center gap-1 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10 animate-shake">
@@ -802,7 +803,7 @@ export default function ScheduleManager({
                         </div>
 
                         <div className="space-y-1.5 font-sans">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Duration (Months)</label>
+                          <label className="text-xs font-semibold text-slate-650 dark:text-zinc-355 block">Course Duration (Months)</label>
                           <input
                             type="number"
                             required
@@ -811,50 +812,49 @@ export default function ScheduleManager({
                             placeholder="e.g. 6"
                             value={newMasterDuration}
                             onChange={e => setNewMasterDuration(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                           />
                         </div>
 
                         <div className="space-y-1.5 font-sans">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Course Description</label>
+                          <label className="text-xs font-semibold text-slate-650 dark:text-zinc-355 block">Course Description</label>
                           <textarea
                             placeholder="Provide a comprehensive syllabus overview..."
                             value={newMasterDesc}
                             rows={4}
                             required
                             onChange={e => setNewMasterDesc(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-y min-h-[96px]"
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-y min-h-[96px]"
                           />
                         </div>
                       </div>
 
-                      {/* Right Column: Roadmap Progression Track (7 out of 12 columns) */}
-                      <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
-                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 font-sans">
+                      {/* Right Column: Roadmap Progression Track */}
+                      <div className="lg:col-span-7 space-y-4 bg-slate-50/50 dark:bg-[#070709]/30 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl shadow-3xs">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1 font-sans">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
                             <GitBranch className="w-4 h-4" />
-                            <span>{masterRoadmap.length || 0}-Month Interactive Curriculum Roadmap</span>
+                            <span>{masterRoadmap.length || 0}-Month Course Roadmap</span>
                           </div>
-                          <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">
-                            Live Sync
+                          <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full font-semibold">
+                            Active Preview
                           </span>
                         </div>
 
                         {masterRoadmap.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/40">
-                            <GitBranch className="w-8 h-8 text-slate-300 dark:text-zinc-600 mb-2 animate-pulse" />
-                            <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-xs font-medium leading-relaxed">
+                          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-white dark:bg-[#08080a]">
+                            <GitBranch className="w-8 h-8 text-slate-300 dark:text-zinc-650 mb-2 animate-pulse" />
+                            <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-xs font-medium leading-relaxed font-sans">
                               Syllabus milestones generate automatically. Specify Course Name and Duration, or use Gemini to outline high-quality targets.
                             </p>
                           </div>
                         ) : (
-                          <div className="space-y-4 max-h-[420px] overflow-y-auto pl-1 pr-3 py-1.5 bg-slate-50 dark:bg-black/15 border border-slate-150 dark:border-white/5 rounded-xl shadow-inner scrollbar-thin">
+                          <div className="space-y-4 max-h-[300px] overflow-y-auto pl-1 pr-3 py-1.5 bg-white dark:bg-black/20 border border-slate-200/40 dark:border-white/5 rounded-xl shadow-inner scrollbar-thin">
                             {masterRoadmap.map((milestone) => (
-                              <div key={milestone.month} className="p-4 bg-white dark:bg-[#08080a] border border-slate-200/85 dark:border-white/10 rounded-xl space-y-2.5 shadow-2xs group transition-all hover:border-amber-500/20">
-                                <div className="flex items-center justify-between font-sans">
-                                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase flex items-center gap-1">
-                                    <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                    Month {milestone.month} Roadmap Title
+                              <div key={milestone.month} className="p-4 bg-slate-50/45 dark:bg-[#08080a]/60 border border-slate-200/80 dark:border-white/10 rounded-xl space-y-2.5 shadow-3xs group transition-all hover:border-amber-500/20 font-sans">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                                    Month {milestone.month} Course Theme
                                   </span>
                                 </div>
                                 <input
@@ -865,17 +865,17 @@ export default function ScheduleManager({
                                     const newVal = e.target.value;
                                     setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
                                   }}
-                                  className="w-full px-3 py-2 text-xs font-semibold border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-805 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
+                                  className="w-full px-3 py-2 text-xs font-semibold border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/25"
                                 />
                                 <textarea
                                   placeholder={`Milestone Objectives for Month ${milestone.month}`}
-                                  rows={3}
+                                  rows={2}
                                   value={milestone.description}
                                   onChange={e => {
                                     const newVal = e.target.value;
                                     setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
                                   }}
-                                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#060608] text-slate-705 dark:text-zinc-350 focus:outline-none focus:ring-1 focus:ring-amber-500/25 leading-relaxed resize-y min-h-[64px]"
+                                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-700 dark:text-zinc-350 focus:outline-none focus:ring-1 focus:ring-amber-500/25 leading-relaxed resize-y min-h-[50px]"
                                 />
                               </div>
                             ))}
@@ -885,21 +885,21 @@ export default function ScheduleManager({
                     </div>
 
                     {/* Unified Footer Controls */}
-                    <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
+                    <div className="flex justify-end gap-2.5 border-t border-slate-100 dark:border-white/5 pt-4 font-sans">
                       {editingMasterCourse && (
                         <button
                           type="button"
                           onClick={cancelEditMasterCourse}
-                          className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition cursor-pointer"
+                          className="px-4 py-2 bg-slate-150 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition cursor-pointer"
                         >
                           Cancel Edit
                         </button>
                       )}
                       <button
                         type="submit"
-                        className="px-5.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-955 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
+                        className="px-5.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-705 text-amber-950 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
                       >
-                        {editingMasterCourse ? 'Save Definition' : 'Save To Curriculum Bank'}
+                        {editingMasterCourse ? 'Save Definition' : 'Save Curriculum'}
                       </button>
                     </div>
                   </form>
@@ -909,19 +909,19 @@ export default function ScheduleManager({
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       
                       {/* Left Column: Select Master Course & write batch */}
-                      <div className="lg:col-span-5 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs animate-fade-in">
-                        <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                      <div className="lg:col-span-5 space-y-4 bg-slate-50/50 dark:bg-[#070709]/30 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl shadow-3xs animate-fade-in">
+                        <h4 className="text-xs font-bold text-slate-705 dark:text-zinc-300 flex items-center gap-1.5 font-sans border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                           Publish Custom Batch
                         </h4>
 
                         <div className="space-y-1.5 font-sans">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-355 block font-sans">1. Select Core Course Curriculum</label>
+                          <label className="text-xs font-semibold text-slate-650 dark:text-zinc-355 block">1. Select Core Course Curriculum</label>
                           <select
                             required
                             value={selectedMasterId}
                             onChange={e => setSelectedMasterId(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                           >
                             <option value="">-- Choose Curriculum --</option>
                             {masterCourses.map(m => (
@@ -938,46 +938,46 @@ export default function ScheduleManager({
                         </div>
 
                         <div className="space-y-1.5 font-sans">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">2. Write Batch Name / Number</label>
+                          <label className="text-xs font-semibold text-slate-650 dark:text-zinc-350 block">2. Write Batch Name / Number</label>
                           <input
                             type="text"
                             required
                             placeholder="e.g. Batch A, stb_02, Evening March"
                             value={customBatchName}
                             onChange={e => setCustomBatchName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                           />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans">
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Publish Date (Start)</label>
+                            <label className="text-xs font-semibold text-slate-650 dark:text-zinc-350 block">Publish Date (Start)</label>
                             <input
                               type="date"
                               required
                               value={publishBatchDate}
                               onChange={e => setPublishBatchDate(e.target.value)}
-                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-350 block">Admission Last Date</label>
+                            <label className="text-xs font-semibold text-slate-650 dark:text-zinc-350 block">Admission Last Date</label>
                             <input
                               type="date"
                               required
                               value={publishAdmissionLastDate}
                               onChange={e => setPublishAdmissionLastDate(e.target.value)}
-                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-355 block">Batch Status</label>
+                            <label className="text-xs font-semibold text-slate-650 dark:text-zinc-355 block">Batch Status</label>
                             <select
                               value={publishStatus}
                               onChange={e => setPublishStatus(e.target.value as any)}
-                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] text-slate-805 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                              className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-white/10 rounded-xl bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                             >
                               <option value="upcoming">Upcoming (Accepting Applications)</option>
                               <option value="ongoing">Ongoing (Current Active Class)</option>
@@ -988,16 +988,16 @@ export default function ScheduleManager({
                       </div>
 
                       {/* Right Column: Selected template preview */}
-                      <div className="lg:col-span-7 space-y-4 bg-white dark:bg-[#060608] border border-slate-200/65 dark:border-white/5 p-5 rounded-2xl shadow-xs">
-                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
-                          <span className="text-xs font-bold text-slate-705 dark:text-zinc-300">Linked Curriculum Syllabus Preview</span>
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">
-                            Live Template Link
+                      <div className="lg:col-span-7 space-y-4 bg-slate-50/50 dark:bg-[#070709]/30 border border-slate-200/50 dark:border-white/5 p-5 rounded-2xl shadow-3xs">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1 font-sans">
+                          <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">Linked Curriculum Syllabus Preview</span>
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full font-semibold">
+                            Linked Template
                           </span>
                         </div>
 
                         {!selectedMasterId ? (
-                          <div className="p-8 text-center text-xs text-slate-400 dark:text-zinc-555 border border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-[#060608]/20">
+                          <div className="p-8 text-center text-xs text-slate-405 dark:text-zinc-500 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#08080a]">
                             Select a core course to preview its linked duration, curriculum, and target milestones.
                           </div>
                         ) : (() => {
@@ -1005,157 +1005,273 @@ export default function ScheduleManager({
                           if (!linked) return null;
                           return (
                             <div className="space-y-3.5 animate-fade-in font-sans">
-                              <div>
-                                <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{linked.name}</h5>
-                                <p className="text-[11px] text-slate-550 dark:text-zinc-405 leading-relaxed mt-1">{linked.description}</p>
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-850 dark:text-zinc-200">{linked.name}</h5>
+                                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed mt-1">{linked.description}</p>
+                                </div>
+                                <div className="border-t border-slate-100 dark:border-white/5 pt-3">
+                                  <h6 className="text-xs font-semibold text-amber-650 dark:text-amber-400 mb-2">Milestone Roadmap ({linked.durationMonths || 6} Months)</h6>
+                                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                                    {linked.roadmap && linked.roadmap.length > 0 ? (
+                                      linked.roadmap.map(rm => (
+                                        <div key={rm.month} className="p-2.5 bg-white dark:bg-black/25 rounded-xl border border-slate-200/50 dark:border-white/5">
+                                          <div className="text-xs font-bold text-slate-800 dark:text-zinc-200">Month {rm.month}: {rm.title}</div>
+                                          <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 leading-snug">{rm.description}</div>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="text-xs text-slate-400 italic">No milestones defined in template.</div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="border-t border-slate-100 dark:border-white/5 pt-3">
-                                <h6 className="text-[10.5px] font-bold text-amber-600 dark:text-amber-400 mb-2 font-mono uppercase tracking-wider">Milestone Roadmap ({linked.durationMonths || 6} Months)</h6>
-                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                                  {linked.roadmap && linked.roadmap.length > 0 ? (
-                                    linked.roadmap.map(rm => (
-                                      <div key={rm.month} className="p-2.5 bg-slate-50 dark:bg-black/25 rounded-lg border border-slate-150 dark:border-white/5">
-                                        <div className="text-[10px] font-bold text-slate-705 dark:text-zinc-300">Month {rm.month}: {rm.title}</div>
-                                        <div className="text-[9.5px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-snug">{rm.description}</div>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <div className="text-[10px] text-slate-400 italic">No milestones defined in template.</div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Unified Footer Controls */}
+                      <div className="flex justify-end gap-2.5 border-t border-slate-100 dark:border-white/5 pt-4 font-sans">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            cancelEditCourse();
+                            setShowCourseDashboard(false);
+                          }}
+                          className="px-4.5 py-2 bg-slate-150 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-3xs transition cursor-pointer"
+                        >
+                          Close Dashboard
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={!selectedMasterId}
+                          className="px-5.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Publish Course Batch
+                        </button>
+                      </div>
+                  </form>
+                )}
+                            {/* COURSE BATCHES AND INVENTORY PANEL */}
+                <div className="border-t border-slate-100 dark:border-white/5 pt-6 mt-6 font-sans">
+                  {/* Consolidated Batches Console */}
+                  <div className="space-y-4 font-sans">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                          Published Course Batches
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Manage active or upcoming course cohorts and their associated curriculums.</p>
+                      </div>
+                      <div className="relative w-full sm:w-72 font-sans">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                        <input
+                          type="text"
+                          value={courseSearchQuery}
+                          onChange={e => setCourseSearchQuery(e.target.value)}
+                          placeholder="Filter batches by name, code or status..."
+                          className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tabbed filters for Table selection */}
+                    <div className="flex border-b border-slate-100 dark:border-white/5 pb-0">
+                      <button
+                        type="button"
+                        onClick={() => setCourseDashboardTab('all')}
+                        className={`px-4 py-2 text-xs font-semibold border-b-2 transition ${
+                          courseDashboardTab === 'all'
+                            ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                            : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-300'
+                        }`}
+                      >
+                        All Batches ({courses.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCourseDashboardTab('ongoing')}
+                        className={`px-4 py-2 text-xs font-semibold border-b-2 transition ${
+                          courseDashboardTab === 'ongoing'
+                            ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold'
+                            : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-300'
+                        }`}
+                      >
+                        Ongoing ({courses.filter(c => c.status === 'ongoing').length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCourseDashboardTab('upcoming')}
+                        className={`px-4 py-2 text-xs font-semibold border-b-2 transition ${
+                          courseDashboardTab === 'upcoming'
+                            ? 'border-amber-500 text-amber-600 dark:text-amber-400 font-bold'
+                            : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-300'
+                        }`}
+                      >
+                        Upcoming Admissions ({courses.filter(c => c.status === 'upcoming').length})
+                      </button>
+                    </div>
+
+                    {/* Table View */}
+                    <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-white/5">
+                      <table className="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                          <tr className="bg-slate-50 dark:bg-black/15 border-b border-slate-150 dark:border-white/5 text-xs font-medium text-slate-500 dark:text-zinc-400">
+                            <th className="px-4 py-3">Course Batch / Name</th>
+                            <th className="px-4 py-3">Batch Code</th>
+                            <th className="px-4 py-3">Cohort Identifier</th>
+                            <th className="px-4 py-3 text-center">Status</th>
+                            <th className="px-4 py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {courses
+                            .filter(c => {
+                              if (courseDashboardTab === 'all') return true;
+                              return c.status === courseDashboardTab;
+                            })
+                            .filter(c => {
+                              if (!courseSearchQuery) return true;
+                              const q = courseSearchQuery.toLowerCase();
+                              return (
+                                c.name.toLowerCase().includes(q) ||
+                                (c.code || '').toLowerCase().includes(q) ||
+                                (c.batchNumber || '').toLowerCase().includes(q) ||
+                                (c.description || '').toLowerCase().includes(q)
+                              );
+                            })
+                            .map(classRow => {
+                              return (
+                                <tr key={classRow.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50/20 dark:hover:bg-zinc-900/10 group text-xs transition-all">
+                                  <td className="px-4 py-3.5">
+                                    <div>
+                                      <span className="font-bold text-slate-800 dark:text-zinc-200 block leading-tight">{classRow.name}</span>
+                                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1 line-clamp-1 max-w-md">{classRow.description || 'No custom description attached.'}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3.5">
+                                    <span className="text-xs text-slate-700 dark:text-zinc-300 bg-slate-100/50 dark:bg-zinc-800/40 px-2.5 py-1 rounded border border-slate-200/40">
+                                      {classRow.code || 'COURS-STB'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3.5">
+                                    <span className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-zinc-800 border border-slate-200/40 dark:border-white/5 text-slate-600 dark:text-zinc-400">
+                                      Batch {classRow.batchNumber || 'stb_001'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3.5 text-center">
+                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${
+                                      classRow.status === 'ongoing'
+                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10'
+                                        : classRow.status === 'upcoming'
+                                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/10'
+                                          : 'bg-zinc-150 dark:bg-zinc-850 text-zinc-500'
+                                    }`}>
+                                      {classRow.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3.5 text-right">
+                                    <div className="flex justify-end gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const matchedMaster = masterCourses.find(m => m.name === classRow.name);
+                                          if (matchedMaster) {
+                                            startEditMasterCourse(matchedMaster);
+                                          } else {
+                                            startEditCourse(classRow);
+                                          }
+                                        }}
+                                        className="p-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-lg text-amber-600 dark:text-amber-400 transition"
+                                        title="Configure curriculum parameters"
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                      {onDeleteCourse && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setCourseToDelete(classRow)}
+                                          className="p-1.5 bg-slate-50 hover:bg-rose-500/10 dark:bg-zinc-900 rounded-lg text-rose-500 transition"
+                                          title="Decommission Batch"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          {courses.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-zinc-500">
+                                <div className="flex flex-col items-center justify-center space-y-2">
+                                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-850 flex items-center justify-center">
+                                    <GraduationCap className="w-5 h-5 text-slate-400" />
+                                  </div>
+                                  <span className="text-xs">No batches registered.</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Master Blueprint Catalog */}
+                    <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
+                            <BookOpen className="w-4 h-4 text-amber-500" />
+                            Curriculum Blueprints Bank ({masterCourses.length})
+                          </h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Master definitions bank representing established academic syllabus templates.</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {masterCourses
+                          .filter(m => {
+                            if (!courseSearchQuery) return true;
+                            const q = courseSearchQuery.toLowerCase();
+                            return m.name.toLowerCase().includes(q) || (m.description || '').toLowerCase().includes(q);
+                          })
+                          .map(master => (
+                            <div key={master.id} className="p-4 bg-slate-50/50 dark:bg-[#0A0A0C]/40 hover:bg-slate-50/80 dark:hover:bg-[#0A0A0C]/80 border border-slate-200/50 dark:border-white/5 rounded-2xl flex flex-col justify-between space-y-3 group transition-all duration-250">
+                              <div className="flex justify-between items-start gap-4">
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-snug">{master.name}</h5>
+                                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-1">{master.durationMonths || 6} Months Duration</p>
+                                  <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1.5 leading-relaxed line-clamp-2">{master.description || 'No course template summary provided.'}</p>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditMasterCourse(master)}
+                                    className="p-1.5 bg-white dark:bg-zinc-900 rounded-lg text-amber-600 dark:text-amber-400 hover:scale-105 transition shadow-2xs"
+                                    title="Edit Template Description"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  {onDeleteMasterCourse && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setMasterToDelete(master)}
+                                      className="p-1.5 bg-white dark:bg-zinc-900 rounded-lg text-rose-500 hover:bg-rose-500/10 dark:hover:bg-red-500/15 transition hover:scale-105"
+                                      title="Delete from curriculum bank"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
                                   )}
                                 </div>
                               </div>
                             </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Unified Footer Controls */}
-                    <div className="flex justify-end gap-2.5 border-t border-slate-200/50 dark:border-white/5 pt-4 font-sans">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          cancelEditCourse();
-                          setShowCourseDashboard(false);
-                        }}
-                        className="px-4.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
-                      >
-                        Close Registry
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={!selectedMasterId}
-                        className="px-5.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Publish Batch
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {/* DOUBLE MANAGEMENT VIEW PANELS */}
-                <div className="border-t border-slate-200/80 dark:border-white/5 pt-6 mt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    {/* Panel A: Curriculum Base Courses */}
-                    <div className="space-y-3 bg-white dark:bg-[#070709] border border-slate-150 dark:border-white/5 p-4.5 rounded-2xl shadow-xs">
-                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                        <div className="flex items-center gap-1.5 flex-1 select-none">
-                          <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="text-xs font-bold text-slate-805 dark:text-white">Curriculum Course Bank ({masterCourses.length})</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                        {masterCourses.map(master => (
-                          <div key={master.id} className="p-3 bg-slate-50 dark:bg-[#0c0c0e] rounded-xl border border-slate-150 dark:border-white/5 group relative">
-                            <div className="flex justify-between items-start gap-2">
-                              <div>
-                                <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{master.name}</h5>
-                                <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">{master.durationMonths || 6} Months Duration</div>
-                                <p className="text-[10px] text-slate-550 dark:text-zinc-405 mt-1 leading-normal line-clamp-2">{master.description}</p>
-                              </div>
-
-                              <div className="flex items-center gap-1 font-sans">
-                                <button
-                                  type="button"
-                                  onClick={() => startEditMasterCourse(master)}
-                                  className="p-1 hover:bg-slate-200 dark:hover:bg-white/5 rounded text-amber-600 dark:text-amber-400 transition cursor-pointer"
-                                  title="Edit Template Description"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                {onDeleteMasterCourse && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setMasterToDelete(master)}
-                                    className="p-1 hover:bg-slate-200 dark:hover:bg-red-500/10 rounded text-rose-500 transition cursor-pointer"
-                                    title="Delete from curriculum bank"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
                         {masterCourses.length === 0 && (
-                          <div className="text-center py-8 text-[11px] text-slate-400 font-sans">No core curricula templates registered.</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Panel B: Active Published Batches */}
-                    <div className="space-y-3 bg-white dark:bg-[#070709] border border-slate-150 dark:border-white/5 p-4.5 rounded-2xl shadow-xs">
-                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                        <div className="flex items-center gap-1.5 flex-1 select-none font-sans">
-                          <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
-                          <span className="text-xs font-bold text-slate-805 dark:text-white">Active Published Batches ({courses.length})</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                        {courses.map(pub => (
-                          <div key={pub.id} className="p-3 bg-slate-50 dark:bg-[#0c0c0e] rounded-xl border border-slate-150 dark:border-white/5 relative hover:border-slate-300 dark:hover:border-zinc-700 transition">
-                            <div className="flex justify-between items-start gap-2">
-                              <div>
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  <h5 className="text-xs font-bold text-slate-805 dark:text-zinc-200">{pub.name}</h5>
-                                  <span className="text-[9px] font-extrabold uppercase font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-md tracking-wider">{pub.batchNumber || 'Batch A'}</span>
-                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
-                                    pub.status === 'ongoing'
-                                      ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                      : pub.status === 'upcoming'
-                                        ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                                        : 'bg-slate-200 dark:bg-white/5 text-slate-500'
-                                  }`}>
-                                    {pub.status}
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-550 dark:text-zinc-405 font-mono mt-1">Course Code: {pub.code}</div>
-                                <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Launches: {pub.publishDate || pub.createdDate}</div>
-                                {pub.admissionLastDate && (
-                                  <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Admission Deadline: {pub.admissionLastDate}</div>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-1">
-                                {onDeleteCourse && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setCourseToDelete(pub)}
-                                    className="p-1 hover:bg-slate-200 dark:hover:bg-red-500/10 rounded text-rose-500 transition cursor-pointer"
-                                    title="Archive Published Batch"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
+                          <div className="col-span-full py-8 text-center text-xs text-slate-400 dark:text-zinc-650 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+                            No base master courses configured. Click the first tab to register.
                           </div>
-                        ))}
-                        {courses.length === 0 && (
-                          <div className="text-center py-8 text-[11px] text-slate-400 font-sans">No published batches listings exist.</div>
                         )}
                       </div>
                     </div>
@@ -1184,8 +1300,7 @@ export default function ScheduleManager({
               >
                 {editingSchedule && (
                   <div className="col-span-full flex items-center justify-between border-b border-slate-200/50 dark:border-white/5 pb-2.5 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                    <div className="flex items-center">
                       <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                         Editing Scheduled Session: <span className="text-amber-600 dark:text-amber-400 font-mono text-[11.5px]">{editingSchedule.title}</span>
                       </h3>
@@ -1522,26 +1637,8 @@ export default function ScheduleManager({
                     key={cl.id}
                     className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-150 text-xs group"
                   >
-                    {/* Left block: Title, status dot, and tag */}
-                    <div className="flex items-start md:items-center gap-3.5 min-w-0 flex-1 md:mr-6">
-                      {/* Pulse Status Bullet */}
-                      <div className="flex-shrink-0 mt-1 md:mt-0">
-                        {cl.status === 'scheduled' ? (
-                          <div className="flex items-center justify-center">
-                            <span className="relative flex h-2.5 w-2.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                          </div>
-                        ) : cl.status === 'completed' ? (
-                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-500 dark:bg-blue-500/25 dark:text-blue-400 font-bold text-[10px]">
-                            ✓
-                          </div>
-                        ) : (
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block" />
-                        )}
-                      </div>
-
+                    {/* Left block: Title, status, and tag */}
+                    <div className="flex items-start md:items-center min-w-0 flex-1 md:mr-6">
                       {/* Title & Status Metadata */}
                       <div className="min-w-0 flex-1 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
                         <span className={`font-bold text-slate-950 dark:text-white text-[14px] ${cl.status === 'completed' ? 'opacity-65 line-through decoration-slate-400/55' : ''}`} title={cl.title}>
@@ -1559,20 +1656,18 @@ export default function ScheduleManager({
                         </span>
 
                         {cl.course && cl.course !== 'All' ? (
-                          <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight ${
+                          <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center border tracking-tight ${
                             isUserEnrolledVal
                               ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/10'
                               : 'bg-slate-50 dark:bg-[#0c0c0e] text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-white/10'
                           }`}>
-                            <span className={`w-1 h-1 rounded-full ${isUserEnrolledVal ? 'bg-blue-505' : 'bg-slate-405'}`} />
                             {cl.course}
                             {isUserEnrolledVal && (
                               <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Enrolled</span>
                             )}
                           </div>
                         ) : isUserEnrolledVal ? (
-                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border tracking-tight bg-blue-500/10 text-blue-650 dark:text-blue-400 border-blue-200 dark:border-blue-500/10">
-                            <span className="w-1 h-1 rounded-full bg-blue-500" />
+                          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center border tracking-tight bg-blue-500/10 text-blue-650 dark:text-blue-400 border-blue-200 dark:border-blue-500/10">
                             Enrolled
                           </div>
                         ) : null}
