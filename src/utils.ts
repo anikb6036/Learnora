@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem } from './types';
 
 // Initial seed data for the Coaching Center
 export const INITIAL_USERS: UserAccount[] = [
@@ -188,6 +188,89 @@ export const INITIAL_COURSES: Course[] = [
   { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18' },
   { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming', publishDate: '2026-07-01', admissionLastDate: '2026-06-30' },
   { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', batchNumber: 'stb_003', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '9', createdDate: '2024-05-19', status: 'completed' }
+];
+
+export const INITIAL_ASSIGNMENTS: StudentAssignment[] = [
+  {
+    id: 'asg-1',
+    title: 'Newtonian Laws Practice Sheet',
+    description: 'Solve all 15 numerical problems on inclined platforms and friction coefficients defined in the class handout.',
+    classId: 'class-1',
+    className: 'Introductory Mechanics & Forces',
+    course: 'IIT-JEE Master Preparation',
+    batch: 'Batch A',
+    instructorId: 'instructor-1',
+    instructorName: 'Prof. Sarah Connor',
+    dueDate: '2026-06-25',
+    maxPoints: 100,
+    status: 'published',
+    createdDate: '2026-06-15',
+    submissions: [
+      {
+        id: 'sub-1',
+        studentId: 'student-1',
+        studentName: 'John Connor',
+        submittedDate: '2026-06-16T18:30:00Z',
+        answerText: 'Completed all problems 1 to 15. The forces resolve cleanly into mg*sin(theta) and friction matches mu*mg*cos(theta). Detailed equations attached.',
+        fileUrn: 'newtonian_mechanics_john.pdf',
+        score: 95,
+        feedback: 'Excellent breakdown of vector resolutions. Your free-body diagram equations represent perfect professional standard execution.',
+        status: 'graded'
+      }
+    ]
+  },
+  {
+    id: 'asg-2',
+    title: 'Functional Hydrocarbon Synthesis',
+    description: 'Provide step-by-step synthetic mechanisms for transforming raw alkenes to aromatic complexes under standard laboratory pressures.',
+    classId: 'class-2',
+    className: 'Organic Chemistry Principles',
+    course: 'Medical NEET Crash Course',
+    batch: 'Batch B',
+    instructorId: 'instructor-1',
+    instructorName: 'Prof. Sarah Connor',
+    dueDate: '2026-06-29',
+    maxPoints: 50,
+    status: 'published',
+    createdDate: '2026-06-16',
+    submissions: []
+  }
+];
+
+export const INITIAL_ASSIGNMENT_BANK: AssignmentBankItem[] = [
+  {
+    id: 'bank-1',
+    title: 'Newtonian Laws Practice Sheet',
+    description: 'Solve all 15 numerical problems on inclined platforms and friction coefficients defined in the class handout.',
+    course: 'IIT-JEE Master Preparation',
+    batch: 'stb_001',
+    month: 'Month 1',
+    syllabus: 'Unit 1: Mechanics and Laws of Motion',
+    maxPoints: 100,
+    createdDate: '2024-06-15'
+  },
+  {
+    id: 'bank-2',
+    title: 'Functional Hydrocarbon Synthesis',
+    description: 'Provide step-by-step synthetic mechanisms for transforming raw alkenes to aromatic complexes under standard laboratory pressures.',
+    course: 'Medical NEET Crash Course',
+    batch: 'stb_002',
+    month: 'Month 1',
+    syllabus: 'Unit 1: Organic Chemistry Structures',
+    maxPoints: 50,
+    createdDate: '2024-06-15'
+  },
+  {
+    id: 'bank-3',
+    title: 'Kinetic Theory of Gases Exam',
+    description: 'Solve problems on velocity distribution curves, mean free path, and van der Waals parameters.',
+    course: 'IIT-JEE Master Preparation',
+    batch: 'stb_001',
+    month: 'Month 2',
+    syllabus: 'Unit 2: Thermodynamics & Gas Laws',
+    maxPoints: 100,
+    createdDate: '2024-06-16'
+  }
 ];
 
 // Deprecated, maintained as a fallback. Replaced by useFirebaseState.

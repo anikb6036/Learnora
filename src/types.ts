@@ -160,4 +160,48 @@ export interface MasterCourse {
   createdDate: string;
 }
 
+export interface StudentSubmission {
+  id: string;
+  studentId: string;
+  studentName: string;
+  submittedDate: string;
+  answerText?: string;
+  fileUrn?: string; // Optional simulated file name/url
+  score?: number; // Graded score
+  feedback?: string; // Instructor feedback
+  status: 'pending' | 'graded';
+}
+
+export interface StudentAssignment {
+  id: string;
+  title: string;
+  description: string;
+  classId?: string; // Links to the class schedule
+  className?: string; // Associated class title
+  course: string; // Associated course name
+  batch: string; // Associated batch name
+  instructorId: string;
+  instructorName: string;
+  dueDate: string; // YYYY-MM-DD
+  maxPoints: number;
+  status: 'published' | 'closed';
+  createdDate: string;
+  submissions: StudentSubmission[];
+  month?: string; // Associated month, e.g. "Month 1"
+  syllabus?: string; // Syllabus / Topic
+}
+
+export interface AssignmentBankItem {
+  id: string;
+  title: string;
+  description: string;
+  course: string;
+  batch: string;
+  month: string; // Course Month
+  syllabus: string; // Syllabus Topic
+  maxPoints: number;
+  createdDate: string;
+}
+
+
 
