@@ -63,6 +63,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [customDesc, setCustomDesc] = useState('');
   const [useCustomAssignment, setUseCustomAssignment] = useState(false);
   const [pipelineSuccessMsg, setPipelineSuccessMsg] = useState('');
+  const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
   // Add/Edit Bank Template modal states
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
@@ -93,8 +94,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setEditingTemplate(null);
       setTemplateTitle('');
       setTemplateDesc('');
-      setTemplateCourse(courses[0]?.name || '');
-      setTemplateBatch(batches[0]?.name || '');
+      const defaultCourse = courses[0]?.name || '';
+      const matchCourseObj = courses.find(c => c.name === defaultCourse);
+      const defaultBatch = matchCourseObj?.batchNumber || batches[0]?.name || 'stb_001';
+      setTemplateCourse(defaultCourse);
+      setTemplateBatch(defaultBatch);
       setTemplateMonth('Month 1');
       setTemplateSyllabus('');
       setTemplateMaxPoints(100);
@@ -141,9 +145,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   };
 
   const handleDeleteTemplate = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this assignment template from the bank?')) {
-      setAssignmentBank(prev => prev.filter(t => t.id !== id));
-    }
+    setDeletingTemplateId(id);
   };
 
   // Deploy assignment pipeline publisher
@@ -400,8 +402,37 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                   return (
                     <div
                       key={item.id}
-                      className="p-5 bg-white dark:bg-[#111112] border border-slate-200/80 dark:border-white/5 rounded-2xl flex flex-col justify-between hover:border-amber-500/30 transition-all shadow-2xs group relative"
+                      className="p-5 bg-white dark:bg-[#111112] border border-slate-200/80 dark:border-white/5 rounded-2xl flex flex-col justify-between hover:border-amber-500/30 transition-all shadow-2xs group relative overflow-hidden"
                     >
+                      {deletingTemplateId === item.id && (
+                        <div className="absolute inset-0 bg-slate-900/95 dark:bg-[#0d0d0e]/98 flex flex-col justify-center items-center p-4 z-10 text-center animate-fadeIn">
+                          <Trash2 className="w-8 h-8 text-rose-500 mb-2 animate-bounce" />
+                          <p className="text-xs font-bold text-white mb-1">Delete this template?</p>
+                          <p className="text-[10px] text-slate-400 mb-4 max-w-[220px] leading-relaxed">
+                            This will permanently remove "{item.title}" from the templates pool.
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDeletingTemplateId(null)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssignmentBank(prev => prev.filter(t => t.id !== item.id));
+                                setDeletingTemplateId(null);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold transition cursor-pointer"
+                            >
+                              Confirm Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
@@ -840,7 +871,15 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                   <select
                     className="w-full px-3 py-2 rounded-xl border border-slate-205 dark:border-white/10 bg-transparent text-slate-880 dark:text-zinc-250 focus:outline-none focus:border-amber-500"
                     value={templateCourse}
-                    onChange={e => setTemplateCourse(e.target.value)}
+                    onChange={e => {
+                      const selectedCourseName = e.target.value;
+                      setTemplateCourse(selectedCourseName);
+                      
+                      const matchCourseObj = courses.find(c => c.name === selectedCourseName);
+                      if (matchCourseObj?.batchNumber) {
+                        setTemplateBatch(matchCourseObj.batchNumber);
+                      }
+                    }}
                   >
                     {courses.map(c => (
                       <option key={c.id} value={c.name}>{c.name}</option>
@@ -855,13 +894,71 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                     value={templateBatch}
                     onChange={e => setTemplateBatch(e.target.value)}
                   >
-                    {batches.map(b => (
-                      <option key={b.id} value={b.name}>{b.name}</option>
-                    ))}
-                    <option value="stb_001">stb_001 (Batch A)</option>
-                    <option value="stb_002">stb_002 (Batch B)</option>
-                    <option value="stb_003">stb_003 (Batch C)</option>
-                    <option value="stb_004">stb_004 (Batch D)</option>
+                    {(() => {
+                      const matchCourseObj = courses.find(c => c.name === templateCourse);
+                      const batchNum = (matchCourseObj?.batchNumber || '').toLowerCase();
+
+                      // Collect all potential batch options:
+                      // 1. From database `batches`
+                      // 2. Custom hardcoded fallbacks
+                      const allBatchOptions = [
+                        ...batches.map(b => ({ value: b.name, label: b.name, id: b.id })),
+                        ...batches.map(b => ({ value: b.id, label: b.name, id: b.id })),
+                        { value: 'stb_001', label: 'stb_001 (Batch A)', id: 'stb_001' },
+                        { value: 'stb_002', label: 'stb_002 (Batch B)', id: 'stb_002' },
+                        { value: 'stb_003', label: 'stb_003 (Batch C)', id: 'stb_003' },
+                        { value: 'stb_004', label: 'stb_004 (Batch D)', id: 'stb_004' },
+                        { value: 'Batch A', label: 'Batch A', id: 'stb_001' },
+                        { value: 'Batch B', label: 'Batch B', id: 'stb_002' },
+                        { value: 'Batch C', label: 'Batch C', id: 'stb_003' },
+                        { value: 'Batch D', label: 'Batch D', id: 'stb_004' },
+                      ];
+
+                      // Filter options matching the selected course's batchNumber:
+                      const filtered = allBatchOptions.filter(opt => {
+                        if (!batchNum) return true; // if course doesn't specify a batch, allow all
+                        
+                        const valLower = opt.value.toLowerCase();
+                        const idLower = opt.id.toLowerCase();
+                        
+                        // Exact matches
+                        if (valLower === batchNum || idLower === batchNum) return true;
+
+                        // Cross-mappings (Batch A <-> stb_001, etc.)
+                        const relations: Record<string, string[]> = {
+                          'stb_001': ['batch a', 'stb_001'],
+                          'stb_002': ['batch b', 'stb_002'],
+                          'stb_003': ['batch c', 'stb_003'],
+                          'stb_004': ['batch d', 'stb_004'],
+                          'batch a': ['batch a', 'stb_001'],
+                          'batch b': ['batch b', 'stb_002'],
+                          'batch c': ['batch c', 'stb_003'],
+                          'batch d': ['batch d', 'stb_004'],
+                        };
+
+                        if (relations[batchNum]) {
+                          return relations[batchNum].includes(valLower) || relations[batchNum].includes(idLower);
+                        }
+
+                        return false;
+                      });
+
+                      // Remove duplicate option values to keep dropdown clean
+                      const uniqueOptions: typeof allBatchOptions = [];
+                      const seen = new Set<string>();
+                      for (const opt of filtered) {
+                        if (!seen.has(opt.value)) {
+                          seen.add(opt.value);
+                          uniqueOptions.push(opt);
+                        }
+                      }
+
+                      return uniqueOptions.map(opt => (
+                        <option key={`${opt.value}-${opt.label}`} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ));
+                    })()}
                   </select>
                 </div>
               </div>
