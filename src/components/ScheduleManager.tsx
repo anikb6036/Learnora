@@ -619,7 +619,25 @@ export default function ScheduleManager({
                           cl.subject.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject = subjectFilter === 'all' || cl.subject === subjectFilter;
     const matchesInstructor = instructorFilter === 'all' || cl.instructorId === instructorFilter;
-    const matchesStatus = statusFilter === 'all' || cl.status === statusFilter;
+    
+    // Auto-compute isTimeOver for this class
+    const classStart = new Date(`${cl.date}T${cl.time}`);
+    const now = new Date();
+    const timeDiffMinutes = (classStart.getTime() - now.getTime()) / (1000 * 60);
+    const isTimeOver = -timeDiffMinutes > Number(cl.duration);
+
+    let matchesStatus = false;
+    if (statusFilter === 'all') {
+      matchesStatus = true;
+    } else if (statusFilter === 'scheduled') {
+      // In "Scheduled Lectures", only show classes with status 'scheduled' whose time is NOT yet over
+      matchesStatus = cl.status === 'scheduled' && !isTimeOver;
+    } else if (statusFilter === 'completed') {
+      // In "Completed Classes", show explicitly completed classes or classes with scheduled status whose time IS over
+      matchesStatus = cl.status === 'completed' || (cl.status === 'scheduled' && isTimeOver);
+    } else {
+      matchesStatus = cl.status === statusFilter;
+    }
 
     // Role specific display constraints (Students see only classes they are enrolled in or that are assigned to their course or Course 'All')
     if (currentUser.role === 'student') {
@@ -1641,19 +1659,26 @@ export default function ScheduleManager({
                     <div className="flex items-start md:items-center min-w-0 flex-1 md:mr-6">
                       {/* Title & Status Metadata */}
                       <div className="min-w-0 flex-1 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
-                        <span className={`font-bold text-slate-950 dark:text-white text-[14px] ${cl.status === 'completed' ? 'opacity-65 line-through decoration-slate-400/55' : ''}`} title={cl.title}>
-                          {cl.title}
-                        </span>
+                        {(() => {
+                          const displayStatus = (cl.status === 'scheduled' && isTimeOver) ? 'completed' : cl.status;
+                          return (
+                            <>
+                              <span className={`font-bold text-slate-950 dark:text-white text-[14px] ${displayStatus === 'completed' ? 'opacity-65 line-through decoration-slate-400/55' : ''}`} title={cl.title}>
+                                {cl.title}
+                              </span>
 
-                        <span className={`text-[11px] font-semibold whitespace-nowrap px-2.5 py-0.5 rounded border ${
-                          cl.status === 'scheduled'
-                            ? 'bg-slate-100 text-slate-500 border-slate-200/60 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5'
-                            : cl.status === 'completed'
-                              ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10'
-                              : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
-                        }`}>
-                          {cl.status === 'scheduled' ? 'Ready' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
-                        </span>
+                              <span className={`text-[11px] font-semibold whitespace-nowrap px-2.5 py-0.5 rounded border ${
+                                displayStatus === 'scheduled'
+                                  ? 'bg-slate-100 text-slate-500 border-slate-200/60 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5'
+                                  : displayStatus === 'completed'
+                                    ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10'
+                                    : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
+                              }`}>
+                                {displayStatus === 'scheduled' ? 'Ready' : displayStatus === 'completed' ? 'Completed' : 'Cancelled'}
+                              </span>
+                            </>
+                          );
+                        })()}
 
                         {cl.course && cl.course !== 'All' ? (
                           <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center border tracking-tight ${
@@ -1684,12 +1709,12 @@ export default function ScheduleManager({
                     <div className="flex flex-wrap items-center gap-y-1.5 gap-x-5 text-[11px] text-slate-500 dark:text-zinc-400 font-medium md:flex-shrink-0">
                       <div className="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-zinc-200 transition">
                         <GitCommit className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-550" />
-                        <span className="font-mono text-[11.5px] text-slate-500 dark:text-zinc-400">{cl.instructorName || 'Unassigned'}</span>
+                        <span className="text-[11.5px] text-slate-500 dark:text-zinc-400">{cl.instructorName || 'Unassigned'}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-zinc-200 transition">
                         <GitBranch className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-555" />
-                        <span className="text-[11px] font-mono">{cl.location}</span>
+                        <span className="text-[11px]">{cl.location}</span>
                       </div>
                     </div>
 
