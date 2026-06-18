@@ -105,7 +105,7 @@ export default function MailboxManager({
       {/* Page Title & Intro */}
       <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="p-1 px-3 border border-blue-550/15 bg-blue-500/5 text-blue-500 rounded-full text-[10px] font-mono font-bold uppercase select-none tracking-widest leading-none">
+          <span className="p-1 px-3 border border-blue-550/15 bg-blue-500/5 text-blue-500 rounded-full text-[10px] font-bold uppercase select-none tracking-widest leading-none">
             📥 Internal Message Dispatch
           </span>
           <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mt-2 mb-1 tracking-tight">
@@ -165,12 +165,12 @@ export default function MailboxManager({
 
             {/* Scrollable list */}
             <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1">
-              <p className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 tracking-wider font-bold">
+              <p className="text-[10px] uppercase text-slate-400 dark:text-gray-500 tracking-wider font-bold">
                 {activeFolder === 'inbox' ? 'Inbound Letters' : 'Outbound Despatches'}
               </p>
 
               {displayedMails.length === 0 ? (
-                <div className="text-center py-16 text-slate-401 dark:text-gray-500 font-mono text-xs border border-dashed border-slate-150 dark:border-white/5 rounded-2xl bg-slate-50/20 dark:bg-transparent">
+                <div className="text-center py-16 text-slate-401 dark:text-gray-500 text-xs border border-dashed border-slate-150 dark:border-white/5 rounded-2xl bg-slate-50/20 dark:bg-transparent">
                   No matches in this folder repository.
                 </div>
               ) : (
@@ -189,10 +189,10 @@ export default function MailboxManager({
                       }`}
                     >
                       <div className="flex justify-between items-center mb-0.5">
-                        <span className="font-mono text-[10px] text-amber-500 font-bold max-w-[70%] truncate">
+                        <span className="text-[10px] text-amber-500 font-bold max-w-[70%] truncate">
                           {activeFolder === 'inbox' ? mail.from : `To: ${mail.to}`}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {new Date(mail.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -212,7 +212,7 @@ export default function MailboxManager({
             </div>
           </div>
 
-          <div className="border-t border-slate-100 dark:border-white/5 pt-4 text-[10px] text-slate-400 font-mono flex items-center gap-2 select-none">
+          <div className="border-t border-slate-100 dark:border-white/5 pt-4 text-[10px] text-slate-400 flex items-center gap-2 select-none">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Email Dispatch: Online & Ready
           </div>
@@ -260,7 +260,7 @@ export default function MailboxManager({
                     <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                       
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold">Recipient Account</label>
+                        <label className="text-[10px] uppercase text-slate-400 dark:text-gray-500 block font-bold">Recipient Account</label>
                         {recipients.length === 0 ? (
                           <input
                             type="text"
@@ -268,7 +268,7 @@ export default function MailboxManager({
                             placeholder="e.g. admissions@learnora.edu"
                             value={composeTo}
                             onChange={(e) => setComposeTo(e.target.value)}
-                            className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-[#0F0F11] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-1 focus:ring-amber-500/30 text-slate-800 dark:text-gray-200 font-mono"
+                            className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-[#0F0F11] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-1 focus:ring-amber-500/30 text-slate-800 dark:text-gray-200"
                           />
                         ) : (
                           <select
@@ -286,7 +286,7 @@ export default function MailboxManager({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold">Subject Line Header</label>
+                        <label className="text-[10px] uppercase text-slate-400 dark:text-gray-500 block font-bold">Subject Line Header</label>
                         <input
                           type="text"
                           required
@@ -298,7 +298,7 @@ export default function MailboxManager({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-slate-400 dark:text-gray-500 block font-bold">Inbound Message Body Envelope</label>
+                        <label className="text-[10px] uppercase text-slate-400 dark:text-gray-500 block font-bold">Inbound Message Body Envelope</label>
                         <textarea
                           required
                           rows={8}
@@ -342,10 +342,10 @@ export default function MailboxManager({
                     
                     <div className="flex justify-between items-start border-b border-slate-150 dark:border-white/5 pb-2.5 text-xs gap-4">
                       <div className="space-y-0.5 truncate">
-                        <p className="truncate"><span className="text-slate-402 dark:text-gray-500 font-mono text-[10px]">FROM:</span> <b className="text-amber-500">{selectedMail.from}</b></p>
-                        <p className="truncate"><span className="text-slate-402 dark:text-gray-500 font-mono text-[10px]">TO:</span> <b className="text-slate-700 dark:text-gray-300">{selectedMail.to}</b></p>
+                        <p className="truncate"><span className="text-slate-402 dark:text-gray-500 text-[10px]">FROM:</span> <b className="text-amber-500">{selectedMail.from}</b></p>
+                        <p className="truncate"><span className="text-slate-402 dark:text-gray-500 text-[10px]">TO:</span> <b className="text-slate-700 dark:text-gray-300">{selectedMail.to}</b></p>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono whitespace-nowrap pt-0.5">
+                      <span className="text-[10px] text-slate-400 whitespace-nowrap pt-0.5">
                         {new Date(selectedMail.timestamp).toLocaleString(undefined, {
                           dateStyle: 'medium',
                           timeStyle: 'short'
