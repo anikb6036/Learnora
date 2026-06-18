@@ -2880,7 +2880,7 @@ function AppContent() {
               setIsSidebarHovered(false);
               setIgnoreHover(false);
             }}
-            className={`w-full ${isActuallyCollapsed ? 'md:w-20' : 'md:w-64'} relative z-10 bg-[#fafafa] dark:bg-[#080809] border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 flex flex-col justify-between p-5 mr-0 transition-all duration-300 ease-in-out select-none overflow-y-auto`}
+            className={`w-full ${isActuallyCollapsed ? 'md:w-20 px-3' : 'md:w-64 px-5'} py-5 relative z-10 bg-[#fafafa] dark:bg-[#080809] border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 flex flex-col justify-between mr-0 transition-all duration-300 ease-in-out select-none overflow-y-auto`}
           >
             <div className="space-y-6">
               {/* Header Branding */}
@@ -2891,7 +2891,7 @@ function AppContent() {
                       <div className="origin-left scale-[0.65] -mb-1 relative -left-1">
                         <Logo size="sm" withStrapline={false} />
                       </div>
-                      <p className="text-sm text-gray-500 uppercase tracking-widest mt-0.5 font-sans ml-1 text-slate-400 dark:text-gray-500">Active Scheduler</p>
+                      <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 font-sans ml-1 text-slate-400 dark:text-gray-500">Active Scheduler</p>
                     </div>
                   ) : (
                     <div className="scale-[0.45] origin-center -ml-3 -mb-1">
@@ -2915,7 +2915,7 @@ function AppContent() {
                 {/* Logged profile banner */}
                 <div 
                   onClick={() => setActiveTab('profile')}
-                  className={`p-3 bg-slate-50 dark:bg-[#161618] hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl border ${activeTab === 'profile' ? 'border-amber-500' : 'border-slate-100 dark:border-white/5'} flex items-center ${isActuallyCollapsed ? 'justify-center p-2' : 'gap-3'} select-none transition-all cursor-pointer`}
+                  className={`bg-slate-50 dark:bg-[#161618] hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl border ${activeTab === 'profile' ? 'border-amber-500' : 'border-slate-100 dark:border-white/5'} flex items-center ${isActuallyCollapsed ? 'justify-center p-1.5' : 'gap-3 p-3'} select-none transition-all cursor-pointer`}
                   title={currentUser.role === 'student' ? "Click to Open My Profile" : "Click to Open Profile Settings"}
                 >
                   <div className="relative group/avatar cursor-pointer flex-shrink-0">
@@ -2981,8 +2981,8 @@ function AppContent() {
                   </div>
                   {!isActuallyCollapsed && (
                     <div className="min-w-0 flex-1 animate-fadeIn">
-                      <p className="text-xs font-bold text-slate-900 dark:text-gray-200 truncate">{currentUser.name}</p>
-                      <span className="inline-flex items-center text-sm uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded mt-0.5">
+                      <p className="text-[13px] font-bold text-slate-900 dark:text-gray-200 truncate">{currentUser.name}</p>
+                      <span className="inline-flex items-center text-[9px] uppercase font-bold tracking-wider text-amber-500 border border-slate-200 dark:border-white/10 shadow-sm bg-amber-500/10 px-1.5 py-0.5 rounded mt-0.5">
                         {currentUser.role}
                       </span>
                     </div>
@@ -3389,73 +3389,6 @@ function AppContent() {
                                     </div>
                                   </div>
                                </div>
-                            );
-                          }
-
-                          if (enrolledCourseConfig.status === 'ongoing') {
-                            return (
-                              <div className="mb-6 p-5 md:p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 dark:bg-emerald-500/5 dark:border-emerald-500/20 flex flex-col gap-4 animate-fadeIn">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 rounded-xl shrink-0">
-                                      <CheckCircle className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider font-mono">
-                                          Ongoing / Active
-                                        </span>
-                                        {enrolledCourseConfig.batchNumber && (
-                                          <span className="text-sm bg-red-500/10 text-red-500 dark:text-red-400 px-2   py-0.5 rounded font-bold font-mono">
-                                            Batch: {enrolledCourseConfig.batchNumber}
-                                          </span>
-                                        )}
-                                      </div>
-                                      <h3 className="font-bold text-slate-900 dark:text-white text-base mt-1.5 leading-tight">
-                                        {enrolledCourseConfig.name}
-                                      </h3>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-start sm:items-end">
-                                    <p className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider">Duration</p>
-                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                                      {enrolledCourseConfig.durationWeeks || enrolledCourseConfig.durationMonths || '12'} Months
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {enrolledCourseConfig.description && (
-                                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
-                                    {enrolledCourseConfig.description}
-                                  </p>
-                                )}
-
-                                {enrolledCourseConfig.roadmap && enrolledCourseConfig.roadmap.length > 0 && (
-                                  <div className="pt-2 space-y-3 font-sans">
-                                    <p className="text-sm font-mono uppercase text-slate-400 dark:text-gray-500 font-bold tracking-wider flex items-center gap-1.5">
-                                      <GitBranch className="w-3.5 h-3.5 text-emerald-500" />
-                                      Active Curriculum Roadmap & Milestones
-                                    </p>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
-                                      {enrolledCourseConfig.roadmap.map((m: any) => (
-                                        <div key={m.month} className="p-3 bg-white dark:bg-white/[0.02] border border-slate-150 dark:border-white/5 rounded-xl hover:border-emerald-500/20 dark:hover:border-emerald-500/20 transition-all">
-                                          <div className="flex items-center gap-2 mb-1.5">
-                                            <span className="text-sm bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold font-mono">
-                                              Month {m.month}
-                                            </span>
-                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                              {m.title}
-                                            </span>
-                                          </div>
-                                          <p className="text-sm text-slate-500 dark:text-gray-400 leading-normal">
-                                            {m.desc}
-                                          </p>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
                             );
                           }
 
