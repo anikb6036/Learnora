@@ -105,16 +105,16 @@ export default function ProgressTracker({
       {/* Tracker metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-xs font-mono uppercase tracking-widest text-slate-400">Reported Average Score</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Reported Average Score</p>
           <div className="flex items-baseline gap-2 mt-1.5">
             <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white">{averageScore}%</p>
-            <span className="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider font-mono">Target &gt;80%</span>
+            <span className="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider">Target &gt;80%</span>
           </div>
           <p className="mt-2 text-xs text-slate-450 dark:text-gray-500">Calculated over {filteredRecords.length} evaluations</p>
         </div>
 
         <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-xs font-mono uppercase tracking-widest text-slate-400">Honor Roll Ratio</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Honor Roll Ratio</p>
           <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-1.5 flex items-center gap-1.5">
             {authorizedRecords.length > 0
               ? ((authorizedRecords.filter(r => r.academicPerformance === 'excellent').length / authorizedRecords.length) * 100).toFixed(0)
@@ -124,7 +124,7 @@ export default function ProgressTracker({
         </div>
 
         <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-xs font-mono uppercase tracking-widest text-slate-400">Attendance Rate</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Attendance Rate</p>
           <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-1.5">
             {authorizedRecords.length > 0
               ? ((authorizedRecords.filter(r => r.attendanceStatus === 'present').length / authorizedRecords.length) * 100).toFixed(0)
@@ -171,7 +171,7 @@ export default function ProgressTracker({
                 className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border border-slate-150 dark:border-white/5 grid grid-cols-1 md:grid-cols-6 gap-4 items-end"
               >
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Select Student</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Select Student</label>
                   <select
                     value={studentId}
                     onChange={e => setStudentId(e.target.value)}
@@ -188,7 +188,7 @@ export default function ProgressTracker({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Select Completed Lesson</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Select Completed Lesson</label>
                   <select
                     value={classId}
                     onChange={e => setClassId(e.target.value)}
@@ -205,7 +205,7 @@ export default function ProgressTracker({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-1">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Attendance</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Attendance</label>
                   <select
                     value={attendance}
                     onChange={e => setAttendance(e.target.value as any)}
@@ -218,7 +218,7 @@ export default function ProgressTracker({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-1">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Score ({score}%)</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Score ({score}%)</label>
                   <input
                     type="range"
                     min="30"
@@ -230,7 +230,7 @@ export default function ProgressTracker({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Overall Tier</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Overall Tier</label>
                   <select
                     value={academicPerformance}
                     onChange={e => setAcademicPerformance(e.target.value as any)}
@@ -244,7 +244,7 @@ export default function ProgressTracker({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-4">
-                  <label className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 block">Adviser Feedback Message</label>
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Adviser Feedback Message</label>
                   <input
                     type="text"
                     required
@@ -315,7 +315,7 @@ export default function ProgressTracker({
         {/* Interactive evaluations grid */}
         <div className="space-y-4">
           {filteredRecords.length === 0 ? (
-            <div className="border border-dashed border-slate-200/80 dark:border-white/10 rounded-2xl p-10 text-center text-slate-400 font-mono">
+            <div className="border border-dashed border-slate-200/80 dark:border-white/10 rounded-2xl p-10 text-center text-slate-401">
               No academic records logged yet.
             </div>
           ) : (
@@ -356,15 +356,15 @@ export default function ProgressTracker({
                         {rec.className}
                       </h4>
 
-                      <div className="text-[11px] text-slate-450 dark:text-slate-450 flex items-center gap-3 font-mono mt-1 pt-1">
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-3 font-medium mt-1 pt-1">
                         <span>Advisor: {rec.instructorName}</span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {rec.evaluationDate}
+                          <Clock className="w-3.5 h-3.5 text-slate-400" /> {rec.evaluationDate}
                         </span>
                         <span>•</span>
                         <span className="font-semibold capitalize text-slate-650 dark:text-slate-300">
-                          Class status: {rec.attendanceStatus}
+                          Class Status: {rec.attendanceStatus}
                         </span>
                       </div>
                     </div>
@@ -378,8 +378,8 @@ export default function ProgressTracker({
                       </div>
 
                       <div className="text-right select-none">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">{rec.score}%</span>
-                        <p className="text-[9px] font-bold text-slate-400 tracking-wider">GRADE VALUE</p>
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">{rec.score}%</span>
+                        <p className="text-[9px] font-bold text-slate-550 dark:text-gray-400 uppercase tracking-wider">Grade Value</p>
                       </div>
                     </div>
                   </div>

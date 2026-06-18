@@ -43,8 +43,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   users,
   setNotifications
 }) => {
-  // Tab control: 'bank' | 'pipeline'
-  const [pipelineTab, setPipelineTab] = useState<'bank' | 'pipeline'>('bank');
+  // Tab control: 'bank' | 'pipeline' | 'template-form'
+  const [pipelineTab, setPipelineTab] = useState<'bank' | 'pipeline' | 'template-form'>('bank');
 
   // Bank search/filters
   const [bankSearch, setBankSearch] = useState('');
@@ -66,7 +66,6 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
   // Add/Edit Bank Template modal states
-  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<AssignmentBankItem | null>(null);
   
   // Template Form Fields
@@ -104,7 +103,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateMaxPoints(100);
     }
     setValidationError('');
-    setIsBankModalOpen(true);
+    setPipelineTab('template-form');
   };
 
   const handleSaveTemplate = (e: React.FormEvent) => {
@@ -141,7 +140,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       };
       setAssignmentBank(prev => [newItem, ...prev]);
     }
-    setIsBankModalOpen(false);
+    setPipelineTab('bank');
   };
 
   const handleDeleteTemplate = (id: string) => {
@@ -773,71 +772,49 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                   )}
                 </div>
               </div>
-
-              {/* Course Pipeline Outline checklist panel */}
-              <div className="bg-white dark:bg-[#111112] border border-slate-205 dark:border-white/5 p-5 rounded-2xl text-left space-y-3">
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-white/5 uppercase tracking-wider">
-                  <BookOpen className="w-4 h-4 text-amber-500" />
-                  Curriculum Progress Map
-                </h3>
-  
-                <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-                  The syllabus milestones are populated. Ensure that each student clears their month challenges before transitioning status.
-                </p>
-
-                <div className="space-y-2 pt-2 text-[11px] font-sans">
-                  <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-transparent">
-                    <span className="font-medium text-slate-700 dark:text-neutral-300">IIT-JEE Month 1 (Newtonian Forces)</span>
-                    <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Ready</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-transparent">
-                    <span className="font-medium text-slate-700 dark:text-neutral-300">IIT-JEE Month 2 (Thermodynamics)</span>
-                    <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Ready</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-transparent">
-                    <span className="font-medium text-slate-700 dark:text-neutral-300">NEET Month 1 (Organic Chemistry)</span>
-                    <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">Ready</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Assignment Bank Template Form Modal */}
-      {isBankModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-2xs p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-[#0B0C10] border border-slate-205 dark:border-white/10 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative">
-            <button
-              onClick={() => setIsBankModalOpen(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 transition cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        {pipelineTab === 'template-form' && (
+          <motion.div
+            key="template-form-tab"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            <div className="bg-white dark:bg-[#070708] border border-slate-205 dark:border-white/10 rounded-2xl p-6 shadow-xs relative max-w-3xl mx-auto">
+              <button
+                onClick={() => setPipelineTab('bank')}
+                className="absolute top-6 right-6 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                <Database className="w-5 h-5" />
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {editingTemplate ? 'Edit Bank Template' : 'Add Template to Assignment Bank'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                    Save reusable curriculum benchmarks mapped dynamically to target course stages.
+                  </p>
+                </div>
               </div>
-              <div className="text-left">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  {editingTemplate ? 'Edit Bank Template' : 'Add Template to Assignment Bank'}
-                </h3>
-                <p className="text-[11px] text-slate-400 dark:text-gray-500 mt-0.5">
-                  Save reusable curriculum benchmarks mapped dynamically to target course stages.
-                </p>
-              </div>
-            </div>
 
-            {validationError && (
-              <div className="mb-4 p-2.5 bg-rose-550/10 border border-rose-500/15 text-rose-500 text-xs rounded-xl font-medium text-left flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                <span>{validationError}</span>
-              </div>
-            )}
+              {validationError && (
+                <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-550/10 border border-rose-200 dark:border-rose-500/15 text-rose-600 dark:text-rose-500 text-xs rounded-xl font-medium text-left flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{validationError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleSaveTemplate} className="space-y-4 font-sans text-xs text-left">
+              <form onSubmit={handleSaveTemplate} className="space-y-5 font-sans text-xs text-left">
               {/* Template Title */}
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Assignment Title *</label>
@@ -1010,7 +987,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-white/5 mt-4">
                 <button
                   type="button"
-                  onClick={() => setIsBankModalOpen(false)}
+                  onClick={() => setPipelineTab('bank')}
                   className="px-4 py-2 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl text-slate-600 dark:text-zinc-350 font-bold transition cursor-pointer"
                 >
                   Cancel
@@ -1024,8 +1001,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
               </div>
             </form>
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
     </div>
   );
 };
