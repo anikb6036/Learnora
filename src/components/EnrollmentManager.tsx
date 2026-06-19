@@ -1083,8 +1083,8 @@ export default function EnrollmentManager({
                         className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-sans"
                       >
                         <option value="">-- No Enrolled Course/Optional --</option>
-                        {courses.filter(c => c.status === 'upcoming').map(c => (
-                          <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
+                        {courses.filter(c => c.status === 'upcoming' || c.status === 'ongoing').map(c => (
+                          <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'}){c.status === 'ongoing' ? ' [Ongoing]' : ''}</option>
                         ))}
                       </select>
                     </div>
@@ -2008,8 +2008,8 @@ export default function EnrollmentManager({
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-805 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                     >
                       <option value="">-- No Enrolled Course/Optional --</option>
-                      {courses.filter(c => c.status === 'upcoming').map(c => (
-                        <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'})</option>
+                      {courses.filter(c => c.status === 'upcoming' || c.status === 'ongoing').map(c => (
+                        <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} (Batch: {c.batchNumber || 'stb_001'}){c.status === 'ongoing' ? ' [Ongoing]' : ''}</option>
                       ))}
                     </select>
                   </div>

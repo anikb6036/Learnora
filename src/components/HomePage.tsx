@@ -459,14 +459,17 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                 
                 <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto lg:before:ml-5 lg:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-red-500 before:via-red-300 before:to-transparent">
                   {selectedCourse ? (
-                    getCourseRoadmap(selectedCourse.name).map((step, idx) => (
+                    (selectedCourse.roadmap && selectedCourse.roadmap.length > 0
+                      ? selectedCourse.roadmap
+                      : getCourseRoadmap(selectedCourse.name, selectedCourse.code)
+                    ).map((step, idx) => (
                       <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
                           {step.month}
                         </div>
                         <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
                           <h4 className="font-bold text-slate-900 dark:text-white">Month {step.month}: {step.title}</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{step.desc}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{step.desc || (step as any).description}</p>
                         </div>
                       </div>
                     ))
