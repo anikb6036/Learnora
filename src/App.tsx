@@ -3434,10 +3434,10 @@ function AppContent() {
                         ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
                         : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
                     }`}
-                    title={isActuallyCollapsed ? "Grading Progress Books" : undefined}
+                    title={isActuallyCollapsed ? "Certificate Progress" : undefined}
                   >
                     <Award className="w-4 h-4 flex-shrink-0" />
-                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Grading Progress Books</span>}
+                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">{currentUser.role === 'student' ? 'Certificate Progress' : 'Grading Progress Books'}</span>}
                   </button>
 
                   <button
@@ -3922,8 +3922,8 @@ function AppContent() {
                                               <div className="flex items-center gap-2 text-emerald-650 dark:text-emerald-400 font-bold text-xs">
                                                 <Award className="w-4 h-4" /> Homework Score Details
                                               </div>
-                                              <div className="text-xs text-slate-705 dark:text-zinc-300">
-                                                You scored <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">{submission.score}</span> out of <span className="font-semibold text-slate-800 dark:text-zinc-200">{asg.maxPoints}</span> points possible.
+                                              <div className="text-xs text-slate-700 dark:text-zinc-300 font-medium">
+                                                You scored {submission.score} out of {asg.maxPoints} points possible.
                                               </div>
                                               {submission.feedback && (
                                                 <div className="mt-3 p-3 bg-white dark:bg-white/[0.01] rounded-lg border border-emerald-500/5 text-xs text-slate-600 dark:text-zinc-400 leading-relaxed italic text-left">
@@ -4030,8 +4030,85 @@ function AppContent() {
                             })()}
                           </div>
                         ) : studentScheduleTab === 'tasks' ? (
-                          <div className="py-24 text-center">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">No pending tasks found</p>
+                          <div className="space-y-6">
+                            <div className="border-b border-slate-100 dark:border-white/5 pb-3">
+                              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-indigo-500" />
+                                Pending Tasks
+                              </h3>
+                              <p className="text-xs text-slate-500 dark:text-gray-400">
+                                Complete and submit your pending homework assignments.
+                              </p>
+                            </div>
+
+                            {(() => {
+                              const studentAssignments = assignments.filter(asg => {
+                                const matchesCourse = !asg.course || asg.course === 'All' || (currentUser.course && asg.course.toLowerCase() === currentUser.course.toLowerCase());
+                                const matchesBatch = !asg.batch || asg.batch === 'All' || (currentUser.batch && asg.batch.toLowerCase() === currentUser.batch.toLowerCase());
+                                const matchingClass = schedules.find(s => s.id === asg.classId);
+                                const isEnrolledInClass = matchingClass?.enrolledStudentIds?.includes(currentUser.id);
+                                return (matchesCourse && matchesBatch) || isEnrolledInClass;
+                              });
+
+                              const pendingTasks = studentAssignments.filter(asg => {
+                                const submission = asg.submissions.find(s => s.studentId === currentUser.id);
+                                return !submission;
+                              });
+
+                              if (pendingTasks.length === 0) {
+                                return (
+                                  <div className="py-24 text-center">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">No pending tasks found</p>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="space-y-5">
+                                  {pendingTasks.map(asg => {
+                                    return (
+                                      <div key={asg.id} className="p-5 border border-slate-200 dark:border-white/5 rounded-2xl bg-[#fafafa] dark:bg-[#0c0d12]/40 shadow-xs relative overflow-hidden text-left">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+                                          <div>
+                                            <span className="text-[10px] uppercase font-bold text-slate-450 dark:text-gray-500">Assignment Post</span>
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{asg.title}</h4>
+                                            <p className="text-[11px] text-slate-505 dark:text-gray-500 mt-1 font-sans">
+                                              Class Ref: <span className="text-slate-700 dark:text-zinc-350 font-semibold">{asg.className}</span> | Published: {asg.createdDate}
+                                            </p>
+                                          </div>
+                                          
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold font-sans">
+                                              Due Date: {asg.dueDate}
+                                            </span>
+                                            <span className="bg-rose-500/10 text-rose-605 dark:text-rose-450 px-2.5 py-0.5 rounded text-[10px] font-bold border border-rose-550/20 animate-pulse">
+                                              🚨 Pending Submission
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <p className="text-xs text-slate-600 dark:text-slate-405 mb-4 bg-white dark:bg-white/[0.01] p-3 rounded-xl border border-slate-150 dark:border-white/5 leading-relaxed whitespace-pre-line font-medium text-left">
+                                          {asg.description}
+                                        </p>
+
+                                        <div className="pt-2">
+                                          <button
+                                            onClick={() => {
+                                              setSubmittingAssignmentId(asg.id);
+                                              setSubmissionText('');
+                                              setSubmissionFileUrn(`homework_${asg.id}_${currentUser.id.slice(0, 5)}.pdf`);
+                                            }}
+                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-755 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-[1.01] duration-150 cursor-pointer"
+                                          >
+                                            <CheckSquare className="w-4 h-4" /> Submit Homework Solution
+                                          </button>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           <div className="space-y-6">
@@ -4249,6 +4326,7 @@ function AppContent() {
                 students={users.filter(u => u.role === 'student')}
                 schedules={schedules}
                 progressRecords={progressRecords}
+                assignments={assignments}
                 onAddProgressRecord={handleAddProgressRecord}
               />
             )}
