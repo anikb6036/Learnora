@@ -3883,16 +3883,16 @@ function AppContent() {
                                           <div>
                                             <span className="text-[10px] uppercase font-bold text-slate-450 dark:text-gray-500">Assignment Post</span>
                                             <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{asg.title}</h4>
-                                            <p className="text-[11px] text-slate-505 dark:text-gray-500 mt-1 font-mono">
+                                            <p className="text-[11px] text-slate-505 dark:text-gray-500 mt-1 font-sans">
                                               Class Ref: <span className="text-slate-700 dark:text-zinc-350 font-semibold">{asg.className}</span> | Published: {asg.createdDate}
                                             </p>
                                           </div>
                                           
                                           <div className="flex flex-wrap items-center gap-2">
-                                            <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold font-mono">
+                                            <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold font-sans">
                                               Due Date: {asg.dueDate}
                                             </span>
-                                            <span className="bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-zinc-400 px-2 py-0.5 rounded text-[10px] font-bold font-mono">
+                                            <span className="bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-zinc-400 px-2 py-0.5 rounded text-[10px] font-bold font-sans">
                                               Max Points: {asg.maxPoints}
                                             </span>
                                             {isGraded ? (
@@ -3949,12 +3949,12 @@ function AppContent() {
                                                   Edit Submission
                                                 </button>
                                               </div>
-                                              <div className="bg-white dark:bg-white/[0.01] border border-slate-150 dark:border-white/5 p-3 rounded-lg text-xs font-mono text-slate-650 dark:text-zinc-350 whitespace-pre-line leading-relaxed text-left">
+                                              <div className="bg-white dark:bg-white/[0.01] border border-slate-150 dark:border-white/5 p-3 rounded-lg text-xs font-sans text-slate-650 dark:text-zinc-350 whitespace-pre-line leading-relaxed text-left">
                                                 {submission.answerText}
                                               </div>
                                               {submission.fileUrn && (
                                                 <p className="text-[10px] text-slate-400 dark:text-gray-500 flex items-center gap-1">
-                                                  <FileText className="w-3.5 h-3.5 text-zinc-450" /> Solution Document: <span className="font-mono text-indigo-600 dark:text-indigo-400 underline">{submission.fileUrn}</span>
+                                                  <FileText className="w-3.5 h-3.5 text-zinc-450" /> Solution Document: <span className="font-sans text-indigo-600 dark:text-indigo-400 underline">{submission.fileUrn}</span>
                                                 </p>
                                               )}
                                               <p className="text-[10.5px] italic text-slate-450 dark:text-gray-500 mt-1">

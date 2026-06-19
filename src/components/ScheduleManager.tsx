@@ -922,7 +922,7 @@ export default function ScheduleManager({
                       )}
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-md text-sm font-bold transition cursor-pointer"
+                        className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-sm font-bold transition cursor-pointer"
                       >
                         {editingMasterCourse ? 'Save Definition' : 'Save Curriculum'}
                       </button>
