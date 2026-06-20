@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, StudentEvolution } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, StudentEvolution, EvolutionBankItem } from './types';
 import {
   INITIAL_USERS,
   INITIAL_SCHEDULES,
@@ -16,12 +16,14 @@ import {
   INITIAL_MASTER_COURSES,
   INITIAL_ASSIGNMENTS,
   INITIAL_ASSIGNMENT_BANK,
+  INITIAL_EVOLUTION_BANK,
   getSavedState,
   saveState,
   useFirebaseState
 } from './utils';
 import { ThemeProvider, useTheme } from './components/ThemeContext';
 import { AssignmentPipeline } from './components/AssignmentPipeline';
+import { EvolutionPipeline } from './components/EvolutionPipeline';
 import { compressImage } from './imageUtils';
 
 const sendSystemEmail = async (to: string, subject: string, text: string, html?: string): Promise<{ success: boolean; error?: string }> => {
@@ -114,7 +116,9 @@ import {
   CheckSquare,
   Send,
   Star,
-  ClipboardList
+  ClipboardList,
+  TrendingUp,
+  Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
@@ -173,6 +177,7 @@ function AppContent() {
   const [backupHistory, setBackupHistory, backupsLoaded] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
   const [assignments, setAssignments, assignmentsLoaded] = useFirebaseState<StudentAssignment[]>('db-assignments', INITIAL_ASSIGNMENTS);
   const [assignmentBank, setAssignmentBank, assignmentBankLoaded] = useFirebaseState<AssignmentBankItem[]>('db-assignment-bank', INITIAL_ASSIGNMENT_BANK);
+  const [evolutionBank, setEvolutionBank, evolutionBankLoaded] = useFirebaseState<EvolutionBankItem[]>('db-evolution-bank', INITIAL_EVOLUTION_BANK);
 
   useEffect(() => {
     saveState('active-user', currentUser);
@@ -221,10 +226,10 @@ function AppContent() {
   const [studentEvolutions, setStudentEvolutions, studentEvolutionsLoaded] = useFirebaseState<StudentEvolution[]>('db-student-evolutions', []);
 
   const isDataLoaded = usersLoaded && schedulesLoaded && progressLoaded && notificationsLoaded && 
-                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded;
+                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded && evolutionBankLoaded;
 
   // Navigation tab state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline'>('dashboard');
 
   // Control individual show variables inside ScheduleManager from the main sidebar
   const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
@@ -3395,6 +3400,27 @@ function AppContent() {
                         <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
                         {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
                       </button>
+
+                      {/* First-level: Evolution Pipeline */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('evolution-pipeline');
+                          setScheduleShowAddForm(false);
+                          setScheduleShowCourseDashboard(false);
+                          setScheduleShowBatchManager(false);
+                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                        }}
+                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                          activeTab === 'evolution-pipeline'
+                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                        }`}
+                        title={isActuallyCollapsed ? "Evolution Deploy Pipeline" : undefined}
+                      >
+                        <TrendingUp className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Monthly Evolution Pipeline</span>}
+                      </button>
                     </>
                   )}
 
@@ -4381,6 +4407,21 @@ function AppContent() {
                 batches={batches}
                 assignments={assignments}
                 setAssignments={setAssignments}
+              />
+            )}
+
+            {activeTab === 'evolution-pipeline' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+              <EvolutionPipeline
+                currentUser={currentUser}
+                courses={courses}
+                batches={batches}
+                evolutionBank={evolutionBank}
+                setEvolutionBank={setEvolutionBank}
+                studentEvolutions={studentEvolutions}
+                setStudentEvolutions={setStudentEvolutions}
+                users={users}
+                setNotifications={setNotifications}
+                onSendEmail={handleSendEmail}
               />
             )}
 

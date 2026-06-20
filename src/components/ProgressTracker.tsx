@@ -1507,10 +1507,10 @@ export default function ProgressTracker({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { title: 'Evolution 1 (Week 1)', targetScore: evoRec?.evolution1, feedback: evoRec?.feedback1, subtitle: 'Kinematics & Base theory' },
-                        { title: 'Evolution 2 (Week 2)', targetScore: evoRec?.evolution2, feedback: evoRec?.feedback2, subtitle: 'Applied Practical Problems' },
-                        { title: 'Evolution 3 (Week 3)', targetScore: evoRec?.evolution3, feedback: evoRec?.feedback3, subtitle: 'Analytical Problem Resolution' },
-                        { title: 'Evolution 4 (Week 4)', targetScore: evoRec?.evolution4, feedback: evoRec?.feedback4, subtitle: 'Integrated Examination' }
+                        { title: evoRec?.title1 || 'Evolution 1 (Week 1)', targetScore: evoRec?.evolution1, feedback: evoRec?.feedback1, subtitle: evoRec?.desc1 || 'Kinematics & Base theory' },
+                        { title: evoRec?.title2 || 'Evolution 2 (Week 2)', targetScore: evoRec?.evolution2, feedback: evoRec?.feedback2, subtitle: evoRec?.desc2 || 'Applied Practical Problems' },
+                        { title: evoRec?.title3 || 'Evolution 3 (Week 3)', targetScore: evoRec?.evolution3, feedback: evoRec?.feedback3, subtitle: evoRec?.desc3 || 'Analytical Problem Resolution' },
+                        { title: evoRec?.title4 || 'Evolution 4 (Week 4)', targetScore: evoRec?.evolution4, feedback: evoRec?.feedback4, subtitle: evoRec?.desc4 || 'Integrated Examination' }
                       ].map((item, index) => {
                         const hasScore = item.targetScore !== undefined;
                         const scoreNum = item.targetScore || 0;

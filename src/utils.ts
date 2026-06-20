@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, EvolutionBankItem } from './types';
 
 // Initial seed data for the Coaching Center
 export const INITIAL_USERS: UserAccount[] = [
@@ -383,3 +383,38 @@ export function exportToCSV(data: any[], filename: string): void {
   link.click();
   document.body.removeChild(link);
 }
+
+export const INITIAL_EVOLUTION_BANK: EvolutionBankItem[] = [
+  {
+    id: 'evo-bank-1',
+    course: 'IIT-JEE Master Preparation',
+    month: 1,
+    title: 'IIT-JEE Month 1 Mechanics & Kinematics',
+    description: 'Comprehensive evaluations focusing on multi-body dynamics, relative motion vectors, constraint relations, and friction analysis.',
+    week1Title: 'Evolution 1 (Week 1)',
+    week1Desc: 'Kinematics & Inertial Frames',
+    week2Title: 'Evolution 2 (Week 2)',
+    week2Desc: 'Newtonian Forces & Multi-body Constraint Equations',
+    week3Title: 'Evolution 3 (Week 3)',
+    week3Desc: 'Friction, Normal Contact, and Inclined Planes',
+    week4Title: 'Evolution 4 (Week 4)',
+    week4Desc: 'Integrated Circular Motion & Work-Energy Theorem',
+    createdDate: '2026-06-01'
+  },
+  {
+    id: 'evo-bank-2',
+    course: 'Medical NEET Crash Course',
+    month: 1,
+    title: 'NEET Month 1 Fundamentals of Life Science & Organic Bases',
+    description: 'Continuous assessment tracks focused on cellular architecture, biomolecule classification, and fundamental hydrocarbon hybridization.',
+    week1Title: 'Evolution 1 (Week 1)',
+    week1Desc: 'Cell Theory & Organelle Functions',
+    week2Title: 'Evolution 2 (Week 2)',
+    week2Desc: 'Organic Nomenclature & Alkane Saturated Bonds',
+    week3Title: 'Evolution 3 (Week 3)',
+    week3Desc: 'Biomolecule Polymers & Enzyme Dynamics',
+    week4Title: 'Evolution 4 (Week 4)',
+    week4Desc: 'Consolidated Molecular NEET Exam',
+    createdDate: '2026-06-02'
+  }
+];

@@ -222,6 +222,34 @@ export interface StudentEvolution {
   promoted: boolean; // Automatic promotion trigger state
   promotedDate?: string;
   lastUpdated: string;
+  
+  // Custom deployed week metadata
+  title1?: string;
+  desc1?: string;
+  title2?: string;
+  desc2?: string;
+  title3?: string;
+  desc3?: string;
+  title4?: string;
+  desc4?: string;
+  batch?: string; // Target batch deployed to
+}
+
+export interface EvolutionBankItem {
+  id: string;
+  course: string;
+  month: number;
+  title: string;
+  description: string;
+  week1Title: string;
+  week1Desc: string;
+  week2Title: string;
+  week2Desc: string;
+  week3Title: string;
+  week3Desc: string;
+  week4Title: string;
+  week4Desc: string;
+  createdDate: string;
 }
 
 
