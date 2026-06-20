@@ -128,7 +128,8 @@ export default function ProgressTracker({
       month: 'long',
       day: 'numeric'
     });
-    const certNo = `LRNA-2026-${currentUser.id.slice(0, 6).toUpperCase()}`;
+    const certNo = `LRN-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
+    const studentIdNo = `STU-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
     const courseName = currentUser.course || 'Learnora Elite Coaching Program';
 
     const downloadCertificateAsPNG = () => {
@@ -137,162 +138,364 @@ export default function ProgressTracker({
       canvas.width = 1920;
       canvas.height = 1080;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) {
+        setIsGenerating(false);
+        return;
+      }
 
-      // Off-white bg
-      ctx.fillStyle = '#fbfbfa';
+      // 1. Off-white clean background
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, 1920, 1080);
 
-      // Gold elegant frame
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 14;
-      ctx.strokeRect(30, 30, 1920 - 60, 1080 - 60);
+      // Fine grid dots pattern for high-end academic feel
+      ctx.fillStyle = 'rgba(74, 85, 104, 0.05)';
+      for (let x = 60; x < 1860; x += 30) {
+        for (let y = 60; y < 1020; y += 30) {
+          ctx.beginPath();
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
 
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(52, 52, 1920 - 104, 1080 - 104);
+      // 2. Solid Navy & Red Top-Right Curves (Matches reference shape)
+      ctx.save();
+      // Navy curved shape
+      ctx.fillStyle = '#102a43';
+      ctx.beginPath();
+      ctx.moveTo(1350, 0);
+      ctx.lineTo(1920, 0);
+      ctx.lineTo(1920, 480);
+      ctx.bezierCurveTo(1800, 310, 1600, 150, 1350, 0);
+      ctx.closePath();
+      ctx.fill();
 
-      // Inner thin frame
-      ctx.strokeStyle = '#78350f';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(62, 62, 1920 - 124, 1080 - 124);
+      // Red sweep accent
+      ctx.fillStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.moveTo(1310, 0);
+      ctx.bezierCurveTo(1570, 170, 1770, 315, 1920, 485);
+      ctx.lineTo(1920, 520);
+      ctx.bezierCurveTo(1740, 320, 1540, 190, 1270, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
 
-      // Corner gold designs
-      ctx.fillStyle = '#d97706';
-      const cSize = 45;
-      ctx.fillRect(72, 72, cSize, 5);
-      ctx.fillRect(72, 72, 5, cSize);
-      ctx.fillRect(1920 - 72 - cSize, 72, cSize, 5);
-      ctx.fillRect(1920 - 72, 72, 5, cSize);
-      ctx.fillRect(72, 1080 - 72 - 5, cSize, 5);
-      ctx.fillRect(72, 1080 - 72 - cSize, 5, cSize);
-      ctx.fillRect(1920 - 72 - cSize, 1080 - 72 - 5, cSize, 5);
-      ctx.fillRect(1920 - 72, 1080 - 72 - cSize, 5, cSize);
-
+      // Code Watermark on Navy Shape
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.font = 'bold 150px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      ctx.translate(1730, 190);
+      ctx.rotate(0.25);
+      ctx.fillText('</>', 0, 0);
+      ctx.restore();
 
-      // Header Brand
-      ctx.fillStyle = '#1e1b4b';
-      ctx.font = 'bold 32px Georgia, serif';
-      ctx.fillText('L E A R N O R A   I N S T I T U T E', 1920 / 2, 160);
+      // 3. Elegant Outer Navy Frame Border
+      ctx.strokeStyle = '#102a43';
+      ctx.lineWidth = 12;
+      ctx.strokeRect(36, 36, 1920 - 72, 1080 - 72);
 
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(1920 / 2 - 140, 200);
-      ctx.lineTo(1920 / 2 + 140, 200);
-      ctx.stroke();
-
-      ctx.fillStyle = '#b45309';
-      ctx.font = 'bold 55px Georgia, serif';
-      ctx.fillText('CERTIFICATE OF ACHIEVEMENT', 1920 / 2, 260);
-
-      ctx.fillStyle = '#4b5563';
-      ctx.font = 'italic 22px Georgia, serif';
-      ctx.fillText('This is proudly presented to', 1920 / 2, 360);
-
-      ctx.fillStyle = '#111827';
-      ctx.font = 'bold 64px Georgia, serif';
-      ctx.fillText(currentUser.name, 1920 / 2, 450);
-
-      ctx.strokeStyle = '#1e1b4b';
+      // Thin inner gap line
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.15)';
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(1920 / 2 - 300, 500);
-      ctx.lineTo(1920 / 2 + 300, 500);
-      ctx.stroke();
+      ctx.strokeRect(52, 52, 1920 - 104, 1080 - 104);
 
-      ctx.fillStyle = '#374151';
-      ctx.font = '20px Georgia, serif';
-      ctx.fillText('for successfully fulfilling all course curriculum directives and passing all required evaluations for the', 1920 / 2, 560);
-      
-      ctx.font = 'bold 26px Georgia, serif';
-      ctx.fillStyle = '#4f46e5';
-      ctx.fillText(`"${courseName}"`, 1920 / 2, 610);
-
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '16px Georgia, serif';
-      ctx.fillText('Honoring outstanding dedication, class engagement, and verification milestone completions.', 1920 / 2, 660);
-
-      ctx.fillStyle = '#9ca3af';
-      ctx.font = 'bold 14px monospace';
-      ctx.fillText(`CERTIFICATE ID: ${certNo}  •  Issued: ${todayStr}`, 1920 / 2, 720);
-
-      // Gold Seal Ring
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath();
-      ctx.arc(1920 / 2, 850, 60, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      // Seal Ribbon
-      ctx.fillStyle = '#92400e';
-      ctx.beginPath();
-      ctx.moveTo(1920 / 2 - 20, 905);
-      ctx.lineTo(1920 / 2 - 40, 985);
-      ctx.lineTo(1920 / 2, 965);
-      ctx.lineTo(1920 / 2 + 40, 985);
-      ctx.lineTo(1920 / 2 + 20, 905);
-      ctx.fill();
-
-      // Seal Label
-      ctx.fillStyle = '#78350f';
-      ctx.font = 'bold 15px "SF Pro", sans-serif';
-      ctx.fillText('OFFICIAL', 1920 / 2, 840);
-      ctx.font = 'bold 13px "SF Pro", sans-serif';
-      ctx.fillText('SEAL', 1920 / 2, 860);
-
-      // Left Faculty Sign
-      ctx.strokeStyle = '#4b5563';
+      // Curved thin geometric wireframe overlay on lower-left background
+      ctx.save();
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.03)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(340, 880);
-      ctx.lineTo(580, 880);
+      for (let i = 0; i < 20; i++) {
+        ctx.moveTo(50, 300 + i * 15);
+        ctx.bezierCurveTo(500, 400 - i * 10, 200, 950 + i * 10, 50, 1000 - i * 5);
+      }
       ctx.stroke();
+      ctx.restore();
 
-      ctx.strokeStyle = '#4f46e5';
-      ctx.lineWidth = 3;
+      // 4. Logo Brand Header (Top Left Context)
+      ctx.save();
+      // Draw standard "Learn" in navy and "ora" in red
+      ctx.font = '700 60px "Plus Jakarta Sans", "Helvetica Neue", Arial, sans-serif';
+      ctx.fillStyle = '#102a43';
+      ctx.fillText('Learn', 110, 150);
+      const learnWidth = ctx.measureText('Learn').width;
+      ctx.fillStyle = '#e11d48';
+      ctx.fillText('ora', 110 + learnWidth, 150);
+      const totalLogoWidth = learnWidth + ctx.measureText('ora').width;
+
+      // Draw academic tilted graduation cap over the 'o' of Learnora
+      const capX = 110 + learnWidth + 24;
+      const capY = 90;
+      ctx.fillStyle = '#102a43';
       ctx.beginPath();
-      ctx.moveTo(350, 855);
-      ctx.bezierCurveTo(390, 815, 430, 875, 470, 825);
-      ctx.bezierCurveTo(490, 805, 540, 845, 570, 835);
+      ctx.moveTo(capX, capY - 18);
+      ctx.lineTo(capX + 32, capY);
+      ctx.lineTo(capX, capY + 18);
+      ctx.lineTo(capX - 32, capY);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(capX, capY + 5, 14, 0, Math.PI);
+      ctx.fill();
+
+      ctx.strokeStyle = '#e11d48';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(capX, capY);
+      ctx.lineTo(capX + 22, capY + 16);
       ctx.stroke();
 
-      ctx.fillStyle = '#111827';
-      ctx.font = 'bold 18px Georgia, serif';
-      ctx.fillText('Anik Baidya', 460, 910);
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '14px Georgia, serif';
-      ctx.fillText('Head & Lead Administrator', 460, 935);
+      // Sub-brand tagline: "LEARN. GROW. SUCCEED."
+      ctx.fillStyle = '#627d98';
+      ctx.font = '600 13.5px monospace';
+      ctx.fillText('L E A R N .   G R O W .   S U C C E E D .', 110, 195);
 
-      // Right Exam Board Sign
-      ctx.strokeStyle = '#4b5563';
+      // Small logo horizontal underlines
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.15)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(1340, 880);
-      ctx.lineTo(1580, 880);
+      ctx.moveTo(110, 210);
+      ctx.lineTo(110 + totalLogoWidth + 20, 210);
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. High-End Top Right Certificate ID & Student ID
+      ctx.save();
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#102a43';
+      ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`CERTIFICATE ID: ${certNo}`, 1800, 105);
+      ctx.fillStyle = '#486581';
+      ctx.font = '600 14px monospace';
+      ctx.fillText(`STUDENT ID NO: ${studentIdNo}`, 1800, 130);
+      ctx.restore();
+
+      // 6. Centered Title Blocks
+      const contentCenterX = 1920 / 2 + 100; // Offset center for side-perks visual balance
+
+      // Heading "C E R T I F I C A T E"
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#102a43';
+      ctx.font = '800 86px "Plus Jakarta Sans", "Arial Black", sans-serif';
+      ctx.fillText('CERTIFICATE', contentCenterX, 310);
+
+      // Subtitle "OF COMPLETION"
+      ctx.fillStyle = '#e11d48';
+      ctx.font = '700 24px monospace';
+      ctx.fillText('O F   C O M P L E T I O N', contentCenterX, 370);
+
+      // Small graphic lines framing OF COMPLETION
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(contentCenterX - 300, 362);
+      ctx.lineTo(contentCenterX - 180, 362);
+      ctx.moveTo(contentCenterX + 180, 362);
+      ctx.lineTo(contentCenterX + 300, 362);
       ctx.stroke();
 
-      ctx.strokeStyle = '#059669';
+      // Intro sentence
+      ctx.fillStyle = '#486581';
+      ctx.font = 'italic 20px Georgia, serif';
+      ctx.fillText('This is to certify that', contentCenterX, 425);
+
+      // 7. Student Name - Signature Cursive Font Callout
+      ctx.fillStyle = '#102a43';
+      ctx.font = 'italic 72px "Great Vibes", "Alex Brush", "Brush Script MT", cursive';
+      ctx.fillText(currentUser.name, contentCenterX, 500);
+
+      // Signature underline accent
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(contentCenterX - 280, 525);
+      ctx.lineTo(contentCenterX + 280, 525);
+      ctx.stroke();
+
+      // Description words
+      ctx.fillStyle = '#486581';
+      ctx.font = '500 18px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('has successfully completed the online course', contentCenterX, 570);
+
+      // Course Name
+      ctx.fillStyle = '#102a43';
+      ctx.font = '700 36px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(courseName, contentCenterX, 620);
+
+      // Course Red Underline Anchor
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(contentCenterX - 100, 642, 200, 4);
+
+      // Broad Description Paragraph
+      ctx.fillStyle = '#627d98';
+      ctx.font = 'italic 16px Georgia, serif';
+      ctx.fillText('This course covered essential concepts, hands-on projects, and practical skills', contentCenterX, 680);
+      ctx.fillText('to strengthen your knowledge and expertise in advanced industrial applications.', contentCenterX, 705);
+
+      // 8. Vertical Left Benefit Icons & Badges (Laptop, Expert, Career Boost)
+      ctx.save();
+      const colX = 170;
+      const drawVerticalBadgeCount = (y, numberLabel, textLabel) => {
+        // Rounded light icon background
+        ctx.fillStyle = '#f0f4f8';
+        ctx.beginPath();
+        ctx.arc(colX + 30, y, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Little red anchor notch
+        ctx.fillStyle = '#e11d48';
+        ctx.fillRect(colX + 5, y - 10, 4, 20);
+
+        // Badge Numbering & labels
+        ctx.fillStyle = '#102a43';
+        ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(numberLabel, colX + 80, y - 5);
+        ctx.fillStyle = '#486581';
+        ctx.font = '600 11px monospace';
+        ctx.fillText(textLabel, colX + 80, y + 13);
+      };
+
+      // Draw online laptop stylized
+      drawVerticalBadgeCount(580, 'ONLINE COURSE', 'FLEXIBLE ACCESS');
+      ctx.strokeStyle = '#102a43';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(colX + 18, 570, 24, 16);
+      ctx.strokeStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.moveTo(colX + 11, 587);
+      ctx.lineTo(colX + 49, 587);
+      ctx.stroke();
+
+      // Draw Expert ribbon stylized
+      drawVerticalBadgeCount(670, 'EXPERT INSTRUCTORS', 'ADVISORY BOARD APPROVED');
+      ctx.strokeStyle = '#102a43';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(1360, 855);
-      ctx.quadraticCurveTo(1410, 815, 1450, 865);
-      ctx.quadraticCurveTo(1510, 825, 1560, 850);
+      ctx.arc(colX + 30, 665, 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.moveTo(colX + 27, 675);
+      ctx.lineTo(colX + 22, 690);
+      ctx.lineTo(colX + 30, 683);
+      ctx.lineTo(colX + 38, 690);
+      ctx.lineTo(colX + 33, 675);
+      ctx.fill();
+
+      // Draw Analytics chart stylized
+      drawVerticalBadgeCount(760, 'SKILL ADVANCEMENT', 'CURRICULUM DIRECTIVE');
+      ctx.fillStyle = '#102a43';
+      ctx.fillRect(colX + 20, 755, 5, 12);
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(colX + 28, 747, 5, 20);
+      ctx.fillStyle = '#102a43';
+      ctx.fillRect(colX + 36, 751, 5, 16);
+      ctx.restore();
+
+      // 9. Signatures Block
+      const sigLeftX = contentCenterX - 250;
+      const sigRightX = contentCenterX + 250;
+      const sigLineY = 880;
+
+      // Draw signature line paths
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sigLeftX - 120, sigLineY);
+      ctx.lineTo(sigLeftX + 120, sigLineY);
+      ctx.moveTo(sigRightX - 120, sigLineY);
+      ctx.lineTo(sigRightX + 120, sigLineY);
       ctx.stroke();
 
-      ctx.fillStyle = '#111827';
-      ctx.font = 'bold 18px Georgia, serif';
-      ctx.fillText('Learnora Exam Board', 1460, 910);
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '14px Georgia, serif';
-      ctx.fillText('Academic Verification Dept', 1460, 935);
+      // Handwriting signature overlays
+      ctx.fillStyle = '#102a43';
+      ctx.font = 'italic 34px "Great Vibes", "Alex Brush", cursive';
+      ctx.fillText('Anand Sharma', sigLeftX, sigLineY - 30);
+      ctx.fillStyle = '#e11d48';
+      ctx.fillText('Priya Verma', sigRightX, sigLineY - 30);
 
-      setTimeout(() => {
+      // Printed designations
+      ctx.fillStyle = '#102a43';
+      ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Anand Sharma', sigLeftX, sigLineY + 25);
+      ctx.fillStyle = '#627d98';
+      ctx.font = '500 13px sans-serif';
+      ctx.fillText('Founder & CEO, Learnora', sigLeftX, sigLineY + 45);
+
+      ctx.fillStyle = '#102a43';
+      ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Priya Verma', sigRightX, sigLineY + 25);
+      ctx.fillStyle = '#627d98';
+      ctx.font = '500 13px sans-serif';
+      ctx.fillText('Lead Academic Instructor', sigRightX, sigLineY + 45);
+
+      // 10. Center Crest Seal with laurels
+      const sealX = contentCenterX;
+      const sealY = 840;
+
+      // Gold badge circular background
+      ctx.save();
+      ctx.fillStyle = '#102a43';
+      ctx.beginPath();
+      ctx.arc(sealX, sealY, 48, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#e11d48';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Inside mini graduation hat emblem
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(sealX, sealY - 14);
+      ctx.lineTo(sealX + 22, sealY - 2);
+      ctx.lineTo(sealX, sealY + 10);
+      ctx.lineTo(sealX - 22, sealY - 2);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(sealX, sealY + 2, 8, 0, Math.PI);
+      ctx.fill();
+
+      // Wreath Left Wreath Right
+      ctx.strokeStyle = '#627d98';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(sealX - 44, sealY, 35, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(sealX + 44, sealY, 35, Math.PI * 1.5, Math.PI * 2.5);
+      ctx.stroke();
+      ctx.restore();
+
+      // 11. Scannable QR Code element at Bottom Right
+      const qrBoxX = 1680;
+      const qrBoxY = 780;
+      const qrSize = 120;
+
+      // Draw neat outer line card for QR
+      ctx.strokeStyle = 'rgba(16, 42, 67, 0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(qrBoxX - 8, qrBoxY - 8, qrSize + 16, qrSize + 16);
+
+      // Labeled subtitle under QR
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#102a43';
+      ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Verify Certificate', qrBoxX + qrSize / 2, qrBoxY + qrSize + 28);
+      ctx.fillStyle = '#e11d48';
+      ctx.font = '600 10.5px monospace';
+      ctx.fillText('learnora.in/verify', qrBoxX + qrSize / 2, qrBoxY + qrSize + 43);
+
+      // Load scan QR code asynchronously
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+
+      const triggerDownloadPng = () => {
         try {
           const url = canvas.toDataURL('image/png');
           const element = document.createElement('a');
@@ -306,251 +509,617 @@ export default function ProgressTracker({
         } finally {
           setIsGenerating(false);
         }
-      }, 500);
+      };
+
+      qrImg.onload = () => {
+        try {
+          ctx.drawImage(qrImg, qrBoxX, qrBoxY, qrSize, qrSize);
+        } catch (e) {
+          console.error('Could not draw QR code image', e);
+        }
+        triggerDownloadPng();
+      };
+
+      qrImg.onerror = () => {
+        // Fallback Vector authentic representation
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(qrBoxX, qrBoxY, qrSize, qrSize);
+        // Finder patterns in corners
+        const findPattern = (px, py) => {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(px, py, 34, 34);
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(px + 6, py + 6, 22, 22);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(px + 11, py + 11, 12, 12);
+        };
+        findPattern(qrBoxX + 4, qrBoxY + 4);
+        findPattern(qrBoxX + qrSize - 38, qrBoxY + 4);
+        findPattern(qrBoxX + 4, qrBoxY + qrSize - 38);
+
+        // Dynamic points inside mock codes
+        ctx.fillStyle = '#ffffff';
+        for (let idx = 0; idx < 20; idx++) {
+          const rx = qrBoxX + 40 + Math.random() * 40;
+          const ry = qrBoxY + 40 + Math.random() * 40;
+          ctx.fillRect(rx, ry, 6, 6);
+        }
+        triggerDownloadPng();
+      };
+
+      // Set API QR source
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://learnora.in/verify/${certNo}`;
+
+      // 12. Solid Blue Footer bar
+      ctx.fillStyle = '#102a43';
+      ctx.fillRect(36, 1020, 1920 - 72, 24);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '600 11.5px monospace';
+      ctx.textAlign = 'center';
+      const footerY = 1036;
+      ctx.fillText(`www.learnora.in     |     Issued on: ${todayStr}     |     support@learnora.in`, 1920 / 2, footerY);
     };
 
-    const downloadCertificateAsHTML = () => {
-      const htmlContent = `<!DOCTYPE html>
+    const getCertificateHTML = (isForDownload: boolean) => {
+      return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Certificate - ${currentUser.name}</title>
+  <title>Certificate Of Completion - ${currentUser.name}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Great+Vibes&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      padding: 40px;
-      background-color: #f3f4f6;
-      font-family: 'Montserrat', sans-serif;
+      padding: ${isForDownload ? '40px' : '0'};
+      background-color: ${isForDownload ? '#f0f4f8' : '#ffffff'};
+      font-family: 'Plus Jakarta Sans', sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .cert-container {
       width: 1000px;
       height: 700px;
-      background: #fbfbfa;
+      background: #ffffff;
       padding: 24px;
-      box-sizing: border-box;
       position: relative;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      border-radius: 12px;
+      ${isForDownload ? 'box-shadow: 0 25px 50px -12px rgba(16, 42, 67, 0.25); border-radius: 16px;' : ''}
+      overflow: hidden;
     }
+    
+    .navy-curve {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 320px;
+      height: 320px;
+      background: #102a43;
+      border-bottom-left-radius: 100%;
+      z-index: 1;
+    }
+    .red-curve {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 340px;
+      height: 340px;
+      background: #e11d48;
+      border-bottom-left-radius: 100%;
+      z-index: 0;
+    }
+    .code-bg {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 80px;
+      color: rgba(255, 255, 255, 0.08);
+      top: 70px;
+      right: 70px;
+      z-index: 2;
+      transform: rotate(15deg);
+      user-select: none;
+    }
+    
     .outer-border {
       width: 100%;
       height: 100%;
-      border: 12px double #d97706;
-      box-sizing: border-box;
-      padding: 30px;
+      border: 8px solid #102a43;
       position: relative;
+      z-index: 3;
     }
     .inner-border {
       width: 100%;
       height: 100%;
-      border: 2px solid #fbbf24;
-      box-sizing: border-box;
-      padding: 20px;
-      text-align: center;
+      border: 1.5px solid rgba(16, 42, 67, 0.15);
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
     }
-    .header {
-      font-family: 'Cinzel', serif;
-      font-size: 24px;
-      color: #1e1b4b;
-      letter-spacing: 5px;
-      margin-bottom: 5px;
-      font-weight: 800;
+    
+    .dot-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: radial-gradient(rgba(72, 101, 129, 0.08) 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+      z-index: -1;
     }
-    .divider {
-      width: 120px;
-      height: 2px;
-      background-color: #d97706;
-      margin: 10px auto;
-    }
-    .sub-header {
-      font-family: 'Cinzel', serif;
+
+    .logo-container {
+      text-align: left;
       font-size: 32px;
-      color: #b45309;
       font-weight: 800;
-      margin-bottom: 25px;
+      color: #102a43;
+      line-height: 1;
+      display: inline-block;
+      position: relative;
+    }
+    .logo-txt-red {
+      color: #e11d48;
+    }
+    .tagline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: #627d98;
       letter-spacing: 2px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .ids-block {
+      text-align: right;
+      font-size: 11px;
+      font-weight: 700;
+      color: #102a43;
+      margin-top: 5px;
+    }
+    .student-id {
+      color: #486581;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    
+    .main-content {
+      text-align: center;
+      margin-left: 140px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .main-title {
+      font-size: 44px;
+      font-weight: 800;
+      color: #102a43;
+      letter-spacing: 2px;
+      margin: 0;
+      line-height: 1;
+    }
+    .subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #e11d48;
+      letter-spacing: 4px;
+      margin: 6px 0 15px;
     }
     .present-text {
       font-style: italic;
-      color: #6b7280;
-      font-size: 16px;
-      margin-bottom: 20px;
+      color: #486581;
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-family: serif;
     }
     .student-name {
-      font-size: 42px;
-      font-weight: bold;
-      color: #111827;
-      border-bottom: 2px solid #1e1b4b;
+      font-family: 'Great Vibes', cursive;
+      font-size: 48px;
+      color: #102a43;
+      margin: 0 auto;
+      line-height: 1.1;
+      border-bottom: 1.5px solid rgba(16, 42, 67, 0.15);
+      padding-bottom: 2px;
       display: inline-block;
-      padding-bottom: 8px;
-      margin-bottom: 20px;
-      font-family: 'Cinzel', serif;
+      min-width: 320px;
     }
-    .sentence {
-      font-size: 15px;
-      color: #374151;
-      line-height: 1.8;
-      max-width: 700px;
-      margin: 0 auto 20px;
+    .course-intro {
+      font-size: 11.5px;
+      color: #486581;
+      margin: 15px 0 5px;
+      font-weight: 500;
     }
     .course-title {
-      font-weight: 700;
-      color: #4f46e5;
-      font-size: 18px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #102a43;
+      margin: 0;
     }
-    .footer {
+    .course-underline {
+      width: 100px;
+      height: 3px;
+      background: #e11d48;
+      margin: 8px auto 12px;
+    }
+    .course-description {
+      font-size: 10.5px;
+      color: #627d98;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.5;
+      font-style: italic;
+      font-family: serif;
+    }
+
+    .benefit-sidebar {
+      position: absolute;
+      left: 30px;
+      top: 135px;
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .benefit-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f0f4f8;
+      border-left: 2.5px solid #e11d48;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .benefit-svg {
+      width: 14px;
+      height: 14px;
+      color: #102a43;
+    }
+    .benefit-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .benefit-title {
+      font-size: 8px;
+      font-weight: 800;
+      color: #102a43;
+    }
+    .benefit-subtitle {
+      font-size: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #627d98;
+      font-weight: 600;
+    }
+    
+    .footer-block {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      position: absolute;
-      bottom: 50px;
-      left: 80px;
-      right: 80px;
+      margin-top: 20px;
+      padding: 0 10px;
     }
     .signature-block {
       text-align: center;
-      width: 250px;
+      width: 180px;
+    }
+    .signature-handwriting {
+      font-family: 'Great Vibes', cursive;
+      font-size: 24px;
+      margin-bottom: -5px;
+      line-height: 1;
+    }
+    .sig-ceo {
+      color: #102a43;
+    }
+    .sig-inst {
+      color: #e11d48;
     }
     .signature-line {
-      border-top: 1.5px solid #4b5563;
-      margin-top: 40px;
-      padding-top: 8px;
+      border-top: 1px solid rgba(16, 42, 67, 0.3);
+      padding-top: 4px;
     }
     .signature-name {
-      font-weight: bold;
-      color: #1e1b4b;
-      font-size: 13px;
+      font-weight: 700;
+      color: #102a43;
+      font-size: 10px;
     }
     .signature-title {
-      color: #718096;
-      font-size: 11px;
+      color: #627d98;
+      font-size: 8px;
+      font-weight: 500;
+      margin-top: 1px;
+    }
+    
+    .crest-seal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .seal-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #102a43;
+      border: 2px solid #e11d48;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 15px;
+    }
+    .laurel-leaves {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #627d98;
+      margin-top: 4px;
+    }
+    
+    .qr-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .qr-img-box {
+      width: 64px;
+      height: 64px;
+      border: 1px solid rgba(16, 42, 67, 0.15);
+      padding: 2px;
+      background: #ffffff;
+    }
+    .qr-img {
+      width: 58px;
+      height: 58px;
+      display: block;
+    }
+    .qr-txt-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .qr-title {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #102a43;
+    }
+    .qr-link {
+      font-size: 7.5px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #e11d48;
+      font-weight: 600;
       margin-top: 2px;
     }
-    .seal-block {
-      text-align: center;
-    }
-    .seal {
-      width: 80px;
-      height: 80px;
-      background: #fbbf24;
-      border-radius: 50%;
-      border: 3px solid #d97706;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #78350f;
-      font-weight: bold;
-      font-size: 10px;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      position: relative;
-    }
-    .seal::after {
-      content: '';
+    
+    .blue-footer-bar {
       position: absolute;
-      bottom: -20px;
-      left: 20px;
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-top: 35px solid #92400e;
-      z-index: -1;
-    }
-    .cert-meta {
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 15px;
-      letter-spacing: 1px;
-    }
-    .actions {
-      margin-top: 30px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #102a43;
       display: flex;
-      gap: 15px;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
     }
-    .print-btn {
-      padding: 12px 24px;
-      background: #4f46e5;
-      color: white;
+    
+    .actions-bar {
+      margin-top: 25px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn-action {
+      padding: 10px 20px;
+      background: #102a43;
+      color: #ffffff;
       border: none;
       border-radius: 8px;
-      font-weight: bold;
+      font-weight: 750;
+      font-size: 12px;
       cursor: pointer;
-      font-family: 'Montserrat', sans-serif;
-      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 6px -1px rgba(16, 42, 67, 0.15);
+      text-decoration: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       transition: all 0.15s ease;
     }
-    .print-btn:hover {
-      background: #4338ca;
+    .btn-action:hover {
+      background: #e11d48;
     }
+    
     @media print {
-      .actions, .print-btn { display: none !important; }
-      body { background: transparent; padding: 0; }
-      .cert-container { box-shadow: none; border-radius: 0; }
+      body {
+        padding: 0;
+        background: transparent;
+      }
+      .actions-bar {
+        display: none !important;
+      }
+      .cert-container {
+        box-shadow: none;
+        border-radius: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="cert-container" id="cert-print">
+  <div class="cert-container" id="cert-wrapper">
+    <div class="navy-curve"></div>
+    <div class="red-curve"></div>
+    <div class="code-bg">&lt;/&gt;</div>
+    
     <div class="outer-border">
       <div class="inner-border">
-        <div class="header">LEARNORA INSTITUTE</div>
-        <div class="divider"></div>
-        <div class="sub-header">CERTIFICATE OF ACHIEVEMENT</div>
+        <div class="dot-pattern"></div>
         
-        <div class="present-text">This is proudly presented to</div>
-        <div class="student-name">${currentUser.name}</div>
-        
-        <div class="sentence">
-          for successfully fulfilling all course curriculum directives and passing all required evaluations for the
-          <br><span class="course-title">"${courseName}"</span>
-          <br>
-          <span style="font-size: 12px; color: #718096; display: block; margin-top: 8px;">
-            Honoring outstanding dedication, class engagement, and verification milestone completions.
-          </span>
-          <br>
-          <span class="cert-meta">CERTIFICATE ID: ${certNo} &bull; Issued: ${todayStr}</span>
+        <div class="header-block">
+          <div class="logo-container">
+            <span>Learn</span><span class="logo-txt-red">ora</span>
+            <div class="tagline">L E A R N .   G R O W .   S U C C E E D .</div>
+          </div>
+          
+          <div class="ids-block">
+            <div>CERTIFICATE ID: ${certNo}</div>
+            <div class="student-id">STUDENT ID NO: ${studentIdNo}</div>
+          </div>
         </div>
         
-        <div class="footer">
-          <div class="signature-block">
-            <div style="font-family: 'Cinzel', serif; font-size: 16px; color: #4f46e5; font-style: italic; margin-bottom: -32px;">Anik Baidya</div>
-            <div class="signature-line">
-              <div class="signature-name">Anik Baidya</div>
-              <div class="signature-title">Head & Lead Administrator</div>
+        <div style="display: flex; flex-grow: 1; align-items: center; position: relative;">
+          <div class="benefit-sidebar">
+            <div class="benefit-item">
+              <div class="benefit-icon-box">
+                <svg class="benefit-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </div>
+              <div class="benefit-details">
+                <span class="benefit-title">ONLINE COURSE</span>
+                <span class="benefit-subtitle">FLEXIBLE ACCESS</span>
+              </div>
+            </div>
+            
+            <div class="benefit-item">
+              <div class="benefit-icon-box">
+                <svg class="benefit-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                  <path d="M2 12l10 5 10-5"></path>
+                </svg>
+              </div>
+              <div class="benefit-details">
+                <span class="benefit-title">EXPERT INSTRUCTORS</span>
+                <span class="benefit-subtitle">BOARD APPROVED</span>
+              </div>
+            </div>
+            
+            <div class="benefit-item">
+              <div class="benefit-icon-box">
+                <svg class="benefit-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
+                  <path d="M9 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path>
+                </svg>
+              </div>
+              <div class="benefit-details">
+                <span class="benefit-title">SKILL ADVANCEMENT</span>
+                <span class="benefit-subtitle">DIRECTIVE CERT</span>
+              </div>
             </div>
           </div>
           
-          <div class="seal-block">
-            <div class="seal">
-              <span style="text-align: center;">LEARNORA<br>SEAL</span>
+          <div class="main-content">
+            <h1 class="main-title">CERTIFICATE</h1>
+            <div class="subtitle">O F   C O M P L E T I O N</div>
+            
+            <div class="present-text">This is proudly presented to</div>
+            <div class="student-name">${currentUser.name}</div>
+            
+            <div class="course-intro">has successfully completed the online course</div>
+            <h2 class="course-title">"${courseName}"</h2>
+            <div class="course-underline"></div>
+            
+            <p class="course-description">
+              This course covered essential concepts, hands-on projects, and practical skills to strengthen your knowledge and expertise in advanced industrial applications.
+            </p>
+          </div>
+        </div>
+        
+        <div class="footer-block">
+          <div class="signature-block">
+            <div class="signature-handwriting sig-ceo">Anand Sharma</div>
+            <div class="signature-line">
+              <div class="signature-name">Anand Sharma</div>
+              <div class="signature-title">Founder & CEO, Learnora</div>
             </div>
           </div>
           
+          <div class="crest-seal">
+            <div class="seal-circle">🛡️</div>
+            <div class="laurel-leaves">OFFICIAL SEAL</div>
+          </div>
+          
           <div class="signature-block">
-            <div style="font-family: 'Cinzel', serif; font-size: 16px; color: #059669; font-style: italic; margin-bottom: -32px;">Verified</div>
+            <div class="signature-handwriting sig-inst">Priya Verma</div>
             <div class="signature-line">
-              <div class="signature-name">Learnora Exam Board</div>
-              <div class="signature-title">Academic Verification Dept</div>
+              <div class="signature-name">Priya Verma</div>
+              <div class="signature-title">Lead Academic Instructor</div>
             </div>
           </div>
+          
+          <div class="qr-block">
+            <div class="qr-img-box">
+              <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://learnora.in/verify/${certNo}" alt="Verification QR Code" />
+            </div>
+            <div class="qr-txt-box">
+              <span class="qr-title">Verify Certificate</span>
+              <span class="qr-link">learnora.in/verify</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="blue-footer-bar">
+          WWW.LEARNORA.IN &nbsp;|&nbsp; ISSUED ON: ${todayStr} &nbsp;|&nbsp; SUPPORT@LEARNORA.IN
         </div>
       </div>
     </div>
   </div>
   
-  <div class="actions">
-    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  ${isForDownload ? `
+  <div class="actions-bar">
+    <button class="btn-action" onclick="window.print()">
+      Print or Save as PDF
+    </button>
   </div>
+  ` : `
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    };
+  </script>
+  `}
 </body>
 </html>`;
+    };
 
+    const downloadCertificateAsHTML = () => {
+      const htmlContent = getCertificateHTML(true);
       const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -756,8 +1325,8 @@ export default function ProgressTracker({
                           &ldquo;{courseName}&rdquo;
                         </span>
                       </p>
-                      <p className="text-[9px] text-stone-500 font-serif font-medium uppercase tracking-wider">
-                        CERTIFICATE ID: {certNo} &bull; Issued On {todayStr}
+                      <p className="text-[9px] text-stone-600 font-serif font-semibold uppercase tracking-wider">
+                        CERTIFICATE ID: {certNo} &bull; STUDENT ID NO: {studentIdNo}
                       </p>
                     </div>
 
@@ -765,30 +1334,28 @@ export default function ProgressTracker({
                     <div className="grid grid-cols-3 items-end pt-4">
                       {/* Signature left */}
                       <div className="text-center flex flex-col justify-end">
-                        <span className="font-serif text-indigo-700 text-xs md:text-sm italic font-medium translate-y-2">Anik Baidya</span>
+                        <span className="font-serif text-indigo-800 text-xs md:text-sm italic font-medium translate-y-2">Anand Sharma</span>
                         <div className="border-t border-stone-400 mt-2 pt-1">
-                          <p className="text-[9px] md:text-[10px] font-bold text-stone-800">Anik Baidya</p>
-                          <p className="text-[7.5px] md:text-[8.5px] text-stone-500">Head Administrator</p>
+                          <p className="text-[9px] md:text-[10px] font-bold text-stone-800">Anand Sharma</p>
+                          <p className="text-[7.5px] md:text-[8.5px] text-stone-500">Founder & CEO, Learnora</p>
                         </div>
                       </div>
 
                       {/* Seal middle */}
                       <div className="flex flex-col items-center justify-center relative translate-y-1 md:translate-y-2">
-                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-amber-500 border-2 border-amber-600 shadow-md flex items-center justify-center text-white relative">
-                          <span className="text-[6.5px] md:text-[8.5px] font-extrabold tracking-widest text-amber-950 font-sans text-center">
-                            LEARNORA<br />SEAL
+                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-slate-900 border-2 border-rose-500 shadow-md flex items-center justify-center text-white relative">
+                          <span className="text-[6.5px] md:text-[8.5px] font-extrabold tracking-widest text-slate-100 font-sans text-center">
+                            OFFICIAL<br />SEAL
                           </span>
-                          {/* hanging ribbons */}
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-amber-700 clip-ribbon z-[-1] opacity-75"></div>
                         </div>
                       </div>
 
                       {/* Signature right */}
                       <div className="text-center flex flex-col justify-end">
-                        <span className="font-serif text-emerald-700 text-xs md:text-sm italic font-medium translate-y-2">Verified</span>
+                        <span className="font-serif text-rose-600 text-xs md:text-sm italic font-medium translate-y-2">Priya Verma</span>
                         <div className="border-t border-stone-400 mt-2 pt-1">
-                          <p className="text-[9px] md:text-[10px] font-bold text-stone-800">Exam Ledger Board</p>
-                          <p className="text-[7.5px] md:text-[8.5px] text-stone-500">Learnora Academic Dept</p>
+                          <p className="text-[9px] md:text-[10px] font-bold text-stone-800">Priya Verma</p>
+                          <p className="text-[7.5px] md:text-[8.5px] text-stone-500">Lead Academic Instructor</p>
                         </div>
                       </div>
                     </div>
@@ -828,228 +1395,7 @@ export default function ProgressTracker({
                       iframe.style.pointerEvents = 'none';
                       document.body.appendChild(iframe);
 
-                      const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Certificate - ${currentUser.name}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600&display=swap');
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #ffffff;
-      font-family: 'Montserrat', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .cert-container {
-      width: 1000px;
-      height: 700px;
-      background: #fbfbfa;
-      padding: 24px;
-      box-sizing: border-box;
-      position: relative;
-    }
-    .outer-border {
-      width: 100%;
-      height: 100%;
-      border: 12px double #d97706;
-      box-sizing: border-box;
-      padding: 30px;
-      position: relative;
-    }
-    .inner-border {
-      width: 100%;
-      height: 100%;
-      border: 2px solid #fbbf24;
-      box-sizing: border-box;
-      padding: 20px;
-      text-align: center;
-    }
-    .header {
-      font-family: 'Cinzel', serif;
-      font-size: 24px;
-      color: #1e1b4b;
-      letter-spacing: 5px;
-      margin-bottom: 5px;
-      font-weight: 800;
-      margin-top: 10px;
-    }
-    .divider {
-      width: 120px;
-      height: 2px;
-      background-color: #d97706;
-      margin: 10px auto;
-    }
-    .sub-header {
-      font-family: 'Cinzel', serif;
-      font-size: 32px;
-      color: #b45309;
-      font-weight: 800;
-      margin-bottom: 25px;
-      letter-spacing: 2px;
-    }
-    .present-text {
-      font-style: italic;
-      color: #6b7280;
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    .student-name {
-      font-size: 42px;
-      font-weight: bold;
-      color: #111827;
-      border-bottom: 2px solid #1e1b4b;
-      display: inline-block;
-      padding-bottom: 8px;
-      margin-bottom: 20px;
-      font-family: 'Cinzel', serif;
-    }
-    .sentence {
-      font-size: 15px;
-      color: #374151;
-      line-height: 1.8;
-      max-width: 700px;
-      margin: 0 auto 20px;
-    }
-    .course-title {
-      font-weight: 700;
-      color: #4f46e5;
-      font-size: 18px;
-    }
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      position: absolute;
-      bottom: 50px;
-      left: 80px;
-      right: 80px;
-    }
-    .signature-block {
-      text-align: center;
-      width: 250px;
-    }
-    .signature-line {
-      border-top: 1.5px solid #4b5563;
-      margin-top: 40px;
-      padding-top: 8px;
-    }
-    .signature-name {
-      font-weight: bold;
-      color: #1e1b4b;
-      font-size: 13px;
-    }
-    .signature-title {
-      color: #718096;
-      font-size: 11px;
-      margin-top: 2px;
-    }
-    .seal-block {
-      text-align: center;
-    }
-    .seal {
-      width: 80px;
-      height: 80px;
-      background: #fbbf24;
-      border-radius: 50%;
-      border: 3px solid #d97706;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #78350f;
-      font-weight: bold;
-      font-size: 10px;
-      letter-spacing: 1px;
-      position: relative;
-    }
-    .seal::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
-      left: 20px;
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-top: 35px solid #92400e;
-      z-index: -1;
-    }
-    .cert-meta {
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 15px;
-      letter-spacing: 1px;
-    }
-    @page {
-      size: landscape;
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="cert-container">
-    <div class="outer-border">
-      <div class="inner-border">
-        <div class="header">LEARNORA INSTITUTE</div>
-        <div class="divider"></div>
-        <div class="sub-header">CERTIFICATE OF ACHIEVEMENT</div>
-        
-        <div class="present-text">This is proudly presented to</div>
-        <div class="student-name">${currentUser.name}</div>
-        
-        <div class="sentence">
-          for successfully fulfilling all course curriculum directives and passing all required evaluations for the
-          <br><span class="course-title">"${courseName}"</span>
-          <br>
-          <span style="font-size: 12px; color: #718096; display: block; margin-top: 8px;">
-            Honoring outstanding dedication, class engagement, and verification milestone completions.
-          </span>
-          <br>
-          <span class="cert-meta">CERTIFICATE ID: ${certNo} &bull; Issued: ${todayStr}</span>
-        </div>
-        
-        <div class="footer">
-          <div class="signature-block">
-            <div style="font-family: 'Cinzel', serif; font-size: 16px; color: #4f46e5; font-style: italic; margin-bottom: -32px;">Anik Baidya</div>
-            <div class="signature-line">
-              <div class="signature-name">Anik Baidya</div>
-              <div class="signature-title">Head & Lead Administrator</div>
-            </div>
-          </div>
-          
-          <div class="seal-block">
-            <div class="seal">
-              <span style="text-align: center;">LEARNORA<br>SEAL</span>
-            </div>
-          </div>
-          
-          <div class="signature-block">
-            <div style="font-family: 'Cinzel', serif; font-size: 16px; color: #059669; font-style: italic; margin-bottom: -32px;">Verified</div>
-            <div class="signature-line">
-              <div class="signature-name">Learnora Exam Board</div>
-              <div class="signature-title">Academic Verification Dept</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 500);
-    };
-  </script>
-</body>
-</html>`;
-
+                      const htmlContent = getCertificateHTML(false);
                       const doc = iframe.contentWindow?.document || iframe.contentDocument;
                       if (doc) {
                         doc.open();
