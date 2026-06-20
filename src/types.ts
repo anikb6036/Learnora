@@ -25,6 +25,7 @@ export interface UserAccount {
   dob?: string;
   batch?: string; // Added student batch
   course?: string; // Added student course
+  currentMonth?: number; // Added current active study month
 }
 
 export interface RegistrationRequest {
@@ -201,6 +202,26 @@ export interface AssignmentBankItem {
   syllabus: string; // Syllabus Topic
   maxPoints: number;
   createdDate: string;
+}
+
+export interface StudentEvolution {
+  id: string;
+  studentId: string;
+  studentName: string;
+  course: string;
+  month: number; // Month 1, Month 2, etc. (corresponds to active month)
+  evolution1?: number; // Score for Evolution 1
+  evolution2?: number; // Score for Evolution 2
+  evolution3?: number; // Score for Evolution 3
+  evolution4?: number; // Score for Evolution 4
+  feedback1?: string;  // Feedback for Evolution 1
+  feedback2?: string;  // Feedback for Evolution 2
+  feedback3?: string;  // Feedback for Evolution 3
+  feedback4?: string;  // Feedback for Evolution 4
+  overallScore?: number; // Calculated percentage (passing mark >= 80%)
+  promoted: boolean; // Automatic promotion trigger state
+  promotedDate?: string;
+  lastUpdated: string;
 }
 
 

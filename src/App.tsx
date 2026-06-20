@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem } from './types';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, StudentEvolution } from './types';
 import {
   INITIAL_USERS,
   INITIAL_SCHEDULES,
@@ -217,8 +217,11 @@ function AppContent() {
   // Master base courses bank
   const [masterCourses, setMasterCourses, masterCoursesLoaded] = useFirebaseState<MasterCourse[]>('db-master-courses', INITIAL_MASTER_COURSES);
 
+  // Student evolution months and scores (four evolutions system)
+  const [studentEvolutions, setStudentEvolutions, studentEvolutionsLoaded] = useFirebaseState<StudentEvolution[]>('db-student-evolutions', []);
+
   const isDataLoaded = usersLoaded && schedulesLoaded && progressLoaded && notificationsLoaded && 
-                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded;
+                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded;
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile'>('dashboard');
@@ -4328,6 +4331,10 @@ function AppContent() {
                 progressRecords={progressRecords}
                 assignments={assignments}
                 onAddProgressRecord={handleAddProgressRecord}
+                studentEvolutions={studentEvolutions}
+                onUpdateStudentEvolutions={setStudentEvolutions}
+                onSendEmail={handleSendEmail}
+                onUpdateUsers={setUsers}
               />
             )}
 

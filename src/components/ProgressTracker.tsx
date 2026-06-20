@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment } from '../types';
-import { Award, BookOpen, Clock, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode } from 'lucide-react';
+import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentEvolution } from '../types';
+import { Award, BookOpen, Clock, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProgressTrackerProps {
@@ -15,6 +15,10 @@ interface ProgressTrackerProps {
   progressRecords: ProgressRecord[];
   assignments?: StudentAssignment[];
   onAddProgressRecord: (record: Omit<ProgressRecord, 'id' | 'evaluationDate' | 'instructorId' | 'instructorName'>) => void;
+  studentEvolutions?: StudentEvolution[];
+  onUpdateStudentEvolutions?: React.Dispatch<React.SetStateAction<StudentEvolution[]>>;
+  onSendEmail?: (to: string, subject: string, body: string, fromOverride?: string) => void;
+  onUpdateUsers?: React.Dispatch<React.SetStateAction<UserAccount[]>>;
 }
 
 export default function ProgressTracker({
@@ -23,14 +27,138 @@ export default function ProgressTracker({
   schedules,
   progressRecords,
   assignments = [],
-  onAddProgressRecord
+  onAddProgressRecord,
+  studentEvolutions = [],
+  onUpdateStudentEvolutions,
+  onSendEmail,
+  onUpdateUsers
 }: ProgressTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeSubTab, setActiveSubTab] = useState<'traditional' | 'evolution'>('traditional');
   const [performanceFilter, setPerformanceFilter] = useState<'all' | 'excellent' | 'good' | 'average' | 'needs-improvement'>('all');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Evolution scoring state variables
+  const [selectedEvolutionStudentId, setSelectedEvolutionStudentId] = useState('');
+  const [selectedEvolutionCourse, setSelectedEvolutionCourse] = useState('');
+  const [selectedEvolutionMonth, setSelectedEvolutionMonth] = useState<number>(1);
+  const [ev1Score, setEv1Score] = useState<string>('');
+  const [ev2Score, setEv2Score] = useState<string>('');
+  const [ev3Score, setEv3Score] = useState<string>('');
+  const [ev4Score, setEv4Score] = useState<string>('');
+  const [ev1Feedback, setEv1Feedback] = useState<string>('');
+  const [ev2Feedback, setEv2Feedback] = useState<string>('');
+  const [ev3Feedback, setEv3Feedback] = useState<string>('');
+  const [ev4Feedback, setEv4Feedback] = useState<string>('');
+  const [evolutionSuccessMessage, setEvolutionSuccessMessage] = useState('');
+  const [studentSelectedMonth, setStudentSelectedMonth] = useState<number>(currentUser.currentMonth || 1);
+
+  const handleUpdateEvolutionScore = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEvolutionStudentId || !selectedEvolutionCourse || !onUpdateStudentEvolutions) return;
+
+    const studentFound = students.find(s => s.id === selectedEvolutionStudentId);
+    const studentName = studentFound?.name || 'Student';
+    const studentEmail = studentFound?.email || '';
+
+    // Convert scores safely
+    const sc1 = ev1Score !== '' ? parseInt(ev1Score) : undefined;
+    const sc2 = ev2Score !== '' ? parseInt(ev2Score) : undefined;
+    const sc3 = ev3Score !== '' ? parseInt(ev3Score) : undefined;
+    const sc4 = ev4Score !== '' ? parseInt(ev4Score) : undefined;
+
+    onUpdateStudentEvolutions(prev => {
+      const existingIdx = prev.findIndex(ev => ev.studentId === selectedEvolutionStudentId && ev.month === selectedEvolutionMonth && ev.course === selectedEvolutionCourse);
+      
+      let record: StudentEvolution;
+      if (existingIdx > -1) {
+        record = { ...prev[existingIdx] };
+      } else {
+        record = {
+          id: `evol-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+          studentId: selectedEvolutionStudentId,
+          studentName,
+          course: selectedEvolutionCourse,
+          month: selectedEvolutionMonth,
+          promoted: false,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+
+      if (sc1 !== undefined) { record.evolution1 = sc1; record.feedback1 = ev1Feedback; }
+      if (sc2 !== undefined) { record.evolution2 = sc2; record.feedback2 = ev2Feedback; }
+      if (sc3 !== undefined) { record.evolution3 = sc3; record.feedback3 = ev3Feedback; }
+      if (sc4 !== undefined) { record.evolution4 = sc4; record.feedback4 = ev4Feedback; }
+
+      // Calculate average score of entered evolutions
+      const vals: number[] = [];
+      if (record.evolution1 !== undefined) vals.push(record.evolution1);
+      if (record.evolution2 !== undefined) vals.push(record.evolution2);
+      if (record.evolution3 !== undefined) vals.push(record.evolution3);
+      if (record.evolution4 !== undefined) vals.push(record.evolution4);
+
+      const average = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+      record.overallScore = average;
+      record.lastUpdated = new Date().toISOString();
+
+      // Check if all 4 are completed and average is >= 80% to trigger automatic promote!
+      const isCompleteMonth = record.evolution1 !== undefined && 
+                              record.evolution2 !== undefined && 
+                              record.evolution3 !== undefined && 
+                              record.evolution4 !== undefined;
+
+      if (average >= 80 && isCompleteMonth && !record.promoted) {
+        record.promoted = true;
+        record.promotedDate = new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        // 1. Promote student in Users list!
+        if (onUpdateUsers) {
+          onUpdateUsers(prevUsers => prevUsers.map(u => {
+            if (u.id === selectedEvolutionStudentId) {
+              const nextMonth = (u.currentMonth || 1) + 1;
+              return { ...u, currentMonth: nextMonth };
+            }
+            return u;
+          }));
+        }
+
+        // 2. Dispatch simulated email!
+        if (onSendEmail && studentEmail) {
+          const emailSubject = `🎓 AUTOMATIC PROMOTION ACHIEVED: Month ${selectedEvolutionMonth} Completed with ${average}%!`;
+          const emailBody = `Dear ${studentName},\n\nWe are absolutely delighted and proud to inform you that you have met all requirements, cleared Month ${selectedEvolutionMonth} with a distinguished score of ${average}% (Passing Threshold: 80%), and have been AUTOMATICALLY PROMOTED to Month ${selectedEvolutionMonth + 1}!\n\nHere are your month's assessment milestones:\n\n- Evolution 1 Score: ${record.evolution1}%\n- Evolution 2 Score: ${record.evolution2}%\n- Evolution 3 Score: ${record.evolution3}%\n- Evolution 4 Score: ${record.evolution4}%\n\n=================================\n📊 MONTHLY AGGREGATE SCORE: ${average}%\n🏅 PROMOTION STATUS: APPROVED & COMPLETED\n=================================\n\nAs a direct result of your marvelous continuous dedication, class engagement, and milestone performance, your curriculum level has been updated.\n\nKeep pushing limits!\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute\nsupport@learnora.in | www.learnora.in`;
+          onSendEmail(studentEmail, emailSubject, emailBody, 'evolution-board@learnora.in');
+        }
+      }
+
+      const nextList = [...prev];
+      if (existingIdx > -1) {
+        nextList[existingIdx] = record;
+      } else {
+        nextList.push(record);
+      }
+      return nextList;
+    });
+
+    setEvolutionSuccessMessage(`Successfully updated evolution database snapshot for ${studentName} (Month ${selectedEvolutionMonth}).`);
+    setTimeout(() => setEvolutionSuccessMessage(''), 5000);
+
+    // Reset scores & feedbacks
+    setEv1Score('');
+    setEv2Score('');
+    setEv3Score('');
+    setEv4Score('');
+    setEv1Feedback('');
+    setEv2Feedback('');
+    setEv3Feedback('');
+    setEv4Feedback('');
+  };
 
   // New Record state
   const [studentId, setStudentId] = useState('');
@@ -1133,131 +1261,348 @@ export default function ProgressTracker({
 
     return (
       <div className="space-y-6 font-sans">
-        <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
-            <div>
-              <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight flex items-center gap-2">
-                <Award className="w-8 h-8 text-amber-500" />
-                Certificate Progress
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-gray-400">
-                Track your course evaluation milestones to automatically unlock your completion certificate.
-              </p>
-            </div>
-            {isComplete && (
-              <button
-                className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
-                onClick={() => setShowCertificateModal(true)}
-              >
-                <Award className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                View & Download Certificate
-              </button>
-            )}
-          </div>
+        {/* Toggle switch for student view */}
+        <div className="flex bg-slate-100 dark:bg-[#161618] p-1 rounded-2xl max-w-md border border-slate-200/50 dark:border-white/5 shadow-sm">
+          <button
+            onClick={() => setActiveSubTab('traditional')}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+              activeSubTab === 'traditional'
+                ? 'bg-white dark:bg-[#1f2023] text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            Certificate Milestones
+          </button>
+          <button
+            onClick={() => setActiveSubTab('evolution')}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+              activeSubTab === 'evolution'
+                ? 'bg-white dark:bg-[#1f2023] text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            Monthly Evolution Track
+          </button>
+        </div>
 
-          <div className="mb-10">
-            <div className="flex justify-between items-end mb-2">
+        {activeSubTab === 'traditional' ? (
+          <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
               <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">
-                  Course Completion
-                </p>
-                <p className="text-xs text-slate-500 dark:text-zinc-400">
-                  {completedEvaluations} of {totalEvaluations} evaluations cleared
+                <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight flex items-center gap-2">
+                  <Award className="w-8 h-8 text-amber-500" />
+                  Certificate Progress
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-gray-400">
+                  Track your course evaluation milestones to automatically unlock your completion certificate.
                 </p>
               </div>
-              <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                {Math.round(progressPercentage)}%
-              </p>
+              {isComplete && (
+                <button
+                  className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+                  onClick={() => setShowCertificateModal(true)}
+                >
+                  <Award className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                  View & Download Certificate
+                </button>
+              )}
             </div>
-            <div className="h-3 w-full bg-slate-100 dark:bg-[#161618] rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden" 
-                style={{ width: `${progressPercentage}%` }}
-              >
-                <div className="absolute top-0 left-0 bottom-0 right-0 w-full h-full animate-shimmer" style={{
-                  backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)',
-                  backgroundSize: '200% 100%'
-                }}></div>
-              </div>
-            </div>
-            
-            {isComplete && (
-              <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+
+            <div className="mb-10">
+              <div className="flex justify-between items-end mb-2">
                 <div>
-                  <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300">Congratulations!</h4>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 leading-relaxed">
-                    You have successfully cleared all required evaluations for this course. Your certificate has been automatically generated and is now ready for download.
+                  <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">
+                    Course Completion
                   </p>
-                  <button
-                    className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all inline-block cursor-pointer"
-                    onClick={() => setShowCertificateModal(true)}
-                  >
-                    Open Certificate Drawer
-                  </button>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    {completedEvaluations} of {totalEvaluations} evaluations cleared
+                  </p>
+                </div>
+                <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                  {Math.round(progressPercentage)}%
+                </p>
+              </div>
+              <div className="h-3 w-full bg-slate-100 dark:bg-[#161618] rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden" 
+                  style={{ width: `${progressPercentage}%` }}
+                >
+                  <div className="absolute top-0 left-0 bottom-0 right-0 w-full h-full animate-shimmer" style={{
+                    backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)',
+                    backgroundSize: '200% 100%'
+                  }}></div>
                 </div>
               </div>
-            )}
-          </div>
-
-          <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-slate-400" />
-            Evaluation Milestones
-          </h3>
-          
-          {studentAssignmentsList.length === 0 ? (
-            <div className="text-center py-12 border border-slate-100 dark:border-white/5 rounded-2xl bg-slate-50 dark:bg-white/[0.02]">
-              <p className="text-sm text-slate-500 dark:text-zinc-400 font-medium">No evaluations assigned yet.</p>
+              
+              {isComplete && (
+                <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300">Congratulations!</h4>
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 leading-relaxed">
+                      You have successfully cleared all required evaluations for this course. Your certificate has been automatically generated and is now ready for download.
+                    </p>
+                    <button
+                      className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all inline-block cursor-pointer"
+                      onClick={() => setShowCertificateModal(true)}
+                    >
+                      Open Certificate Drawer
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {studentAssignmentsList.map((asg, idx) => {
-                const submission = asg.submissions.find(s => s.studentId === currentUser.id);
-                const isCleared = submission && submission.score !== undefined;
-                
-                return (
-                  <div key={asg.id} className="p-4 bg-white dark:bg-[#0c0d12]/40 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <div className="flex gap-4">
-                      <div className="mt-1">
+
+            <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-slate-400" />
+              Evaluation Milestones
+            </h3>
+            
+            {studentAssignmentsList.length === 0 ? (
+              <div className="text-center py-12 border border-slate-100 dark:border-white/5 rounded-2xl bg-slate-50 dark:bg-white/[0.02]">
+                <p className="text-sm text-slate-500 dark:text-zinc-400 font-medium">No evaluations assigned yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {studentAssignmentsList.map((asg, idx) => {
+                  const submission = asg.submissions.find(s => s.studentId === currentUser.id);
+                  const isCleared = submission && submission.score !== undefined;
+                  
+                  return (
+                    <div key={asg.id} className="p-4 bg-white dark:bg-[#0c0d12]/40 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                      <div className="flex gap-4">
+                        <div className="mt-1">
+                          {isCleared ? (
+                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#161618] border border-slate-200 dark:border-white/10 flex items-center justify-center">
+                              <span className="text-xs font-bold text-slate-400">{idx + 1}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className={`text-sm font-bold ${isCleared ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-zinc-300'}`}>
+                            {asg.title}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1">Class Ref: {asg.className}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-white/5">
                         {isCleared ? (
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <div className="text-right flex-1 sm:flex-none">
+                            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded inline-block">
+                              Cleared &bull; {submission.score}/{asg.maxPoints} pts
+                            </p>
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#161618] border border-slate-200 dark:border-white/10 flex items-center justify-center">
-                            <span className="text-xs font-bold text-slate-400">{idx + 1}</span>
+                          <div className="text-right flex-1 sm:flex-none">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 px-2 py-1 rounded inline-block">
+                              Pending Evaluation
+                            </p>
                           </div>
                         )}
                       </div>
-                      <div>
-                        <h4 className={`text-sm font-bold ${isCleared ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-zinc-300'}`}>
-                          {asg.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-1">Class Ref: {asg.className}</p>
-                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-white/5">
-                      {isCleared ? (
-                        <div className="text-right flex-1 sm:flex-none">
-                          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded inline-block">
-                            Cleared &bull; {submission.score}/{asg.maxPoints} pts
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="text-right flex-1 sm:flex-none">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 px-2 py-1 rounded inline-block">
-                            Pending Evaluation
-                          </p>
-                        </div>
-                      )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* THE NEW STUDENT MONTHLY EVOLUTION SYSTEM VIEW */
+          <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-slate-150 dark:border-white/5 pb-6">
+              <div>
+                <h1 className="text-[26px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight flex items-center gap-2">
+                  <TrendingUp className="w-7 h-7 text-indigo-500" />
+                  Monthly Evolution Tracker
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-gray-400">
+                  Course syllabus divided into 4-week continuous evolutions with an overall passing average of <strong className="text-indigo-600 dark:text-indigo-400">80%</strong>.
+                </p>
+              </div>
+
+              {/* Month selector */}
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-250/60 dark:border-white/10 p-1.5 rounded-xl">
+                <span className="text-xs font-bold text-slate-500 dark:text-gray-400 pl-2">Select Study Month:</span>
+                <select
+                  value={studentSelectedMonth}
+                  onChange={(e) => setStudentSelectedMonth(parseInt(e.target.value))}
+                  className="bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-zinc-200 py-1.5 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value={1}>Month 1</option>
+                  <option value={2}>Month 2</option>
+                  <option value={3}>Month 3</option>
+                  <option value={4}>Month 4</option>
+                  <option value={5}>Month 5</option>
+                  <option value={6}>Month 6</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Overall Monthly summary performance card */}
+            {(() => {
+              const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth);
+              const scoresCount = [evoRec?.evolution1, evoRec?.evolution2, evoRec?.evolution3, evoRec?.evolution4].filter(s => s !== undefined).length;
+              const overallPass = evoRec?.overallScore !== undefined && evoRec.overallScore >= 80;
+              const isPromoted = evoRec?.promoted === true;
+
+              return (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {/* Month card */}
+                    <div className="p-5 bg-gradient-to-br from-indigo-500/5 to-indigo-600/[0.02] border border-indigo-500/10 rounded-2xl">
+                      <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Active Level</p>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white mt-1">Month {studentSelectedMonth}</h4>
+                      <p className="text-xs text-slate-500 mt-1.5 font-mono">Registered Course: {currentUser.course || 'All-Inclusive Academic Track'}</p>
+                    </div>
+
+                    {/* Progress card */}
+                    <div className="p-5 bg-gradient-to-br from-blue-500/5 to-blue-600/[0.02] border border-blue-500/10 rounded-2xl">
+                      <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Overall Average Score</p>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                        {evoRec?.overallScore !== undefined ? `${evoRec.overallScore}%` : 'Pending'}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1.5">{scoresCount} of 4 continuous evaluations recorded</p>
+                    </div>
+
+                    {/* Status badge and promotion card */}
+                    <div className={`p-5 rounded-2xl border transition-all ${
+                      isPromoted 
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300' 
+                        : scoresCount > 0 
+                        ? 'bg-amber-500/5 border-amber-500/10 text-amber-700 dark:text-amber-400'
+                        : 'bg-slate-100/50 dark:bg-white/[0.01] border-slate-200/50 dark:border-white/5 text-slate-500'
+                    }`}>
+                      <p className="text-xs font-bold uppercase tracking-widest">Evolution Status</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {isPromoted ? (
+                          <span className="text-lg font-extrabold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                            🏆 Promoted!
+                          </span>
+                        ) : (
+                          <span className="text-lg font-extrabold">In Progress</span>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1.5">
+                        {isPromoted 
+                          ? `Automatically promoted on ${evoRec?.promotedDate || 'this month'}`
+                          : `Passing mark: Average score >= 80% with all 4 weeks completed`
+                        }
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                  {/* 4 evolution week blocks */}
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-slate-400" />
+                      Continuous Weekly Evaluations (Month {studentSelectedMonth})
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { title: 'Evolution 1 (Week 1)', targetScore: evoRec?.evolution1, feedback: evoRec?.feedback1, subtitle: 'Kinematics & Base theory' },
+                        { title: 'Evolution 2 (Week 2)', targetScore: evoRec?.evolution2, feedback: evoRec?.feedback2, subtitle: 'Applied Practical Problems' },
+                        { title: 'Evolution 3 (Week 3)', targetScore: evoRec?.evolution3, feedback: evoRec?.feedback3, subtitle: 'Analytical Problem Resolution' },
+                        { title: 'Evolution 4 (Week 4)', targetScore: evoRec?.evolution4, feedback: evoRec?.feedback4, subtitle: 'Integrated Examination' }
+                      ].map((item, index) => {
+                        const hasScore = item.targetScore !== undefined;
+                        const scoreNum = item.targetScore || 0;
+                        const isPassing = scoreNum >= 85; // general guideline check
+
+                        return (
+                          <div 
+                            key={index} 
+                            className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${
+                              hasScore 
+                                ? scoreNum >= 80
+                                  ? 'bg-white dark:bg-[#0c0d12]/50 border-emerald-500/25 dark:border-emerald-500/10 shadow-sm'
+                                  : 'bg-white dark:bg-[#0c0d12]/50 border-amber-500/25 dark:border-amber-500/10 shadow-sm'
+                                : 'bg-slate-50/50 dark:bg-[#0c0d12]/10 border-slate-200/50 dark:border-white/5 border-dashed'
+                            }`}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-start">
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{item.subtitle}</span>
+                                {hasScore && (
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                    scoreNum >= 80
+                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                  }`}>
+                                    {scoreNum}%
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200">{item.title}</h4>
+                              <p className="text-xs text-slate-500 dark:text-zinc-450 italic pt-1 leading-relaxed">
+                                {item.feedback || 'No evaluation comment logged yet.'}
+                              </p>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                              {hasScore ? (
+                                <div>
+                                  <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                                    <span>Weekly Score</span>
+                                    <span>{scoreNum}%</span>
+                                  </div>
+                                  <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full transition-all duration-300 ${
+                                        scoreNum >= 80 ? 'bg-emerald-500' : 'bg-amber-500'
+                                      }`}
+                                      style={{ width: `${scoreNum}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-slate-300" />
+                                  Pending Review
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Promotion details panel */}
+                  {isPromoted ? (
+                    <div className="p-6 bg-gradient-to-r from-emerald-500/10 via-emerald-600/[0.02] to-transparent border border-emerald-500/20 rounded-2xl flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center text-xl shadow-inner shrink-0 text-emerald-600 dark:text-emerald-400">
+                        🏆
+                      </div>
+                      <div>
+                        <h4 className="text-base font-extrabold text-emerald-800 dark:text-emerald-350">
+                          Evolution Milestone Passed & Academic Grade Level Escalated!
+                        </h4>
+                        <p className="text-xs text-emerald-750 dark:text-emerald-400 mt-1 leading-relaxed">
+                          By clearing all 4 weekly milestones in Study Month {studentSelectedMonth} with an aggregate average score of <strong>{evoRec?.overallScore}%</strong> (Passing Benchmark: 80%), you have triggered our immediate <strong>Automatic Promotion protocol</strong>. Your account registration is instantly updated to the subsequent month milestone on the server, and a credentialed dispatch and progress receipt has been transmitted to: <strong className="underline">{currentUser.email}</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-slate-50 dark:bg-white/[0.01] border border-slate-200 dark:border-white/5 rounded-2xl flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-indigo-500 mt-0.5" />
+                      <div className="text-xs text-slate-550 dark:text-gray-400 leading-relaxed">
+                        Learnora operates on a 4-week Continuous Evolution track. When all 4 milestones are graded by an instructor and calculate an overall average of <strong>80% or above</strong>, the system automatically activates program graduation and progresses your core courses directory parameters.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Dynamic Interactive Certificate Modal */}
         <AnimatePresence>
