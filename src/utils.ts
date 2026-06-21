@@ -56,7 +56,8 @@ export const INITIAL_USERS: UserAccount[] = [
     password: 'john',
     assignedInstructorId: 'instructor-1',
     batch: 'Batch A',
-    course: 'IIT-JEE Master Preparation'
+    course: 'IIT-JEE Master Preparation',
+    paymentStatus: 'pending'
   },
   {
     id: 'student-2',
@@ -70,7 +71,11 @@ export const INITIAL_USERS: UserAccount[] = [
     password: 'alex',
     assignedInstructorId: 'instructor-1',
     batch: 'Batch B',
-    course: 'Medical NEET Crash Course'
+    course: 'Medical NEET Crash Course',
+    paymentStatus: 'paid',
+    paymentId: 'pay_OM92hJasda91',
+    paymentDate: '2024-05-24',
+    paidAmount: 11999
   }
 ];
 
@@ -185,9 +190,9 @@ export const INITIAL_MASTER_COURSES: MasterCourse[] = [
 ];
 
 export const INITIAL_COURSES: Course[] = [
-  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18' },
-  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming', publishDate: '2026-07-01', admissionLastDate: '2026-06-30' },
-  { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', batchNumber: 'stb_003', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '9', createdDate: '2024-05-19', status: 'completed' }
+  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18', fee: 14999 },
+  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming', publishDate: '2026-07-01', admissionLastDate: '2026-06-30', fee: 11999 },
+  { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', batchNumber: 'stb_003', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '9', createdDate: '2024-05-19', status: 'completed', fee: 5999 }
 ];
 
 export const INITIAL_ASSIGNMENTS: StudentAssignment[] = [

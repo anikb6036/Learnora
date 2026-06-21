@@ -26,6 +26,10 @@ export interface UserAccount {
   batch?: string; // Added student batch
   course?: string; // Added student course
   currentMonth?: number; // Added current active study month
+  paymentStatus?: 'pending' | 'paid'; // Razorpay payment state
+  paymentId?: string; // Razorpay transaction ref ID
+  paymentDate?: string; // Razorpay payment date
+  paidAmount?: number; // Razorpay paid amount in INR
 }
 
 export interface RegistrationRequest {
@@ -141,6 +145,7 @@ export interface Course {
   publishDate?: string;
   admissionLastDate?: string;
   durationMonths?: number;
+  fee?: number; // Course enrollment fee in INR
   roadmap?: {
     month: number;
     title: string;

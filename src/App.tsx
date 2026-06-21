@@ -60,6 +60,7 @@ import AssignmentTracker from './components/AssignmentTracker';
 import HomePage from './components/HomePage';
 import Logo from './components/Logo';
 import AdmissionsExamModal from './components/AdmissionsExamModal';
+import { RazorpayPayment } from './components/RazorpayPayment';
 import {
   LayoutDashboard,
   Users,
@@ -3210,13 +3211,23 @@ function AppContent() {
 
                 {/* Central Navigation lists */}
                 <nav className="space-y-1">
-                  {/* Top Level Items */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('dashboard');
-                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                    }}
+                  {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' ? (
+                    <button
+                      type="button"
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold"
+                    >
+                      <Lock className="w-4 h-4 text-amber-500 flex-shrink-0 animate-pulse" />
+                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Fee Settle Required</span>}
+                    </button>
+                  ) : (
+                    <>
+                      {/* Top Level Items */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('dashboard');
+                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                        }}
                     className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
                       activeTab === 'dashboard'
                         ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
@@ -3509,6 +3520,8 @@ function AppContent() {
                       {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Backups</span>}
                     </button>
                   )}
+                    </>
+                  )}
                 </nav>
 
                 {/* Logout anchor workspace */}
@@ -3529,9 +3542,19 @@ function AppContent() {
 
           {/* Main Context Stage */}
           <main className="flex-1 relative z-10 p-5 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-            
-            {/* Active Render Panels Routing based on Tab */}
-            {activeTab === 'dashboard' && (
+            {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' ? (
+              <RazorpayPayment
+                currentUser={currentUser}
+                users={users}
+                setUsers={setUsers}
+                courses={courses}
+                setNotifications={setNotifications}
+                onLogout={handleLogout}
+              />
+            ) : (
+              <>
+                {/* Active Render Panels Routing based on Tab */}
+                {activeTab === 'dashboard' && (
               <div className="space-y-6 max-w-6xl mx-auto w-full pt-4 font-sans animate-fadeIn">
                 {['admin', 'sub-admin'].includes(currentUser.role) ? (
                   <div className="space-y-6 max-w-6xl mx-auto w-full pt-2 font-sans">
@@ -4435,7 +4458,8 @@ function AppContent() {
                 onSendEmail={handleSendEmail}
               />
             )}
-
+              </>
+            )}
           </main>
         </div>
       )}

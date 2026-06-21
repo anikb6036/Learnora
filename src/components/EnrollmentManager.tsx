@@ -1324,9 +1324,18 @@ export default function EnrollmentManager({
                       <div className="col-span-3 md:col-span-2">
                         <div className="flex flex-col gap-1 items-start">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-100 dark:border-teal-500/10 shadow-3xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                             Registered
                           </span>
+                          {student.paymentStatus === 'paid' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 text-[10px] font-bold" title={`Transaction Ref: ${student.paymentId || 'N/A'}`}>
+                              <span>₹{(student.paidAmount || 9999).toLocaleString('en-IN')} Paid</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold">
+                              <span>₹{(courses.find(c => c.name.toLowerCase() === student.course?.toLowerCase())?.fee || 9999).toLocaleString('en-IN')} Unpaid</span>
+                            </span>
+                          )}
                           {student.phone ? (
                             <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-full " title={student.phone}>
                               <Phone className="w-3" /> {student.phone}
