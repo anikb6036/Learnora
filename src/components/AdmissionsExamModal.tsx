@@ -13,13 +13,15 @@ interface AdmissionsExamModalProps {
   onClose: () => void;
   request: RegistrationRequest;
   onExamPass: (score: number, details: { reading: number; speaking: number }) => void;
+  onExamPassBg?: (score: number) => void;
 }
 
 export default function AdmissionsExamModal({
   isOpen,
   onClose,
   request,
-  onExamPass
+  onExamPass,
+  onExamPassBg
 }: AdmissionsExamModalProps) {
   const [step, setStep] = useState<'intro' | 'reading' | 'speaking' | 'analyzing' | 'result'>('intro');
 
@@ -213,6 +215,10 @@ export default function AdmissionsExamModal({
     if (monitoringStream) {
       monitoringStream.getTracks().forEach(track => track.stop());
       setMonitoringStream(null);
+    }
+
+    if (onExamPassBg) {
+      onExamPassBg(finalTotal);
     }
 
     setStep('result');

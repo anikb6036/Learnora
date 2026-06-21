@@ -131,6 +131,7 @@ export interface StudentBatch {
   name: string;
   description?: string;
   createdDate: string;
+  status?: 'ongoing' | 'completed' | 'upcoming';
 }
 
 export interface Course {

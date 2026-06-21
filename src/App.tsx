@@ -1582,8 +1582,18 @@ function AppContent() {
   };
 
   const handleAutoApproveRegistration = (requestId: string, score: number) => {
-    const r = registrationRequests.find(req => req.id === requestId);
-    if (!r || r.status !== 'pending') return;
+    let r = registrationRequests.find(req => req.id === requestId);
+    if (!r && examRequest && examRequest.id === requestId) {
+      r = examRequest;
+    }
+    if (!r) return;
+
+    // Check if user already exists to prevent duplicate profiles
+    const alreadyAdmitted = users.some(u => u.email.toLowerCase() === r!.email.toLowerCase());
+    if (alreadyAdmitted) {
+      console.log("User already exists with email, skipping duplicate creation:", r.email);
+      return;
+    }
 
     // Add user profile
     const newStudent: UserAccount = {
@@ -1643,17 +1653,29 @@ function AppContent() {
     setNotifications(n => [notif, ...n]);
     triggerToast(notif);
 
-    setRegistrationRequests(prev => prev.map(req => {
-      if (req.id === requestId) {
-        return { 
-          ...req, 
-          status: 'approved',
-          examScore: score,
-          examPassed: true
-        };
-      }
-      return req;
-    }));
+    const rId = r.id;
+    const existsInRequests = registrationRequests.some(req => req.id === rId);
+    if (existsInRequests) {
+      setRegistrationRequests(prev => prev.map(req => {
+        if (req.id === rId) {
+          return { 
+            ...req, 
+            status: 'approved',
+            examScore: score,
+            examPassed: true
+          };
+        }
+        return req;
+      }));
+    } else {
+      const updatedReq: RegistrationRequest = {
+        ...r,
+        status: 'approved',
+        examScore: score,
+        examPassed: true
+      };
+      setRegistrationRequests(prev => [updatedReq, ...prev]);
+    }
   };
 
   const handleRejectRegistration = (requestId: string) => {
@@ -2339,13 +2361,13 @@ function AppContent() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="py-12 space-y-12 font-sans max-w-2xl text-slate-900 dark:text-white"
+                        className="py-6 space-y-6 font-sans max-w-xl text-slate-900 dark:text-white"
                       >
-                        <h2 className="text-4xl md:text-6xl font-semibold tracking-tighter leading-tight">
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                           Admission Enrolled
                         </h2>
                         
-                        <div className="space-y-6 text-lg md:text-xl md:leading-relaxed text-slate-700 dark:text-slate-300">
+                        <div className="space-y-4 text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-350">
                           <p>
                             Student application details for <strong className="font-semibold text-slate-900 dark:text-white">{fastRegSuccess.name}</strong> have been securely enqueued in the active admin queue.
                           </p>
@@ -2354,9 +2376,9 @@ function AppContent() {
                           </p>
                         </div>
 
-                        <div className="pt-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <div className="pt-2 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                           {registrationRequests.find(r => r.id === fastRegSuccess.id)?.status === 'approved' ? (
-                            <div className="bg-emerald-50 max-w-sm dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium px-8 py-4 rounded-full border border-emerald-200 dark:border-emerald-500/20 text-center">
+                            <div className="bg-emerald-55 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
                               You have already cleared the exam.
                             </div>
                           ) : (
@@ -2366,7 +2388,7 @@ function AppContent() {
                                 setExamRequest(fastRegSuccess);
                                 setShowExamModal(true);
                               }}
-                              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium text-base px-8 py-4 rounded-full transition-all cursor-pointer hover:opacity-90 w-full sm:w-auto flex-shrink-0"
+                              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer hover:opacity-90 flex items-center justify-center gap-1.5"
                             >
                               Launch Exam Now
                             </button>
@@ -2379,7 +2401,7 @@ function AppContent() {
                               setCurrentRegStep(1);
                               setLastEmailStatus(null);
                             }}
-                            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium text-base px-6 py-4 transition-all w-full sm:w-auto text-left sm:text-center"
+                            className="text-slate-550 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium text-xs px-4 py-2.5 transition-all text-center rounded-xl bg-slate-100 hover:bg-slate-150 dark:bg-white/5 dark:hover:bg-white/10"
                           >
                             New Student Application &rarr;
                           </button>
@@ -4199,34 +4221,34 @@ function AppContent() {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                           <div className="flex items-center gap-2 flex-wrap">
-                                            <h4 className="font-bold text-slate-900 dark:text-white text-[13.5px] truncate opacity-60 line-through decoration-slate-400" title={cl.title}>
+                                            <h4 className="font-bold text-slate-900 dark:text-white text-[13px] truncate opacity-60 line-through decoration-slate-400" title={cl.title}>
                                               {cl.title}
                                             </h4>
-                                            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
+                                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/10 uppercase tracking-tight">
                                               Done
                                             </span>
                                           </div>
-                                          <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                          <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mt-0.5">
                                             by {cl.instructorName} • <span className="text-amber-600 dark:text-amber-450 font-bold">{cl.subject}</span>
                                           </p>
                                         </div>
                                       </div>
                                       
                                       <div className="md:col-span-3">
-                                         <span className="inline-flex items-center px-2 py-0.5 rounded border text-sm font-bold uppercase tracking-tight bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10">
+                                         <span className="inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-bold uppercase tracking-tight bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10">
                                             Completed
                                           </span>
                                       </div>
 
                                       <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
                                         <div className="min-w-0">
-                                          <p className="font-semibold text-slate-400 dark:text-zinc-500 text-sm uppercase tracking-wider mb-0.5">Date & Time</p>
-                                          <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                                          <p className="font-semibold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Date & Time</p>
+                                          <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                                             {cl.date} at {cl.time} ({cl.duration}m)
                                           </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                          <div className="px-3 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-sm text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
+                                          <div className="px-2.5 py-1 bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/10 rounded-md text-[11px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tight">
                                             ✓ Completed
                                           </div>
                                         </div>
@@ -4584,6 +4606,9 @@ function AppContent() {
             setExamRequest(null);
           }}
           request={examRequest}
+          onExamPassBg={(score) => {
+            handleAutoApproveRegistration(examRequest.id, score);
+          }}
           onExamPass={(score) => {
             handleAutoApproveRegistration(examRequest.id, score);
             setShowExamModal(false);

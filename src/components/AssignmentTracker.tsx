@@ -50,7 +50,8 @@ export default function AssignmentTracker({
 
   // Find unique course/batch options actually represented in courses/batches lists, or among students
   const activeCourses = courses.length > 0 ? courses : Array.from(new Set(allStudents.map((s) => s.course).filter(Boolean))) as unknown as Course[];
-  const activeBatches = batches.length > 0 ? batches : Array.from(new Set(allStudents.map((s) => s.batch).filter(Boolean))) as unknown as StudentBatch[];
+  const activeBatches = (batches.length > 0 ? batches : Array.from(new Set(allStudents.map((s) => s.batch).filter(Boolean))) as unknown as StudentBatch[])
+    .filter((b) => !b.status || b.status === 'ongoing');
 
   // Automatically select first course & batch if not set
   React.useEffect(() => {

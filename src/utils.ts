@@ -147,10 +147,10 @@ export const INITIAL_NOTIFICATIONS: AppNotification[] = [
 export const INITIAL_BACKUPS: BackupHistory[] = [];
 
 export const INITIAL_BATCHES: StudentBatch[] = [
-  { id: 'batch-1', name: 'Batch A', description: 'Primary Morning Group', createdDate: '2024-05-20' },
-  { id: 'batch-2', name: 'Batch B', description: 'Mid-Day Intensive Group', createdDate: '2024-05-21' },
-  { id: 'batch-3', name: 'Batch C', description: 'Evening Fast-Track Group', createdDate: '2024-05-22' },
-  { id: 'batch-4', name: 'Batch D', description: 'Weekend Practical Lab Group', createdDate: '2024-05-23' }
+  { id: 'batch-1', name: 'Batch A', description: 'Primary Morning Group', createdDate: '2024-05-20', status: 'ongoing' },
+  { id: 'batch-2', name: 'Batch B', description: 'Mid-Day Intensive Group', createdDate: '2024-05-21', status: 'ongoing' },
+  { id: 'batch-3', name: 'Batch C', description: 'Evening Fast-Track Group', createdDate: '2024-05-22', status: 'completed' },
+  { id: 'batch-4', name: 'Batch D', description: 'Weekend Practical Lab Group', createdDate: '2024-05-23', status: 'upcoming' }
 ];
 
 export const INITIAL_MASTER_COURSES: MasterCourse[] = [
