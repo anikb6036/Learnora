@@ -158,19 +158,19 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
     if (s === 'ongoing') {
       return {
         dot: 'bg-emerald-500 shadow-emerald-500/50 animate-pulse',
-        label: 'Ready',
+        label: 'Active',
         badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20'
       };
     } else if (s === 'upcoming') {
       return {
         dot: 'bg-blue-500 shadow-blue-500/50 animate-pulse',
-        label: 'Preparing',
+        label: 'Upcoming',
         badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-450 border border-blue-500/20'
       };
     } else {
       return {
         dot: 'bg-slate-400 dark:bg-slate-600 shadow-transparent',
-        label: 'Archive',
+        label: 'Archived',
         badge: 'bg-slate-500/10 text-slate-500 dark:text-gray-400 border border-slate-500/10'
       };
     }
@@ -191,23 +191,23 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
             <span className="font-medium text-slate-700 dark:text-slate-300">academic-registry</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Curriculum Deployments
+            Academic Course Roadmaps
           </h1>
         </div>
 
         {/* Action / Context Details */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-zinc-500 font-mono select-none">
+        <div className="flex items-center gap-2 text-xs text-slate-450 dark:text-zinc-400 font-sans select-none">
           <span className="flex items-center gap-1">
             <Activity className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Deployment Engine Live</span>
+            <span>Curriculum Engine Active</span>
           </span>
           <span>•</span>
-          <span>Deployments: {filteredCourses.length}/{courses.length}</span>
+          <span>Active Programs: {filteredCourses.length}/{courses.length}</span>
         </div>
       </div>
 
       {/* Vercel Filter Controls Row */}
-      <div className="space-y-3">
+      <div className="space-y-3 font-sans">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white dark:bg-[#070708]">
           
           {/* Main search and filters */}
@@ -218,12 +218,12 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
               <input
                 type="text"
-                placeholder="Search branches, commit paths, subjects..."
+                placeholder="Search programs, batch codes, subjects..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-6 py-1.5 text-xs border border-zinc-200 dark:border-white/5 rounded-md bg-white dark:bg-black text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500/30 focus:border-amber-500/30 transition-all font-sans"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[9px] font-bold text-slate-400 dark:text-zinc-500 border border-zinc-200 dark:border-white/10 px-1 py-0.2 rounded bg-slate-50 dark:bg-zinc-900">
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 font-sans text-[9px] font-bold text-slate-400 dark:text-zinc-500 border border-zinc-200 dark:border-white/10 px-1 py-0.2 rounded bg-slate-50 dark:bg-zinc-900">
                 F
               </span>
             </div>
@@ -239,7 +239,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                   className={`w-full md:w-auto flex items-center justify-between gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-50 dark:bg-black dark:hover:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/5 rounded-md transition cursor-pointer`}
                 >
                   <span className="truncate">
-                    {selectedCategory === 'all' ? 'All Branches' : `br: ${selectedCategory}`}
+                    {selectedCategory === 'all' ? 'All Categories' : `Category: ${selectedCategory}`}
                   </span>
                   <span className="text-[9px] text-slate-400">▾</span>
                 </button>
@@ -249,15 +249,15 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                       onClick={() => { setSelectedCategory('all'); setOpenDropdown(null); }}
                       className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block"
                     >
-                      All Branches (All Programs)
+                      All Categories (All Programs)
                     </button>
                     {distinctCategories.map(cat => (
                       <button
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setOpenDropdown(null); }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block font-mono truncate"
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block font-sans truncate"
                       >
-                        {cat.toLowerCase()}
+                        {cat.toUpperCase()}
                       </button>
                     ))}
                   </div>
@@ -277,7 +277,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                   <span className="text-[9px] text-slate-400">▾</span>
                 </button>
                 {openDropdown === 'duration' && (
-                  <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-md shadow-lg py-1 text-xs text-slate-700 dark:text-zinc-300">
+                  <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-md shadow-lg py-1 text-xs text-slate-700 dark:text-zinc-300 font-sans">
                     <button
                       onClick={() => { setSelectedDuration('all'); setOpenDropdown(null); }}
                       className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block"
@@ -305,20 +305,20 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                 <button
                   type="button"
                   onClick={() => toggleDropdown('status')}
-                  className="w-full md:w-auto flex items-center justify-between gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-50 dark:bg-black dark:hover:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/5 rounded-md transition cursor-pointer"
+                  className="w-full md:w-auto flex items-center justify-between gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-50 dark:bg-black dark:hover:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/5 rounded-md transition cursor-pointer font-sans"
                 >
                   <span className="truncate">
-                    {selectedStatus === 'all' ? 'All Envs' : selectedStatus === 'ongoing' ? 'Active' : selectedStatus === 'upcoming' ? 'Preparing' : 'Archive'}
+                    {selectedStatus === 'all' ? 'All Statuses' : selectedStatus === 'ongoing' ? 'Active' : selectedStatus === 'upcoming' ? 'Upcoming' : 'Archived'}
                   </span>
                   <span className="text-[9px] text-slate-400">▾</span>
                 </button>
                 {openDropdown === 'status' && (
-                  <div className="absolute left-0 mt-1 w-44 bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-md shadow-lg py-1 text-xs text-slate-700 dark:text-zinc-300">
+                  <div className="absolute left-0 mt-1 w-44 bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-md shadow-lg py-1 text-xs text-slate-700 dark:text-zinc-300 font-sans">
                     <button
                       onClick={() => { setSelectedStatus('all'); setOpenDropdown(null); }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block"
+                      className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block font-sans"
                     >
-                      All Environments
+                      All Statuses
                     </button>
                     <button
                       onClick={() => { setSelectedStatus('ongoing'); setOpenDropdown(null); }}
@@ -330,13 +330,13 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                       onClick={() => { setSelectedStatus('upcoming'); setOpenDropdown(null); }}
                       className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block font-sans"
                     >
-                      Preparing (Upcoming)
+                      Upcoming
                     </button>
                     <button
                       onClick={() => { setSelectedStatus('completed'); setOpenDropdown(null); }}
                       className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 block font-sans"
                     >
-                      Archive (Completed)
+                      Archived (Completed)
                     </button>
                   </div>
                 )}
@@ -407,12 +407,12 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
         </div>
 
-        {/* Clear filter helper if filters active */}
+        {/* Clear filter helper if filters are active */}
         {(selectedStatus !== 'all' || selectedDuration !== 'all' || selectedCategory !== 'all' || selectedDateRange !== 'all' || searchQuery !== '') && (
-          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-zinc-400 px-1 animate-fadeIn font-mono">
+          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-zinc-400 px-1 animate-fadeIn font-sans">
             <span>Filtered:</span>
             <span className="text-slate-700 dark:text-white bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full font-bold">
-              {filteredCourses.length} deployments found
+              {filteredCourses.length} programs found
             </span>
             <button
               onClick={() => {
@@ -434,7 +434,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
       {filteredCourses.length === 0 ? (
         <div className="py-16 text-center bg-white dark:bg-transparent border border-zinc-200 dark:border-white/5 rounded-xl">
           <BookOpen className="w-10 h-10 text-slate-300 dark:text-zinc-700 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">No deployments found</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">No course programs found</p>
           <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Try resetting filter metrics or entering a different search keyword.</p>
         </div>
       ) : (
@@ -445,7 +445,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
             const statusConfig = getStatusBadgeStyles(c.status);
             const viewMode = roadmapViewMode[c.id] || 'terminal';
             const relativeTime = getRelativeLaunchTime(c.publishDate, c.createdDate);
-            const durationText = c.durationWeeks ? `${c.durationWeeks}m` : '6m';
+            const durationText = c.durationWeeks ? `${c.durationWeeks} Weeks` : '6 Months';
             
             return (
               <div 
@@ -461,7 +461,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                     
                     {/* Header Row: Status Indicator, Topic Subheading, Duration */}
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <div className="flex items-center gap-1.5 select-none font-mono text-[11px] font-bold">
+                      <div className="flex items-center gap-1.5 select-none font-sans text-[11px] font-bold">
                         <span className={`w-2 h-2 rounded-full ${statusConfig.dot}`} />
                         <span className="text-slate-800 dark:text-zinc-200">{statusConfig.label}</span>
                       </div>
@@ -469,20 +469,20 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
                       {/* Mock branch name tag: Production or Preview Badge */}
                       {c.status === 'ongoing' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-extrabold px-2 py-0.5 text-white bg-blue-600 dark:bg-blue-600/95 rounded shadow-2xs font-mono">
+                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-extrabold px-2 py-0.5 text-white bg-blue-600 dark:bg-blue-600/95 rounded shadow-2xs font-sans">
                           <Globe className="w-2.5 h-2.5" />
-                          <span>PRODUCTION</span>
+                          <span>ACTIVE PROGRAM</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-bold px-2 py-0.5 text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-[#111113] border border-zinc-200 dark:border-white/5 rounded font-mono">
-                          <span>PREVIEW</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-bold px-2 py-0.5 text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-[#111113] border border-zinc-200 dark:border-white/5 rounded font-sans">
+                          <span>UPCOMING CATALOG</span>
                         </span>
                       )}
 
                       {/* Decisive Batch Number Indicator badge */}
                       {c.batchNumber && (
-                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-extrabold px-2 py-0.5 text-rose-800 dark:text-rose-455 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded font-mono">
-                          <span>BATCH: {c.batchNumber}</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] tracking-wide font-extrabold px-2 py-0.5 text-rose-800 dark:text-rose-455 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded font-sans">
+                          <span>BATCHCODE: {c.batchNumber}</span>
                         </span>
                       )}
                     </div>
@@ -501,33 +501,33 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                     </div>
 
                     {/* Metadata line styled exactly like git commit logs on vercel: Branch details, code, and date duration */}
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 dark:text-zinc-500 font-mono">
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-zinc-400 font-sans">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Duration: {durationText} syllabus cycle</span>
+                        <span>Duration: {durationText}</span>
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1 text-emerald-650 dark:text-emerald-450 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 rounded">
-                        <span>Tuition:</span>
+                        <span>Tuition Fee:</span>
                         <span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(c.fee || 14999)}</span>
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
-                        <span>commit:</span> 
+                        <span>Course Code:</span> 
                         <span className="text-slate-640 dark:text-zinc-400 underline font-semibold bg-transparent border-0 p-0 hover:text-amber-500 transition cursor-pointer">
-                          {c.id.substring(0, 7)}
+                          {c.code || c.id.substring(0, 7).toUpperCase()}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Middle Column: Visual details / Action timeline launch date triggers */}
-                  <div className="flex items-center justify-between md:justify-end gap-x-5 flex-shrink-0 pt-2 md:pt-0 border-t border-dashed border-zinc-100 dark:border-white/5 md:border-t-0 font-mono text-xs">
+                  <div className="flex items-center justify-between md:justify-end gap-x-5 flex-shrink-0 pt-2 md:pt-0 border-t border-dashed border-zinc-100 dark:border-white/5 md:border-t-0 font-sans text-xs">
                     
                     {/* Launch Date (e.g. 1d ago, etc) */}
                     <div className="text-right flex flex-col md:items-end justify-center">
-                      <span className="text-slate-700 dark:text-zinc-300 font-bold">{relativeTime}</span>
-                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">deployment on {c.publishDate || c.createdDate}</span>
+                      <span className="text-slate-700 dark:text-zinc-300 font-bold">Commencing {relativeTime}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">Release Date: {c.publishDate || c.createdDate}</span>
                     </div>
 
                     {/* Department Head Avatar with circular initial */}
@@ -577,8 +577,8 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                                   }}
                                   className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-1.5 cursor-pointer font-bold"
                                 >
-                                  <Terminal className="w-3.5 h-3.5 text-blue-500" />
-                                  <span>{expandedRoadmapId === c.id ? 'Hide Build Logs' : 'View Build Logs'}</span>
+                                  <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+                                  <span>{expandedRoadmapId === c.id ? 'Hide Roadmap' : 'View Roadmap'}</span>
                                 </button>
                                 <div className="border-t border-zinc-100 dark:border-white/5 my-1" />
                                 {['admin', 'sub-admin'].includes(currentUser.role) && onDeleteCourse && (
@@ -609,10 +609,10 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                     <button
                       type="button"
                       onClick={() => setExpandedRoadmapId(expandedRoadmapId === c.id ? null : c.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-md border border-zinc-200/50 dark:border-white/5 cursor-pointer transition font-mono"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-md border border-zinc-200/50 dark:border-white/5 cursor-pointer transition font-sans"
                     >
-                      <Terminal className="w-3 h-3 text-amber-500" />
-                      <span>{expandedRoadmapId === c.id ? 'CONCEAL DEPLOYMENT' : `INSPECT ROADMAP BUILD LOGS (${c.roadmap?.length})`}</span>
+                      <BookOpen className="w-3 h-3 text-amber-500" />
+                      <span>{expandedRoadmapId === c.id ? 'COLLAPSE ROADMAP' : `VIEW SYLLABUS ROADMAP (${c.roadmap?.length} Milestones)`}</span>
                     </button>
                   </div>
                 )}
@@ -624,31 +624,31 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden mt-4 pl-0 border-t border-dashed border-zinc-200 dark:border-white/5 pt-4 transition-all duration-300"
+                      className="overflow-hidden mt-4 pl-0 border-t border-dashed border-zinc-200 dark:border-white/5 pt-4 transition-all duration-300 font-sans"
                     >
                       
                       {/* Terminal View Switcher bar */}
                       <div className="flex items-center justify-between mb-3 bg-slate-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 px-3 py-1.5 rounded-lg">
-                        <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-500 dark:text-zinc-400 font-bold select-none">
-                          <Terminal className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                          <span>terminal_deployment_logs: ~/{(c.batchNumber || 'batch').toLowerCase()}/milestones</span>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-zinc-400 font-bold select-none font-sans">
+                          <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Curriculum Milestones: ~/{(c.batchNumber || 'batch').toLowerCase()}/milestones</span>
                         </div>
                         
                         {/* Interactive toggle of presentation mode */}
-                        <div className="flex items-center gap-1 bg-white dark:bg-black rounded p-0.5 border border-zinc-200 dark:border-white/5">
+                        <div className="flex items-center gap-1 bg-white dark:bg-black rounded p-0.5 border border-zinc-200 dark:border-white/5 font-sans">
                           <button
                             type="button"
                             onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'terminal' }))}
                             className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer ${viewMode === 'terminal' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
                           >
-                            Raw Log Output
+                            Milestones List
                           </button>
                           <button
                             type="button"
                             onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'timeline' }))}
                             className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer ${viewMode === 'timeline' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
                           >
-                            Grafana Timeline
+                            Timeline View
                           </button>
                         </div>
                       </div>
@@ -657,36 +657,29 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                       {viewMode === 'terminal' ? (
                         
                         /* Log CLI console design output */
-                        <div className="bg-[#0A0A0C] border border-[#1E1E22] rounded-lg p-5 font-mono text-[11px] text-zinc-300 space-y-2.5 shadow-2xl relative select-text overflow-x-auto">
+                        <div className="bg-[#0A0A0C] border border-[#1E1E22] rounded-lg p-5 font-sans text-xs text-zinc-300 space-y-2.5 shadow-2xl relative select-text overflow-x-auto">
                           
                           {/* Live compilation header logs mimicking real vercel deployers */}
-                          <div className="space-y-0.5 select-none border-b border-zinc-800/80 pb-2">
-                            <p className="text-zinc-500">▲ vercel-cli/deployer-v14.1.26 - compilation targets parsed successfully</p>
-                            <p className="text-zinc-550">▲ syllabus code: <span className="text-emerald-500">"{c.code}"</span> | batch group: <span className="text-rose-450">"{c.batchNumber || 'stb_001'}"</span> | sequence index hash: {c.id.substring(0,8)}</p>
-                            <p className="text-zinc-500">▲ duration: {durationText} semester blocks | launch date: {c.publishDate || c.createdDate}</p>
-                            <p className="text-emerald-500">✓ build static dependencies targets resolved... Ready!</p>
+                          <div className="space-y-0.5 select-none border-b border-zinc-800/80 pb-2 text-[11px] text-zinc-400 font-sans">
+                            <p>▲ Academy Syllabus Registry - Milestones and academic objectives loaded successfully</p>
+                            <p>▲ Course Code: <span className="text-emerald-450 font-semibold">&ldquo;{c.code || c.id.substring(0, 7).toUpperCase()}&rdquo;</span> | Batch Code: <span className="text-rose-400 font-semibold">&ldquo;{c.batchNumber || 'stb_001'}&rdquo;</span> | Sequence ID: {c.id.substring(0,8)}</p>
+                            <p>▲ Duration: {durationText} | Release Date: {c.publishDate || c.createdDate}</p>
+                            <p className="text-emerald-500 font-semibold">✓ All curriculum milestones verified... Active!</p>
                           </div>
 
-                          <div className="space-y-3 pt-2">
+                          <div className="space-y-4 pt-2 font-sans">
                             {c.roadmap.map((step, idx) => {
-                              const delaySec = (idx + 1) * 3;
                               return (
                                 <div key={step.month} className="group/terminal-row flex items-start gap-4 hover:bg-white/[0.02] p-1 rounded transition duration-150">
-                                  <span className="text-zinc-650 shrink-0 select-none">
-                                    [09:02:{delaySec < 10 ? `0${delaySec}` : delaySec}]
-                                  </span>
-                                  
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="text-amber-500 font-extrabold select-none">[STAGE_0{step.month}]</span>
-                                      <span className="text-emerald-400 font-bold select-none">[TARGET]:</span>
-                                      <span className="text-zinc-100 font-bold tracking-tight font-sans">
+                                      <span className="text-amber-550 font-bold text-xs">[Milestone {step.month}]</span>
+                                      <span className="text-zinc-100 font-bold tracking-tight text-sm">
                                         &ldquo;{step.title}&rdquo;
                                       </span>
                                     </div>
                                     <div className="flex items-start gap-1">
-                                      <span className="text-blue-400 font-bold select-none shrink-0">[METRICS]:</span>
-                                      <p className="text-zinc-400 font-sans leading-relaxed text-[11px] font-normal">
+                                      <p className="text-zinc-400 leading-relaxed text-[11px] font-normal font-sans">
                                         {step.description}
                                       </p>
                                     </div>
@@ -697,31 +690,31 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                           </div>
 
                           {/* Final success lines logs */}
-                          <div className="pt-2 select-none border-t border-zinc-800/80 text-[10px] text-zinc-500 flex justify-between">
-                            <span>▲ static generation cycle completed for academic curriculum map</span>
-                            <span className="text-emerald-500 font-bold">● DEPLOYMENT ONLINE</span>
+                          <div className="pt-2 select-none border-t border-zinc-800/80 text-[10px] text-zinc-500 flex justify-between font-sans">
+                            <span>▲ Curriculum mapped successfully for academic registry</span>
+                            <span className="text-emerald-500 font-bold">● PROGRAM ACTIVE</span>
                           </div>
                         </div>
                       ) : (
                         
                         /* Visualization timeline chart graph mockup view */
-                        <div className="bg-slate-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-lg p-5 space-y-4">
+                        <div className="bg-slate-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-lg p-5 space-y-4 font-sans">
                           <div className="relative pl-6 border-l-2 border-amber-500/50 space-y-6">
                             {c.roadmap.map((step, idx) => (
                               <div key={step.month} className="relative animate-fadeIn">
                                 
                                 {/* Timeline nodes circles */}
-                                <div className="absolute left-[-30px] top-1.5 w-4 h-4 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-mono text-[8px] font-bold text-amber-500 select-none">
+                                <div className="absolute left-[-30px] top-1.5 w-4 h-4 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[8px] font-bold text-amber-500 select-none">
                                   {step.month}
                                 </div>
 
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
-                                      Month {step.month} Target
+                                      Month {step.month} Milestone
                                     </span>
-                                    <span className="text-slate-350 dark:text-zinc-700 font-mono text-[9px] bg-slate-100 dark:bg-white/5 py-0.5 px-1.5 rounded-sm">
-                                      Block {idx + 1}
+                                    <span className="text-slate-450 dark:text-zinc-400 font-sans text-[9px] bg-slate-100 dark:bg-white/5 py-0.5 px-1.5 rounded-sm">
+                                      Stage {idx + 1}
                                     </span>
                                   </div>
                                   <h4 className="text-xs font-bold text-slate-800 dark:text-white">{step.title}</h4>
