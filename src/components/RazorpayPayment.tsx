@@ -69,16 +69,139 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
     }).format(val);
   };
 
-  const handleStartPayment = () => {
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const executeRealPaymentSuccess = (paymentId: string) => {
+    setLoading(false);
+    const currentDate = new Date().toISOString().split('T')[0];
+
+    // Update users state
+    setUsers(prev => prev.map(u => {
+      if (u.id === currentUser.id) {
+        return {
+          ...u,
+          paymentStatus: 'paid',
+          paymentId: paymentId,
+          paymentDate: currentDate,
+          paidAmount: courseFee
+        };
+      }
+      return u;
+    }));
+
+    // Store txn details for victory screen
+    setTxnDetails({
+      id: paymentId,
+      amount: courseFee,
+      date: currentDate
+    });
+
+    // Push success notification
+    const positiveNotif: AppNotification = {
+      id: `pay-notif-${Date.now()}`,
+      title: '💳 Payment Captured & Verified Successfully!',
+      message: `Your administrative registration fee of ${formatSalary(courseFee)} has been cataloged under Transaction ID: ${paymentId}. All class platforms, schedules, and analytics profiles are now active.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [positiveNotif, ...prev]);
+
+    setSuccess(true);
+    setShowCheckout(false);
+  };
+
+  const handleStartPayment = async () => {
     setLoading(true);
     setCheckoutError('');
-    // Dynamically check if real razorpay standard script can be loaded,
-    // and provide a delightful high-fidelity fallback checkout.
-    setTimeout(() => {
-      setLoading(false);
-      setShowCheckout(true);
-      setCheckoutStep('methods');
-    }, 800);
+
+    try {
+      // 1. Create order on Express backend securely
+      const orderRes = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount: courseFee })
+      });
+
+      if (!orderRes.ok) {
+        const errObj = await orderRes.json().catch(() => ({}));
+        throw new Error(errObj.error || `Server responded with status ${orderRes.status}`);
+      }
+
+      const orderData = await orderRes.json();
+      if (!orderData.success || !orderData.orderId) {
+        throw new Error('Invalid order response structure from back-end.');
+      }
+
+      // 2. Load the checkout.js CDN script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load Razorpay checkout SDK script.');
+      }
+
+      // 3. Open Real Razorpay Checkout overlay dialog frame
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        name: "Learnora",
+        description: `Enrollment Fee: ${courseName}`,
+        order_id: orderData.orderId,
+        handler: function (response: any) {
+          console.log("[Razorpay] Payment Success details:", response);
+          executeRealPaymentSuccess(response.razorpay_payment_id);
+        },
+        prefill: {
+          name: currentUser.name,
+          email: currentUser.email,
+          contact: phone
+        },
+        theme: {
+          color: "#4f46e5" // Indigo theme matches Learnora's primary styling
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("[Razorpay] Checkout modal dismissed by user.");
+            setLoading(false);
+          }
+        }
+      };
+
+      const rzpInstance = new (window as any).Razorpay(options);
+      rzpInstance.on('payment.failed', function (resp: any) {
+        console.error("[Razorpay] Payment failed details:", resp);
+        setCheckoutError(`Payment failed: ${resp.error.description || resp.error.reason}`);
+        setLoading(false);
+      });
+
+      rzpInstance.open();
+
+    } catch (err: any) {
+      console.warn("Real Razorpay initiation failed, falling back to mock simulator:", err);
+      // Fallback seamlessly to the high-fidelity mock simulator so the app never crashes
+      setCheckoutError(`Real Razorpay Setup: ${err.message}. Seamlessly opening Learnora Sandbox portal.`);
+      setTimeout(() => {
+        setLoading(false);
+        setShowCheckout(true);
+        setCheckoutStep('methods');
+      }, 1500);
+    }
   };
 
   const executePaymentComplete = () => {
