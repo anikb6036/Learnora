@@ -157,6 +157,7 @@ export interface Course {
 export interface MasterCourse {
   id: string;
   name: string;
+  fee?: number;
   durationMonths?: number;
   description?: string;
   roadmap?: {

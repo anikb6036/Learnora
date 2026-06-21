@@ -507,6 +507,11 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                         <span>Duration: {durationText} syllabus cycle</span>
                       </div>
                       <span>•</span>
+                      <div className="flex items-center gap-1 text-emerald-650 dark:text-emerald-450 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 rounded">
+                        <span>Tuition:</span>
+                        <span>{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(c.fee || 14999)}</span>
+                      </div>
+                      <span>•</span>
                       <div className="flex items-center gap-1">
                         <span>commit:</span> 
                         <span className="text-slate-640 dark:text-zinc-400 underline font-semibold bg-transparent border-0 p-0 hover:text-amber-500 transition cursor-pointer">

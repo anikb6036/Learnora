@@ -124,6 +124,7 @@ export default function ScheduleManager({
   const [newCoursePublishDate, setNewCoursePublishDate] = useState('2026-06-15');
   const [newCourseAdmissionLastDate, setNewCourseAdmissionLastDate] = useState('2026-06-14');
   const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
+  const [newCourseFee, setNewCourseFee] = useState('14999');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
@@ -136,6 +137,7 @@ export default function ScheduleManager({
   const [newMasterName, setNewMasterName] = useState('');
   const [newMasterDuration, setNewMasterDuration] = useState('6');
   const [newMasterDesc, setNewMasterDesc] = useState('');
+  const [newMasterFee, setNewMasterFee] = useState('14999');
   const [masterRoadmap, setMasterRoadmap] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedMasterRoadmapMonth, setSelectedMasterRoadmapMonth] = useState<number>(1);
   const [editingMasterCourse, setEditingMasterCourse] = useState<MasterCourse | null>(null);
@@ -143,6 +145,7 @@ export default function ScheduleManager({
   // Publish Batch form state
   const [selectedMasterId, setSelectedMasterId] = useState('');
   const [customBatchName, setCustomBatchName] = useState('');
+  const [publishFee, setPublishFee] = useState('14999');
   const [publishBatchDate, setPublishBatchDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 15);
@@ -464,6 +467,7 @@ export default function ScheduleManager({
     if (!newCourseName.trim()) return;
     
     const parsedDurationMonths = parseInt(newCourseWeeks) || undefined;
+    const finalFee = parseInt(newCourseFee) || 14999;
     
     const finalBatchNumber = newCourseBatchNumber.trim() || `stb_00${courses.length + 1}`;
     const generatedCode = finalBatchNumber.toUpperCase();
@@ -480,7 +484,8 @@ export default function ScheduleManager({
           publishDate: newCoursePublishDate,
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
-          roadmap: roadmapDetails
+          roadmap: roadmapDetails,
+          fee: finalFee
         });
       }
       setEditingCourse(null);
@@ -496,7 +501,8 @@ export default function ScheduleManager({
           publishDate: newCoursePublishDate,
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
-          roadmap: roadmapDetails
+          roadmap: roadmapDetails,
+          fee: finalFee
         });
       }
     }
@@ -504,6 +510,7 @@ export default function ScheduleManager({
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
+    setNewCourseFee('14999');
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
@@ -520,7 +527,14 @@ export default function ScheduleManager({
     setNewCoursePublishDate(course.publishDate || course.createdDate || '2026-06-15');
     setNewCourseAdmissionLastDate(course.admissionLastDate || '2026-06-14');
     setRoadmapDetails(course.roadmap || []);
+    setNewCourseFee(course.fee ? String(course.fee) : '14999');
   };
+
+  React.useEffect(() => {
+    if (propsEditingCourse) {
+      startEditCourse(propsEditingCourse);
+    }
+  }, [propsEditingCourse]);
 
   const cancelEditCourse = () => {
     setEditingCourse(null);
@@ -528,6 +542,7 @@ export default function ScheduleManager({
     setNewCourseBatchNumber('');
     setNewCourseWeeks('');
     setNewCourseDesc('');
+    setNewCourseFee('14999');
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
@@ -541,6 +556,8 @@ export default function ScheduleManager({
     e.preventDefault();
     if (!newMasterName.trim()) return;
 
+    const finalMasterFee = parseInt(newMasterFee) || 14999;
+
     if (editingMasterCourse) {
       if (onUpdateMasterCourse) {
         onUpdateMasterCourse({
@@ -548,7 +565,8 @@ export default function ScheduleManager({
           name: newMasterName.trim(),
           durationMonths: parseInt(newMasterDuration) || undefined,
           description: newMasterDesc.trim() || undefined,
-          roadmap: masterRoadmap
+          roadmap: masterRoadmap,
+          fee: finalMasterFee
         });
       }
       setEditingMasterCourse(null);
@@ -558,7 +576,8 @@ export default function ScheduleManager({
           name: newMasterName.trim(),
           durationMonths: parseInt(newMasterDuration) || undefined,
           description: newMasterDesc.trim() || undefined,
-          roadmap: masterRoadmap
+          roadmap: masterRoadmap,
+          fee: finalMasterFee
         });
       }
     }
@@ -566,6 +585,7 @@ export default function ScheduleManager({
     setNewMasterName('');
     setNewMasterDuration('6');
     setNewMasterDesc('');
+    setNewMasterFee('14999');
     setMasterRoadmap([]);
     setAiInfo("Master course registered successfully!");
   };
@@ -576,6 +596,7 @@ export default function ScheduleManager({
     setNewMasterDuration(String(master.durationMonths || '6'));
     setNewMasterDesc(master.description || '');
     setMasterRoadmap(master.roadmap || []);
+    setNewMasterFee(master.fee ? String(master.fee) : '14999');
     setCourseDashboardSubTab('master');
   };
 
@@ -584,6 +605,7 @@ export default function ScheduleManager({
     setNewMasterName('');
     setNewMasterDuration('6');
     setNewMasterDesc('');
+    setNewMasterFee('14999');
     setMasterRoadmap([]);
   };
 
@@ -594,6 +616,7 @@ export default function ScheduleManager({
     const matchedMaster = masterCourses.find(m => m.id === selectedMasterId);
     if (!matchedMaster) return;
 
+    const finalPublishFee = parseInt(publishFee) || matchedMaster.fee || 14999;
     const writtenBatch = customBatchName.trim() || `stb_00${courses.length + 1}`;
     
     // Create an elegant custom course code from course initials and batch number
@@ -611,17 +634,19 @@ export default function ScheduleManager({
         status: publishStatus,
         publishDate: publishBatchDate,
         admissionLastDate: publishAdmissionLastDate,
-        roadmap: matchedMaster.roadmap
+        roadmap: matchedMaster.roadmap,
+        fee: finalPublishFee
       });
     }
 
     setSelectedMasterId('');
     setCustomBatchName('');
     setPublishStatus('upcoming');
+    setPublishFee('14999');
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
     setPublishAdmissionLastDate(futureDate.toISOString().split('T')[0]);
-    setAiInfo(`Successfully published batch "${writtenBatch}" for course "${matchedMaster.name}"!`);
+    setAiInfo(`Successfully published batch "${writtenBatch}" for course "${matchedMaster.name}" at ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(finalPublishFee)}!`);
   };
 
   const filteredSchedules = schedules.filter(cl => {
@@ -683,6 +708,144 @@ export default function ScheduleManager({
 
   return (
     <div className="space-y-6 font-sans">
+      {/* Edit Course/Batch Modal */}
+      <AnimatePresence>
+        {editingCourse && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-xl bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-lg shadow-xl overflow-hidden font-sans"
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 dark:border-white/10 bg-slate-50 dark:bg-zinc-950">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-150 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-amber-500" />
+                  <span>Configure Course: {editingCourse.name}</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={cancelEditCourse}
+                  className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-white/5 rounded-md cursor-pointer transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCourseSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5 col-span-2">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Course Instance Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={newCourseName}
+                      onChange={e => setNewCourseName(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Batch Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={newCourseBatchNumber}
+                      onChange={e => setNewCourseBatchNumber(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Duration (Weeks)</label>
+                    <input
+                      type="number"
+                      required
+                      value={newCourseWeeks}
+                      onChange={e => setNewCourseWeeks(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Tuition Fee (INR)</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={newCourseFee}
+                      onChange={e => setNewCourseFee(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-emerald-600 dark:text-emerald-400 font-bold focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Course / Batch Status</label>
+                    <select
+                      value={newCourseStatus}
+                      onChange={e => setNewCourseStatus(e.target.value as any)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                    >
+                      <option value="upcoming">Upcoming (Enrollment Open)</option>
+                      <option value="ongoing">Ongoing (Class Active)</option>
+                      <option value="completed">Completed (Class Over)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Course Start Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={newCoursePublishDate}
+                      onChange={e => setNewCoursePublishDate(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Admission Last Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={newCourseAdmissionLastDate}
+                      onChange={e => setNewCourseAdmissionLastDate(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Instance Overview Description</label>
+                  <textarea
+                    rows={3}
+                    value={newCourseDesc}
+                    onChange={e => setNewCourseDesc(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-150 dark:border-white/10">
+                  <button
+                    type="button"
+                    onClick={cancelEditCourse}
+                    className="px-4 py-2 text-xs font-bold rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-zinc-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-xs font-bold rounded-md bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8">
         <div className="border-b border-slate-100 dark:border-white/5 pb-4.5 mb-6">
           <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight flex items-center gap-2">
@@ -783,81 +946,96 @@ export default function ScheduleManager({
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                       
                       {/* Left Column: Core Definition details */}
-                      <div className="space-y-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-lg">
-                        <div className="border-b border-slate-250 dark:border-white/10 pb-2.5 mb-2">
+                      <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg space-y-3.5">
+                        <div className="border-b border-slate-250 dark:border-white/10 pb-2 mb-1.55">
                           <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5 font-sans">
                             {editingMasterCourse ? 'Edit Master Definition' : 'Add New Curriculum Template'}
                           </h4>
                         </div>
 
-                        <div className="space-y-1.5 font-sans">
-                          <div className="flex justify-between items-center">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Course Name</label>
-                            <button
-                              type="button"
-                              onClick={handleAiGenerateCourse}
-                              disabled={isAiGenerating}
-                              className={`text-xs font-bold flex items-center gap-1 px-3 py-1 rounded-md border transition-all cursor-pointer ${
-                                isAiGenerating
-                                  ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 cursor-not-allowed"
-                                  : "bg-amber-500/10 hover:bg-amber-500/25 border-amber-500/20 text-amber-700 dark:text-amber-400 hover:border-amber-500/40"
-                              }`}
-                              title="Generate description and syllabus milestone roadmap using Gemini"
-                            >
-                              <Sparkles className={`w-3 h-3 ${isAiGenerating ? 'animate-spin' : ''}`} />
-                              {isAiGenerating ? 'Generating...' : 'Fill with Gemini AI'}
-                            </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 font-sans">
+                          <div className="space-y-1 md:col-span-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Name</label>
+                              <button
+                                type="button"
+                                onClick={handleAiGenerateCourse}
+                                disabled={isAiGenerating}
+                                className={`text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded border transition-all cursor-pointer ${
+                                  isAiGenerating
+                                    ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 cursor-not-allowed"
+                                    : "bg-amber-500/10 hover:bg-amber-500/25 border-amber-500/20 text-amber-700 dark:text-amber-400 hover:border-amber-500/40"
+                                }`}
+                                title="Generate description and syllabus milestone roadmap using Gemini"
+                              >
+                                <Sparkles className={`w-2.5 h-2.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
+                                {isAiGenerating ? 'Generating...' : 'Fill with Gemini AI'}
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Mechanical Engineering fundamentals"
+                              value={newMasterName}
+                              onChange={e => setNewMasterName(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                            />
+                            {aiError && (
+                              <p className="text-[11px] text-red-500 font-semibold font-sans mt-1 flex items-center gap-1 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
+                                <span>⚠️ {aiError}</span>
+                              </p>
+                            )}
+                            {aiInfo && (
+                              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold font-sans mt-1 flex items-start gap-1 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                                <span>{aiInfo}</span>
+                              </p>
+                            )}
                           </div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Mechanical Engineering fundamentals"
-                            value={newMasterName}
-                            onChange={e => setNewMasterName(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-                          />
-                          {aiError && (
-                            <p className="text-xs text-red-500 font-semibold font-sans mt-1 flex items-center gap-1 bg-red-500/5 px-2.5 py-1 rounded border border-red-500/10">
-                              <span>⚠️ {aiError}</span>
-                            </p>
-                          )}
-                          {aiInfo && (
-                            <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold font-sans mt-1 flex items-start gap-1 bg-amber-500/5 px-2.5 py-1 rounded border border-amber-500/10">
-                              <span>{aiInfo}</span>
-                            </p>
-                          )}
-                        </div>
 
-                        <div className="space-y-1.5 font-sans">
-                          <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Course Duration (Months)</label>
-                          <input
-                            type="number"
-                            required
-                            min="1"
-                            max="36"
-                            placeholder="e.g. 6"
-                            value={newMasterDuration}
-                            onChange={e => setNewMasterDuration(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-                          />
-                        </div>
+                          <div className="space-y-1 col-span-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Duration (Months)</label>
+                            <input
+                              type="number"
+                              required
+                              min="1"
+                              max="36"
+                              placeholder="e.g. 6"
+                              value={newMasterDuration}
+                              onChange={e => setNewMasterDuration(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                            />
+                          </div>
 
-                        <div className="space-y-1.5 font-sans">
-                          <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Course Description</label>
-                          <textarea
-                            placeholder="Provide a comprehensive syllabus overview..."
-                            value={newMasterDesc}
-                            rows={4}
-                            required
-                            onChange={e => setNewMasterDesc(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 resize-y min-h-[96px]"
-                          />
+                          <div className="space-y-1 col-span-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Standard Tuition Fee (INR)</label>
+                            <input
+                              type="number"
+                              required
+                              min="0"
+                              placeholder="e.g. 14999"
+                              value={newMasterFee}
+                              onChange={e => setNewMasterFee(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-semibold text-emerald-600 dark:text-emerald-400"
+                            />
+                          </div>
+
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Description</label>
+                            <textarea
+                              placeholder="Provide a comprehensive syllabus overview..."
+                              value={newMasterDesc}
+                              rows={2}
+                              required
+                              onChange={e => setNewMasterDesc(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 resize-y min-h-[64px]"
+                            />
+                          </div>
                         </div>
                       </div>
 
                       {/* Right Column: Roadmap Progression Track */}
-                      <div className="space-y-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-lg">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5 mb-2 font-sans">
+                      <div className="space-y-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-5 rounded-lg">
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2 mb-1.5 font-sans">
                           <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
                             {masterRoadmap.length || 0}-Month Course Roadmap
                           </span>
@@ -930,80 +1108,93 @@ export default function ScheduleManager({
                   </form>
                 ) : (
                   /* TAB 2: PUBLISH BATCH WITH CHOSEN MASTER COURSE */
-                  <form onSubmit={handlePublishBatchFormSubmit} className="space-y-6">
+                  <form onSubmit={handlePublishBatchFormSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                       
                       {/* Left Column: Select Master Course & write batch */}
-                      <div className="space-y-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-lg animate-fade-in">
-                        <div className="border-b border-slate-250 dark:border-white/10 pb-2.5 mb-2">
+                      <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg animate-fade-in space-y-3.5">
+                        <div className="border-b border-slate-250 dark:border-white/10 pb-2 mb-1.5">
                           <h4 className="text-sm font-bold text-slate-850 dark:text-zinc-200 flex items-center gap-1.5 font-sans">
                             Publish Custom Batch
                           </h4>
                         </div>
 
-                        <div className="space-y-1.5 font-sans">
-                          <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Select Core Course Curriculum</label>
-                          <select
-                            required
-                            value={selectedMasterId}
-                            onChange={e => setSelectedMasterId(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-medium"
-                          >
-                            <option value="">-- Choose Curriculum --</option>
-                            {masterCourses.map(m => (
-                              <option key={m.id} value={m.id}>
-                                {m.name} ({m.durationMonths || 6} Months Template)
-                              </option>
-                            ))}
-                          </select>
-                          {masterCourses.length === 0 && (
-                            <p className="text-xs text-red-500 font-semibold mt-1 bg-red-500/5 p-2 rounded">
-                              ⚠️ No course templates in curriculum bank. Define one in Tab 1 first!
-                            </p>
-                          )}
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 font-sans">
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Select Core Course Curriculum</label>
+                            <select
+                              required
+                              value={selectedMasterId}
+                              onChange={e => setSelectedMasterId(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-medium"
+                            >
+                              <option value="">-- Choose Curriculum --</option>
+                              {masterCourses.map(m => (
+                                <option key={m.id} value={m.id}>
+                                  {m.name} ({m.durationMonths || 6} Months Template)
+                                </option>
+                              ))}
+                            </select>
+                            {masterCourses.length === 0 && (
+                              <p className="text-xs text-red-500 font-semibold mt-1 bg-red-500/5 p-2 rounded">
+                                ⚠️ No course templates in curriculum bank. Define one in Tab 1 first!
+                              </p>
+                            )}
+                          </div>
 
-                        <div className="space-y-1.5 font-sans">
-                          <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Write Batch Name / Number</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Batch A, stb_02, Evening March"
-                            value={customBatchName}
-                            onChange={e => setCustomBatchName(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-                          />
-                        </div>
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Write Batch Name / Number</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Batch A, stb_02, Evening March"
+                              value={customBatchName}
+                              onChange={e => setCustomBatchName(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-mono"
+                            />
+                          </div>
 
-                        <div className="space-y-4 font-sans">
-                          <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Course Start Date</label>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Start Date</label>
                             <input
                               type="date"
                               required
                               value={publishBatchDate}
                               onChange={e => setPublishBatchDate(e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                             />
                           </div>
 
-                          <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Admission Last Date</label>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Admission Last Date</label>
                             <input
                               type="date"
                               required
                               value={publishAdmissionLastDate}
                               onChange={e => setPublishAdmissionLastDate(e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                             />
                           </div>
 
-                          <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-200 block">Batch Status</label>
+                          <div className="space-y-1 animate-fadeIn">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block font-sans">Batch Enrollment Fee (INR)</label>
+                            <input
+                              type="number"
+                              required
+                              min="0"
+                              placeholder="e.g. 14999"
+                              value={publishFee}
+                              onChange={e => setPublishFee(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-semibold text-emerald-600 dark:text-emerald-400"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Batch Status</label>
                             <select
                               value={publishStatus}
                               onChange={e => setPublishStatus(e.target.value as any)}
-                              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                             >
                               <option value="upcoming">Upcoming (Accepting Applications)</option>
                               <option value="ongoing">Ongoing (Current Active Class)</option>
@@ -1014,8 +1205,8 @@ export default function ScheduleManager({
                       </div>
 
                       {/* Right Column: Selected template preview */}
-                      <div className="space-y-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-lg font-sans">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5 mb-2">
+                      <div className="space-y-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-5 rounded-lg font-sans">
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2 mb-1.5">
                           <span className="text-sm font-bold text-slate-800 dark:text-zinc-200">Linked Curriculum Syllabus Preview</span>
                           <span className="text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-3.5 py-0.5 rounded font-semibold">
                             Linked Template
