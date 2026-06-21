@@ -1394,12 +1394,7 @@ export default function ScheduleManager({
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          const matchedMaster = masterCourses.find(m => m.name === classRow.name);
-                                          if (matchedMaster) {
-                                            startEditMasterCourse(matchedMaster);
-                                          } else {
-                                            startEditCourse(classRow);
-                                          }
+                                          startEditCourse(classRow);
                                         }}
                                         className="p-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-amber-700 dark:text-amber-400 transition"
                                         title="Configure curriculum parameters"

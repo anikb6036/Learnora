@@ -1062,31 +1062,158 @@ function AppContent() {
     // 2. Update courses
     setCourses(prev => prev.map(c => c.id === updatedCourse.id ? updatedCourse : c));
 
-    // 3. Dynamically sync course name to all enrolled student records
+    // 3. Dynamically sync course and batch details to all student records, lectures, assignments, registrations
     if (originalCourse) {
       const origName = originalCourse.name.trim().toLowerCase();
       const origCode = originalCourse.code?.trim().toLowerCase();
+      const origBatchNumber = originalCourse.batchNumber?.trim().toLowerCase();
 
+      // Sync student user records (including their assigned course and batch names/numbers)
       setUsers(prevUsers => prevUsers.map(u => {
+        let updatedUser = { ...u };
+        let matched = false;
+
         if (u.course) {
           const uCourseLower = u.course.trim().toLowerCase();
           if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
-            return { ...u, course: updatedCourse.name };
+            updatedUser.course = updatedCourse.name;
+            matched = true;
           }
         }
-        return u;
+
+        if (matched || (u.batch && (
+          (origBatchNumber && u.batch.trim().toLowerCase() === origBatchNumber) ||
+          (origCode && u.batch.trim().toLowerCase() === origCode) ||
+          (origBatchNumber && u.batch.trim().toLowerCase() === `batch ${origBatchNumber}`)
+        ))) {
+          if (u.batch && u.batch.toLowerCase().startsWith('batch ')) {
+            updatedUser.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+          } else {
+            updatedUser.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+        return updatedUser;
       }));
 
       // Synchronize currently logged-in student profile if applicable
-      if (currentUser && currentUser.course) {
-        const uCourseLower = currentUser.course.trim().toLowerCase();
-        if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
-          setCurrentUser(prevUser => {
-            if (!prevUser) return null;
-            return { ...prevUser, course: updatedCourse.name };
-          });
+      if (currentUser) {
+        let updatedCurrentUser = { ...currentUser };
+        let matched = false;
+
+        if (currentUser.course) {
+          const uCourseLower = currentUser.course.trim().toLowerCase();
+          if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
+            updatedCurrentUser.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (matched || (currentUser.batch && (
+          (origBatchNumber && currentUser.batch.trim().toLowerCase() === origBatchNumber) ||
+          (origCode && currentUser.batch.trim().toLowerCase() === origCode) ||
+          (origBatchNumber && currentUser.batch.trim().toLowerCase() === `batch ${origBatchNumber}`)
+        ))) {
+          if (currentUser.batch && currentUser.batch.toLowerCase().startsWith('batch ')) {
+            updatedCurrentUser.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+          } else {
+            updatedCurrentUser.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+
+        if (matched || updatedCurrentUser.course !== currentUser.course || updatedCurrentUser.batch !== currentUser.batch) {
+          setCurrentUser(updatedCurrentUser);
         }
       }
+
+      // Sync class lectures / schedules (ClassSchedule)
+      setSchedules(prevSchedules => prevSchedules.map(cl => {
+        let updatedSchedule = { ...cl };
+        let matched = false;
+
+        if (cl.course) {
+          const clCourseLower = cl.course.trim().toLowerCase();
+          if (clCourseLower === origName || (origCode && clCourseLower === origCode)) {
+            updatedSchedule.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (cl.batch) {
+          const clBatchLower = cl.batch.trim().toLowerCase();
+          if (
+            clBatchLower === origName ||
+            (origCode && clBatchLower === origCode) ||
+            (origBatchNumber && clBatchLower === origBatchNumber) ||
+            (origBatchNumber && clBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            updatedSchedule.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+
+        return updatedSchedule;
+      }));
+
+      // Sync active student assignments (StudentAssignment)
+      setAssignments(prevAssignments => prevAssignments.map(asg => {
+        let updatedAsg = { ...asg };
+        let matched = false;
+
+        if (asg.course) {
+          const asgCourseLower = asg.course.trim().toLowerCase();
+          if (asgCourseLower === origName || (origCode && asgCourseLower === origCode)) {
+            updatedAsg.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (asg.batch) {
+          const asgBatchLower = asg.batch.trim().toLowerCase();
+          if (
+            asgBatchLower === origName ||
+            (origCode && asgBatchLower === origCode) ||
+            (origBatchNumber && asgBatchLower === origBatchNumber) ||
+            (origBatchNumber && asgBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            if (asgBatchLower !== 'all') {
+              updatedAsg.batch = updatedCourse.batchNumber || 'stb_001';
+            }
+          }
+        }
+
+        return updatedAsg;
+      }));
+
+      // Sync and adapt registration intake requests (RegistrationRequest)
+      setRegistrationRequests(prevRequests => prevRequests.map(r => {
+        let updatedReq = { ...r };
+        let matched = false;
+
+        if (r.course) {
+          const rCourseLower = r.course.trim().toLowerCase();
+          if (rCourseLower === origName || (origCode && rCourseLower === origCode)) {
+            updatedReq.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (r.batch) {
+          const rBatchLower = r.batch.trim().toLowerCase();
+          if (
+            rBatchLower === origName ||
+            (origCode && rBatchLower === origCode) ||
+            (origBatchNumber && rBatchLower === origBatchNumber) ||
+            (origBatchNumber && rBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            if (r.batch.toLowerCase().startsWith('batch ')) {
+              updatedReq.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+            } else {
+              updatedReq.batch = updatedCourse.batchNumber || 'stb_001';
+            }
+          }
+        }
+
+        return updatedReq;
+      }));
     }
 
     const notif: AppNotification = {
