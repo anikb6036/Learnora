@@ -3712,11 +3712,28 @@ function AppContent() {
                     {currentUser.role === 'student' && (
                       <>
                         {(() => {
-                          const enrolledCourseConfig = courses.find(c => 
-                            c.id?.toLowerCase() === currentUser.course?.toLowerCase() ||
-                            c.name.toLowerCase() === currentUser.course?.toLowerCase() ||
-                            c.code?.toLowerCase() === currentUser.course?.toLowerCase()
-                          );
+                          const enrolledCourseConfig = (() => {
+                            if (!currentUser.course || !courses || courses.length === 0) return undefined;
+                            const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase();
+                            
+                            // 1. Exact/Normalized check
+                            let matched = courses.find(c => {
+                              const cId = c.id?.trim().toLowerCase() || "";
+                              const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                              const cCode = c.code?.trim().toLowerCase() || "";
+                              return cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+                            });
+                            
+                            if (matched) return matched;
+                            
+                            // 2. Substring fallback
+                            matched = courses.find(c => {
+                              const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                              return cName.includes(userCourseClean) || userCourseClean.includes(cName);
+                            });
+                            
+                            return matched;
+                          })();
                           if (!enrolledCourseConfig) return null;
 
                           if (enrolledCourseConfig.status === 'upcoming') {
