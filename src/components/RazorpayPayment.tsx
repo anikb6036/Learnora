@@ -56,7 +56,11 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   const [checkoutError, setCheckoutError] = useState('');
 
   // Course Fee properties
-  const activeCourse = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
+  const activeCourse = courses.find(c => 
+    c.id?.toLowerCase() === currentUser.course?.toLowerCase() ||
+    c.name.toLowerCase() === currentUser.course?.toLowerCase() ||
+    c.code?.toLowerCase() === currentUser.course?.toLowerCase()
+  );
   const courseFee = activeCourse?.fee || 9999;
   const courseName = activeCourse?.name || 'Classroom Academic Course';
 

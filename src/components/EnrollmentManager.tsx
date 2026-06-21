@@ -1333,7 +1333,11 @@ export default function EnrollmentManager({
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold">
-                              <span>₹{(courses.find(c => c.name.toLowerCase() === student.course?.toLowerCase())?.fee || 9999).toLocaleString('en-IN')} Unpaid</span>
+                              <span>₹{(courses.find(c => 
+                                c.id?.toLowerCase() === student.course?.toLowerCase() ||
+                                c.name.toLowerCase() === student.course?.toLowerCase() ||
+                                c.code?.toLowerCase() === student.course?.toLowerCase()
+                              )?.fee || 9999).toLocaleString('en-IN')} Unpaid</span>
                             </span>
                           )}
                           {student.phone ? (

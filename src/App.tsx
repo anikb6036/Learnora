@@ -1056,7 +1056,38 @@ function AppContent() {
   };
 
   const handleUpdateCourse = (updatedCourse: Course) => {
+    // 1. Get original course
+    const originalCourse = courses.find(c => c.id === updatedCourse.id);
+
+    // 2. Update courses
     setCourses(prev => prev.map(c => c.id === updatedCourse.id ? updatedCourse : c));
+
+    // 3. Dynamically sync course name to all enrolled student records
+    if (originalCourse) {
+      const origName = originalCourse.name.trim().toLowerCase();
+      const origCode = originalCourse.code?.trim().toLowerCase();
+
+      setUsers(prevUsers => prevUsers.map(u => {
+        if (u.course) {
+          const uCourseLower = u.course.trim().toLowerCase();
+          if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
+            return { ...u, course: updatedCourse.name };
+          }
+        }
+        return u;
+      }));
+
+      // Synchronize currently logged-in student profile if applicable
+      if (currentUser && currentUser.course) {
+        const uCourseLower = currentUser.course.trim().toLowerCase();
+        if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
+          setCurrentUser(prevUser => {
+            if (!prevUser) return null;
+            return { ...prevUser, course: updatedCourse.name };
+          });
+        }
+      }
+    }
 
     const notif: AppNotification = {
       id: generateUniqueId('notif'),
@@ -3681,7 +3712,11 @@ function AppContent() {
                     {currentUser.role === 'student' && (
                       <>
                         {(() => {
-                          const enrolledCourseConfig = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
+                          const enrolledCourseConfig = courses.find(c => 
+                            c.id?.toLowerCase() === currentUser.course?.toLowerCase() ||
+                            c.name.toLowerCase() === currentUser.course?.toLowerCase() ||
+                            c.code?.toLowerCase() === currentUser.course?.toLowerCase()
+                          );
                           if (!enrolledCourseConfig) return null;
 
                           if (enrolledCourseConfig.status === 'upcoming') {
