@@ -14,8 +14,8 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: "Amount is required" });
     }
 
-    const key_id = cleanEnv(process.env.RAZORPAY_KEY_ID) || "rzp_test_T4Ag8YOyh0ygkS";
-    const key_secret = cleanEnv(process.env.RAZORPAY_KEY_SECRET) || "xKbBl8VteBIbXJEVfweoMGtH";
+    const key_id = cleanEnv(process.env.RAZORPAY_KEY_ID) || "rzp_live_T4e7WuxNwDgNEt";
+    const key_secret = cleanEnv(process.env.RAZORPAY_KEY_SECRET) || "JF09JxiNEWmMlqmZweW1i0X";
 
     if (!key_id || !key_secret) {
       return res.status(500).json({ error: "Razorpay credentials are not configured." });
