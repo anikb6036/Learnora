@@ -3036,7 +3036,6 @@ function AppContent() {
                                 disabled={!emailVerified}
                                 className={`px-6 py-3.5 rounded-xl text-xs font-bold transition-all duration-150 shadow-md flex items-center justify-center w-full sm:w-auto gap-2 ml-auto ${emailVerified ? 'bg-[#111112] hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-black active:scale-[0.98] cursor-pointer' : 'bg-slate-200 dark:bg-[#1C1C1F] text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
                               >
-                                <Sparkles className="w-3.5 h-3.5" />
                                 Submit Admission Application
                               </button>
                           </div>
