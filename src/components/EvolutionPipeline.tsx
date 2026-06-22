@@ -90,6 +90,8 @@ export const EvolutionPipeline: React.FC<EvolutionPipelineProps> = ({
   const [tWeek4Title, setTWeek4Title] = useState('Evolution 4 (Week 4)');
   const [tWeek4Desc, setTWeek4Desc] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [publishImmediately, setPublishImmediately] = useState(false);
+  const [publishTargetBatch, setPublishTargetBatch] = useState('All');
 
   // Open modal for editing or adding template
   const openBankModal = (template: EvolutionBankItem | null = null) => {
@@ -123,6 +125,8 @@ export const EvolutionPipeline: React.FC<EvolutionPipelineProps> = ({
       setTWeek4Title('Evolution 4 (Week 4)');
       setTWeek4Desc('');
     }
+    setPublishImmediately(false);
+    setPublishTargetBatch('All');
     setValidationError('');
     setPipelineTab('template-form');
   };
@@ -171,6 +175,85 @@ export const EvolutionPipeline: React.FC<EvolutionPipelineProps> = ({
       };
       setEvolutionBank(prev => [newItem, ...prev]);
     }
+
+    // Handle immediate weekly publishing and deployment to students if checked
+    if (publishImmediately) {
+      const targetStudents = users.filter(u => 
+        u.role === 'student' && 
+        u.course?.toLowerCase() === templateCourse.toLowerCase() && 
+        (publishTargetBatch === 'All' || !u.batch || u.batch.toLowerCase() === publishTargetBatch.toLowerCase() || (publishTargetBatch === 'stb_001' && u.batch?.toLowerCase() === 'batch a') || (publishTargetBatch === 'stb_002' && u.batch?.toLowerCase() === 'batch b'))
+      );
+
+      if (targetStudents.length === 0) {
+        alert(`No active students found in course "${templateCourse}" inside batch "${publishTargetBatch}". The blueprint template was successfully saved to your bank, but no student records were updated.`);
+      } else {
+        setStudentEvolutions(prev => {
+          const updatedList = [...prev];
+
+          targetStudents.forEach(st => {
+            const existingIdx = updatedList.findIndex(ev => ev.studentId === st.id && ev.month === templateMonth && ev.course === templateCourse);
+
+            const finalWeeks = {
+              w1T: tWeek1Title || 'Week 1', w1D: tWeek1Desc || 'Syllabus Details',
+              w2T: tWeek2Title || 'Week 2', w2D: tWeek2Desc || 'Syllabus Details',
+              w3T: tWeek3Title || 'Week 3', w3D: tWeek3Desc || 'Syllabus Details',
+              w4T: tWeek4Title || 'Week 4', w4D: tWeek4Desc || 'Syllabus Details'
+            };
+
+            if (existingIdx > -1) {
+              updatedList[existingIdx] = {
+                ...updatedList[existingIdx],
+                title1: finalWeeks.w1T, desc1: finalWeeks.w1D,
+                title2: finalWeeks.w2T, desc2: finalWeeks.w2D,
+                title3: finalWeeks.w3T, desc3: finalWeeks.w3D,
+                title4: finalWeeks.w4T, desc4: finalWeeks.w4D,
+                batch: st.batch || 'Batch A',
+                lastUpdated: new Date().toISOString()
+              };
+            } else {
+              updatedList.push({
+                id: `evol-${Date.now()}-${st.id.substring(0, 4)}`,
+                studentId: st.id,
+                studentName: st.name,
+                course: templateCourse,
+                batch: st.batch || 'Batch A',
+                month: templateMonth,
+                promoted: false,
+                title1: finalWeeks.w1T, desc1: finalWeeks.w1D,
+                title2: finalWeeks.w2T, desc2: finalWeeks.w2D,
+                title3: finalWeeks.w3T, desc3: finalWeeks.w3D,
+                title4: finalWeeks.w4T, desc4: finalWeeks.w4D,
+                lastUpdated: new Date().toISOString()
+              });
+            }
+
+            // Publish Notification
+            const notif: AppNotification = {
+              id: `notif-evo-pipeline-${Date.now()}-${st.id.substring(0, 4)}`,
+              title: `📈 Weekly Evolution Milestone Published: Month ${templateMonth}!`,
+              message: `Your class-wide weekly syllabus targets and continuous evolution tracker for Month ${templateMonth} are now active.`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              type: 'general',
+              channel: 'system'
+            };
+            setNotifications(prevNotif => [notif, ...prevNotif]);
+
+            // Dispatch Email if integration is active
+            if (onSendEmail && st.email) {
+              const emailSubject = `🎓 Weekly Syllabus Evolution Blueprint Published: Month ${templateMonth}`;
+              const emailBody = `Dear ${st.name},\n\nWe are pleased to inform you that the official week-by-week Continuous weekly Evolution checkpoints for Study Month ${templateMonth} under course: ${templateCourse} have been published.\n\nHere are your active benchmarks:\n\n- ${finalWeeks.w1T}: ${finalWeeks.w1D}\n- ${finalWeeks.w2T}: ${finalWeeks.w2D}\n- ${finalWeeks.w3T}: ${finalWeeks.w3D}\n- ${finalWeeks.w4T}: ${finalWeeks.w4D}\n\nClear all 4 weekly checkpoints with an overall average of 80% to trigger level promotion.\n\nBest regards,\nLearnora Academic Team\nsupport@learnora.in`;
+              onSendEmail(st.email, emailSubject, emailBody, 'academic-office@learnora.in');
+            }
+          });
+
+          return updatedList;
+        });
+
+        alert(`Successfully saved blueprint template AND immediately published these weekly evolution milestones to ${targetStudents.length} active students in "${templateCourse}" [Batch: ${publishTargetBatch}]!`);
+      }
+    }
+
     setPipelineTab('bank');
   };
 
@@ -576,10 +659,9 @@ export const EvolutionPipeline: React.FC<EvolutionPipelineProps> = ({
                     >
                       <option value="">-- Choose Batch --</option>
                       <option value="All">All Batches</option>
-                      <option value="Batch A">Batch A</option>
-                      <option value="Batch B">Batch B</option>
-                      <option value="Batch C">Batch C</option>
-                      <option value="Batch D">Batch D</option>
+                      {batches.filter(b => b.status === 'ongoing').map(b => (
+                        <option key={b.id} value={b.name}>{b.name}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -951,6 +1033,54 @@ export const EvolutionPipeline: React.FC<EvolutionPipelineProps> = ({
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Instant Publishing Toggle option */}
+                <div className="pt-5 mt-4 border-t border-slate-150 dark:border-white/5 space-y-4">
+                  <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-200/40 dark:border-indigo-500/15 rounded-2xl">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="publishImmediatelyCheckbox"
+                        checked={publishImmediately}
+                        onChange={(e) => setPublishImmediately(e.target.checked)}
+                        className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded cursor-pointer"
+                      />
+                      <div className="space-y-1">
+                        <label htmlFor="publishImmediatelyCheckbox" className="text-xs font-bold text-slate-800 dark:text-zinc-200 cursor-pointer block select-none">
+                          🚀 Publish & Deploy Weekly Evolution Milestones Immediately
+                        </label>
+                        <p className="text-[10px] text-slate-500 leading-relaxed">
+                          Checking this will instantly publish active continuous weekly evaluation tracks to all targeted students mapped to this course and batch.
+                        </p>
+                      </div>
+                    </div>
+
+                    {publishImmediately && (
+                      <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-500/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Target Student Course (Mapped)</label>
+                          <div className="bg-slate-100 dark:bg-zinc-800 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                            {templateCourse || "No course mapped yet"}
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">Target Student Batch</label>
+                          <select
+                            value={publishTargetBatch}
+                            onChange={(e) => setPublishTargetBatch(e.target.value)}
+                            className="w-full bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-800 dark:text-zinc-200"
+                          >
+                            <option value="All">All Batches</option>
+                            {batches.filter(b => b.status === 'ongoing').map(b => (
+                              <option key={b.id} value={b.name}>{b.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
