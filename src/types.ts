@@ -247,6 +247,7 @@ export interface StudentEvolution {
   promoted: boolean; // Automatic promotion trigger state
   promotedDate?: string;
   lastUpdated: string;
+  status?: 'active' | 'draft';
   
   // Continuous Evolution Exam Metadata
   examDate?: string;

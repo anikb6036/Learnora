@@ -69,7 +69,16 @@ export default function ProgressTracker({
   const [ev3Feedback, setEv3Feedback] = useState<string>('');
   const [ev4Feedback, setEv4Feedback] = useState<string>('');
   const [evolutionSuccessMessage, setEvolutionSuccessMessage] = useState('');
-  const [studentSelectedMonth, setStudentSelectedMonth] = useState<number>(currentUser.currentMonth || 1);
+  const [studentSelectedMonth, setStudentSelectedMonth] = useState<number>(() => {
+    if (currentUser.role === 'student' && studentEvolutions.length > 0) {
+      const activeEvos = studentEvolutions.filter(ev => ev.studentId === currentUser.id && ev.status !== 'draft');
+      if (activeEvos.length > 0) {
+        activeEvos.sort((a, b) => b.month - a.month);
+        return activeEvos[0].month;
+      }
+    }
+    return currentUser.currentMonth || 1;
+  });
 
   const handleUpdateEvolutionScore = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1589,7 +1598,7 @@ export default function ProgressTracker({
 
             {/* Overall Monthly summary performance card */}
             {(() => {
-              const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth);
+              const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth && ev.status !== 'draft');
               const scoresCount = [evoRec?.evolution1, evoRec?.evolution2, evoRec?.evolution3, evoRec?.evolution4].filter(s => s !== undefined).length;
               const overallPass = evoRec?.overallScore !== undefined && evoRec.overallScore >= 80;
               const isPromoted = evoRec?.promoted === true;
@@ -1857,7 +1866,7 @@ export default function ProgressTracker({
         {/* Dynamic Interactive Student Workstation Modal */}
         <AnimatePresence>
           {selectedActiveWeekIndex !== null && (() => {
-            const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth);
+            const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth && ev.status !== 'draft');
             const weekNum = selectedActiveWeekIndex;
             
             const getWeekFields = (index: number) => {

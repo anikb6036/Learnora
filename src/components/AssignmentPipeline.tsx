@@ -766,6 +766,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
           month: selectedMonthNum,
           promoted: false,
           lastUpdated: new Date().toISOString(),
+          status: deployEvolutionStatus ? 'active' : 'draft',
           
           examDate: evolutionDate || undefined,
           examTime: evolutionTime || undefined,
