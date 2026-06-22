@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentEvolution } from '../types';
-import { Award, BookOpen, Clock, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle, Terminal, Code, Copy, History, Play, Flame, RotateCcw, BookOpenText, ChevronLeft, HelpCircle, Maximize2, Settings, ShieldCheck } from 'lucide-react';
+import { Award, BookOpen, Clock, Calendar, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle, Terminal, Code, Copy, History, Play, Flame, RotateCcw, BookOpenText, ChevronLeft, HelpCircle, Maximize2, Settings, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProgressTrackerProps {
@@ -1640,6 +1640,53 @@ export default function ProgressTracker({
                     </div>
                   </div>
 
+                  {/* Scheduled Exam/Assessment Banner */}
+                  {(evoRec?.examDate || evoRec?.examTime || evoRec?.examDuration) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="p-3 bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                            📢 Official Continuous Assessment Schedule
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 mt-0.5">
+                            Month {studentSelectedMonth} Summative Evolution Assessment
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            All weekly submissions must be completed before the designated time limit.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5 font-sans">
+                        {evoRec.examDate && (
+                          <div className="flex items-center gap-1.5 bg-white/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-white/5 py-1.5 px-3 rounded-xl text-xs text-slate-600 dark:text-zinc-300 shadow-xs">
+                            <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>Date: <strong className="text-slate-900 dark:text-zinc-100 font-bold">{new Date(evoRec.examDate).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></span>
+                          </div>
+                        )}
+                        {evoRec.examTime && (
+                          <div className="flex items-center gap-1.5 bg-white/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-white/5 py-1.5 px-3 rounded-xl text-xs text-slate-600 dark:text-zinc-300 shadow-xs">
+                            <Clock className="w-3.5 h-3.5 text-sky-500" />
+                            <span>Time: <strong className="text-slate-900 dark:text-zinc-100 font-bold">{evoRec.examTime} Local Time</strong></span>
+                          </div>
+                        )}
+                        {evoRec.examDuration && (
+                          <div className="flex items-center gap-1.5 bg-white/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-white/5 py-1.5 px-3 rounded-xl text-xs text-slate-600 dark:text-zinc-300 shadow-xs">
+                            <Award className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Exam Duration: <strong className="text-slate-900 dark:text-zinc-100 font-bold">{evoRec.examDuration}</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* 4 evolution week blocks */}
                   <div>
                     <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mb-2 flex items-center gap-2">
@@ -1999,6 +2046,30 @@ export default function ProgressTracker({
                               )}
                             </div>
                           </div>
+
+                          {(evoRec?.examDate || evoRec?.examTime || evoRec?.examDuration) && (
+                            <div className="bg-[#1c1c24] border border-[#2e2e38] rounded-xl p-3 flex flex-wrap items-center gap-3 text-[11px] text-stone-300">
+                              <span className="text-amber-500 font-extrabold uppercase tracking-wide mr-1">Assessment Schedule:</span>
+                              {evoRec.examDate && (
+                                <div className="flex items-center gap-1 bg-[#15151b] px-2.5 py-1 rounded-lg border border-white/[0.03]">
+                                  <Calendar className="w-3 h-3 text-indigo-400" />
+                                  <span>Date: <span className="text-white font-semibold">{new Date(evoRec.examDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span></span>
+                                </div>
+                              )}
+                              {evoRec.examTime && (
+                                <div className="flex items-center gap-1 bg-[#15151b] px-2.5 py-1 rounded-lg border border-white/[0.03]">
+                                  <Clock className="w-3 h-3 text-sky-400" />
+                                  <span>Time: <span className="text-white font-semibold">{evoRec.examTime}</span></span>
+                                </div>
+                              )}
+                              {evoRec.examDuration && (
+                                <div className="flex items-center gap-1 bg-[#15151b] px-2.5 py-1 rounded-lg border border-white/[0.03]">
+                                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                                  <span>Duration: <span className="text-white font-semibold">{evoRec.examDuration}</span></span>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                           {/* Problem Core description */}
                           <div className="space-y-3">

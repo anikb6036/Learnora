@@ -23,7 +23,6 @@ import {
 } from './utils';
 import { ThemeProvider, useTheme } from './components/ThemeContext';
 import { AssignmentPipeline } from './components/AssignmentPipeline';
-import { EvolutionPipeline } from './components/EvolutionPipeline';
 import { compressImage } from './imageUtils';
 
 const sendSystemEmail = async (to: string, subject: string, text: string, html?: string): Promise<{ success: boolean; error?: string }> => {
@@ -3821,7 +3820,7 @@ function AppContent() {
                         {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
                       </button>
 
-                      {/* First-level: Assignment Pipeline */}
+                      {/* Consolidated Academic & Evolution Pipeline */}
                       <button
                         type="button"
                         onClick={() => {
@@ -3836,10 +3835,10 @@ function AppContent() {
                             ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
                             : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
                         }`}
-                        title={isActuallyCollapsed ? "Assignment Pipeline & Bank" : undefined}
+                        title={isActuallyCollapsed ? "Academic & Evolution Pipeline" : undefined}
                       >
-                        <ClipboardList className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Pipeline & Bank</span>}
+                        <Layers className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic & Evolution Pipeline</span>}
                       </button>
 
                       {/* First-level: Assignment Submission Tracker */}
@@ -3861,27 +3860,6 @@ function AppContent() {
                       >
                         <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
                         {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
-                      </button>
-
-                      {/* First-level: Evolution Pipeline */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('evolution-pipeline');
-                          setScheduleShowAddForm(false);
-                          setScheduleShowCourseDashboard(false);
-                          setScheduleShowBatchManager(false);
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'evolution-pipeline'
-                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                        }`}
-                        title={isActuallyCollapsed ? "Evolution Deploy Pipeline" : undefined}
-                      >
-                        <TrendingUp className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Monthly Evolution Pipeline</span>}
                       </button>
                     </>
                   )}
@@ -4900,8 +4878,13 @@ function AppContent() {
                 setAssignmentBank={setAssignmentBank}
                 assignments={assignments}
                 setAssignments={setAssignments}
+                evolutionBank={evolutionBank}
+                setEvolutionBank={setEvolutionBank}
+                studentEvolutions={studentEvolutions}
+                setStudentEvolutions={setStudentEvolutions}
                 users={users}
                 setNotifications={setNotifications}
+                onSendEmail={handleSendEmail}
               />
             )}
 
@@ -4913,21 +4896,6 @@ function AppContent() {
                 batches={batches}
                 assignments={assignments}
                 setAssignments={setAssignments}
-              />
-            )}
-
-            {activeTab === 'evolution-pipeline' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
-              <EvolutionPipeline
-                currentUser={currentUser}
-                courses={courses}
-                batches={batches}
-                evolutionBank={evolutionBank}
-                setEvolutionBank={setEvolutionBank}
-                studentEvolutions={studentEvolutions}
-                setStudentEvolutions={setStudentEvolutions}
-                users={users}
-                setNotifications={setNotifications}
-                onSendEmail={handleSendEmail}
               />
             )}
 

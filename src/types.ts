@@ -248,6 +248,11 @@ export interface StudentEvolution {
   promotedDate?: string;
   lastUpdated: string;
   
+  // Continuous Evolution Exam Metadata
+  examDate?: string;
+  examTime?: string;
+  examDuration?: string;
+  
   // Custom deployed week metadata
   title1?: string;
   desc1?: string;
