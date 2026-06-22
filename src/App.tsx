@@ -3396,22 +3396,98 @@ function AppContent() {
                   ) : (
                     <>
                       {/* Top Level Items */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('dashboard');
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                      activeTab === 'dashboard'
-                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                    }`}
-                    title={isActuallyCollapsed ? "Center Dashboard" : undefined}
-                  >
-                    <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
-                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Center Dashboard</span>}
-                  </button>
+                      {currentUser && currentUser.role === 'student' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('dashboard');
+                              setStudentScheduleTab('schedule');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'dashboard' && studentScheduleTab === 'schedule'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "My Schedule" : undefined}
+                          >
+                            <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">My Schedule</span>}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('dashboard');
+                              setStudentScheduleTab('tasks');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'dashboard' && studentScheduleTab === 'tasks'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Pending Tasks" : undefined}
+                          >
+                            <Clock className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Pending Tasks</span>}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('dashboard');
+                              setStudentScheduleTab('completed');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'dashboard' && studentScheduleTab === 'completed'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Completed Classes" : undefined}
+                          >
+                            <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn font-sans">Completed Classes</span>}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('dashboard');
+                              setStudentScheduleTab('assignments');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'dashboard' && studentScheduleTab === 'assignments'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Assignments & Homework" : undefined}
+                          >
+                            <ClipboardList className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignments & Homework</span>}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('dashboard');
+                            if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                          }}
+                          className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                            activeTab === 'dashboard'
+                              ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                              : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                          }`}
+                          title={isActuallyCollapsed ? "Center Dashboard" : undefined}
+                        >
+                          <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+                          {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Center Dashboard</span>}
+                        </button>
+                      )}
 
                   <button
                     type="button"
@@ -3879,61 +3955,6 @@ function AppContent() {
                         })()}
                     {/* Enrolled Classes List for Student */}
                     <div className="space-y-4 pt-4 font-sans">
-                      <div className="flex items-center gap-3 mb-6">
-                        <button
-                          onClick={() => setStudentScheduleTab('schedule')}
-                          className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
-                            studentScheduleTab === 'schedule'
-                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400'
-                              : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-zinc-900 dark:text-slate-400 dark:hover:bg-white/[0.02]'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            My Schedule
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => setStudentScheduleTab('tasks')}
-                          className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
-                            studentScheduleTab === 'tasks'
-                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400'
-                              : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-zinc-900 dark:text-slate-400 dark:hover:bg-white/[0.02]'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            Pending Tasks
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => setStudentScheduleTab('completed')}
-                          className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
-                            studentScheduleTab === 'completed'
-                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400'
-                              : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-zinc-900 dark:text-slate-400 dark:hover:bg-white/[0.02]'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            Completed Classes
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => setStudentScheduleTab('assignments')}
-                          className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
-                            studentScheduleTab === 'assignments'
-                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400'
-                              : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-zinc-900 dark:text-slate-400 dark:hover:bg-white/[0.02]'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <ClipboardList className="w-4 h-4 text-emerald-500" />
-                            Assignments & Homework
-                          </span>
-                        </button>
-                      </div>
-
                       <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#070708] p-4 md:p-6 shadow-sm">
                         {studentScheduleTab === 'schedule' ? (
                           <div className="space-y-6">
