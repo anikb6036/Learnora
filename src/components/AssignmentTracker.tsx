@@ -51,6 +51,36 @@ export default function AssignmentTracker({
   // Find unique course/batch options actually represented in courses/batches lists, or among students
   const activeCourses = courses.length > 0 ? courses : Array.from(new Set(allStudents.map((s) => s.course).filter(Boolean))) as unknown as Course[];
   
+  const getBatchDisplayLabel = (nameOrId: string): string => {
+    if (!nameOrId) return '';
+    const valLower = nameOrId.toLowerCase().trim();
+    if (valLower === 'stb_001' || valLower === 'batch a' || valLower === 'batch-1' || valLower === 'batch_a') return 'stb_001';
+    if (valLower === 'stb_002' || valLower === 'batch b' || valLower === 'batch-2' || valLower === 'batch_b') return 'stb_002';
+    if (valLower === 'stb_003' || valLower === 'batch c' || valLower === 'batch-3' || valLower === 'batch_c') return 'stb_003';
+    if (valLower === 'stb_004' || valLower === 'batch d' || valLower === 'batch-4' || valLower === 'batch_d') return 'stb_004';
+    return nameOrId;
+  };
+
+  const areBatchesEquivalent = (batchA: string | undefined, batchB: string | undefined): boolean => {
+    if (!batchA || !batchB) return false;
+    const a = batchA.toLowerCase().trim();
+    const b = batchB.toLowerCase().trim();
+    if (a === b) return true;
+    
+    const map: Record<string, string[]> = {
+      'stb_001': ['stb_001', 'batch a', 'batch-1', 'batch_a'],
+      'stb_002': ['stb_002', 'batch b', 'batch-2', 'batch_b'],
+      'stb_003': ['stb_003', 'batch c', 'batch-3', 'batch_c'],
+      'stb_004': ['stb_004', 'batch d', 'batch-4', 'batch_d'],
+      'batch a': ['stb_001', 'batch a', 'batch-1', 'batch_a'],
+      'batch b': ['stb_002', 'batch b', 'batch-2', 'batch_b'],
+      'batch c': ['stb_003', 'batch c', 'batch-3', 'batch_c'],
+      'batch d': ['stb_004', 'batch d', 'batch-4', 'batch_d'],
+    };
+    
+    return !!(map[a] && map[a].includes(b));
+  };
+
   const activeBatches = React.useMemo(() => {
     // 1. Collect all raw batches. Some can be objects, some strings (if from fallback)
     const rawList: StudentBatch[] = batches.length > 0 
@@ -60,7 +90,7 @@ export default function AssignmentTracker({
         );
 
     // 2. Normalize and filter strictly to only show ongoing batches (status is 'ongoing' or not explicitly completed/upcoming)
-    return rawList.filter((b) => {
+    const ongoingBatches = rawList.filter((b) => {
       if (!b) return false;
       
       // If b is an object and has a status, check it
@@ -77,9 +107,72 @@ export default function AssignmentTracker({
       // Default to true if not explicitly set to completed or upcoming
       return true;
     });
-  }, [batches, allStudents]);
 
-  // Automatically select first course & batch if not set
+    // 3. Filter these ongoing batches based on the selected course
+    if (!selectedCourse) {
+      return ongoingBatches.map(b => ({
+        ...b,
+        name: getBatchDisplayLabel(b.name)
+      }));
+    }
+
+    const courseObj = courses.find((c) => c.name.toLowerCase() === selectedCourse.toLowerCase());
+    const courseBatchNumberVal = courseObj?.batchNumber?.toLowerCase();
+
+    // Collect any batch keys associated with this course from students, assignments, or configurations
+    const courseRelatedBatches: string[] = [];
+    if (courseBatchNumberVal) {
+      courseRelatedBatches.push(courseBatchNumberVal);
+    }
+    
+    allStudents.forEach(s => {
+      if (s.course?.toLowerCase() === selectedCourse.toLowerCase() && s.batch) {
+        courseRelatedBatches.push(s.batch.toLowerCase());
+      }
+    });
+
+    assignments.forEach(asg => {
+      if (asg.course?.toLowerCase() === selectedCourse.toLowerCase() && asg.batch) {
+        courseRelatedBatches.push(asg.batch.toLowerCase());
+      }
+    });
+
+    const uniqueCourseRelated = Array.from(new Set(courseRelatedBatches));
+
+    // Filter ongoing batches to show ONLY the ones matching any of these keys or equivalents
+    const filteredOngoing = ongoingBatches.filter((b) => {
+      const bNameLower = b.name.toLowerCase();
+      const bIdLower = b.id.toLowerCase();
+
+      return uniqueCourseRelated.some(key => 
+        key === bNameLower || 
+        key === bIdLower || 
+        areBatchesEquivalent(key, bNameLower) || 
+        areBatchesEquivalent(key, bIdLower)
+      );
+    });
+
+    // Fallback: If filteredOngoing is empty, we must show some option rather than empty dropdown so the teacher can assign/view!
+    if (filteredOngoing.length === 0) {
+      // If the course explicitly has a 'batchNumber' or 'id', construct a clean synthetic option for it
+      const targetBatchKey = courseObj?.batchNumber || courseObj?.id || 'stb_001';
+      const cleanName = getBatchDisplayLabel(targetBatchKey);
+      
+      return [{
+        id: targetBatchKey,
+        name: cleanName,
+        createdDate: '',
+        status: 'ongoing'
+      }];
+    }
+
+    return filteredOngoing.map(b => ({
+      ...b,
+      name: getBatchDisplayLabel(b.name)
+    }));
+  }, [batches, allStudents, selectedCourse, courses, assignments]);
+
+  // Automatically select first course & batch if not set, or adjust selection if invalid
   React.useEffect(() => {
     if (!selectedCourse && activeCourses.length > 0) {
       setSelectedCourse(activeCourses[0].name);
@@ -87,19 +180,28 @@ export default function AssignmentTracker({
   }, [activeCourses, selectedCourse]);
 
   React.useEffect(() => {
-    if (!selectedBatch && activeBatches.length > 0) {
-      setSelectedBatch(activeBatches[0].name);
+    if (activeBatches.length > 0) {
+      const isValid = activeBatches.some((b) => b.name === selectedBatch || areBatchesEquivalent(b.name, selectedBatch));
+      if (!isValid) {
+        setSelectedBatch(activeBatches[0].name);
+      }
+    } else {
+      setSelectedBatch('');
     }
   }, [activeBatches, selectedBatch]);
 
   // Filter students based on selected Course & Batch
   const filteredStudents = allStudents.filter(
-    (s) => s.course === selectedCourse && s.batch === selectedBatch
+    (s) =>
+      s.course?.toLowerCase() === selectedCourse?.toLowerCase() &&
+      (s.batch === selectedBatch || areBatchesEquivalent(s.batch, selectedBatch))
   );
 
   // Filter assignments based on selected Course & Batch
   const matchedAssignments = assignments.filter(
-    (asg) => asg.course === selectedCourse && asg.batch === selectedBatch
+    (asg) =>
+      asg.course?.toLowerCase() === selectedCourse?.toLowerCase() &&
+      (asg.batch === selectedBatch || areBatchesEquivalent(asg.batch, selectedBatch))
   );
 
   // Automatically select the first matched assignment if current selection is invalid
