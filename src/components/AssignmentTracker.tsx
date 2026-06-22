@@ -50,8 +50,34 @@ export default function AssignmentTracker({
 
   // Find unique course/batch options actually represented in courses/batches lists, or among students
   const activeCourses = courses.length > 0 ? courses : Array.from(new Set(allStudents.map((s) => s.course).filter(Boolean))) as unknown as Course[];
-  const activeBatches = (batches.length > 0 ? batches : Array.from(new Set(allStudents.map((s) => s.batch).filter(Boolean))) as unknown as StudentBatch[])
-    .filter((b) => !b.status || b.status === 'ongoing');
+  
+  const activeBatches = React.useMemo(() => {
+    // 1. Collect all raw batches. Some can be objects, some strings (if from fallback)
+    const rawList: StudentBatch[] = batches.length > 0 
+      ? batches 
+      : Array.from(new Set(allStudents.map((s) => s.batch).filter(Boolean))).map(
+          name => ({ id: name, name, createdDate: '', status: 'ongoing' as const } as StudentBatch)
+        );
+
+    // 2. Normalize and filter strictly to only show ongoing batches (status is 'ongoing' or not explicitly completed/upcoming)
+    return rawList.filter((b) => {
+      if (!b) return false;
+      
+      // If b is an object and has a status, check it
+      if (b.status) {
+        return b.status === 'ongoing';
+      }
+      
+      // If it has no status, check if it's in the batches list with a non-ongoing status
+      const dbMatch = batches.find(db => db.name === b.name || db.id === b.id);
+      if (dbMatch && dbMatch.status) {
+        return dbMatch.status === 'ongoing';
+      }
+      
+      // Default to true if not explicitly set to completed or upcoming
+      return true;
+    });
+  }, [batches, allStudents]);
 
   // Automatically select first course & batch if not set
   React.useEffect(() => {

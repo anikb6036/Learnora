@@ -557,13 +557,6 @@ export default function ProfileSettings({
                       </div>
                       <div className="col-span-8 font-medium text-slate-700 dark:text-slate-200">{currentUser.fatherName || 'Not provided'}</div>
                     </div>
-                    <div className="grid grid-cols-12 gap-4 px-5 py-3.5 items-center">
-                      <div className="col-span-4 text-slate-400 font-medium flex items-center gap-2.5">
-                        <Phone className="w-4 h-4 text-slate-400" />
-                        <span>Father / Guardian phone</span>
-                      </div>
-                      <div className="col-span-8 font-medium text-slate-700 dark:text-slate-200">{currentUser.fatherPhone || 'Not provided'}</div>
-                    </div>
                   </>
                 )}
 
@@ -711,30 +704,6 @@ export default function ProfileSettings({
                             onChange={e => setFatherName(e.target.value)}
                             placeholder="Full name of guardian"
                             className="w-full bg-slate-50/70 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-transparent dark:border-white/5 rounded-xl px-4 py-2 text-[13px] text-slate-800 dark:text-white transition focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-white/20"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-12 gap-4 items-center">
-                        <label className="col-span-4 font-semibold text-slate-700 dark:text-slate-350">Guardian Contact</label>
-                        <div className="col-span-8 flex gap-2">
-                          <select
-                            value={fatherPhonePrefix}
-                            onChange={e => setFatherPhonePrefix(e.target.value)}
-                            className="bg-slate-50/70 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-transparent dark:border-white/5 rounded-xl px-2 py-2 text-[13px] text-slate-800 dark:text-white transition-all focus:outline-none select-none cursor-pointer"
-                          >
-                            {COUNTRY_PHONE_CONFIGS.map(cfg => (
-                              <option key={cfg.code} value={cfg.code} className="text-slate-800 dark:text-gray-900">
-                                {cfg.flag} {cfg.code}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="text"
-                            placeholder={selectedFatherCountryConfig?.placeholder || '10-digit number'}
-                            value={fatherPhoneRaw}
-                            onChange={e => setFatherPhoneRaw(e.target.value)}
-                            className="flex-1 bg-slate-50/70 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-transparent dark:border-white/5 rounded-xl px-4 py-2 text-[13px] text-slate-800 dark:text-white transition focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-white/20"
                           />
                         </div>
                       </div>

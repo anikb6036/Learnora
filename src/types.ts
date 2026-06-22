@@ -197,6 +197,8 @@ export interface StudentAssignment {
   submissions: StudentSubmission[];
   month?: string; // Associated month, e.g. "Month 1"
   syllabus?: string; // Syllabus / Topic
+  week?: string; // Target Week
+  day?: string;  // Target Day
 }
 
 export interface AssignmentBankItem {
@@ -209,6 +211,8 @@ export interface AssignmentBankItem {
   syllabus: string; // Syllabus Topic
   maxPoints: number;
   createdDate: string;
+  week?: string; // Target Week
+  day?: string;  // Target Day
 }
 
 export interface StudentEvolution {

@@ -55,6 +55,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('Month 1');
+  const [selectedWeek, setSelectedWeek] = useState('Week 1');
+  const [selectedDay, setSelectedDay] = useState('Day 1');
   const [selectedSyllabus, setSelectedSyllabus] = useState('');
   const [selectedBankTemplateId, setSelectedBankTemplateId] = useState('');
   const [pipelineDueDate, setPipelineDueDate] = useState('');
@@ -74,9 +76,66 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [templateCourse, setTemplateCourse] = useState('');
   const [templateBatch, setTemplateBatch] = useState('');
   const [templateMonth, setTemplateMonth] = useState('Month 1');
+  const [templateWeek, setTemplateWeek] = useState('Week 1');
+  const [templateDay, setTemplateDay] = useState('Day 1');
   const [templateSyllabus, setTemplateSyllabus] = useState('');
   const [templateMaxPoints, setTemplateMaxPoints] = useState(100);
   const [validationError, setValidationError] = useState('');
+
+  const getBatchDisplayName = (batchVal: string) => {
+    if (!batchVal) return '';
+    const valLower = batchVal.toLowerCase();
+    if (valLower === 'stb_001' || valLower === 'batch a') return 'Batch A (stb_001)';
+    if (valLower === 'stb_002' || valLower === 'batch b') return 'Batch B (stb_002)';
+    if (valLower === 'stb_003' || valLower === 'batch c') return 'Batch C (stb_003)';
+    if (valLower === 'stb_004' || valLower === 'batch d') return 'Batch D (stb_004)';
+    
+    const matchObj = batches.find(b => b.id.toLowerCase() === valLower || b.name.toLowerCase() === valLower);
+    if (matchObj) {
+      if (matchObj.name.toLowerCase() !== valLower) {
+        return `${matchObj.name} (${batchVal})`;
+      }
+      return matchObj.name;
+    }
+    return batchVal;
+  };
+
+  const availableBatches = React.useMemo(() => {
+    const list: string[] = [];
+    if (selectedCourse) {
+      const matchingCourses = courses.filter(c => c.name.toLowerCase() === selectedCourse.toLowerCase());
+      matchingCourses.forEach(c => {
+        if (c.batchNumber) {
+          list.push(c.batchNumber);
+        }
+      });
+    }
+    
+    if (list.length === 0) {
+      batches.forEach(b => {
+        if (!b.status || b.status === "ongoing") {
+          list.push(b.name);
+        }
+      });
+    }
+    
+    const uniqueList = Array.from(new Set(list));
+    return ['All', ...uniqueList];
+  }, [selectedCourse, courses, batches]);
+
+  React.useEffect(() => {
+    if (availableBatches.length > 0) {
+      if (!selectedBatch || !availableBatches.includes(selectedBatch)) {
+        if (availableBatches.includes('All')) {
+          setSelectedBatch('All');
+        } else {
+          setSelectedBatch(availableBatches[0]);
+        }
+      }
+    } else {
+      setSelectedBatch('All');
+    }
+  }, [availableBatches, selectedBatch]);
 
   // Open modal for editing or adding template
   const openBankModal = (template: AssignmentBankItem | null = null) => {
@@ -87,6 +146,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateCourse(template.course);
       setTemplateBatch(template.batch);
       setTemplateMonth(template.month || 'Month 1');
+      setTemplateWeek(template.week || 'Week 1');
+      setTemplateDay(template.day || 'Day 1');
       setTemplateSyllabus(template.syllabus || '');
       setTemplateMaxPoints(template.maxPoints);
     } else {
@@ -99,6 +160,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateCourse(defaultCourse);
       setTemplateBatch(defaultBatch);
       setTemplateMonth('Month 1');
+      setTemplateWeek('Week 1');
+      setTemplateDay('Day 1');
       setTemplateSyllabus('');
       setTemplateMaxPoints(100);
     }
@@ -122,6 +185,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
         course: templateCourse,
         batch: templateBatch,
         month: templateMonth,
+        week: templateWeek,
+        day: templateDay,
         syllabus: templateSyllabus,
         maxPoints: templateMaxPoints
       } : t));
@@ -134,6 +199,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
         course: templateCourse,
         batch: templateBatch,
         month: templateMonth,
+        week: templateWeek,
+        day: templateDay,
         syllabus: templateSyllabus,
         maxPoints: templateMaxPoints,
         createdDate: new Date().toISOString().split('T')[0]
@@ -150,10 +217,12 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   // Deploy assignment pipeline publisher
   const handleDeployPipeline = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCourse || !selectedBatch) {
-      alert('Please select target Course and Batch.');
+    if (!selectedCourse) {
+      alert('Please select target Course.');
       return;
     }
+
+    const deployBatch = selectedBatch || 'All';
 
     let finalTitle = '';
     let finalDesc = '';
@@ -184,7 +253,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       title: finalTitle,
       description: finalDesc,
       course: selectedCourse,
-      batch: selectedBatch,
+      batch: deployBatch,
       instructorId: currentUser.id,
       instructorName: currentUser.name,
       dueDate: pipelineDueDate || new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0],
@@ -193,6 +262,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       createdDate: new Date().toISOString().split('T')[0],
       submissions: [],
       month: selectedMonth,
+      week: selectedWeek,
+      day: selectedDay,
       syllabus: selectedSyllabus
     };
 
@@ -201,7 +272,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
     // Send notifications to enrolled students
     const targetStudents = users.filter(u => 
       u.role === 'student' && 
-      (selectedBatch === 'All' || u.batch?.toLowerCase() === selectedBatch.toLowerCase()) &&
+      (deployBatch === 'All' || !u.batch || u.batch.toLowerCase() === deployBatch.toLowerCase() || (deployBatch === 'stb_001' && u.batch.toLowerCase() === 'batch a') || (deployBatch === 'stb_002' && u.batch.toLowerCase() === 'batch b') || (deployBatch === 'stb_003' && u.batch.toLowerCase() === 'batch c') || (deployBatch === 'stb_004' && u.batch.toLowerCase() === 'batch d') || (deployBatch.toLowerCase() === 'batch a' && u.batch.toLowerCase() === 'stb_001') || (deployBatch.toLowerCase() === 'batch b' && u.batch.toLowerCase() === 'stb_002') || (deployBatch.toLowerCase() === 'batch c' && u.batch.toLowerCase() === 'stb_003') || (deployBatch.toLowerCase() === 'batch d' && u.batch.toLowerCase() === 'stb_004')) &&
       (selectedCourse === 'All' || u.course?.toLowerCase() === selectedCourse.toLowerCase())
     );
 
@@ -209,7 +280,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       const notif: AppNotification = {
         id: `notif-asg-pipeline-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         title: `📄 Course Homework: ${finalTitle}`,
-        message: `New pipeline assignment issued for ${selectedMonth} (${selectedSyllabus || 'General'}). Due: ${newAsg.dueDate}.`,
+        message: `New pipeline assignment issued for ${selectedMonth}, ${selectedWeek}, ${selectedDay} (${selectedSyllabus || 'General'}). Due: ${newAsg.dueDate}.`,
         timestamp: new Date().toISOString(),
         read: false,
         type: 'general',
@@ -218,7 +289,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setNotifications(prev => [notif, ...prev]);
     });
 
-    setPipelineSuccessMsg(`Successfully deployed assignment "${finalTitle}" to all students in ${selectedCourse} (${selectedBatch}) for ${selectedMonth}!`);
+    setPipelineSuccessMsg(`Successfully deployed assignment "${finalTitle}" to students of ${selectedCourse} (${deployBatch !== 'All' ? getBatchDisplayName(deployBatch) : 'All Batches'}) for ${selectedMonth}, ${selectedWeek}, ${selectedDay}!`);
     
     // Clear pipeline states
     setCustomTitle('');
@@ -230,23 +301,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   // Get matching templates for pipeline filtering
   const matchingTemplates = assignmentBank.filter(t => {
     const matchesCourse = !selectedCourse || t.course.toLowerCase() === selectedCourse.toLowerCase();
-    
-    // Check batch matches. Course might store code (like stb_001) or name (Batch A)
-    // We normalize to match names or codes
-    const batchMatches = !selectedBatch || 
-                         t.batch.toLowerCase() === selectedBatch.toLowerCase() ||
-                         (selectedBatch === 'stb_001' && t.batch.toLowerCase() === 'batch a') ||
-                         (selectedBatch === 'stb_002' && t.batch.toLowerCase() === 'batch b') ||
-                         (selectedBatch === 'stb_003' && t.batch.toLowerCase() === 'batch c') ||
-                         (selectedBatch === 'stb_004' && t.batch.toLowerCase() === 'batch d') ||
-                         (t.batch.toLowerCase() === 'stb_001' && selectedBatch.toLowerCase() === 'batch a') ||
-                         (t.batch.toLowerCase() === 'stb_002' && selectedBatch.toLowerCase() === 'batch b') ||
-                         (t.batch.toLowerCase() === 'stb_003' && selectedBatch.toLowerCase() === 'batch c') ||
-                         (t.batch.toLowerCase() === 'stb_004' && selectedBatch.toLowerCase() === 'batch d');
-
     const matchesMonth = !selectedMonth || t.month.toLowerCase() === selectedMonth.toLowerCase();
+    const matchesWeek = !selectedWeek || !t.week || t.week.toLowerCase() === selectedWeek.toLowerCase();
+    const matchesDay = !selectedDay || !t.day || t.day.toLowerCase() === selectedDay.toLowerCase();
     
-    return matchesCourse && batchMatches && matchesMonth;
+    return matchesCourse && matchesMonth && matchesWeek && matchesDay;
   });
 
   // Filter assignment bank list view
@@ -448,6 +507,16 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                                   {item.month}
                                 </span>
                               )}
+                              {item.week && (
+                                <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[9px] font-bold rounded">
+                                  {item.week}
+                                </span>
+                              )}
+                              {item.day && (
+                                <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold rounded">
+                                  {item.day}
+                                </span>
+                              )}
                             </div>
                             <h4 className="text-sm font-bold text-slate-855 dark:text-white leading-snug tracking-tight">
                               {item.title}
@@ -510,68 +579,110 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                 Step 1: Set Target filters & Parameters
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
-                {/* Course Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Target Course *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-202 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                    value={selectedCourse}
-                    onChange={e => {
-                      setSelectedCourse(e.target.value);
-                      // Auto-select match batch from courses list if possible
-                      const matchCourseObj = courses.find(c => c.name === e.target.value);
-                      if (matchCourseObj?.batchNumber) {
-                        setSelectedBatch(matchCourseObj.batchNumber);
-                      }
-                    }}
-                  >
-                    {courses.map(c => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+              <div className="space-y-4">
+                {/* Visual progression bar */}
+                <div className="flex flex-wrap items-center gap-2 text-[10.5px] font-bold text-slate-500 bg-slate-50 dark:bg-white/5 px-3 py-2.5 rounded-2xl border border-slate-200/50 dark:border-white/5">
+                  <span className={selectedCourse ? "text-amber-500" : ""}>{selectedCourse || 'Select Course'}</span>
+                  <span className="text-slate-305 dark:text-gray-600 font-medium">➔</span>
+                  <span className="text-purple-500">{selectedBatch === 'All' ? 'All Batches' : getBatchDisplayName(selectedBatch)}</span>
+                  <span className="text-slate-305 dark:text-gray-600 font-medium">➔</span>
+                  <span className="text-amber-500">{selectedMonth}</span>
+                  <span className="text-slate-305 dark:text-gray-600 font-medium">➔</span>
+                  <span className="text-amber-500">{selectedWeek}</span>
+                  <span className="text-slate-305 dark:text-gray-600 font-medium">➔</span>
+                  <span className="text-amber-500">{selectedDay}</span>
                 </div>
 
-                {/* Batch Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Target Batch *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                    value={selectedBatch}
-                    onChange={e => setSelectedBatch(e.target.value)}
-                  >
-                    {batches.map(b => (
-                      <option key={b.id} value={b.name}>{b.name}</option>
-                    ))}
-                    <option value="stb_001">stb_001 (Batch A)</option>
-                    <option value="stb_002">stb_002 (Batch B)</option>
-                    <option value="stb_003">stb_003 (Batch C)</option>
-                    <option value="stb_004">stb_004 (Batch D)</option>
-                  </select>
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 text-xs font-sans">
+                  {/* Course Selection */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">1. Course *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-202 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-xs"
+                      value={selectedCourse}
+                      onChange={e => {
+                        setSelectedCourse(e.target.value);
+                      }}
+                    >
+                      {courses.map(c => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* Course Month Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Month Track *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500"
-                    value={selectedMonth}
-                    onChange={e => setSelectedMonth(e.target.value)}
-                  >
-                    <option value="Month 1">Month 1</option>
-                    <option value="Month 2">Month 2</option>
-                    <option value="Month 3">Month 3</option>
-                    <option value="Month 4">Month 4</option>
-                    <option value="Month 5">Month 5</option>
-                    <option value="Month 6">Month 6</option>
-                  </select>
+                  {/* Target Batch Selection */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">2. Batch *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-xs"
+                      value={selectedBatch}
+                      onChange={e => setSelectedBatch(e.target.value)}
+                    >
+                      {availableBatches.map(b => (
+                        <option key={b} value={b}>{getBatchDisplayName(b) || b}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Course Month Selection */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">3. Month *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 text-xs"
+                      value={selectedMonth}
+                      onChange={e => setSelectedMonth(e.target.value)}
+                    >
+                      <option value="Month 1">Month 1</option>
+                      <option value="Month 2">Month 2</option>
+                      <option value="Month 3">Month 3</option>
+                      <option value="Month 4">Month 4</option>
+                      <option value="Month 5">Month 5</option>
+                      <option value="Month 6">Month 6</option>
+                    </select>
+                  </div>
+
+                  {/* Course Week Selection */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">4. Week *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 text-xs"
+                      value={selectedWeek}
+                      onChange={e => setSelectedWeek(e.target.value)}
+                    >
+                      <option value="Week 1">Week 1</option>
+                      <option value="Week 2">Week 2</option>
+                      <option value="Week 3">Week 3</option>
+                      <option value="Week 4">Week 4</option>
+                      <option value="Week 5">Week 5</option>
+                    </select>
+                  </div>
+
+                  {/* Course Day Selection */}
+                  <div className="space-y-1.5 sm:col-span-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">5. Day *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-203 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 text-xs"
+                      value={selectedDay}
+                      onChange={e => setSelectedDay(e.target.value)}
+                    >
+                      <option value="Day 1">Day 1</option>
+                      <option value="Day 2">Day 2</option>
+                      <option value="Day 3">Day 3</option>
+                      <option value="Day 4">Day 4</option>
+                      <option value="Day 5">Day 5</option>
+                      <option value="Day 6">Day 6</option>
+                      <option value="Day 7">Day 7</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Target Syllabus Label */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 text-xs font-sans">
                   <label className="text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Syllabus Topic / Unit Name</label>
                   <input
                     type="text"
@@ -624,7 +735,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                       {matchingTemplates.length === 0 ? (
                         <div className="p-4 rounded-xl border border-dashed border-rose-200 dark:border-rose-500/20 bg-rose-50/20 dark:bg-rose-500/5 text-rose-600 text-xs text-left">
                           <AlertCircle className="w-4 h-4 inline-block -mt-0.5 mr-1.5 text-rose-500" />
-                          No bank templates match the criteria: Course: <b className="font-semibold">{selectedCourse || 'None'}</b>, Batch: <b className="font-semibold">{selectedBatch || 'None'}</b>, Month: <b className="font-semibold">{selectedMonth}</b>. 
+                          No bank templates match the criteria: Course: <b className="font-semibold">{selectedCourse || 'None'}</b>, {selectedMonth}, {selectedWeek}, {selectedDay}. 
                           <span className="block mt-1 text-slate-500 dark:text-gray-500">
                             Create one in the <b>Assignment Bank</b> tab first, or toggle "Use custom template-less task".
                           </span>
@@ -762,9 +873,18 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             <span className="font-bold text-slate-800 dark:text-zinc-250 truncate block max-w-[150px]">{asg.title}</span>
                             <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/5 border border-amber-500/15 text-amber-600 dark:text-amber-400 font-bold uppercase scale-90 origin-right shrink-0">{displayB}</span>
                           </div>
-                          <div className="flex items-center justify-between text-[10px] text-slate-400 leading-none">
-                            <span>{asg.month || 'General'} | {asg.course.slice(0, 15)}...</span>
-                            <span>Due: {asg.dueDate}</span>
+                          <div className="flex flex-col text-[10px] text-slate-400 gap-1 leading-normal">
+                            <div>
+                              <span className="font-semibold text-amber-600 dark:text-amber-400">{asg.month || 'Month 1'}</span>
+                              {asg.week && <span className="text-slate-300 dark:text-gray-700 mx-1">/</span>}
+                              <span className="text-purple-600 dark:text-purple-400 font-medium">{asg.week}</span>
+                              {asg.day && <span className="text-slate-300 dark:text-gray-700 mx-1">/</span>}
+                              <span className="text-emerald-600 dark:text-emerald-400 font-medium">{asg.day}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[9px] text-slate-400 bg-slate-50 dark:bg-white/5 p-1 rounded">
+                              <span className="truncate max-w-[120px] font-mono">{asg.course}</span>
+                              <span className="font-medium">Due: {asg.dueDate}</span>
+                            </div>
                           </div>
                         </div>
                       );
@@ -940,10 +1060,10 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {/* Course Month */}
                 <div className="space-y-1.5 col-span-1">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Course Month</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Month Track</label>
                   <select
                     className="w-full px-3 py-2 rounded-xl border border-slate-205 dark:border-white/10 bg-transparent text-slate-880 dark:text-zinc-250 focus:outline-none focus:border-amber-500"
                     value={templateMonth}
@@ -955,6 +1075,40 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                     <option value="Month 4">Month 4</option>
                     <option value="Month 5">Month 5</option>
                     <option value="Month 6">Month 6</option>
+                  </select>
+                </div>
+
+                {/* Course Week */}
+                <div className="space-y-1.5 col-span-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Week Track</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-xl border border-slate-205 dark:border-white/10 bg-transparent text-slate-880 dark:text-zinc-250 focus:outline-none focus:border-amber-500"
+                    value={templateWeek}
+                    onChange={e => setTemplateWeek(e.target.value)}
+                  >
+                    <option value="Week 1">Week 1</option>
+                    <option value="Week 2">Week 2</option>
+                    <option value="Week 3">Week 3</option>
+                    <option value="Week 4">Week 4</option>
+                    <option value="Week 5">Week 5</option>
+                  </select>
+                </div>
+
+                {/* Course Day */}
+                <div className="space-y-1.5 col-span-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Day Track</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-xl border border-slate-205 dark:border-white/10 bg-transparent text-slate-880 dark:text-zinc-250 focus:outline-none focus:border-amber-500"
+                    value={templateDay}
+                    onChange={e => setTemplateDay(e.target.value)}
+                  >
+                    <option value="Day 1">Day 1</option>
+                    <option value="Day 2">Day 2</option>
+                    <option value="Day 3">Day 3</option>
+                    <option value="Day 4">Day 4</option>
+                    <option value="Day 5">Day 5</option>
+                    <option value="Day 6">Day 6</option>
+                    <option value="Day 7">Day 7</option>
                   </select>
                 </div>
 
@@ -972,7 +1126,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
 
                 {/* Score scale points */}
                 <div className="space-y-1.5 col-span-1">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Max Score Points</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Max Points</label>
                   <input
                     type="number"
                     required

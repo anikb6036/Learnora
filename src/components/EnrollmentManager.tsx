@@ -419,12 +419,6 @@ export default function EnrollmentManager({
                           <span>Father's Name: <strong className="text-slate-800 dark:text-gray-200">{req.fatherName}</strong></span>
                         </p>
                       )}
-                      {req.fatherPhone && (
-                        <p className="flex items-center gap-2 bg-slate-50 dark:bg-[#161618] p-1.5 px-2 rounded-lg border dark:border-white/5">
-                          <Phone className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                          <span>Father's Phone: <strong className="text-slate-800 dark:text-gray-200">{req.fatherPhone}</strong></span>
-                        </p>
-                      )}
                       {req.address && (
                         <p className="flex items-start gap-2 bg-slate-50 dark:bg-[#161618] p-1.5 px-2 rounded-lg border dark:border-white/5 text-left">
                           <MapPin className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -1002,45 +996,6 @@ export default function EnrollmentManager({
                         onChange={e => setNewFatherName(e.target.value)}
                         className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                       />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs   text-slate-500 dark:text-slate-400 block">Father's Phone (Optional)</label>
-                      <div className="flex gap-1.5">
-                        <select
-                          value={newFatherPhonePrefix}
-                          onChange={e => {
-                            setNewFatherPhonePrefix(e.target.value);
-                            setNewFatherPhone('');
-                            setNewFatherPhoneError('');
-                          }}
-                          className="px-2 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 font-sans"
-                        >
-                          {COUNTRY_PHONE_CONFIGS.map(c => (
-                            <option key={`${c.name}-${c.code}`} value={c.code}>{c.flag} {c.code}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="text"
-                          placeholder={COUNTRY_PHONE_CONFIGS.find(c => c.code === newFatherPhonePrefix)?.placeholder || '9876543210'}
-                          value={newFatherPhone}
-                          maxLength={COUNTRY_PHONE_CONFIGS.find(c => c.code === newFatherPhonePrefix)?.length || 10}
-                          onChange={e => {
-                            const raw = e.target.value.replace(/\D/g, '');
-                            setNewFatherPhone(raw);
-                            const len = COUNTRY_PHONE_CONFIGS.find(c => c.code === newFatherPhonePrefix)?.length || 10;
-                            if (raw && raw.length !== len) {
-                              setNewFatherPhoneError(`Must be exactly ${len} digits`);
-                            } else {
-                              setNewFatherPhoneError('');
-                            }
-                          }}
-                          className={`flex-1 px-3 py-2 text-xs border ${newFatherPhoneError ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'} rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 `}
-                        />
-                      </div>
-                      {newFatherPhoneError && (
-                        <p className="text-xs text-rose-500 font-semibold">{newFatherPhoneError}</p>
-                      )}
                     </div>
 
                     <div className="space-y-1.5">
@@ -1955,30 +1910,6 @@ export default function EnrollmentManager({
                       onChange={e => setEditFatherName(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 font-sans focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
                     />
-                  </div>
-
-                  {/* Father Phone */}
-                  <div className="space-y-1">
-                    <label className="text-xs  text-slate-500 dark:text-gray-400  font-semibold">Father / Guardian Phone</label>
-                    <div className="flex gap-1.5">
-                      <select
-                        value={editFatherPhonePrefix}
-                        onChange={e => setEditFatherPhonePrefix(e.target.value)}
-                        className="px-2 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-805 dark:text-gray-100 focus:outline-none"
-                      >
-                        {COUNTRY_PHONE_CONFIGS.map(c => (
-                          <option key={c.code + c.name} value={c.code}>{c.flag} {c.code}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        value={editFatherPhoneRaw}
-                        onChange={e => setEditFatherPhoneRaw(e.target.value)}
-                        placeholder="Enter digits"
-                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none"
-                      />
-                    </div>
-                    {editFatherPhoneError && <p className="text-xs text-rose-500  mt-0.5">{editFatherPhoneError}</p>}
                   </div>
 
                   {/* Last Qualification */}

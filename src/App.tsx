@@ -210,6 +210,7 @@ function AppContent() {
   const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
   const [submissionText, setSubmissionText] = useState('');
   const [submissionFileUrn, setSubmissionFileUrn] = useState('');
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Simulated student mailbox communications
   const [simulatedEmails, setSimulatedEmails, emailsLoaded] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
@@ -4189,13 +4190,14 @@ function AppContent() {
                                                     setSubmittingAssignmentId(asg.id);
                                                     setSubmissionText(submission.answerText || '');
                                                     setSubmissionFileUrn(submission.fileUrn || '');
+                                                    setSubmissionError(null);
                                                   }}
                                                   className="text-[11px] text-indigo-600 dark:text-zinc-400 hover:text-indigo-650 font-bold underline transition cursor-pointer"
                                                 >
                                                   Edit Submission
                                                 </button>
                                               </div>
-                                              <div className="bg-white dark:bg-white/[0.01] border border-slate-150 dark:border-white/5 p-3 rounded-lg text-xs font-sans text-slate-650 dark:text-zinc-350 whitespace-pre-line leading-relaxed text-left">
+                                              <div className="bg-white dark:bg-white/[0.01] border border-slate-150 dark:border-white/5 p-3 rounded-lg text-xs font-sans text-slate-655 dark:text-zinc-350 whitespace-pre-line leading-relaxed text-left">
                                                 {submission.answerText}
                                               </div>
                                               {submission.fileUrn && (
@@ -4203,12 +4205,22 @@ function AppContent() {
                                                   <FileText className="w-3.5 h-3.5 text-zinc-450" /> Solution Document: <span className="font-sans text-indigo-600 dark:text-indigo-400 underline">{submission.fileUrn}</span>
                                                 </p>
                                               )}
-                                              <p className="text-[10.5px] italic text-slate-450 dark:text-gray-500 mt-1">
+                                              <p className="text-[10.5px] italic text-slate-455 dark:text-gray-500 mt-1">
                                                 Our servers queued your response at {new Date(submission.submittedDate).toLocaleString()}. It will be graded by {asg.instructorName} shortly.
                                               </p>
                                             </div>
                                           ) : submittingAssignmentId === asg.id ? (
                                             <div className="bg-white dark:bg-[#121319] border border-slate-200 dark:border-white/10 p-4 rounded-xl space-y-4 text-left">
+                                              {submissionError && (
+                                                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 text-rose-650 dark:text-rose-400 text-xs font-semibold flex items-start gap-2 animate-pulse">
+                                                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
+                                                  <div>
+                                                    <p className="font-bold text-rose-700 dark:text-rose-400">Blank Submission Error</p>
+                                                    <p className="text-[11px] font-medium opacity-90">{submissionError}</p>
+                                                  </div>
+                                                </div>
+                                              )}
+
                                               <div>
                                                 <label className="block text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-505 mb-1 text-left">Your Answer text</label>
                                                 <textarea
@@ -4216,7 +4228,10 @@ function AppContent() {
                                                   placeholder="Type your structured solution answers here..."
                                                   className="w-full px-3 py-2 rounded-xl text-xs border border-slate-205 dark:border-white/5 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 transition-colors leading-relaxed font-mono"
                                                   value={submissionText}
-                                                  onChange={(e) => setSubmissionText(e.target.value)}
+                                                  onChange={(e) => {
+                                                    setSubmissionText(e.target.value);
+                                                    if (submissionError) setSubmissionError(null);
+                                                  }}
                                                 />
                                               </div>
 
@@ -4227,13 +4242,19 @@ function AppContent() {
                                                   placeholder="e.g. math_sheet_derivation_draft_final.pdf"
                                                   className="w-full px-3 py-2 rounded-xl text-xs border border-slate-205 dark:border-white/5 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-505 transition-colors font-mono"
                                                   value={submissionFileUrn}
-                                                  onChange={(e) => setSubmissionFileUrn(e.target.value)}
+                                                  onChange={(e) => {
+                                                    setSubmissionFileUrn(e.target.value);
+                                                    if (submissionError) setSubmissionError(null);
+                                                  }}
                                                 />
                                               </div>
 
                                               <div className="flex items-center justify-end gap-3 mt-3">
                                                 <button
-                                                  onClick={() => setSubmittingAssignmentId(null)}
+                                                  onClick={() => {
+                                                    setSubmittingAssignmentId(null);
+                                                    setSubmissionError(null);
+                                                  }}
                                                   className="px-3 py-1.5 text-xs text-slate-655 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition"
                                                 >
                                                   Cancel
@@ -4241,13 +4262,14 @@ function AppContent() {
                                                 <button
                                                   onClick={() => {
                                                     if (!submissionText.trim()) {
-                                                      alert('Please write out your solution before submitting.');
+                                                      setSubmissionError('Please write out your solution answers before submitting. Blank text cannot be graded.');
                                                       return;
                                                     }
                                                     handleStudentSubmitAssignment(asg.id, submissionText, submissionFileUrn);
                                                     setSubmittingAssignmentId(null);
                                                     setSubmissionText('');
                                                     setSubmissionFileUrn('');
+                                                    setSubmissionError(null);
                                                   }}
                                                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                                                 >
@@ -4261,6 +4283,7 @@ function AppContent() {
                                                 setSubmittingAssignmentId(asg.id);
                                                 setSubmissionText('');
                                                 setSubmissionFileUrn(`homework_${asg.id}_${currentUser.id.slice(0, 5)}.pdf`);
+                                                setSubmissionError(null);
                                               }}
                                               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-755 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-[1.01] duration-150 cursor-pointer"
                                             >
