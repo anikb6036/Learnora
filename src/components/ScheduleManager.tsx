@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { UserAccount, ClassSchedule, StudentBatch, Course, MasterCourse } from '../types';
+import { UserAccount, ClassSchedule, StudentBatch, Course, MasterCourse, ProgressRecord } from '../types';
 import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -16,6 +16,8 @@ interface ScheduleManagerProps {
   batches?: StudentBatch[];
   courses?: Course[];
   masterCourses?: MasterCourse[];
+  progressRecords?: ProgressRecord[];
+  onSaveClassAttendance?: (classId: string, records: { studentId: string; status: 'present' | 'absent' | 'excused' }[]) => void;
   onAddClass: (newClass: Omit<ClassSchedule, 'id' | 'enrolledStudentIds' | 'course'> & { course?: string }) => void;
   onUpdateStatus: (classId: string, status: 'scheduled' | 'completed' | 'cancelled') => void;
   onSelfEnroll: (classId: string) => void;
@@ -62,6 +64,8 @@ export default function ScheduleManager({
   batches = [],
   courses = [],
   masterCourses = [],
+  progressRecords = [],
+  onSaveClassAttendance,
   onAddClass,
   onUpdateStatus,
   onSelfEnroll,
@@ -84,6 +88,37 @@ export default function ScheduleManager({
   setEditingCourse: propsSetEditingCourse,
 }: ScheduleManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAttendanceClassId, setSelectedAttendanceClassId] = useState<string | null>(null);
+  const [localAttendance, setLocalAttendance] = useState<{ [studentId: string]: 'present' | 'absent' | 'excused' }>({});
+  const [attendanceSearchQuery, setAttendanceSearchQuery] = useState('');
+
+  React.useEffect(() => {
+    if (selectedAttendanceClassId) {
+      const cl = schedules.find(s => s.id === selectedAttendanceClassId);
+      if (cl) {
+        const initialMap: { [studentId: string]: 'present' | 'absent' | 'excused' } = {};
+        const targetStudents = students.filter(u => {
+          const isExplicitlyEnrolled = cl.enrolledStudentIds?.includes(u.id);
+          const isMyCourse = cl.course && u.course && cl.course.toLowerCase() === u.course.toLowerCase();
+          const isAllCourse = !cl.course || cl.course === 'All';
+          const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+          const isMyBatch = cl.batch && u.batch && cl.batch.toLowerCase() === u.batch.toLowerCase();
+          const isAllBatch = !cl.batch || cl.batch === 'All';
+          const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+          return matchesCourse && matchesBatch;
+        });
+
+        targetStudents.forEach(st => {
+          const existing = (progressRecords || []).find(r => r.studentId === st.id && r.classId === selectedAttendanceClassId);
+          initialMap[st.id] = existing ? existing.attendanceStatus : 'absent';
+        });
+        setLocalAttendance(initialMap);
+      }
+    }
+  }, [selectedAttendanceClassId, schedules, students, progressRecords]);
+
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [instructorFilter, setInstructorFilter] = useState<'all' | string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
@@ -2003,6 +2038,54 @@ export default function ScheduleManager({
                             ) : null}
                           </div>
                         )}
+
+                        {cl.status === 'completed' && (
+                          <div className="flex items-center gap-2">
+                            {['admin', 'sub-admin'].includes(currentUser.role) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId) ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAttendanceClassId(cl.id);
+                                }}
+                                className="px-2.5 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 cursor-pointer font-sans"
+                                title="Manage attendance records for this completed session"
+                              >
+                                <Users className="w-3.5 h-3.5" /> Attendance Sheet
+                              </button>
+                            ) : currentUser.role === 'student' ? (
+                              (() => {
+                                const record = (progressRecords || []).find(r => r.studentId === currentUser.id && r.classId === cl.id);
+                                if (record) {
+                                  if (record.attendanceStatus === 'present') {
+                                    return (
+                                      <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md text-[10px] font-bold border border-emerald-500/15 dark:border-emerald-500/10 uppercase tracking-wider">
+                                        ✓ Present
+                                      </span>
+                                    );
+                                  } else if (record.attendanceStatus === 'absent') {
+                                    return (
+                                      <span className="px-2 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-md text-[10px] font-bold border border-rose-500/15 dark:border-rose-500/10 uppercase tracking-wider">
+                                        ❌ Absent
+                                      </span>
+                                    );
+                                  } else {
+                                    return (
+                                      <span className="px-2 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-md text-[10px] font-bold border border-amber-500/15 dark:border-amber-500/10 uppercase tracking-wider">
+                                        ⚪ Excused
+                                      </span>
+                                    );
+                                  }
+                                } else {
+                                  return (
+                                    <span className="px-2 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-md text-[10px] font-bold border border-rose-500/15 dark:border-rose-500/10 uppercase tracking-wider">
+                                      ❌ Absent
+                                    </span>
+                                  );
+                                }
+                              })()
+                            ) : null}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2106,6 +2189,209 @@ export default function ScheduleManager({
           </div>
         </div>
       )}
+
+      {/* Attendance Management Modal */}
+      {selectedAttendanceClassId && (() => {
+        const cl = schedules.find(s => s.id === selectedAttendanceClassId);
+        if (!cl) return null;
+
+        const attendanceStudentsList = students.filter(u => {
+          const isExplicitlyEnrolled = cl.enrolledStudentIds?.includes(u.id);
+          const isMyCourse = cl.course && u.course && cl.course.toLowerCase() === u.course.toLowerCase();
+          const isAllCourse = !cl.course || cl.course === 'All';
+          const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+          const isMyBatch = cl.batch && u.batch && cl.batch.toLowerCase() === u.batch.toLowerCase();
+          const isAllBatch = !cl.batch || cl.batch === 'All';
+          const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+          return matchesCourse && matchesBatch;
+        });
+
+        const filteredAttendanceStudents = attendanceStudentsList.filter(s => 
+          s.name.toLowerCase().includes(attendanceSearchQuery.toLowerCase()) || 
+          (s.email || '').toLowerCase().includes(attendanceSearchQuery.toLowerCase()) ||
+          (s.batch || '').toLowerCase().includes(attendanceSearchQuery.toLowerCase())
+        );
+
+        // Calculate stats
+        const totalPresent = Object.values(localAttendance).filter(v => v === 'present').length;
+        const totalAbsent = Object.values(localAttendance).filter(v => v === 'absent').length;
+        const totalExcused = Object.values(localAttendance).filter(v => v === 'excused').length;
+
+        return (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs env-modal-container animate-fadeIn overflow-y-auto">
+            <div className="w-full max-w-2xl bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[85vh]">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-zinc-950/20">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest font-mono">Roll Call Attendance</span>
+                    <h3 className="text-lg font-sans font-extrabold text-slate-900 dark:text-white mt-1">
+                      {cl.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium italic">
+                      Syllabus Topic: <span className="font-semibold text-slate-700 dark:text-zinc-300">{cl.subject}</span> | Target Course: <span className="font-semibold text-slate-700 dark:text-zinc-300">{cl.course || 'All'}</span> | Batch: <span className="font-semibold text-slate-700 dark:text-zinc-300">{cl.batch || 'All'}</span>
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedAttendanceClassId(null)}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Stats row */}
+                <div className="flex gap-4 mt-4 bg-white dark:bg-zinc-900/40 p-3 rounded-2xl border border-slate-200/40 dark:border-white/5 shadow-xs">
+                  <div className="flex-1 text-center font-sans">
+                    <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-550">Total Students</p>
+                    <p className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mt-0.5">{attendanceStudentsList.length}</p>
+                  </div>
+                  <div className="w-px bg-slate-100 dark:bg-white/5 self-stretch"></div>
+                  <div className="flex-1 text-center font-sans">
+                    <p className="text-[10px] uppercase font-bold text-emerald-500">Present</p>
+                    <p className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">{totalPresent}</p>
+                  </div>
+                  <div className="w-px bg-slate-100 dark:bg-white/5 self-stretch"></div>
+                  <div className="flex-1 text-center font-sans">
+                    <p className="text-[10px] uppercase font-bold text-rose-500">Absent</p>
+                    <p className="text-sm font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">{totalAbsent}</p>
+                  </div>
+                  <div className="w-px bg-slate-100 dark:bg-white/5 self-stretch"></div>
+                  <div className="flex-1 text-center font-sans">
+                    <p className="text-[10px] uppercase font-bold text-amber-500">Excused</p>
+                    <p className="text-sm font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">{totalExcused}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Search bar */}
+              <div className="px-6 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50/20">
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Search className="w-3.5 h-3.5" />
+                  </span>
+                  <input
+                    type="text"
+                    value={attendanceSearchQuery}
+                    onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                    placeholder="Search enrolled students..."
+                    className="w-full pl-9 pr-4 py-1.5 text-xs text-slate-900 bg-slate-50 hover:bg-slate-100/50 focus:bg-white dark:text-white dark:bg-zinc-900 border border-slate-250 dark:border-zinc-800 focus:ring-1 focus:ring-indigo-500 rounded-xl transition duration-155"
+                  />
+                </div>
+              </div>
+
+              {/* Student Roster List */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                {filteredAttendanceStudents.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400">
+                    <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-xs">No active students found matching search filters.</p>
+                  </div>
+                ) : (
+                  filteredAttendanceStudents.map((st) => {
+                    const currentStatus = localAttendance[st.id] || 'absent';
+                    const hasJoinedActiveSession = (progressRecords || []).some(
+                      r => r.studentId === st.id && r.classId === selectedAttendanceClassId && r.attendanceStatus === 'present'
+                    );
+
+                    return (
+                      <div 
+                        key={st.id} 
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-slate-50 hover:bg-slate-100/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 rounded-2xl border border-slate-200/50 dark:border-zinc-800/40 transition duration-150 animate-fadeIn"
+                      >
+                        {/* Student metadata */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-[#1e1e24] dark:bg-zinc-800 border border-slate-200 dark:border-white/10 flex items-center justify-center font-extrabold text-xs text-white uppercase shadow-xs">
+                            {st.name[0]}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">{st.name}</span>
+                              {hasJoinedActiveSession && (
+                                <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-sm text-[8.5px] font-bold uppercase tracking-wider">
+                                  Joined Live Link
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 dark:text-zinc-500">
+                              Batch: <span className="font-medium text-slate-700 dark:text-zinc-300">{st.batch || 'N/A'}</span> • Course: <span className="font-medium text-slate-700 dark:text-zinc-300">{st.course || 'N/A'}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Status Toggle buttons */}
+                        <div className="flex items-center gap-1 bg-white dark:bg-zinc-900/80 p-1 rounded-xl border border-slate-200/50 dark:border-zinc-850 shadow-2xs self-end sm:self-auto">
+                          <button
+                            type="button"
+                            onClick={() => setLocalAttendance(prev => ({ ...prev, [st.id]: 'present' }))}
+                            className={`px-3 py-1 text-[10.5px] font-bold rounded-lg transition-all cursor-pointer ${
+                              currentStatus === 'present'
+                                ? 'bg-emerald-500 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            Present
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setLocalAttendance(prev => ({ ...prev, [st.id]: 'absent' }))}
+                            className={`px-3 py-1 text-[10.5px] font-bold rounded-lg transition-all cursor-pointer ${
+                              currentStatus === 'absent'
+                                ? 'bg-rose-500 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            Absent
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setLocalAttendance(prev => ({ ...prev, [st.id]: 'excused' }))}
+                            className={`px-3 py-1 text-[10.5px] font-bold rounded-lg transition-all cursor-pointer ${
+                              currentStatus === 'excused'
+                                ? 'bg-amber-500 text-black shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            Excused
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Modal footer */}
+              <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-zinc-950/20 flex items-center justify-end gap-3 font-sans">
+                <button
+                  type="button"
+                  onClick={() => setSelectedAttendanceClassId(null)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-150/40 dark:hover:bg-white/5 rounded-xl transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSaveClassAttendance) {
+                      onSaveClassAttendance(
+                        selectedAttendanceClassId,
+                        Object.entries(localAttendance).map(([studId, status]) => ({ studentId: studId, status: status as 'present' | 'absent' | 'excused' }))
+                      );
+                    }
+                    setSelectedAttendanceClassId(null);
+                  }}
+                  className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-md shadow-indigo-600/10 rounded-xl transition cursor-pointer"
+                >
+                  Save Attendance Sheet
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );

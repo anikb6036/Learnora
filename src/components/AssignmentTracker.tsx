@@ -401,9 +401,58 @@ export default function AssignmentTracker({
               </div>
 
               <div className="text-sm text-slate-600 dark:text-slate-300 space-y-3 pt-2">
-                <p className="leading-relaxed bg-slate-50 dark:bg-[#0f0f11] p-3 rounded border border-slate-200 dark:border-white/5 italic">
-                  "{activeAsg.description}"
-                </p>
+                {activeAsg.questionType === 'dsa' ? (
+                  <div className="space-y-3">
+                    <div className="bg-amber-500/5 dark:bg-amber-500/[0.02] border border-amber-500/20 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        DSA Coding Problem
+                      </div>
+                      <div className="text-xs text-slate-700 dark:text-zinc-200 leading-relaxed font-sans whitespace-pre-wrap">
+                        {activeAsg.dsaQuestion || activeAsg.description}
+                      </div>
+                      {activeAsg.dsaConstraints && (
+                        <div className="pt-2 border-t border-slate-200/50 dark:border-white/5">
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase block tracking-widest mb-1">Constraints:</span>
+                          <span className="font-mono text-[11px] text-slate-600 dark:text-zinc-400 block whitespace-pre-line bg-slate-50 dark:bg-black/20 p-2 rounded">
+                            {activeAsg.dsaConstraints}
+                          </span>
+                        </div>
+                      )}
+                      {activeAsg.dsaTestCases && (
+                        <div className="pt-2 border-t border-slate-200/50 dark:border-white/5">
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase block tracking-widest mb-1">Sample Test Cases:</span>
+                          <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 block whitespace-pre-line bg-slate-50 dark:bg-black/20 p-2 rounded">
+                            {activeAsg.dsaTestCases}
+                          </span>
+                        </div>
+                      )}
+                      {activeAsg.dsaTemplateCode && (
+                        <div className="pt-2 border-t border-slate-200/50 dark:border-white/5">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Starter Template:</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(activeAsg.dsaTemplateCode || '');
+                                alert('Starter code copied to clipboard!');
+                              }}
+                              className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-zinc-300 font-bold px-2 py-0.5 rounded transition cursor-pointer"
+                            >
+                              Copy Code
+                            </button>
+                          </div>
+                          <pre className="font-mono text-[10px] text-slate-500 dark:text-zinc-300 block bg-slate-50 dark:bg-black/20 p-2.5 rounded overflow-x-auto border border-slate-200/40 dark:border-white/5 max-h-40">
+                            <code>{activeAsg.dsaTemplateCode}</code>
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="leading-relaxed bg-slate-50 dark:bg-[#0f0f11] p-3 rounded border border-slate-200 dark:border-white/5 italic">
+                    "{activeAsg.description}"
+                  </p>
+                )}
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className="bg-slate-50 dark:bg-[#0f0f11]/50 p-2.5 rounded border border-slate-200 dark:border-white/5">

@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentEvolution } from '../types';
-import { Award, BookOpen, Clock, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle } from 'lucide-react';
+import { Award, BookOpen, Clock, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle, Terminal, Code, Copy, History, Play, Flame, RotateCcw, BookOpenText, ChevronLeft, HelpCircle, Maximize2, Settings, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProgressTrackerProps {
@@ -40,6 +40,21 @@ export default function ProgressTracker({
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Active student workspace modal states
+  const [selectedActiveWeekIndex, setSelectedActiveWeekIndex] = useState<number | null>(null);
+  const [draftResponse, setDraftResponse] = useState<string>('');
+  const [copiedIndex, setCopiedIndex] = useState<boolean>(false);
+  const [workspaceSuccessMsg, setWorkspaceSuccessMsg] = useState<string>('');
+
+  // Interactive LeetCode Workspace Specific States
+  const [leftActiveTab, setLeftActiveTab] = useState<'description' | 'editorial' | 'submissions'>('description');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('JavaScript');
+  const [testcaseInput, setTestcaseInput] = useState<string>('');
+  const [testcaseOutput, setTestcaseOutput] = useState<string>('');
+  const [isRunningCode, setIsRunningCode] = useState<boolean>(false);
+  const [runResult, setRunResult] = useState<{ success: boolean; stdout?: string; error?: string; timeMs?: number; outputVal?: string } | null>(null);
+  const [terminalOpen, setTerminalOpen] = useState<boolean>(true);
 
   // Evolution scoring state variables
   const [selectedEvolutionStudentId, setSelectedEvolutionStudentId] = useState('');
@@ -233,6 +248,133 @@ export default function ProgressTracker({
   };
 
   if (currentUser.role === 'student') {
+    const handleOpenWeekWorkspace = (weekIdx: number, evoRec: StudentEvolution | undefined) => {
+      setSelectedActiveWeekIndex(weekIdx);
+      let subValue = '';
+      let testcases = '';
+      if (weekIdx === 1) { subValue = evoRec?.week1Submission || ''; testcases = evoRec?.week1TestCases || ''; }
+      else if (weekIdx === 2) { subValue = evoRec?.week2Submission || ''; testcases = evoRec?.week2TestCases || ''; }
+      else if (weekIdx === 3) { subValue = evoRec?.week3Submission || ''; testcases = evoRec?.week3TestCases || ''; }
+      else if (weekIdx === 4) { subValue = evoRec?.week4Submission || ''; testcases = evoRec?.week4TestCases || ''; }
+      
+      if (!subValue) {
+        if (weekIdx === 1 && evoRec?.week1Type === 'dsa') subValue = evoRec.week1TemplateCode || '';
+        else if (weekIdx === 2 && evoRec?.week2Type === 'dsa') subValue = evoRec.week2TemplateCode || '';
+        else if (weekIdx === 3 && evoRec?.week3Type === 'dsa') subValue = evoRec.week3TemplateCode || '';
+        else if (weekIdx === 4 && evoRec?.week4Type === 'dsa') subValue = evoRec.week4TemplateCode || '';
+      }
+      
+      setDraftResponse(subValue);
+      setTestcaseInput(testcases);
+      setWorkspaceSuccessMsg('');
+      setLeftActiveTab('description');
+      setRunResult(null);
+    };
+
+    const handleSubmitWeekSubmission = (weekIdx: number, evoRec: StudentEvolution | undefined) => {
+      if (!onUpdateStudentEvolutions || !evoRec) return;
+      onUpdateStudentEvolutions(prev => {
+        return prev.map(ev => {
+          // match by studentId, month and course or ID
+          if (ev.studentId === currentUser.id && ev.month === studentSelectedMonth) {
+            const updated = { ...ev, lastUpdated: new Date().toISOString() };
+            if (weekIdx === 1) { updated.week1Submission = draftResponse; updated.week1SubmissionDate = new Date().toLocaleString(); }
+            if (weekIdx === 2) { updated.week2Submission = draftResponse; updated.week2SubmissionDate = new Date().toLocaleString(); }
+            if (weekIdx === 3) { updated.week3Submission = draftResponse; updated.week3SubmissionDate = new Date().toLocaleString(); }
+            if (weekIdx === 4) { updated.week4Submission = draftResponse; updated.week4SubmissionDate = new Date().toLocaleString(); }
+            return updated;
+          }
+          return ev;
+        });
+      });
+      setWorkspaceSuccessMsg('Congratulations! Your checkpoint solution has been successfully submitted to your Instructor for review.');
+      setTimeout(() => {
+        setSelectedActiveWeekIndex(null);
+      }, 2500);
+    };
+
+    const handleRunCode = () => {
+      setIsRunningCode(true);
+      setRunResult(null);
+      setTerminalOpen(true);
+      
+      setTimeout(() => {
+        const startTime = performance.now();
+        try {
+          const codeToRun = draftResponse;
+          let targetFuncName = 'twoSum';
+          if (codeToRun.includes('isValid')) targetFuncName = 'isValid';
+          else if (codeToRun.includes('maxProfit')) targetFuncName = 'maxProfit';
+          else if (codeToRun.includes('lengthOfLongestSubstring')) targetFuncName = 'lengthOfLongestSubstring';
+          else if (codeToRun.includes('maxArea')) targetFuncName = 'maxArea';
+          else if (codeToRun.includes('threeSum')) targetFuncName = 'threeSum';
+          else if (codeToRun.includes('trap')) targetFuncName = 'trap';
+          else if (codeToRun.includes('findMedianSortedArrays')) targetFuncName = 'findMedianSortedArrays';
+
+          let parsedInput: any[] = [];
+          if (targetFuncName === 'twoSum') {
+            parsedInput = [[2, 7, 11, 15], 9];
+          } else if (targetFuncName === 'isValid') {
+            parsedInput = ["()[]{}"];
+          } else if (targetFuncName === 'maxProfit') {
+            parsedInput = [[7, 1, 5, 3, 6, 4]];
+          } else if (targetFuncName === 'lengthOfLongestSubstring') {
+            parsedInput = ["abcabcbb"];
+          } else if (targetFuncName === 'maxArea') {
+            parsedInput = [[1, 8, 6, 2, 5, 4, 8, 3, 7]];
+          } else if (targetFuncName === 'threeSum') {
+            parsedInput = [[-1, 0, 1, 2, -1, -4]];
+          } else if (targetFuncName === 'trap') {
+            parsedInput = [[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]];
+          } else if (targetFuncName === 'findMedianSortedArrays') {
+            parsedInput = [[1, 3], [2]];
+          }
+
+          if (testcaseInput && testcaseInput.trim()) {
+            try {
+              const rawInp = testcaseInput.trim();
+              if (rawInp.startsWith('[') && rawInp.endsWith(']')) {
+                const parsed = JSON.parse(rawInp);
+                if (Array.isArray(parsed)) {
+                  parsedInput = parsed;
+                } else {
+                  parsedInput = [parsed];
+                }
+              } else {
+                parsedInput = [rawInp];
+              }
+            } catch (e) {
+              // use default
+            }
+          }
+
+          const fullExecutionJs = `
+            ${codeToRun}
+            return ${targetFuncName}.apply(null, ${JSON.stringify(parsedInput)});
+          `;
+
+          const evaluator = new Function(fullExecutionJs);
+          const returnVal = evaluator();
+          const endTime = performance.now();
+          const timeElapsed = (endTime - startTime).toFixed(2);
+
+          setRunResult({
+            success: true,
+            stdout: `Executed entrypoint: ${targetFuncName}() with args: ${JSON.stringify(parsedInput)}`,
+            outputVal: JSON.stringify(returnVal),
+            timeMs: parseFloat(timeElapsed)
+          });
+        } catch (err: any) {
+          setRunResult({
+            success: false,
+            error: err?.message || 'SyntaxError during browser static execution context analysis.'
+          });
+        } finally {
+          setIsRunningCode(false);
+        }
+      }, 1000);
+    };
+
     const studentAssignmentsList = assignments.filter(asg => {
       const matchesCourse = !asg.course || asg.course === 'All' || (currentUser.course && asg.course.toLowerCase() === currentUser.course.toLowerCase());
       const matchesBatch = !asg.batch || asg.batch === 'All' || (currentUser.batch && asg.batch.toLowerCase() === currentUser.batch.toLowerCase());
@@ -1500,38 +1642,83 @@ export default function ProgressTracker({
 
                   {/* 4 evolution week blocks */}
                   <div>
-                    <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mb-2 flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-slate-400" />
                       Continuous Weekly Evaluations (Month {studentSelectedMonth})
                     </h3>
+                    <p className="text-[11px] text-slate-400 dark:text-gray-500 mb-4">
+                      Click on any weekly evolution card to open the interactive workspace, view problem statements, and submit your coding or text solution.
+                    </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        { title: evoRec?.title1 || 'Evolution 1 (Week 1)', targetScore: evoRec?.evolution1, feedback: evoRec?.feedback1, subtitle: evoRec?.desc1 || 'Kinematics & Base theory' },
-                        { title: evoRec?.title2 || 'Evolution 2 (Week 2)', targetScore: evoRec?.evolution2, feedback: evoRec?.feedback2, subtitle: evoRec?.desc2 || 'Applied Practical Problems' },
-                        { title: evoRec?.title3 || 'Evolution 3 (Week 3)', targetScore: evoRec?.evolution3, feedback: evoRec?.feedback3, subtitle: evoRec?.desc3 || 'Analytical Problem Resolution' },
-                        { title: evoRec?.title4 || 'Evolution 4 (Week 4)', targetScore: evoRec?.evolution4, feedback: evoRec?.feedback4, subtitle: evoRec?.desc4 || 'Integrated Examination' }
-                      ].map((item, index) => {
-                        const hasScore = item.targetScore !== undefined;
-                        const scoreNum = item.targetScore || 0;
-                        const isPassing = scoreNum >= 85; // general guideline check
+                      {[1, 2, 3, 4].map((weekNum) => {
+                        const getWeekFields = (index: number) => {
+                          if (index === 1) {
+                            return {
+                              type: evoRec?.week1Type || 'instruction',
+                              title: evoRec?.title1 || 'Evolution 1',
+                              desc: evoRec?.desc1 || 'Weekly Milestone task',
+                              feedback: evoRec?.feedback1,
+                              score: evoRec?.evolution1,
+                              submission: evoRec?.week1Submission,
+                            };
+                          }
+                          if (index === 2) {
+                            return {
+                              type: evoRec?.week2Type || 'instruction',
+                              title: evoRec?.title2 || 'Evolution 2',
+                              desc: evoRec?.desc2 || 'Weekly Milestone task',
+                              feedback: evoRec?.feedback2,
+                              score: evoRec?.evolution2,
+                              submission: evoRec?.week2Submission,
+                            };
+                          }
+                          if (index === 3) {
+                            return {
+                              type: evoRec?.week3Type || 'instruction',
+                              title: evoRec?.title3 || 'Evolution 3',
+                              desc: evoRec?.desc3 || 'Weekly Milestone task',
+                              feedback: evoRec?.feedback3,
+                              score: evoRec?.evolution3,
+                              submission: evoRec?.week3Submission,
+                            };
+                          }
+                          return {
+                            type: evoRec?.week4Type || 'instruction',
+                            title: evoRec?.title4 || 'Evolution 4',
+                            desc: evoRec?.desc4 || 'Weekly Milestone task',
+                            feedback: evoRec?.feedback4,
+                            score: evoRec?.evolution4,
+                            submission: evoRec?.week4Submission,
+                          };
+                        };
+
+                        const fields = getWeekFields(weekNum);
+                        const hasScore = fields.score !== undefined;
+                        const scoreNum = fields.score || 0;
+                        const hasSub = !!fields.submission;
 
                         return (
                           <div 
-                            key={index} 
-                            className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${
+                            key={weekNum} 
+                            onClick={() => handleOpenWeekWorkspace(weekNum, evoRec)}
+                            className={`p-4 rounded-xl border transition-all flex flex-col justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] active:scale-[0.99] duration-205 ${
                               hasScore 
                                 ? scoreNum >= 80
                                   ? 'bg-white dark:bg-[#0c0d12]/50 border-emerald-500/25 dark:border-emerald-500/10 shadow-sm'
                                   : 'bg-white dark:bg-[#0c0d12]/50 border-amber-500/25 dark:border-amber-500/10 shadow-sm'
-                                : 'bg-slate-50/50 dark:bg-[#0c0d12]/10 border-slate-200/50 dark:border-white/5 border-dashed'
+                                : hasSub
+                                  ? 'bg-indigo-50/20 dark:bg-indigo-500/[0.02] border-indigo-500/40 dark:border-indigo-500/20'
+                                  : 'bg-slate-50/50 dark:bg-[#0c0d12]/10 border-slate-200/50 dark:border-white/5 border-dashed'
                             }`}
                           >
                             <div className="space-y-2">
                               <div className="flex justify-between items-start">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{item.subtitle}</span>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-100 dark:bg-slate-850 text-slate-500">
+                                  Week {weekNum} &bull; {fields.type.toUpperCase()}
+                                </span>
                                 {hasScore && (
-                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                  <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                                     scoreNum >= 80
                                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
                                       : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
@@ -1540,10 +1727,21 @@ export default function ProgressTracker({
                                   </span>
                                 )}
                               </div>
-                              <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200">{item.title}</h4>
-                              <p className="text-xs text-slate-500 dark:text-zinc-450 italic pt-1 leading-relaxed">
-                                {item.feedback || 'No evaluation comment logged yet.'}
+                              <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200 tracking-tight leading-snug">{fields.title}</h4>
+                              <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                {fields.desc}
                               </p>
+                              {fields.feedback ? (
+                                <div className="mt-2 p-2 bg-indigo-505/5 dark:bg-white/[0.01] border-l-2 border-indigo-400 rounded-r text-[10.5px] text-slate-500 dark:text-zinc-400 italic">
+                                  &ldquo;{fields.feedback}&rdquo;
+                                </div>
+                              ) : (
+                                hasSub && (
+                                  <span className="text-[10px] text-indigo-500 font-medium italic block mt-1">
+                                    Awaiting Instructor grading...
+                                  </span>
+                                )
+                              )}
                             </div>
 
                             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
@@ -1562,10 +1760,15 @@ export default function ProgressTracker({
                                     ></div>
                                   </div>
                                 </div>
+                              ) : hasSub ? (
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 dark:text-indigo-305 flex items-center gap-1.5 animate-pulse">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  Under Evaluation
+                                </span>
                               ) : (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                                  <Clock className="w-3.5 h-3.5 text-slate-300" />
-                                  Pending Review
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d82f7] dark:text-[#a0ecfc] flex items-center gap-1.5">
+                                  <Code className="w-3.5 h-3.5" />
+                                  Start Challenge
                                 </span>
                               )}
                             </div>
@@ -1603,6 +1806,535 @@ export default function ProgressTracker({
             })()}
           </div>
         )}
+
+        {/* Dynamic Interactive Student Workstation Modal */}
+        <AnimatePresence>
+          {selectedActiveWeekIndex !== null && (() => {
+            const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === studentSelectedMonth);
+            const weekNum = selectedActiveWeekIndex;
+            
+            const getWeekFields = (index: number) => {
+              if (index === 1) {
+                return {
+                  type: evoRec?.week1Type || 'instruction',
+                  title: evoRec?.title1 || 'Evolution 1',
+                  desc: evoRec?.desc1 || 'Weekly Milestone task',
+                  question: evoRec?.week1Question || 'Compile and present your milestone findings.',
+                  constraints: evoRec?.week1Constraints || 'No constraints specified.',
+                  testCases: evoRec?.week1TestCases || 'Demonstrate execution parameters.',
+                  templateCode: evoRec?.week1TemplateCode || '// Write code here\n',
+                  submission: evoRec?.week1Submission,
+                  submissionDate: evoRec?.week1SubmissionDate,
+                  feedback: evoRec?.feedback1,
+                  score: evoRec?.evolution1,
+                };
+              }
+              if (index === 2) {
+                return {
+                  type: evoRec?.week2Type || 'instruction',
+                  title: evoRec?.title2 || 'Evolution 2',
+                  desc: evoRec?.desc2 || 'Weekly Milestone task',
+                  question: evoRec?.week2Question || 'Compile and present your milestone findings.',
+                  constraints: evoRec?.week2Constraints || 'No constraints specified.',
+                  testCases: evoRec?.week2TestCases || 'Demonstrate execution parameters.',
+                  templateCode: evoRec?.week2TemplateCode || '// Write code here\n',
+                  submission: evoRec?.week2Submission,
+                  submissionDate: evoRec?.week2SubmissionDate,
+                  feedback: evoRec?.feedback2,
+                  score: evoRec?.evolution2,
+                };
+              }
+              if (index === 3) {
+                return {
+                  type: evoRec?.week3Type || 'instruction',
+                  title: evoRec?.title3 || 'Evolution 3',
+                  desc: evoRec?.desc3 || 'Weekly Milestone task',
+                  question: evoRec?.week3Question || 'Compile and present your milestone findings.',
+                  constraints: evoRec?.week3Constraints || 'No constraints specified.',
+                  testCases: evoRec?.week3TestCases || 'Demonstrate execution parameters.',
+                  templateCode: evoRec?.week3TemplateCode || '// Write code here\n',
+                  submission: evoRec?.week3Submission,
+                  submissionDate: evoRec?.week3SubmissionDate,
+                  feedback: evoRec?.feedback3,
+                  score: evoRec?.evolution3,
+                };
+              }
+              return {
+                type: evoRec?.week4Type || 'instruction',
+                title: evoRec?.title4 || 'Evolution 4',
+                desc: evoRec?.desc4 || 'Weekly Milestone task',
+                question: evoRec?.week4Question || 'Compile and present your milestone findings.',
+                constraints: evoRec?.week4Constraints || 'No constraints specified.',
+                testCases: evoRec?.week4TestCases || 'Demonstrate execution parameters.',
+                templateCode: evoRec?.week4TemplateCode || '// Write code here\n',
+                submission: evoRec?.week4Submission,
+                submissionDate: evoRec?.week4SubmissionDate,
+                feedback: evoRec?.feedback4,
+                score: evoRec?.evolution4,
+              };
+            };
+
+            const fields = getWeekFields(weekNum);
+            const isGraderFinished = fields.score !== undefined;
+            const isSubmitted = !!fields.submission;
+            // Line numbers display count helper
+            const lineNumbersCount = Math.max(draftResponse.split('\n').length || 1, 22);
+            const lineNumbers = Array.from({ length: lineNumbersCount }, (_, idx) => idx + 1);
+
+            return (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-[#0c0c0e] text-stone-200 flex flex-col font-mono w-full h-full select-none"
+              >
+                {/* Leetcode Header Bar */}
+                <header className="h-12 bg-[#1b1b20] border-b border-[#2e2e38] px-4 flex items-center justify-between shrink-0 select-none text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 bg-gradient-to-tr from-amber-500 to-orange-400 text-neutral-900 font-extrabold px-2.5 py-1 rounded-md text-[12px] tracking-tight uppercase">
+                      <Code className="w-4 h-4 text-neutral-955" />
+                      <span>Learnora Arena</span>
+                    </div>
+                    <span className="text-zinc-700 font-bold">|</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedActiveWeekIndex(null)}
+                        className="flex items-center gap-1 text-slate-400 hover:text-white transition py-1 px-2 rounded hover:bg-white/5 cursor-pointer font-sans"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Problem List</span>
+                      </button>
+                      <span className="text-zinc-700">/</span>
+                      <span className="text-zinc-300 font-extrabold bg-[#2a2a34] px-2.5 py-0.5 rounded text-[11px] font-sans">
+                        Study Month {studentSelectedMonth} &bull; Week {weekNum} Milestone
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="hidden md:flex items-center gap-4 text-[10.5px]">
+                    <div className="flex items-center gap-1 text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded font-sans">
+                      <Flame className="w-3.5 h-3.5 fill-current" />
+                      <span>🔥 5 Day Streak</span>
+                    </div>
+                    <div className="text-xs font-semibold text-slate-400 bg-slate-800/40 px-3 py-1 rounded font-mono flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-slate-300" />
+                      <span>{new Date().toISOString().slice(11, 16)} UTC</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedActiveWeekIndex(null)}
+                      className="p-1 px-3 bg-red-600/20 hover:bg-red-605 text-red-400 hover:text-white border border-red-500/30 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer font-sans"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Exit Playground</span>
+                    </button>
+                  </div>
+                </header>
+
+                {/* Main Split Console Grid */}
+                <div className="flex-1 flex overflow-hidden p-2 gap-2 min-h-0">
+                  
+                  {/* Left Column Description Tab Block */}
+                  <div className="w-1/2 flex flex-col bg-[#141417] rounded-xl border border-[#2e2e38] overflow-hidden">
+                    <div className="h-10 bg-[#1d1d23] border-b border-[#2e2e38] flex items-center px-1.5 gap-1 shrink-0">
+                      {[
+                        { id: 'description', label: 'Description', icon: BookOpenText },
+                        { id: 'editorial', label: 'Editorial Solution', icon: Sparkles },
+                        { id: 'submissions', label: 'Submissions History', icon: History }
+                      ].map((tb) => {
+                        const Icon = tb.icon;
+                        return (
+                          <button
+                            key={tb.id}
+                            onClick={() => setLeftActiveTab(tb.id as any)}
+                            className={`px-3 h-8 text-[11px] font-semibold rounded-md transition flex items-center gap-1.5 cursor-pointer font-sans ${
+                              leftActiveTab === tb.id
+                                ? 'bg-[#292933] text-white shadow-xs'
+                                : 'text-stone-400 hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            <span>{tb.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex-1 p-5 overflow-y-auto font-sans leading-relaxed text-stone-300">
+                      {leftActiveTab === 'description' && (
+                        <div className="space-y-5">
+                          <div>
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                              {weekNum}. {fields.title}
+                            </h2>
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight uppercase ${
+                                fields.type === 'dsa'
+                                  ? 'bg-[#1b3d2b] text-emerald-400 border border-emerald-500/10'
+                                  : 'bg-indigo-950 text-indigo-400 border border-indigo-500/10'
+                              }`}>
+                                {fields.type === 'dsa' ? 'DSA Milestone' : 'Milestone Project'}
+                              </span>
+
+                              {fields.type === 'dsa' && (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#332211] text-amber-500 border border-amber-500/10 uppercase">
+                                  LeetCode Tracked
+                                </span>
+                              )}
+
+                              {isGraderFinished ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  Graded: {fields.score}% Passed
+                                </span>
+                              ) : isSubmitted ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                  Submitted (Awaiting Grading)
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#2a1315] text-rose-450 border border-rose-500/10 animate-pulse">
+                                  Incomplete
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Problem Core description */}
+                          <div className="space-y-3">
+                            <h3 className="text-slate-200 text-[11px] font-bold uppercase tracking-wider">Milestone Description</h3>
+                            <div className="bg-[#1b1b20] p-4 rounded-xl border border-[#2e2e38] text-xs text-stone-300 whitespace-pre-wrap leading-relaxed font-sans">
+                              {fields.desc}
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <h3 className="text-slate-200 text-[11px] font-bold uppercase tracking-wider">Evaluation Prompt</h3>
+                            <div className="bg-[#1b1b21] p-4 rounded-xl border border-[#2d2d38] text-xs text-sky-400 font-mono whitespace-pre-wrap">
+                              {fields.question}
+                            </div>
+                          </div>
+
+                          {/* Technical constraints parameters */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 font-mono text-[10px]">
+                            <div className="space-y-1.5 flex flex-col">
+                              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-sans">Constraints & Scope</h4>
+                              <div className="bg-[#121216] p-3 rounded-lg border border-[#2d2d38] text-stone-400 whitespace-pre-wrap flex-1">
+                                {fields.constraints || 'Memory: 256MB\nTime: 1.0s\nStandard execution bounds apply.'}
+                              </div>
+                            </div>
+                            <div className="space-y-1.5 flex flex-col">
+                              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-sans">Initial Setup Cases</h4>
+                              <div className="bg-[#121216] p-3 rounded-lg border border-[#2d2d38] text-stone-400 whitespace-pre-wrap flex-1">
+                                {fields.testCases || 'Input: standard arguments\nOutput: validated outcomes.'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {leftActiveTab === 'editorial' && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 bg-[#1b323c] text-cyan-400 p-3 rounded-xl border border-cyan-500/10 text-xs">
+                            <ShieldCheck className="w-5 h-5 shrink-0 text-cyan-400" />
+                            <span><strong>Prerequisite & Optimal Solution Design guide:</strong> Learnora verified reference analysis.</span>
+                          </div>
+
+                          <div className="space-y-2">
+                            <h4 className="text-white text-xs font-bold uppercase tracking-wide text-zinc-300">Asymptotic Time & Space targets:</h4>
+                            <p className="text-xs text-stone-400">
+                              Choose the optimal linear O(N) index scan hashing complement algorithm over quadratic constraints.
+                            </p>
+                          </div>
+
+                          <div className="bg-[#1c1c21] p-4 rounded-xl border border-[#2a2a35] space-y-3">
+                            <h5 className="text-[11px] font-extrabold uppercase tracking-wide text-amber-500">Suggested Approach:</h5>
+                            <p className="text-xs text-stone-300 leading-relaxed">
+                              Use an object acts as a dictionary of values seen. Iterate over the input structure and check if current element matches constraints. If yes, return indices or completion values immediately.
+                            </p>
+                            <pre className="text-[10px] bg-stone-950 p-2.5 rounded border border-zinc-900 font-mono text-emerald-400 overflow-x-auto">
+                              {`// JS Pseudocode complement lookups:\nconst map = {};\nfor(let idx=0; idx<nums.length; idx++) {\n  let diff = target - nums[idx];\n  if (diff in map) return [map[diff], idx];\n  map[nums[idx]] = idx;\n}`}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+
+                      {leftActiveTab === 'submissions' && (
+                        <div className="space-y-4">
+                          <h3 className="text-white font-bold text-xs uppercase tracking-wide">Historical Milestone Submissions</h3>
+                          
+                          {fields.submission ? (
+                            <div className="space-y-3">
+                              <div className="p-3 bg-[#1e1e26] border border-[#2e2e3a] rounded-xl flex items-center justify-between text-xs">
+                                <div className="space-y-0.5">
+                                  <div className="font-extrabold text-[#2cc0e2] flex items-center gap-1">
+                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span>Milestone Checkpoint Submission Saved</span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-500">Submitted at: {fields.submissionDate || 'Live Session record'}</span>
+                                </div>
+                                {isGraderFinished && (
+                                  <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[10px] rounded">
+                                    GRADED: {fields.score}%
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-[10px] text-zinc-500 uppercase font-bold">Saved Solution Code:</span>
+                                <pre className="bg-stone-950 p-3 rounded-lg text-emerald-400 text-[10px] font-mono overflow-x-auto border border-white/5 whitespace-pre">
+                                  {fields.submission}
+                                </pre>
+                              </div>
+
+                              {fields.feedback && (
+                                <div className="p-4 bg-[#1b253c] border border-blue-500/20 text-[#85b5ff] text-xs rounded-xl space-y-1">
+                                  <span className="font-extrabold uppercase text-[10px] tracking-widest text-[#bfdaff] flex items-center gap-1">
+                                    <Award className="w-3.5 h-3.5" />
+                                    Review feedback from Instructor:
+                                  </span>
+                                  <p className="italic font-sans leading-relaxed">&ldquo;{fields.feedback}&rdquo;</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-8 text-center text-stone-500 text-xs">
+                              <History className="w-8 h-8 mx-auto mb-2 opacity-35" />
+                              <p>No previous milestone submissions located for Month {studentSelectedMonth} Week {weekNum}.</p>
+                              <p className="text-[10px] mt-1 text-stone-600">Your live draft in the Workspace Draft Editor will be recorded.</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column Core IDE & Test Runners */}
+                  <div className="w-1/2 flex flex-col gap-2 overflow-hidden min-h-0">
+                    
+                    {/* Code Editor Panel */}
+                    <div className="flex-1 flex flex-col bg-[#141417] rounded-xl border border-[#2e2e38] overflow-hidden min-h-0">
+                      <div className="h-10 bg-[#1d1d23] border-b border-[#2e2e38] flex items-center justify-between px-3 shrink-0">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider font-sans">Solution Editor</label>
+                          <select
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                            className="bg-[#121215] border border-[#2e2e38] rounded px-2 py-0.5 text-[10.5px] text-[#5cd9ff] font-bold focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="JavaScript">JavaScript (Local Live Run)</option>
+                            <option value="Python">Python 3</option>
+                            <option value="C++">C++ (GCC 11)</option>
+                            <option value="Java">Java 17 (JDK)</option>
+                          </select>
+                          <span className="h-4 w-[1px] bg-stone-700" />
+                          <span className="text-[9px] text-[#2cc0e2] font-semibold animate-pulse font-sans">● Environment Auto Synced</span>
+                        </div>
+
+                        <div className="flex items-center gap-1 font-sans">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(draftResponse);
+                              setCopiedIndex(true);
+                              setTimeout(() => setCopiedIndex(false), 2000);
+                            }}
+                            className="px-2 py-1 text-[10.5px] hover:bg-stone-800 text-stone-405 hover:text-white rounded transition flex items-center gap-1 cursor-pointer"
+                            title="Copy Draft Code"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>{copiedIndex ? 'Copied' : 'Copy'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (window.confirm("Revert your editor back to the original milestone boilerplate?")) {
+                                setDraftResponse(fields.templateCode || '');
+                              }
+                            }}
+                            className="p-1 text-stone-400 hover:text-white rounded hover:bg-stone-805 cursor-pointer"
+                            title="Reset Code Templates"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Interactive IDE Area */}
+                      <div className="flex-grow flex overflow-hidden min-h-0 bg-[#0c0c0e]">
+                        {/* Line number rail */}
+                        <div className="w-9 bg-[#111114] text-stone-600 font-mono text-[11px] flex flex-col items-end pr-2 pt-3 select-none leading-5 font-bold border-r border-[#1a1a20] shrink-0">
+                          {lineNumbers.map((num) => (
+                            <span key={num}>{num}</span>
+                          ))}
+                        </div>
+
+                        {/* Editable Area */}
+                        <textarea
+                          disabled={isGraderFinished}
+                          value={draftResponse}
+                          onChange={(e) => setDraftResponse(e.target.value)}
+                          placeholder="// Enter your code solution script here...\n"
+                          className="flex-1 bg-[#0c0c0e] text-[#6fe3ff] font-mono text-xs p-3 focus:outline-none resize-none leading-5 border-0 focus:ring-0 whitespace-pre overflow-auto selection:bg-indigo-500/30 selection:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Integrated Sandbox Execution Console Terminal */}
+                    {terminalOpen && (
+                      <div className="h-60 bg-[#121215] rounded-xl border border-[#2e2e38] flex flex-col overflow-hidden shrink-0">
+                        <div className="h-8 bg-[#1a1a20] border-b border-[#2e2e38] flex items-center justify-between px-3 shrink-0 text-[10px] font-bold text-slate-400">
+                          <span className="flex items-center gap-1 text-slate-300 font-sans">
+                            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Execution Sandbox Terminal</span>
+                          </span>
+                          <button
+                            onClick={() => {
+                              setTestcaseInput(fields.testCases || '');
+                              setRunResult(null);
+                            }}
+                            className="hover:text-white hover:underline uppercase text-[9px] cursor-pointer font-sans"
+                          >
+                            Reset Test
+                          </button>
+                        </div>
+
+                        <div className="flex-1 flex divide-x divide-[#2e2e38] leading-tight text-[11px] min-h-0">
+                          {/* Testcase Input Box */}
+                          <div className="w-1/2 p-3 flex flex-col gap-1.5 overflow-hidden">
+                            <span className="text-stone-450 font-extrabold uppercase text-[9px] tracking-wide font-sans">Testcase arguments input (JSON)</span>
+                            <textarea
+                              value={testcaseInput}
+                              onChange={(e) => setTestcaseInput(e.target.value)}
+                              placeholder={`E.g. [[2, 7, 11, 15], 9]`}
+                              className="flex-grow bg-[#0c0c0e] border border-[#282832] rounded-lg p-2 font-mono text-[10.5px] text-stone-200 focus:outline-none resize-none focus:border-cyan-500/70"
+                            />
+                          </div>
+
+                          {/* Sandbox Result Output Box */}
+                          <div className="w-1/2 p-3 overflow-y-auto bg-[#0a0a0c] flex flex-col gap-1.5 font-mono">
+                            <span className="text-stone-450 font-extrabold uppercase text-[9px] tracking-wide font-sans">Live Test outputs</span>
+                            {isRunningCode ? (
+                              <div className="flex-grow flex flex-col items-center justify-center text-slate-500 gap-2">
+                                <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-[10px] text-cyan-400 animate-pulse font-bold font-sans">Executing secure sandbox runner...</span>
+                              </div>
+                            ) : runResult ? (
+                              <div className="space-y-2 text-[10.5px]">
+                                {runResult.success ? (
+                                  <>
+                                    <div className="text-emerald-450 font-extrabold flex items-center gap-1 uppercase tracking-wide font-sans">
+                                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                      <span>Execution Completed</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {runResult.stdout && (
+                                        <div className="text-[10px] text-stone-500 select-all border-b border-[#222] pb-1">
+                                          {runResult.stdout}
+                                        </div>
+                                      )}
+                                      <div className="flex flex-col gap-1 mt-1 font-sans">
+                                        <span className="text-stone-500 text-[10px] font-semibold">Returned Value:</span>
+                                        <span className="text-white bg-[#15151b] px-2 py-1 rounded border border-[#2d2d3d] text-[11px] font-mono font-bold text-cyan-400 select-all whitespace-pre-wrap">
+                                          {runResult.outputVal}
+                                        </span>
+                                      </div>
+                                      <div className="text-[9px] text-stone-500 mt-1 font-sans">
+                                        Execution Latency: <span className="text-stone-400 font-bold">{runResult.timeMs || '0.2'} ms</span>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="text-rose-500 font-extrabold uppercase tracking-wide flex items-center gap-1 font-sans">
+                                      <AlertCircle className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+                                      <span>Runtime Evaluation Error</span>
+                                    </div>
+                                    <div className="p-2 bg-rose-950/25 border border-rose-900/50 rounded text-rose-400 text-[10px] select-all whitespace-pre-wrap">
+                                      {runResult.error}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex-grow flex flex-col items-center justify-center text-stone-500 text-center px-4 self-center py-6">
+                                <Terminal className="w-5 h-5 text-zinc-650 mb-1" />
+                                <p className="text-[10px] font-sans leading-relaxed">No tests executed yet. Click "Run Code" down below to compile solution instantly against parameters.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Interactive Footer Controls */}
+                        <div className="h-10 bg-[#15151b] border-t border-[#2e2e38] flex items-center justify-between px-3 shrink-0 text-xs">
+                          <div className="flex items-center text-[10px] text-stone-500 font-sans">
+                            <span>Sandbox execution evaluates JavaScript in real-time</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {selectedLanguage === 'JavaScript' ? (
+                              <button
+                                type="button"
+                                onClick={handleRunCode}
+                                disabled={isRunningCode || isGraderFinished}
+                                className="px-3 h-6 text-[10.5px] font-bold bg-[#292934] hover:bg-[#343442] border border-[#3e3e4a] text-slate-350 hover:text-white rounded flex items-center gap-1 transition cursor-pointer font-sans"
+                              >
+                                <Play className="w-3 h-3 fill-current text-emerald-450" />
+                                <span>Run Code</span>
+                              </button>
+                            ) : (
+                              <span className="text-[9.5px] text-slate-500 italic pr-2 font-sans">Direct browser run format supports JS</span>
+                            )}
+
+                            {isGraderFinished ? (
+                              <button
+                                disabled
+                                className="px-3 h-6 text-[10.5px] font-bold bg-[#14261b] text-emerald-400 border border-emerald-950 rounded flex items-center gap-1 font-sans"
+                              >
+                                <CheckCircle className="w-3 h-3 text-emerald-500" />
+                                <span>Assigned Score Verified</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSubmitWeekSubmission(weekNum, evoRec)}
+                                className="px-3 h-6 text-[10.5px] font-bold bg-indigo-600 hover:bg-indigo-750 text-white rounded flex items-center gap-1 transition shadow-xs cursor-pointer font-sans"
+                              >
+                                <Send className="w-3 h-3 text-indigo-300" />
+                                <span>Submit Solution</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit Success Celebrating Banner Overlay */}
+                {workspaceSuccessMsg && (
+                  <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-[120] flex flex-col items-center justify-center p-6 text-center">
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="max-w-md p-8 bg-[#1e1e24] border border-[#2e2e38] rounded-3xl space-y-4"
+                    >
+                      <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+                        🎉
+                      </div>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-wider font-sans">Solution Recorded</h3>
+                      <p className="text-xs text-stone-300 leading-relaxed font-sans mt-2">
+                        {workspaceSuccessMsg}
+                      </p>
+                      <div className="text-[10px] text-[#2cc0e2] uppercase tracking-widest animate-pulse font-bold pt-2">
+                        Returning to central learning workspace...
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
 
         {/* Dynamic Interactive Certificate Modal */}
         <AnimatePresence>

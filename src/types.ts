@@ -199,6 +199,13 @@ export interface StudentAssignment {
   syllabus?: string; // Syllabus / Topic
   week?: string; // Target Week
   day?: string;  // Target Day
+  
+  // Custom type configurations
+  questionType?: 'dsa' | 'instruction';
+  dsaQuestion?: string;
+  dsaConstraints?: string;
+  dsaTestCases?: string;
+  dsaTemplateCode?: string;
 }
 
 export interface AssignmentBankItem {
@@ -213,6 +220,13 @@ export interface AssignmentBankItem {
   createdDate: string;
   week?: string; // Target Week
   day?: string;  // Target Day
+
+  // Custom type configurations
+  questionType?: 'dsa' | 'instruction';
+  dsaQuestion?: string;
+  dsaConstraints?: string;
+  dsaTestCases?: string;
+  dsaTemplateCode?: string;
 }
 
 export interface StudentEvolution {
@@ -244,6 +258,41 @@ export interface StudentEvolution {
   title4?: string;
   desc4?: string;
   batch?: string; // Target batch deployed to
+
+  // Week-by-week type metadata
+  week1Type?: 'dsa' | 'instruction';
+  week1Question?: string;
+  week1Constraints?: string;
+  week1TestCases?: string;
+  week1TemplateCode?: string;
+
+  week2Type?: 'dsa' | 'instruction';
+  week2Question?: string;
+  week2Constraints?: string;
+  week2TestCases?: string;
+  week2TemplateCode?: string;
+
+  week3Type?: 'dsa' | 'instruction';
+  week3Question?: string;
+  week3Constraints?: string;
+  week3TestCases?: string;
+  week3TemplateCode?: string;
+
+  week4Type?: 'dsa' | 'instruction';
+  week4Question?: string;
+  week4Constraints?: string;
+  week4TestCases?: string;
+  week4TemplateCode?: string;
+
+  // Student submissions for evaluations
+  week1Submission?: string;
+  week1SubmissionDate?: string;
+  week2Submission?: string;
+  week2SubmissionDate?: string;
+  week3Submission?: string;
+  week3SubmissionDate?: string;
+  week4Submission?: string;
+  week4SubmissionDate?: string;
 }
 
 export interface EvolutionBankItem {
@@ -261,6 +310,31 @@ export interface EvolutionBankItem {
   week4Title: string;
   week4Desc: string;
   createdDate: string;
+
+  // Blueprints type metadata
+  week1Type?: 'dsa' | 'instruction';
+  week1Question?: string;
+  week1Constraints?: string;
+  week1TestCases?: string;
+  week1TemplateCode?: string;
+
+  week2Type?: 'dsa' | 'instruction';
+  week2Question?: string;
+  week2Constraints?: string;
+  week2TestCases?: string;
+  week2TemplateCode?: string;
+
+  week3Type?: 'dsa' | 'instruction';
+  week3Question?: string;
+  week3Constraints?: string;
+  week3TestCases?: string;
+  week3TemplateCode?: string;
+
+  week4Type?: 'dsa' | 'instruction';
+  week4Question?: string;
+  week4Constraints?: string;
+  week4TestCases?: string;
+  week4TemplateCode?: string;
 }
 
 

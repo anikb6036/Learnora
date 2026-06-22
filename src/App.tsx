@@ -1307,6 +1307,55 @@ function AppContent() {
         };
         setNotifications(prev => [notif, ...prev]);
         triggerToast(notif);
+
+        // Auto mark as absent for students who didn't join!
+        if (status === 'completed') {
+          const targetStudents = users.filter(u => {
+            if (u.role !== 'student') return false;
+            const isExplicitlyEnrolled = cls.enrolledStudentIds?.includes(u.id);
+            const isMyCourse = cls.course && u.course && cls.course.toLowerCase() === u.course.toLowerCase();
+            const isAllCourse = !cls.course || cls.course === 'All';
+            const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+            const isMyBatch = cls.batch && u.batch && cls.batch.toLowerCase() === u.batch.toLowerCase();
+            const isAllBatch = !cls.batch || cls.batch === 'All';
+            const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+            return matchesCourse && matchesBatch;
+          });
+
+          setProgressRecords(prev => {
+            const newRecords: ProgressRecord[] = [];
+            targetStudents.forEach(st => {
+              const hasRecord = prev.some(r => r.studentId === st.id && r.classId === classId);
+              if (!hasRecord) {
+                const attended = cls.enrolledStudentIds?.includes(st.id);
+                newRecords.push({
+                  id: generateUniqueId('progress'),
+                  studentId: st.id,
+                  studentName: st.name,
+                  classId: cls.id,
+                  className: cls.title,
+                  instructorId: cls.instructorId || 'admin-1',
+                  instructorName: cls.instructorName || 'Center Administrator',
+                  evaluationDate: new Date().toISOString().slice(0, 10),
+                  subject: cls.subject,
+                  score: attended ? 100 : 0,
+                  attendanceStatus: attended ? 'present' : 'absent',
+                  feedback: attended
+                    ? 'Automatically marked present for attending the live session.'
+                    : 'Automatically marked absent as student did not attend the live session.',
+                  academicPerformance: attended ? 'excellent' : 'needs-improvement'
+                });
+              }
+            });
+
+            if (newRecords.length > 0) {
+              return [...newRecords, ...prev];
+            }
+            return prev;
+          });
+        }
       }
     }
   };
@@ -1496,6 +1545,31 @@ function AppContent() {
       return cl;
     }));
 
+    const cls = schedules.find(c => c.id === classId);
+    if (cls) {
+      setProgressRecords(prev => {
+        const hasRecord = prev.some(r => r.studentId === currentUser.id && r.classId === classId);
+        if (!hasRecord) {
+          return [{
+            id: generateUniqueId('progress'),
+            studentId: currentUser.id,
+            studentName: currentUser.name,
+            classId: classId,
+            className: cls.title,
+            instructorId: cls.instructorId || 'admin-1',
+            instructorName: cls.instructorName || 'Center Administrator',
+            evaluationDate: new Date().toISOString().slice(0, 10),
+            subject: cls.subject,
+            score: 100,
+            attendanceStatus: 'present',
+            feedback: 'Joined the live interactive class session.',
+            academicPerformance: 'excellent'
+          }, ...prev];
+        }
+        return prev;
+      });
+    }
+
     const notif: AppNotification = {
       id: generateUniqueId('notif'),
       title: 'Self-Enrollment Approved',
@@ -1528,6 +1602,98 @@ function AppContent() {
       read: false,
       type: 'grade',
       channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleStudentJoinClass = (classId: string) => {
+    if (!currentUser || currentUser.role !== 'student') return;
+    const cl = schedules.find(s => s.id === classId);
+    if (!cl) return;
+
+    // Check if progress record already exists
+    const hasRecord = progressRecords.some(r => r.studentId === currentUser.id && r.classId === classId);
+    if (!hasRecord) {
+      const recordData: ProgressRecord = {
+        id: generateUniqueId('progress'),
+        studentId: currentUser.id,
+        studentName: currentUser.name,
+        classId: cl.id,
+        className: cl.title,
+        instructorId: cl.instructorId || 'admin-1',
+        instructorName: cl.instructorName || 'Center Administrator',
+        evaluationDate: new Date().toISOString().slice(0, 10),
+        subject: cl.subject,
+        score: 100, // full positive score for attending
+        attendanceStatus: 'present',
+        feedback: 'Student attended the class by clicking Join Class.',
+        academicPerformance: 'good'
+      };
+      setProgressRecords(prev => [recordData, ...prev]);
+
+      // Trigger a toast notifying student they've been marked present
+      const notif: AppNotification = {
+        id: generateUniqueId('notif'),
+        title: 'Attendance Recorded',
+        message: `Your attendance of "Present" has been recorded for session "${cl.title}".`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'enrollment',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+      triggerToast(notif);
+    }
+  };
+
+  const handleSaveClassAttendance = (
+    classId: string,
+    studentAttendanceList: { studentId: string; status: 'present' | 'absent' | 'excused' }[]
+  ) => {
+    const cl = schedules.find(s => s.id === classId);
+    if (!cl) return;
+
+    setProgressRecords(prev => {
+      // Filter out any existing records for this class for the targeted students
+      const targetStudentIds = studentAttendanceList.map(a => a.studentId);
+      const filtered = prev.filter(r => !(r.classId === classId && targetStudentIds.includes(r.studentId)));
+
+      const newRecords: ProgressRecord[] = studentAttendanceList.map(item => {
+        const student = users.find(u => u.id === item.studentId);
+        return {
+          id: generateUniqueId('progress'),
+          studentId: item.studentId,
+          studentName: student ? student.name : 'Unknown Student',
+          classId: cl.id,
+          className: cl.title,
+          instructorId: cl.instructorId || 'admin-1',
+          instructorName: cl.instructorName || 'Center Administrator',
+          evaluationDate: new Date().toISOString().slice(0, 10),
+          subject: cl.subject,
+          score: item.status === 'present' ? 100 : 0, // Score 100 if present, 0 if absent/excused
+          attendanceStatus: item.status,
+          feedback: item.status === 'present' 
+            ? 'Attendance marked: Student was Present.' 
+            : item.status === 'absent' 
+              ? 'Attendance marked: Student was Absent.' 
+              : 'Attendance marked: Student was Excused.',
+          academicPerformance: item.status === 'present' ? 'good' : 'needs-improvement'
+        };
+      });
+
+      return [...newRecords, ...filtered];
+    });
+
+    // Notify
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Attendance Sheet Updated',
+      message: `Successfully saved attendance sheet with ${studentAttendanceList.length} student records for "${cl.title}".`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
     };
     setNotifications(prev => [notif, ...prev]);
     triggerToast(notif);
@@ -4621,6 +4787,8 @@ function AppContent() {
                 batches={batches}
                 courses={courses}
                 masterCourses={masterCourses}
+                progressRecords={progressRecords}
+                onSaveClassAttendance={handleSaveClassAttendance}
                 onAddClass={handleAddClass}
                 onUpdateClass={handleUpdateClass}
                 onUpdateStatus={handleUpdateClassStatus}
@@ -4653,6 +4821,8 @@ function AppContent() {
                 batches={batches}
                 courses={courses}
                 masterCourses={masterCourses}
+                progressRecords={progressRecords}
+                onSaveClassAttendance={handleSaveClassAttendance}
                 onAddClass={handleAddClass}
                 onUpdateClass={handleUpdateClass}
                 onUpdateStatus={handleUpdateClassStatus}

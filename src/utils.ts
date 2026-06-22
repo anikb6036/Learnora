@@ -29,7 +29,7 @@ export const INITIAL_USERS: UserAccount[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
     phone: '+1 (555) 0121',
     joinedDate: '2024-05-21',
-    specialization: 'Advanced Science & Physics',
+    specialization: 'Software Engineering & System Architecture',
     username: 'sarah',
     password: 'sarah'
   },
@@ -55,8 +55,8 @@ export const INITIAL_USERS: UserAccount[] = [
     username: 'john',
     password: 'john',
     assignedInstructorId: 'instructor-1',
-    batch: 'Batch A',
-    course: 'IIT-JEE Master Preparation',
+    batch: 'stb_001',
+    course: 'Java Masterclass',
     paymentStatus: 'pending'
   },
   {
@@ -70,8 +70,8 @@ export const INITIAL_USERS: UserAccount[] = [
     username: 'alex',
     password: 'alex',
     assignedInstructorId: 'instructor-1',
-    batch: 'Batch B',
-    course: 'Medical NEET Crash Course',
+    batch: 'stb_002',
+    course: 'Full-Stack JavaScript Development',
     paymentStatus: 'paid',
     paymentId: 'pay_OM92hJasda91',
     paymentDate: '2024-05-24',
@@ -82,8 +82,8 @@ export const INITIAL_USERS: UserAccount[] = [
 export const INITIAL_SCHEDULES: ClassSchedule[] = [
   {
     id: 'class-1',
-    title: 'Introductory Mechanics & Forces',
-    subject: 'Physics',
+    title: 'Object-Oriented Programming Foundations',
+    subject: 'Java OOPs',
     instructorId: 'instructor-1',
     instructorName: 'Prof. Sarah Connor',
     date: '2026-06-05',
@@ -91,15 +91,15 @@ export const INITIAL_SCHEDULES: ClassSchedule[] = [
     duration: 90,
     maxStudents: 15,
     enrolledStudentIds: ['student-1'],
-    location: 'Lab 2B (Mechanical Wing)',
+    location: 'Lab 2B (Software Wing)',
     status: 'scheduled',
-    batch: 'Batch A',
-    course: 'IIT-JEE Master Preparation'
+    batch: 'stb_001',
+    course: 'Java Masterclass'
   },
   {
     id: 'class-2',
-    title: 'Organic Chemistry Principles',
-    subject: 'Chemistry',
+    title: 'Asynchronous Event Loop and Promises',
+    subject: 'JavaScript Core',
     instructorId: 'instructor-1',
     instructorName: 'Prof. Sarah Connor',
     date: '2026-06-06',
@@ -107,26 +107,10 @@ export const INITIAL_SCHEDULES: ClassSchedule[] = [
     duration: 60,
     maxStudents: 10,
     enrolledStudentIds: [],
-    location: 'Room 304, Main Campus',
+    location: 'Web Lab, Main Campus',
     status: 'scheduled',
-    batch: 'Batch B',
-    course: 'Medical NEET Crash Course'
-  },
-  {
-    id: 'class-3',
-    title: 'Calculus Foundation & Series',
-    subject: 'Mathematics',
-    instructorId: 'instructor-1',
-    instructorName: 'Prof. Sarah Connor',
-    date: '2026-06-07',
-    time: '10:00',
-    duration: 120,
-    maxStudents: 30,
-    enrolledStudentIds: [],
-    location: 'Auditorium A',
-    status: 'scheduled',
-    batch: 'All',
-    course: 'All'
+    batch: 'stb_002',
+    course: 'Full-Stack JavaScript Development'
   }
 ];
 
@@ -147,97 +131,99 @@ export const INITIAL_NOTIFICATIONS: AppNotification[] = [
 export const INITIAL_BACKUPS: BackupHistory[] = [];
 
 export const INITIAL_BATCHES: StudentBatch[] = [
-  { id: 'batch-1', name: 'Batch A', description: 'Primary Morning Group', createdDate: '2024-05-20', status: 'ongoing' },
-  { id: 'batch-2', name: 'Batch B', description: 'Mid-Day Intensive Group', createdDate: '2024-05-21', status: 'ongoing' },
-  { id: 'batch-3', name: 'Batch C', description: 'Evening Fast-Track Group', createdDate: '2024-05-22', status: 'completed' },
-  { id: 'batch-4', name: 'Batch D', description: 'Weekend Practical Lab Group', createdDate: '2024-05-23', status: 'upcoming' }
+  { id: 'batch-1', name: 'stb_001', description: 'Primary Morning Java Group', createdDate: '2024-05-20', status: 'ongoing' },
+  { id: 'batch-2', name: 'stb_002', description: 'Mid-Day JavaScript Intensive', createdDate: '2024-05-21', status: 'ongoing' },
+  { id: 'batch-3', name: 'stb_003', description: 'Python AI Evening Track', createdDate: '2024-05-22', status: 'completed' },
+  { id: 'batch-4', name: 'stb_004', description: 'SDET Automation Weekend Practical Lab', createdDate: '2024-05-23', status: 'upcoming' },
+  { id: 'batch-5', name: 'stb_005', description: 'UI/UX Design Studio Group', createdDate: '2024-05-24', status: 'ongoing' },
+  { id: 'batch-6', name: 'stb_006', description: 'Cybersecurity Network Security Track', createdDate: '2024-05-25', status: 'ongoing' }
 ];
 
 export const INITIAL_MASTER_COURSES: MasterCourse[] = [
   {
     id: 'master-1',
-    name: 'IIT-JEE Master Preparation',
-    durationMonths: 12,
-    description: 'Advanced Physics, Chemistry & Mathematics Prep',
+    name: 'Java Masterclass',
+    durationMonths: 3,
+    description: 'OOPs Foundations, Core Java, Collections, Multi-threading, and DSA with Java',
     roadmap: [
-      { month: 1, title: 'Mechanics & Stoichiometry', description: 'Core kinematics, Newton laws, mole concept, basic calculus.' },
-      { month: 2, title: 'Calculus & Quadratics', description: 'Limits, continuity, functions, quadratic equations, sequence and series.' },
-      { month: 3, title: 'Electrodynamics & Chemical Bonding', description: 'Electrostatics, Gauss Law, molecular shape, hybridisation, covalent bond.' }
+      { month: 1, title: 'OOPs Foundations & Core Syntax', description: 'Classes, Objects, Inheritance, Polymorphism, Encapsulation, JVM memory limits.' },
+      { month: 2, title: 'Collections, Threads & Exceptions', description: 'Java Collection Framework, exception hierarchy, multi-threading basics.' },
+      { month: 3, title: 'DSA with Java Mastery', description: 'Stacks, Queues, Linked Lists, Trees, Graph theory algorithms.' }
     ],
     createdDate: '2024-05-18'
   },
   {
     id: 'master-2',
-    name: 'Medical NEET Crash Course',
-    durationMonths: 6,
-    description: 'Intensive Biology, Organic Chemistry & Physics',
+    name: 'Full-Stack JavaScript Development',
+    durationMonths: 3,
+    description: 'Advanced ES6+, Async Programming, Node.js, Express, React, and MongoDB',
     roadmap: [
-      { month: 1, title: 'Human Physiology & Mechanics', description: 'Digestion, respiration, motion in straight line, physical chemistry basics.' },
-      { month: 2, title: 'Plant Physiology & Thermodynamics', description: 'Photosynthesis, plant hormones, laws of thermodynamics, equilibrium.' }
-    ],
-    createdDate: '2024-05-19'
-  },
-  {
-    id: 'master-3',
-    name: 'Foundation Olympiad Prep',
-    durationMonths: 9,
-    description: 'Mathematics and Science Basics for Early Olympiad aspirants',
-    roadmap: [
-      { month: 1, title: 'Number Theory Logistics', description: 'Primes, divisibility, Euclid algorithms, basic indices structures.' }
+      { month: 1, title: 'Advanced JavaScript & Async Loops', description: 'Scope, closures, event loop, Promise chain, asynchronous event loops.' },
+      { month: 2, title: 'Backend APIs & Databases', description: 'NodeJS runtime, Express routing, MongoDB ODM, REST protocols.' },
+      { month: 3, title: 'Frontend Frameworks & Ecosystem', description: 'React architecture, React hooks, state management, and Tailwind CSS.' }
     ],
     createdDate: '2024-05-19'
   }
 ];
 
 export const INITIAL_COURSES: Course[] = [
-  { id: 'course-1', name: 'IIT-JEE Master Preparation', code: 'IITJEE', batchNumber: 'stb_001', description: 'Advanced Physics, Chemistry & Mathematics Prep', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18', fee: 14999 },
-  { id: 'course-2', name: 'Medical NEET Crash Course', code: 'NEET', batchNumber: 'stb_002', description: 'Intensive Biology, Organic Chemistry & Physics', durationWeeks: '6', createdDate: '2024-05-19', status: 'upcoming', publishDate: '2026-07-01', admissionLastDate: '2026-06-30', fee: 11999 },
-  { id: 'course-3', name: 'Foundation Olympiad Prep', code: 'FOPrep', batchNumber: 'stb_003', description: 'Mathematics and Science Basics for Early Olympiad aspirants', durationWeeks: '9', createdDate: '2024-05-19', status: 'completed', fee: 5999 }
+  { id: 'course-1', name: 'Java Masterclass', code: 'JAVA', batchNumber: 'stb_001', description: 'Deep-dive OOPs foundations and advanced software engineering with Java.', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18', fee: 14999 },
+  { id: 'course-2', name: 'Full-Stack JavaScript Development', code: 'JS', batchNumber: 'stb_002', description: 'Modern full-stack web engineering using JavaScript and TypeScript.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', publishDate: '2026-06-01', fee: 11999 },
+  { id: 'course-3', name: 'Python AI & Data Science', code: 'PY', batchNumber: 'stb_003', description: 'Advanced Python, Machine Learning libraries, and Neural Networks.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', fee: 12999 },
+  { id: 'course-4', name: 'SDET Specialization (QA Automation)', code: 'SDET', batchNumber: 'stb_004', description: 'Professional Selenium WebDriver, manual testing basics, API automation pipelines.', durationWeeks: '12', createdDate: '2024-05-20', status: 'upcoming', fee: 9999 },
+  { id: 'course-5', name: 'UI/UX Design Academy', code: 'UIUX', batchNumber: 'stb_005', description: 'User interfaces design, user research, wireframing, high-fi Figma mockups.', durationWeeks: '12', createdDate: '2024-05-21', status: 'ongoing', fee: 8999 },
+  { id: 'course-6', name: 'Cybersecurity Professional', code: 'CYBER', batchNumber: 'stb_006', description: 'Linux architectures, network security protocols, vulnerability analysis.', durationWeeks: '12', createdDate: '2024-05-22', status: 'ongoing', fee: 15999 }
 ];
 
 export const INITIAL_ASSIGNMENTS: StudentAssignment[] = [
   {
     id: 'asg-1',
-    title: 'Newtonian Laws Practice Sheet',
-    description: 'Solve all 15 numerical problems on inclined platforms and friction coefficients defined in the class handout.',
+    title: 'Two Sum Algorithmic Puzzle',
+    description: 'Find two indices in an integer array that add up to a specific target sum.',
     classId: 'class-1',
-    className: 'Introductory Mechanics & Forces',
-    course: 'IIT-JEE Master Preparation',
-    batch: 'Batch A',
+    className: 'Object-Oriented Programming Foundations',
+    course: 'Java Masterclass',
+    batch: 'stb_001',
     instructorId: 'instructor-1',
     instructorName: 'Prof. Sarah Connor',
     dueDate: '2026-06-25',
     maxPoints: 100,
     status: 'published',
     createdDate: '2026-06-15',
+    questionType: 'dsa',
+    dsaQuestion: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.',
+    dsaConstraints: '`2 <= nums.length <= 10^4`\n`-10^9 <= nums[i] <= 10^9`\n`-10^9 <= target <= 10^9`',
+    dsaTestCases: 'nums = [2,7,11,15], target = 9 -> [0,1]\nnums = [3,2,4], target = 6 -> [1,2]\nnums = [3,3], target = 6 -> [0,1]',
+    dsaTemplateCode: 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[0];\n    }\n}',
     submissions: [
       {
         id: 'sub-1',
         studentId: 'student-1',
         studentName: 'John Connor',
         submittedDate: '2026-06-16T18:30:00Z',
-        answerText: 'Completed all problems 1 to 15. The forces resolve cleanly into mg*sin(theta) and friction matches mu*mg*cos(theta). Detailed equations attached.',
-        fileUrn: 'newtonian_mechanics_john.pdf',
-        score: 95,
-        feedback: 'Excellent breakdown of vector resolutions. Your free-body diagram equations represent perfect professional standard execution.',
+        answerText: 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        java.util.Map<Integer, Integer> map = new java.util.HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complement = target - nums[i];\n            if (map.containsKey(complement)) {\n                return new int[] { map.get(complement), i };\n            } \n            map.put(nums[i], i);\n        }\n        return new int[0];\n    }\n}',
+        fileUrn: 'two_sum_submission.java',
+        score: 100,
+        feedback: 'Perfect solution! Linear time O(n) complexity with HashMap optimization.',
         status: 'graded'
       }
     ]
   },
   {
     id: 'asg-2',
-    title: 'Functional Hydrocarbon Synthesis',
-    description: 'Provide step-by-step synthetic mechanisms for transforming raw alkenes to aromatic complexes under standard laboratory pressures.',
+    title: 'Interactive Web Form Design',
+    description: 'Using standard CSS styles and vanilla JS, create a fully validation-compliant multi-page registration layout.',
     classId: 'class-2',
-    className: 'Organic Chemistry Principles',
-    course: 'Medical NEET Crash Course',
-    batch: 'Batch B',
+    className: 'Asynchronous Event Loop and Promises',
+    course: 'Full-Stack JavaScript Development',
+    batch: 'stb_002',
     instructorId: 'instructor-1',
     instructorName: 'Prof. Sarah Connor',
     dueDate: '2026-06-29',
     maxPoints: 50,
     status: 'published',
     createdDate: '2026-06-16',
+    questionType: 'instruction',
     submissions: []
   }
 ];
@@ -245,36 +231,31 @@ export const INITIAL_ASSIGNMENTS: StudentAssignment[] = [
 export const INITIAL_ASSIGNMENT_BANK: AssignmentBankItem[] = [
   {
     id: 'bank-1',
-    title: 'Newtonian Laws Practice Sheet',
-    description: 'Solve all 15 numerical problems on inclined platforms and friction coefficients defined in the class handout.',
-    course: 'IIT-JEE Master Preparation',
+    title: 'Valid Parentheses Parser',
+    description: 'Verify if input string has balanced parenthesis grouping utilizing stack data structures.',
+    course: 'Java Masterclass',
     batch: 'stb_001',
     month: 'Month 1',
-    syllabus: 'Unit 1: Mechanics and Laws of Motion',
+    syllabus: 'Unit 1: Syntax & Core Structures',
     maxPoints: 100,
-    createdDate: '2024-06-15'
+    createdDate: '2024-06-15',
+    questionType: 'dsa',
+    dsaQuestion: 'Given a string `s` containing just the characters `(`, `)`, `{`, `}`, `[` and `]`, determine if the input string is valid.',
+    dsaConstraints: '`1 <= s.length <= 10^4`\n`s` consists of parentheses only.',
+    dsaTestCases: 's = "()" -> true\ns = "()[]{}" -> true\ns = "(]" -> false',
+    dsaTemplateCode: 'class Solution {\n    public boolean isValid(String s) {\n        // Your code here\n        return false;\n    }\n}'
   },
   {
     id: 'bank-2',
-    title: 'Functional Hydrocarbon Synthesis',
-    description: 'Provide step-by-step synthetic mechanisms for transforming raw alkenes to aromatic complexes under standard laboratory pressures.',
-    course: 'Medical NEET Crash Course',
+    title: 'REST API Challenge',
+    description: 'Review API structures by completing a basic Node.js Express server mapped to resource routes.',
+    course: 'Full-Stack JavaScript Development',
     batch: 'stb_002',
     month: 'Month 1',
-    syllabus: 'Unit 1: Organic Chemistry Structures',
+    syllabus: 'Unit 1: Server Routing Architecture',
     maxPoints: 50,
-    createdDate: '2024-06-15'
-  },
-  {
-    id: 'bank-3',
-    title: 'Kinetic Theory of Gases Exam',
-    description: 'Solve problems on velocity distribution curves, mean free path, and van der Waals parameters.',
-    course: 'IIT-JEE Master Preparation',
-    batch: 'stb_001',
-    month: 'Month 2',
-    syllabus: 'Unit 2: Thermodynamics & Gas Laws',
-    maxPoints: 100,
-    createdDate: '2024-06-16'
+    createdDate: '2024-06-15',
+    questionType: 'instruction'
   }
 ];
 
@@ -392,34 +373,58 @@ export function exportToCSV(data: any[], filename: string): void {
 export const INITIAL_EVOLUTION_BANK: EvolutionBankItem[] = [
   {
     id: 'evo-bank-1',
-    course: 'IIT-JEE Master Preparation',
+    course: 'Java Masterclass',
     month: 1,
-    title: 'IIT-JEE Month 1 Mechanics & Kinematics',
-    description: 'Comprehensive evaluations focusing on multi-body dynamics, relative motion vectors, constraint relations, and friction analysis.',
-    week1Title: 'Evolution 1 (Week 1)',
-    week1Desc: 'Kinematics & Inertial Frames',
-    week2Title: 'Evolution 2 (Week 2)',
-    week2Desc: 'Newtonian Forces & Multi-body Constraint Equations',
-    week3Title: 'Evolution 3 (Week 3)',
-    week3Desc: 'Friction, Normal Contact, and Inclined Planes',
-    week4Title: 'Evolution 4 (Week 4)',
-    week4Desc: 'Integrated Circular Motion & Work-Energy Theorem',
+    title: 'Java Masterclass Month 1 OOPs & Array Structures',
+    description: 'Continuous comprehensive evaluations tracking OOP design patterns, recursive trace routes, and core Array/ArrayList DSA complexity.',
+    week1Title: 'Object Identification & Inheritance',
+    week1Desc: 'Design an abstract vehicle engine hierarchy mapping fuel consumption methods.',
+    week1Type: 'instruction',
+    week2Title: 'DSA: Recursive Grid Traveler',
+    week2Desc: 'Implement a memoized recursion solving path traversals on an N x M matrix.',
+    week2Type: 'dsa',
+    week2Question: 'Given a grid of size `m x n`, count all possible unique paths from top-left to bottom-right corner. You can only move down or right.',
+    week2Constraints: '`1 <= m, n <= 100`\nExpected time complexity: `O(m * n)`',
+    week2TestCases: 'm=3, n=7 -> 28\nm=3, n=2 -> 3\nm=3, n=3 -> 6',
+    week2TemplateCode: 'class Solution {\n    public int uniquePaths(int m, int n) {\n        // Your grid recursion logic here\n        return 0;\n    }\n}',
+    week3Title: 'Interface Polymorphism Lab',
+    week3Desc: 'Build interfaces for multi-threaded stock transaction systems.',
+    week3Type: 'instruction',
+    week4Title: 'DSA: Balanced Binary Trees Check',
+    week4Desc: 'Evaluate tree hierarchies for depth balance verification.',
+    week4Type: 'dsa',
+    week4Question: 'Determine if a binary tree is height-balanced. A height-balanced binary tree is defined as a binary tree in which the left and right subtrees of every node differ in height by no more than 1.',
+    week4Constraints: 'The number of nodes is in range `[0, 5000]`.',
+    week4TestCases: 'root = [3,9,20,null,null,15,7] -> true\nroot = [1,2,2,3,3,null,null,4,4] -> false',
+    week4TemplateCode: '/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n * }\n */\nclass Solution {\n    public boolean isBalanced(TreeNode root) {\n        return true;\n    }\n}',
     createdDate: '2026-06-01'
   },
   {
     id: 'evo-bank-2',
-    course: 'Medical NEET Crash Course',
+    course: 'Full-Stack JavaScript Development',
     month: 1,
-    title: 'NEET Month 1 Fundamentals of Life Science & Organic Bases',
-    description: 'Continuous assessment tracks focused on cellular architecture, biomolecule classification, and fundamental hydrocarbon hybridization.',
-    week1Title: 'Evolution 1 (Week 1)',
-    week1Desc: 'Cell Theory & Organelle Functions',
-    week2Title: 'Evolution 2 (Week 2)',
-    week2Desc: 'Organic Nomenclature & Alkane Saturated Bonds',
-    week3Title: 'Evolution 3 (Week 3)',
-    week3Desc: 'Biomolecule Polymers & Enzyme Dynamics',
-    week4Title: 'Evolution 4 (Week 4)',
-    week4Desc: 'Consolidated Molecular NEET Exam',
+    title: 'JavaScript Month 1 Callbacks, Promises, and Node API Security',
+    description: 'Track and evaluate asynchronous loops, fetch proxies, middleware authentication, and environment security rules.',
+    week1Title: 'Asynchronous Fetch Loop',
+    week1Desc: 'Create nested API fetching routes returning clean JSON responses.',
+    week1Type: 'instruction',
+    week2Title: 'DSA: Valid Palindrome Check',
+    week2Desc: 'Optimized string pointer check validating alphanumeric characters.',
+    week2Type: 'dsa',
+    week2Question: 'A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.',
+    week2Constraints: '`1 <= s.length <= 2 * 10^5`\n`s` consists only of printable ASCII characters.',
+    week2TestCases: 's = "A man, a plan, a canal: Panama" -> true\ns = "race a car" -> false',
+    week2TemplateCode: 'function isPalindrome(s) {\n    // Write your code here\n    return false;\n}',
+    week3Title: 'Secure JWT Middleware',
+    week3Desc: 'Construct secure JSON Web Token parse and verify middleware functions.',
+    week3Type: 'instruction',
+    week4Title: 'DSA: Bubble and Merge Sorting',
+    week4Desc: 'Implement O(N log N) recursive sorting algorithms.',
+    week4Type: 'dsa',
+    week4Question: 'Given an array of integers, sort the array in ascending order.',
+    week4Constraints: '`1 <= nums.length <= 5 * 10^4`',
+    week4TestCases: 'nums = [5,2,3,1] -> [1,2,3,5]',
+    week4TemplateCode: 'function sortArray(nums) {\n    return nums;\n}',
     createdDate: '2026-06-02'
   }
 ];

@@ -67,6 +67,20 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [pipelineSuccessMsg, setPipelineSuccessMsg] = useState('');
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
+  // Template states
+  const [templateQuestionType, setTemplateQuestionType] = useState<'dsa' | 'instruction'>('instruction');
+  const [templateDsaQuestion, setTemplateDsaQuestion] = useState('');
+  const [templateDsaConstraints, setTemplateDsaConstraints] = useState('');
+  const [templateDsaTestCases, setTemplateDsaTestCases] = useState('');
+  const [templateDsaTemplateCode, setTemplateDsaTemplateCode] = useState('');
+
+  // Custom states
+  const [customQuestionType, setCustomQuestionType] = useState<'dsa' | 'instruction'>('instruction');
+  const [customDsaQuestion, setCustomDsaQuestion] = useState('');
+  const [customDsaConstraints, setCustomDsaConstraints] = useState('');
+  const [customDsaTestCases, setCustomDsaTestCases] = useState('');
+  const [customDsaTemplateCode, setCustomDsaTemplateCode] = useState('');
+
   // Add/Edit Bank Template modal states
   const [editingTemplate, setEditingTemplate] = useState<AssignmentBankItem | null>(null);
   
@@ -150,6 +164,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateDay(template.day || 'Day 1');
       setTemplateSyllabus(template.syllabus || '');
       setTemplateMaxPoints(template.maxPoints);
+      setTemplateQuestionType(template.questionType || 'instruction');
+      setTemplateDsaQuestion(template.dsaQuestion || '');
+      setTemplateDsaConstraints(template.dsaConstraints || '');
+      setTemplateDsaTestCases(template.dsaTestCases || '');
+      setTemplateDsaTemplateCode(template.dsaTemplateCode || '');
     } else {
       setEditingTemplate(null);
       setTemplateTitle('');
@@ -164,6 +183,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateDay('Day 1');
       setTemplateSyllabus('');
       setTemplateMaxPoints(100);
+      setTemplateQuestionType('instruction');
+      setTemplateDsaQuestion('');
+      setTemplateDsaConstraints('');
+      setTemplateDsaTestCases('');
+      setTemplateDsaTemplateCode('');
     }
     setValidationError('');
     setPipelineTab('template-form');
@@ -188,7 +212,12 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
         week: templateWeek,
         day: templateDay,
         syllabus: templateSyllabus,
-        maxPoints: templateMaxPoints
+        maxPoints: templateMaxPoints,
+        questionType: templateQuestionType,
+        dsaQuestion: templateQuestionType === 'dsa' ? templateDsaQuestion : undefined,
+        dsaConstraints: templateQuestionType === 'dsa' ? templateDsaConstraints : undefined,
+        dsaTestCases: templateQuestionType === 'dsa' ? templateDsaTestCases : undefined,
+        dsaTemplateCode: templateQuestionType === 'dsa' ? templateDsaTemplateCode : undefined
       } : t));
     } else {
       // Add
@@ -203,7 +232,12 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
         day: templateDay,
         syllabus: templateSyllabus,
         maxPoints: templateMaxPoints,
-        createdDate: new Date().toISOString().split('T')[0]
+        createdDate: new Date().toISOString().split('T')[0],
+        questionType: templateQuestionType,
+        dsaQuestion: templateQuestionType === 'dsa' ? templateDsaQuestion : undefined,
+        dsaConstraints: templateQuestionType === 'dsa' ? templateDsaConstraints : undefined,
+        dsaTestCases: templateQuestionType === 'dsa' ? templateDsaTestCases : undefined,
+        dsaTemplateCode: templateQuestionType === 'dsa' ? templateDsaTemplateCode : undefined
       };
       setAssignmentBank(prev => [newItem, ...prev]);
     }
@@ -227,6 +261,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
     let finalTitle = '';
     let finalDesc = '';
     let finalPoints = 100;
+    let finalType: 'dsa' | 'instruction' = 'instruction';
+    let finalDsaQuestion = '';
+    let finalDsaConstraints = '';
+    let finalDsaTestCases = '';
+    let finalDsaTemplateCode = '';
 
     if (useCustomAssignment) {
       if (!customTitle.trim() || !customDesc.trim()) {
@@ -236,6 +275,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       finalTitle = customTitle;
       finalDesc = customDesc;
       finalPoints = customMaxPoints;
+      finalType = customQuestionType;
+      finalDsaQuestion = customDsaQuestion;
+      finalDsaConstraints = customDsaConstraints;
+      finalDsaTestCases = customDsaTestCases;
+      finalDsaTemplateCode = customDsaTemplateCode;
     } else {
       const template = assignmentBank.find(t => t.id === selectedBankTemplateId);
       if (!template) {
@@ -245,6 +289,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       finalTitle = template.title;
       finalDesc = template.description;
       finalPoints = template.maxPoints;
+      finalType = template.questionType || 'instruction';
+      finalDsaQuestion = template.dsaQuestion || '';
+      finalDsaConstraints = template.dsaConstraints || '';
+      finalDsaTestCases = template.dsaTestCases || '';
+      finalDsaTemplateCode = template.dsaTemplateCode || '';
     }
 
     const newAssignmentId = `asg-${Date.now()}`;
@@ -264,7 +313,12 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       month: selectedMonth,
       week: selectedWeek,
       day: selectedDay,
-      syllabus: selectedSyllabus
+      syllabus: selectedSyllabus,
+      questionType: finalType,
+      dsaQuestion: finalType === 'dsa' ? finalDsaQuestion : undefined,
+      dsaConstraints: finalType === 'dsa' ? finalDsaConstraints : undefined,
+      dsaTestCases: finalType === 'dsa' ? finalDsaTestCases : undefined,
+      dsaTemplateCode: finalType === 'dsa' ? finalDsaTemplateCode : undefined
     };
 
     setAssignments(prev => [newAsg, ...prev]);
@@ -804,6 +858,83 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                         />
                       </div>
 
+                      {/* Custom Question Type Selector */}
+                      <div className="p-4 bg-slate-50/50 dark:bg-white/[0.01] rounded-2xl border border-slate-200/60 dark:border-white/5 space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Custom Evaluation Type</label>
+                          <div className="flex items-center gap-4 mt-1">
+                            <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
+                              <input
+                                type="radio"
+                                checked={customQuestionType === 'instruction'}
+                                onChange={() => setCustomQuestionType('instruction')}
+                                className="text-amber-550 border-slate-300 dark:border-white/10 focus:ring-amber-550"
+                              />
+                              <span>Instruction/Theory Type</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
+                              <input
+                                type="radio"
+                                checked={customQuestionType === 'dsa'}
+                                onChange={() => setCustomQuestionType('dsa')}
+                                className="text-amber-550 border-slate-300 dark:border-white/10 focus:ring-amber-550"
+                              />
+                              <span className="flex items-center gap-1">
+                                DSA Coding Challenge
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {customQuestionType === 'dsa' && (
+                          <div className="space-y-4 pt-2 border-t border-slate-150 dark:border-white/5">
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">DSA Problem description (Markdown supported) *</label>
+                              <textarea
+                                rows={3}
+                                required={customQuestionType === 'dsa'}
+                                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                                value={customDsaQuestion}
+                                onChange={e => setCustomDsaQuestion(e.target.value)}
+                                placeholder="e.g. Write a function returning the sum of elements..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Input/Output Constraints</label>
+                                <textarea
+                                  rows={2}
+                                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                                  value={customDsaConstraints}
+                                  onChange={e => setCustomDsaConstraints(e.target.value)}
+                                  placeholder="e.g. 1 <= nums.length <= 10^5"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Sample Test Cases</label>
+                                <textarea
+                                  rows={2}
+                                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                                  value={customDsaTestCases}
+                                  onChange={e => setCustomDsaTestCases(e.target.value)}
+                                  placeholder="nums = [1,2,3], target = 4 -> [0,2]"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Starter Template Code</label>
+                              <textarea
+                                rows={4}
+                                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                                value={customDsaTemplateCode}
+                                onChange={e => setCustomDsaTemplateCode(e.target.value)}
+                                placeholder="function solve(nums) {\n  \n}"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       <div className="text-left space-y-1.5 w-1/2">
                         <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-405 dark:text-gray-400">Max Score Points</label>
                         <input
@@ -959,6 +1090,83 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                   onChange={e => setTemplateDesc(e.target.value)}
                   placeholder="Insert instructions, material indexes..."
                 />
+              </div>
+
+              {/* Question Type Selection */}
+              <div className="p-4 bg-slate-50/50 dark:bg-white/[0.01] rounded-2xl border border-slate-200/60 dark:border-white/5 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-gray-400">Evaluation Type</label>
+                  <div className="flex items-center gap-4 mt-1">
+                    <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
+                      <input
+                        type="radio"
+                        checked={templateQuestionType === 'instruction'}
+                        onChange={() => setTemplateQuestionType('instruction')}
+                        className="text-amber-550 border-slate-300 dark:border-white/10 focus:ring-amber-550"
+                      />
+                      <span>Instruction/Theory Type</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
+                      <input
+                        type="radio"
+                        checked={templateQuestionType === 'dsa'}
+                        onChange={() => setTemplateQuestionType('dsa')}
+                        className="text-amber-550 border-slate-300 dark:border-white/10 focus:ring-amber-550"
+                      />
+                      <span className="flex items-center gap-1">
+                        DSA Coding Challenge
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {templateQuestionType === 'dsa' && (
+                  <div className="space-y-4 pt-2 border-t border-slate-150 dark:border-white/5">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">DSA Problem description (Markdown supported) *</label>
+                      <textarea
+                        rows={3}
+                        required={templateQuestionType === 'dsa'}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                        value={templateDsaQuestion}
+                        onChange={e => setTemplateDsaQuestion(e.target.value)}
+                        placeholder="e.g. Write a function returning the sum of elements..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Input/Output Constraints</label>
+                        <textarea
+                          rows={2}
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                          value={templateDsaConstraints}
+                          onChange={e => setTemplateDsaConstraints(e.target.value)}
+                          placeholder="e.g. 1 <= nums.length <= 10^5"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Sample Test Cases</label>
+                        <textarea
+                          rows={2}
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                          value={templateDsaTestCases}
+                          onChange={e => setTemplateDsaTestCases(e.target.value)}
+                          placeholder="nums = [1,2,3], target = 4 -> [0,2]\n..."
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-450">Starter Template Code</label>
+                      <textarea
+                        rows={4}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                        value={templateDsaTemplateCode}
+                        onChange={e => setTemplateDsaTemplateCode(e.target.value)}
+                        placeholder="e.g. function solve(nums) {\n  \n}"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Course & Batch Selectors */}
