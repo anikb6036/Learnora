@@ -3936,9 +3936,46 @@ function AppContent() {
                   </div>
                 ) : (
                   <div>
-                    <div className="mb-8">
-                      <h1 className="text-[28px] font-bold text-slate-900 dark:text-white mb-1 tracking-tight">Overview</h1>
-                      <p className="text-sm text-slate-500 dark:text-gray-400 mb-8">Welcome back, {currentUser.name}. Here's what's happening today.</p>
+                    <div className="space-y-6 pb-2 mb-8">
+                      {/* Vercel Header Breadcrumb */}
+                      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-sm leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
+                              ▲
+                            </div>
+                            <span className="text-sm font-semibold text-slate-500 dark:text-gray-400 font-mono">learnora</span>
+                            <span className="text-slate-300 dark:text-neutral-700">/</span>
+                            <span className="text-sm font-semibold text-slate-950 dark:text-white font-sans flex items-center gap-1.5 font-mono">
+                              {currentUser.role === 'student' ? 'student-centre' : 'faculty-centre'}
+                              <span className="text-[10px] bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">
+                                {currentUser.role === 'student' ? 'hobby' : 'pro'}
+                              </span>
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-slate-450 dark:text-slate-500 font-mono flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              {currentUser.role === 'student' 
+                                ? 'Live Learning Sync Connected' 
+                                : 'Live Faculty Registry Connected'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Greeting Header */}
+                      <div className="py-2">
+                        <h1 className="text-[28px] font-bold text-slate-950 dark:text-white mb-1 tracking-tight">
+                          {currentUser.role === 'student' ? 'Student Workspace' : 'Faculty Overview'}
+                        </h1>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">
+                          Welcome, {currentUser.name}. {currentUser.role === 'student' 
+                            ? "Manage your schedules, completed classes, and pending tasks." 
+                            : 'Track student records, updates, and upcoming lessons.'}
+                        </p>
+                      </div>
                     </div>
 
                     {currentUser.role === 'student' && (
