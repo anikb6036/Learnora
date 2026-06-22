@@ -166,6 +166,41 @@ const getSubjectIconObj = (subject?: string) => {
   return { icon: Calendar, color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-500/10 dark:bg-slate-500/20' };
 };
 
+const isScheduleDateOnOrAfterJoinedDate = (scheduleDate: string, joinedDateStr: string | undefined): boolean => {
+  if (!joinedDateStr) return true;
+  try {
+    const sDate = new Date(scheduleDate + 'T00:00:00');
+    let jDate: Date;
+    if (joinedDateStr.includes('-')) {
+      const parts = joinedDateStr.split('-');
+      if (parts[0].length === 4) {
+        jDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 0, 0, 0, 0);
+      } else {
+        jDate = new Date(joinedDateStr);
+      }
+    } else if (joinedDateStr.includes('/')) {
+      const parts = joinedDateStr.split('/');
+      if (parts[2]?.length === 4) {
+        jDate = new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10), 0, 0, 0, 0);
+      } else if (parts[0]?.length === 4) {
+        jDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 0, 0, 0, 0);
+      } else {
+        jDate = new Date(joinedDateStr);
+      }
+    } else {
+      jDate = new Date(joinedDateStr);
+    }
+    
+    sDate.setHours(0, 0, 0, 0);
+    jDate.setHours(0, 0, 0, 0);
+    
+    if (isNaN(sDate.getTime()) || isNaN(jDate.getTime())) return true;
+    return sDate.getTime() >= jDate.getTime();
+  } catch (e) {
+    return true;
+  }
+};
+
 function AppContent() {
   const { isDark } = useTheme();
 
@@ -3987,6 +4022,7 @@ function AppContent() {
                                 const daySchedules = schedules.filter(s => {
                                   if (s.date !== dateStr) return false;
                                   if (s.status === 'completed') return false;
+                                  if (!isScheduleDateOnOrAfterJoinedDate(s.date, currentUser.joinedDate)) return false;
                                   
                                   const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
                                   
@@ -4409,6 +4445,8 @@ function AppContent() {
                               {(() => {
                                 const completedClasses = schedules.filter(s => {
                                   if (s.status !== 'completed') return false;
+                                  if (!isScheduleDateOnOrAfterJoinedDate(s.date, currentUser.joinedDate)) return false;
+                                  
                                   const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
                                   const isMyCourse = s.course && currentUser.course && s.course.toLowerCase() === currentUser.course.toLowerCase();
                                   const isAllCourse = !s.course || s.course === 'All';
