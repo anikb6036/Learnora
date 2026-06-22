@@ -2699,13 +2699,7 @@ function AppContent() {
                                   className={`w-full px-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastCourseError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 transition-all font-sans`}
                                 >
                                   <option value="">-- Select Course Program --</option>
-                                  {courses.filter(c => {
-                                    if (c.status === 'upcoming') return true;
-                                    if (c.status === 'ongoing' && c.admissionLastDate) {
-                                      return getCurrentDateString() <= c.admissionLastDate;
-                                    }
-                                    return false;
-                                  }).map(c => (
+                                  {courses.filter(c => c.status === 'upcoming').map(c => (
                                     <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>{c.name} {c.batchNumber ? `(Batch: ${c.batchNumber})` : ''}</option>
                                   ))}
                                 </select>
