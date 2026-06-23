@@ -113,65 +113,37 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   };
 
   const getBatchDisplayName = (batchVal: string) => {
-    if (!batchVal) return '';
-    const valLower = batchVal.toLowerCase();
-    if (valLower === 'stb_001' || valLower === 'batch a') return 'Batch A (stb_001)';
-    if (valLower === 'stb_002' || valLower === 'batch b') return 'Batch B (stb_002)';
-    if (valLower === 'stb_003' || valLower === 'batch c') return 'Batch C (stb_003)';
-    if (valLower === 'stb_004' || valLower === 'batch d') return 'Batch D (stb_004)';
-    
-    const matchObj = batches.find(b => b.id.toLowerCase() === valLower || b.name.toLowerCase() === valLower);
-    if (matchObj) {
-      if (matchObj.name.toLowerCase() !== valLower) {
-        return `${matchObj.name} (${batchVal})`;
-      }
-      return matchObj.name;
-    }
-    return batchVal;
+    return batchVal || '';
   };
 
   // Safe ongoing batch retrieval for target courses
-  const getBatchesForCourse = (courseName: string): StudentBatch[] => {
+  const getBatchesForCourse = (courseName: string): string[] => {
     if (!courseName) return [];
-    const courseObj = courses.find(c => c.name.toLowerCase() === courseName.toLowerCase());
-    const courseBatchNumber = courseObj?.batchNumber;
+    
+    const activeBatchNames = new Set<string>();
 
-    const enrolledStudentBatches = new Set<string>(
-      users
-        .filter(u => u.role === 'student' && u.course && u.course.toLowerCase() === courseName.toLowerCase() && u.batch)
-        .map(u => u.batch as string)
-    );
-
-    const filtered = batches.filter(b => {
-      if (b.status === 'completed') return false;
-      const bNameLower = b.name.toLowerCase();
-      const bIdLower = b.id.toLowerCase();
-      if (bIdLower === 'batch-3' || bNameLower === 'stb_003' || bNameLower === 'batch c') {
-        return false;
+    users.forEach(u => {
+      if (u.role === 'student' && u.course && u.course.toLowerCase() === courseName.toLowerCase() && u.batch) {
+        activeBatchNames.add(u.batch);
       }
-      const matchesCourseBatch = courseBatchNumber && (
-        bNameLower === courseBatchNumber.toLowerCase() ||
-        bIdLower === courseBatchNumber.toLowerCase() ||
-        areBatchesEquivalent(b.name, courseBatchNumber) ||
-        areBatchesEquivalent(b.id, courseBatchNumber)
-      );
-      const matchesStudentEnrollment = Array.from(enrolledStudentBatches).some(studentBatchName => 
-        bNameLower === studentBatchName.toLowerCase() ||
-        bIdLower === studentBatchName.toLowerCase() ||
-        areBatchesEquivalent(b.name, studentBatchName) ||
-        areBatchesEquivalent(b.id, studentBatchName)
-      );
-      return matchesCourseBatch || matchesStudentEnrollment;
     });
 
-    if (filtered.length > 0) return filtered;
-
-    return batches.filter(b => {
-      if (b.status === 'completed') return false;
-      const bNameLower = b.name.toLowerCase();
-      const bIdLower = b.id.toLowerCase();
-      return !(bIdLower === 'batch-3' || bNameLower === 'stb_003' || bNameLower === 'batch c');
+    courses.forEach(c => {
+      if (c.name.toLowerCase() === courseName.toLowerCase() && c.status !== 'completed' && c.batchNumber) {
+        activeBatchNames.add(c.batchNumber);
+      }
     });
+
+    if (activeBatchNames.size === 0) {
+      const fallback = batches.filter(b => b.status !== 'completed' && b.id !== 'batch-3').map(b => b.name);
+      if (fallback.length > 0) {
+        fallback.forEach(f => activeBatchNames.add(f));
+      } else {
+        activeBatchNames.add("stb_001");
+      }
+    }
+
+    return Array.from(activeBatchNames);
   };
 
   // Reset inner selection tabs when track is toggled, keeping current tab if in deploy workspace or template forms
@@ -190,7 +162,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setSelectedCourse(courses[0].name);
       const available = getBatchesForCourse(courses[0].name);
       if (available.length > 0) {
-        setSelectedBatch(available[0].name);
+        setSelectedBatch(available[0]);
       }
     }
   }, [courses, selectedCourse]);
@@ -201,7 +173,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
     setSelectedBankTemplateId('');
     const available = getBatchesForCourse(courseName);
     if (available.length > 0) {
-      setSelectedBatch(available[0].name);
+      setSelectedBatch(available[0]);
     } else {
       setSelectedBatch('All');
     }
@@ -292,7 +264,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       setTemplateTitle('');
       setTemplateDesc('');
       const defaultCourse = courses[0]?.name || '';
-      const defaultBatch = getBatchesForCourse(defaultCourse)[0]?.name || 'stb_001';
+      const defaultBatch = getBatchesForCourse(defaultCourse)[0] || 'stb_001';
       setTemplateCourse(defaultCourse);
       setTemplateBatch(defaultBatch);
       setTemplateMonth('Month 1');
@@ -1225,8 +1197,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                         ) : (
                           <>
                             <option value="All">All Active Batches</option>
-                            {getBatchesForCourse(selectedCourse).map(b => (
-                              <option key={b.id} value={b.name}>{getBatchDisplayName(b.name)}</option>
+                            {getBatchesForCourse(selectedCourse).map(bName => (
+                              <option key={bName} value={bName}>{getBatchDisplayName(bName)}</option>
                             ))}
                           </>
                         )}
