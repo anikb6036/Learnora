@@ -233,6 +233,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [templateDsaConstraints, setTemplateDsaConstraints] = useState('');
   const [templateDsaTestCases, setTemplateDsaTestCases] = useState('');
   const [templateDsaTemplateCode, setTemplateDsaTemplateCode] = useState('');
+  const [templateDsaGenDiff, setTemplateDsaGenDiff] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
+  const [templateDsaGenCount, setTemplateDsaGenCount] = useState(1);
   const [validationError, setValidationError] = useState('');
 
   // Custom code inputs while deploying custom on-the-fly assignments
@@ -241,6 +243,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [customDsaConstraints, setCustomDsaConstraints] = useState('');
   const [customDsaTestCases, setCustomDsaTestCases] = useState('');
   const [customDsaTemplateCode, setCustomDsaTemplateCode] = useState('');
+  const [customDsaGenDiff, setCustomDsaGenDiff] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
+  const [customDsaGenCount, setCustomDsaGenCount] = useState(1);
 
   const openAssignmentTemplateForm = (template: AssignmentBankItem | null = null) => {
     if (template) {
@@ -568,6 +572,66 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       if (weekNum === 3) { cSetWeek3(titleVal, descVal, 'dsa', combinedQuestion, combinedConstraints, combinedTestCases, combinedTemplate); }
       if (weekNum === 4) { cSetWeek4(titleVal, descVal, 'dsa', combinedQuestion, combinedConstraints, combinedTestCases, combinedTemplate); }
     }
+  };
+
+  const handleAutoGenerateTemplateDSA = (diff: 'Easy' | 'Medium' | 'Hard', count: number) => {
+    const pool = diff === 'Easy' ? EASY_PROBLEMS : diff === 'Medium' ? MEDIUM_PROBLEMS : HARD_PROBLEMS;
+    const selected: DSAProblem[] = [];
+    for (let i = 0; i < count; i++) {
+      selected.push(pool[i % pool.length]);
+    }
+
+    const titles = selected.map(p => p.title.replace(/^\d+\.\s*/, '')).join(' & ');
+    let combinedQuestion = `### Coding Challenge: ${titles}\n\n`;
+    combinedQuestion += `Difficulty: **${diff}** | Challenges Count: ${count}\n\n`;
+    
+    if (selected.length === 1) {
+      combinedQuestion += `\n${selected[0].description}`;
+    } else {
+      selected.forEach((p, idx) => {
+        combinedQuestion += `#### Problem ${idx + 1}: ${p.title}\n${p.description}\n\n---\n\n`;
+      });
+    }
+
+    let combinedConstraints = selected.length === 1 ? selected[0].constraints : selected.map((p, ix) => `[Problem ${ix + 1}]\n${p.constraints}`).join('\n\n');
+    let combinedTestCases = selected.length === 1 ? selected[0].testCases : selected.map((p, ix) => `[Problem ${ix + 1}]\n${p.testCases}`).join('\n\n');
+    let combinedTemplate = selected.length === 1 ? selected[0].starterCode : `// Combined Workspace: ${titles}\n\n` + selected.map((p, ix) => `// --- CHALLENGE ${ix + 1}: ${p.title} ---\n${p.starterCode}`).join('\n\n');
+
+    setTemplateDsaQuestion(combinedQuestion);
+    setTemplateDsaConstraints(combinedConstraints);
+    setTemplateDsaTestCases(combinedTestCases);
+    setTemplateDsaTemplateCode(combinedTemplate);
+  };
+
+  const handleAutoGenerateCustomDSA = (diff: 'Easy' | 'Medium' | 'Hard', count: number) => {
+    const pool = diff === 'Easy' ? EASY_PROBLEMS : diff === 'Medium' ? MEDIUM_PROBLEMS : HARD_PROBLEMS;
+    const selected: DSAProblem[] = [];
+    for (let i = 0; i < count; i++) {
+      selected.push(pool[i % pool.length]);
+    }
+
+    const titles = selected.map(p => p.title.replace(/^\d+\.\s*/, '')).join(' & ');
+    let combinedQuestion = `### Coding Challenge: ${titles}\n\n`;
+    combinedQuestion += `Difficulty: **${diff}** | Challenges Count: ${count}\n\n`;
+    
+    if (selected.length === 1) {
+      combinedQuestion += `\n${selected[0].description}`;
+    } else {
+      selected.forEach((p, idx) => {
+        combinedQuestion += `#### Problem ${idx + 1}: ${p.title}\n${p.description}\n\n---\n\n`;
+      });
+    }
+
+    let combinedConstraints = selected.length === 1 ? selected[0].constraints : selected.map((p, ix) => `[Problem ${ix + 1}]\n${p.constraints}`).join('\n\n');
+    let combinedTestCases = selected.length === 1 ? selected[0].testCases : selected.map((p, ix) => `[Problem ${ix + 1}]\n${p.testCases}`).join('\n\n');
+    let combinedTemplate = selected.length === 1 ? selected[0].starterCode : `// Combined Workspace: ${titles}\n\n` + selected.map((p, ix) => `// --- CHALLENGE ${ix + 1}: ${p.title} ---\n${p.starterCode}`).join('\n\n');
+
+    setCustomTitle(`DSA Milestone - ${diff} Block (${selected[0].title.replace(/^\d+\.\s*/, '')}${count > 1 ? ' +' : ''})`);
+    setCustomDesc(`Implement efficient code solving: ${titles}. Meet limits & pass assertions.`);
+    setCustomDsaQuestion(combinedQuestion);
+    setCustomDsaConstraints(combinedConstraints);
+    setCustomDsaTestCases(combinedTestCases);
+    setCustomDsaTemplateCode(combinedTemplate);
   };
 
   const tSetWeek1 = (t: string, d: string, type: 'dsa' | 'instruction', q = '', c = '', tst = '', cd = '') => {
@@ -1396,11 +1460,39 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                                 </div>
                               </div>
                               {customQuestionType === 'dsa' && (
-                                <div className="space-y-2 border-l-2 border-amber-500/20 pl-3 animate-fadeIn">
-                                  <textarea placeholder="DSA Problem instruction detail..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded" value={customDsaQuestion} onChange={e => setCustomDsaQuestion(e.target.value)}/>
-                                  <input type="text" placeholder="Constraints (comma separated)" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded" value={customDsaConstraints} onChange={e => setCustomDsaConstraints(e.target.value)}/>
-                                  <textarea placeholder="Test cases format block..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded" value={customDsaTestCases} onChange={e => setCustomDsaTestCases(e.target.value)}/>
-                                  <textarea placeholder="Starter template workspace code..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs font-mono rounded" value={customDsaTemplateCode} onChange={e => setCustomDsaTemplateCode(e.target.value)}/>
+                                <div className="space-y-4 border-l-2 border-amber-500/20 pl-3 animate-fadeIn">
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-amber-50 dark:bg-amber-500/5 p-3 rounded-xl border border-amber-500/10 dark:border-amber-500/5">
+                                    <div>
+                                      <label className="text-[9px] font-bold text-slate-500">DSA Pool Difficulty</label>
+                                      <select value={customDsaGenDiff} onChange={e => setCustomDsaGenDiff(e.target.value as any)} className="w-full px-2 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/5 rounded-lg text-slate-700 dark:text-zinc-300">
+                                        <option value="Easy">Easy Problems</option>
+                                        <option value="Medium">Medium Problems</option>
+                                        <option value="Hard">Hard Problems</option>
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <label className="text-[9px] font-bold text-slate-500">Challenges quantity</label>
+                                      <select value={customDsaGenCount} onChange={e => setCustomDsaGenCount(parseInt(e.target.value))} className="w-full px-2 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/5 rounded-lg text-slate-700 dark:text-zinc-300">
+                                        <option value={1}>1 Problem</option>
+                                        <option value={2}>2 Nested Problems</option>
+                                        <option value={3}>3 Combined Problems</option>
+                                      </select>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAutoGenerateCustomDSA(customDsaGenDiff, customDsaGenCount)}
+                                      className="h-9 px-3.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-lg border border-amber-500/30 font-sans cursor-pointer transition flex items-center justify-center gap-1.5"
+                                    >
+                                      Generate Challenge
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <textarea placeholder="DSA Problem instruction detail..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={customDsaQuestion} onChange={e => setCustomDsaQuestion(e.target.value)}/>
+                                    <input type="text" placeholder="Constraints (comma separated)" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={customDsaConstraints} onChange={e => setCustomDsaConstraints(e.target.value)}/>
+                                    <textarea placeholder="Test cases format block..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={customDsaTestCases} onChange={e => setCustomDsaTestCases(e.target.value)}/>
+                                    <textarea placeholder="Starter template workspace code..." rows={2} className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 p-2 text-xs font-mono rounded text-slate-700 dark:text-zinc-300" value={customDsaTemplateCode} onChange={e => setCustomDsaTemplateCode(e.target.value)}/>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -1891,11 +1983,39 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                         </div>
 
                         {templateQuestionType === 'dsa' && (
-                          <div className="space-y-2 border-l-2 border-amber-500/20 pl-3">
-                            <textarea placeholder="Detail the coding problem..." rows={2} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded" value={templateDsaQuestion} onChange={e => setTemplateDsaQuestion(e.target.value)}/>
-                            <input type="text" placeholder="Constraints..." className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded" value={templateDsaConstraints} onChange={e => setTemplateDsaConstraints(e.target.value)}/>
-                            <textarea placeholder="Test Cases..." rows={2} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded" value={templateDsaTestCases} onChange={e => setTemplateDsaTestCases(e.target.value)}/>
-                            <textarea placeholder="Starter Code Template..." rows={3} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs font-mono rounded" value={templateDsaTemplateCode} onChange={e => setTemplateDsaTemplateCode(e.target.value)}/>
+                          <div className="space-y-4 border-l-2 border-amber-500/20 pl-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-amber-50 dark:bg-amber-500/5 p-3 rounded-xl border border-amber-500/10 dark:border-amber-500/5">
+                              <div>
+                                <label className="text-[9px] font-bold text-slate-500">DSA Pool Difficulty</label>
+                                <select value={templateDsaGenDiff} onChange={e => setTemplateDsaGenDiff(e.target.value as any)} className="w-full px-2 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/5 rounded-lg text-slate-700 dark:text-zinc-300">
+                                  <option value="Easy">Easy Problems</option>
+                                  <option value="Medium">Medium Problems</option>
+                                  <option value="Hard">Hard Problems</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-bold text-slate-500">Challenges quantity</label>
+                                <select value={templateDsaGenCount} onChange={e => setTemplateDsaGenCount(parseInt(e.target.value))} className="w-full px-2 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/5 rounded-lg text-slate-700 dark:text-zinc-300">
+                                  <option value={1}>1 Problem</option>
+                                  <option value={2}>2 Nested Problems</option>
+                                  <option value={3}>3 Combined Problems</option>
+                                </select>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleAutoGenerateTemplateDSA(templateDsaGenDiff, templateDsaGenCount)}
+                                className="h-9 px-3.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-lg border border-amber-500/30 font-sans cursor-pointer transition flex items-center justify-center gap-1.5"
+                              >
+                                Generate Challenge
+                              </button>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <textarea placeholder="Detail the coding problem..." rows={2} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={templateDsaQuestion} onChange={e => setTemplateDsaQuestion(e.target.value)}/>
+                              <input type="text" placeholder="Constraints..." className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={templateDsaConstraints} onChange={e => setTemplateDsaConstraints(e.target.value)}/>
+                              <textarea placeholder="Test Cases..." rows={2} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs rounded text-slate-700 dark:text-zinc-300" value={templateDsaTestCases} onChange={e => setTemplateDsaTestCases(e.target.value)}/>
+                              <textarea placeholder="Starter Code Template..." rows={3} className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-2 text-xs font-mono rounded text-slate-700 dark:text-zinc-300" value={templateDsaTemplateCode} onChange={e => setTemplateDsaTemplateCode(e.target.value)}/>
+                            </div>
                           </div>
                         )}
                       </div>
