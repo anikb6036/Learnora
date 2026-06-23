@@ -4218,6 +4218,12 @@ function AppContent() {
                                   return matchesCourse && matchesBatch;
                                 });
 
+                                const dayEvolutions = studentEvolutions.filter(ev => {
+                                  if (ev.studentId !== currentUser.id || ev.status === 'draft') return false;
+                                  if (!ev.examDate) return false;
+                                  return ev.examDate === dateStr;
+                                });
+
                                 return (
                                   <div key={dateStr} className="flex flex-col md:flex-row gap-4">
                                     <div className={`w-14 h-14 shrink-0 flex flex-col items-center justify-center rounded-xl text-center border ${
@@ -4230,7 +4236,7 @@ function AppContent() {
                                     </div>
 
                                     <div className="flex-1 min-w-0">
-                                      {daySchedules.length === 0 ? (
+                                      {daySchedules.length === 0 && dayEvolutions.length === 0 ? (
                                         <div className="h-full w-full flex items-center px-5 py-4 bg-white border border-slate-200 rounded-[10px] text-[13px] text-slate-500 dark:bg-[#161618] dark:border-white/10 dark:text-slate-400">
                                           No sessions scheduled for the day
                                         </div>
@@ -4308,6 +4314,44 @@ function AppContent() {
                                                   <div className="text-right shrink-0">
                                                     <div className="text-xs font-bold text-slate-900 dark:text-white">{cl.time}</div>
                                                     <div className="text-[11px] text-slate-450 dark:text-slate-550 font-medium">{cl.duration}m</div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                          {dayEvolutions.map(ev => {
+                                            return (
+                                              <div key={ev.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-5 py-3 bg-white border border-indigo-200 dark:bg-[#161618] dark:border-indigo-500/30 rounded-[10px] items-center animate-fadeIn shadow-sm">
+                                                <div className="md:col-span-4 flex items-center gap-3">
+                                                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/50 dark:border-indigo-500/10 flex items-center justify-center flex-shrink-0 text-indigo-600 dark:text-indigo-400">
+                                                    <TrendingUp className="w-4 h-4" />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                      <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate" title="Continuous Evolution Exam">
+                                                        Continuous Evolution
+                                                      </h4>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                      Month {ev.month} • <span className="font-bold text-indigo-600 dark:text-indigo-400">Evaluation</span>
+                                                    </p>
+                                                  </div>
+                                                </div>
+
+                                                <div className="md:col-span-3">
+                                                  <span className="inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/10">
+                                                    Scheduled
+                                                  </span>
+                                                </div>
+
+                                                <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
+                                                  <div className="min-w-0">
+                                                    <p className="font-bold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Exam Details</p>
+                                                    <button onClick={() => { setActiveTab('progress'); }} className="px-2.5 py-1 bg-indigo-500 hover:bg-indigo-600 text-white dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 rounded-md text-xs font-bold transition">View Milestones</button>
+                                                  </div>
+                                                  <div className="text-right shrink-0">
+                                                    <div className="text-xs font-bold text-slate-900 dark:text-white">{ev.examTime || 'TBA'}</div>
+                                                    <div className="text-[11px] text-slate-450 dark:text-slate-550 font-medium">{ev.examDuration ? `${ev.examDuration}m` : 'Duration TBA'}</div>
                                                   </div>
                                                 </div>
                                               </div>
