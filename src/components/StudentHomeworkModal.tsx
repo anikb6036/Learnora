@@ -20,7 +20,6 @@ export default function StudentHomeworkModal({
 }: StudentHomeworkModalProps) {
   const [submissionText, setSubmissionText] = useState('');
   const [fileUrn, setFileUrn] = useState('');
-  const [activeTab, setActiveTab] = useState<'instruction' | 'workspace'>('instruction');
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen || (!assignment && !evolution)) return null;
@@ -53,126 +52,152 @@ export default function StudentHomeworkModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-[#0c0d12]">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-white dark:bg-[#0c0d12] w-full h-full shadow-2xl overflow-hidden flex flex-col border-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="w-full h-full flex flex-col"
       >
         {/* Header */}
-        <div className="flex-shrink-0 px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/50">
+        <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-white dark:bg-[#0c0d12] border-b border-slate-200 dark:border-white/10 shadow-sm z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              {isDSA ? <Code className="w-5 h-5" /> : assignment ? <FileText className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              {isDSA ? <Code className="w-4 h-4" /> : assignment ? <FileText className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{itemTitle}</h2>
-              <div className="text-xs text-slate-500 dark:text-gray-400 font-medium">
-                {assignment ? `Due Date: ${assignment.dueDate} | Max Points: ${assignment.maxPoints}` : 'Continuous Evolution Evaluation'}
+              <h2 className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight">{itemTitle}</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[11px] px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded font-medium">
+                  {assignment ? 'Assignment' : 'Evolution'}
+                </span>
+                {assignment?.dueDate && <span className="text-[11px] text-slate-500 dark:text-gray-400">Due: {assignment.dueDate}</span>}
+                {assignment?.maxPoints && <span className="text-[11px] text-amber-600 dark:text-amber-500 font-bold ml-1">{assignment.maxPoints} pts</span>}
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="flex p-1 bg-slate-200 dark:bg-zinc-800 rounded-lg mr-2 border border-slate-300 dark:border-white/5">
-              <button 
-                onClick={() => setActiveTab('instruction')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'instruction' ? 'bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-zinc-300'}`}
-              >
-                <LayoutTemplate className="w-3.5 h-3.5" /> Instructions
-              </button>
-              <button 
-                onClick={() => setActiveTab('workspace')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'workspace' ? 'bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-zinc-300'}`}
-              >
-                <PenTool className="w-3.5 h-3.5" /> Workspace Base
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleSubmit}
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <Send className="w-3 h-3" /> Submit
+            </button>
+            <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1"></div>
             <button 
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 transition"
+              className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-zinc-950">
-          {activeTab === 'instruction' && (
-            <div className="absolute inset-0 overflow-y-auto outline-none p-6 md:p-8">
-              <div className="max-w-3xl mx-auto space-y-6">
-                <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider text-indigo-500">Task Overview</h3>
-                  <div className="prose dark:prose-invert max-w-none text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-line leading-relaxed">
-                    {itemDesc || 'No general description provided.'}
-                  </div>
+        {errorMessage && (
+          <div className="bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-4 py-2 text-xs font-bold flex items-center gap-2 border-b border-rose-200 dark:border-rose-500/20 z-10">
+            <CheckCircle className="w-4 h-4" /> {errorMessage}
+          </div>
+        )}
+
+        {/* Content Area - Split Pane for DSA, Centered for Normal */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-100 dark:bg-zinc-950/50">
+          
+          {/* Left Pane: Instructions */}
+          <div className={`${isDSA ? 'md:w-1/2 lg:w-5/12 border-b md:border-b-0 md:border-r' : 'w-full max-w-4xl mx-auto border-x'} bg-white dark:bg-[#161618] border-slate-200 dark:border-white/10 flex flex-col h-full`}>
+            <div className="flex bg-slate-50 dark:bg-[#121315] border-b border-slate-200 dark:border-white/10">
+              <div className="px-4 py-2.5 text-xs font-bold flex items-center gap-2 border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-[#161618]">
+                <FileText className="w-4 h-4" /> Description
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 md:p-6 custom-scrollbar">
+              <div className="prose dark:prose-invert max-w-none">
+                <div className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed mb-6">
+                  {itemDesc || 'No general description provided.'}
                 </div>
 
                 {isDSA && (
-                  <>
-                    <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider text-indigo-500">Problem Statement</h3>
-                      <div className="prose dark:prose-invert max-w-none text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-line font-mono bg-slate-50 dark:bg-zinc-900 p-4 rounded-xl border border-slate-100 dark:border-white/5">
-                        {dsaQuestion || 'No specific problem statement provided.'}
-                      </div>
+                  <div className="space-y-6">
+                    <div>
+                      {dsaQuestion && (
+                        <div className="text-[13px] text-slate-800 dark:text-zinc-200 whitespace-pre-wrap font-sans">
+                          {dsaQuestion}
+                        </div>
+                      )}
                     </div>
                     
-                    {(dsaConstraints || dsaTestCases) && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {dsaConstraints && (
-                          <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
-                            <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-wider text-amber-500">Constraints</h3>
-                            <div className="text-xs text-slate-600 dark:text-zinc-400 whitespace-pre-line font-mono bg-amber-50 dark:bg-amber-500/5 p-3 rounded-lg border border-amber-100 dark:border-amber-500/10">
-                              {dsaConstraints}
-                            </div>
-                          </div>
-                        )}
-                        {dsaTestCases && (
-                          <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
-                            <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-wider text-emerald-500">Test Cases</h3>
-                            <div className="text-xs text-slate-600 dark:text-zinc-400 whitespace-pre-line font-mono bg-emerald-50 dark:bg-emerald-500/5 p-3 rounded-lg border border-emerald-100 dark:border-emerald-500/10">
-                              {dsaTestCases}
-                            </div>
-                          </div>
-                        )}
+                    {dsaTestCases && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Examples</h4>
+                        <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-white/5 p-4 rounded-xl font-mono text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap">
+                          {dsaTestCases}
+                        </div>
                       </div>
                     )}
-                  </>
-                )}
-                
-                <div className="flex justify-end pt-4">
-                  <button 
-                    onClick={() => setActiveTab('workspace')}
-                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm"
-                  >
-                    Proceed to Workspace <Layout className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'workspace' && (
-            <div className="absolute inset-0 flex flex-col p-4 md:p-6 pb-20">
-              <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
-                {errorMessage && (
-                  <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 text-rose-650 dark:text-rose-400 text-xs font-semibold flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                    {errorMessage}
+                    
+                    {dsaConstraints && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Constraints</h4>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {dsaConstraints.split(',').map((constraint, i) => constraint.trim() ? (
+                            <li key={i} className="text-xs text-slate-700 dark:text-zinc-300 font-mono">
+                              <span className="bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded text-[11px]">{constraint.trim()}</span>
+                            </li>
+                          ) : null)}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
-                
-                <div className="flex-1 flex flex-col bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mb-4">
+              </div>
+            </div>
+          </div>
+
+          {/* Right Pane: Code Editor / Submission */}
+          <div className={`${isDSA ? 'md:w-1/2 lg:w-7/12' : 'hidden'} flex flex-col h-full bg-[#1e1e1e] border-l border-zinc-800`}>
+            <div className="flex bg-[#252526] border-b border-[#303030]">
+              <div className="px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-[#1e1e1e] text-emerald-400 border-t-2 border-emerald-500">
+                <Code className="w-4 h-4" /> Code Solution
+              </div>
+            </div>
+            
+            <div className="flex-1 p-0 relative">
+              <textarea
+                spellCheck="false"
+                className="absolute inset-0 w-full h-full p-6 text-[13px] bg-transparent text-slate-300 focus:outline-none resize-none font-mono leading-relaxed custom-scrollbar selection:bg-indigo-500/30"
+                value={submissionText}
+                onChange={(e) => {
+                  setSubmissionText(e.target.value);
+                  if (errorMessage) setErrorMessage('');
+                }}
+              />
+            </div>
+            <div className="h-10 bg-[#007acc] flex items-center px-4 justify-between">
+              <div className="text-[11px] text-white/80 font-mono flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Environment Ready
+              </div>
+              <button 
+                onClick={handleSubmit}
+                className="text-white text-[11px] font-bold tracking-wider uppercase hover:text-emerald-100 transition"
+              >
+                Run & Submit
+              </button>
+            </div>
+          </div>
+
+          {/* Alternative Right Pane: Form Submission for non-DSA */}
+          {!isDSA && (
+             <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col bg-slate-50 dark:bg-zinc-950 p-6">
+                <div className="flex-1 flex flex-col bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mb-6">
                   <div className="p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-zinc-900 flex justify-between items-center">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 pl-1 flex items-center gap-2">
-                      <Code className="w-4 h-4" /> {isDSA ? 'Code Editor' : 'Submission Text'}
+                      <Layout className="w-4 h-4" /> Submission Text
                     </label>
                   </div>
                   <textarea
-                    placeholder={isDSA ? "// Write your code implementation here..." : "Type your structured solution answers here..."}
-                    className="flex-1 w-full p-4 text-sm bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none resize-none font-mono leading-relaxed"
+                    placeholder="Type your structured solution answers here..."
+                    className="flex-1 w-full p-4 text-sm bg-transparent text-slate-800 dark:text-zinc-200 focus:outline-none resize-none font-mono leading-relaxed custom-scrollbar"
                     value={submissionText}
                     onChange={(e) => {
                       setSubmissionText(e.target.value);
@@ -181,7 +206,7 @@ export default function StudentHomeworkModal({
                   />
                 </div>
 
-                <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+                <div className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2 pl-1">Document File Name / Reference (Optional)</label>
                   <input
                     type="text"
@@ -194,28 +219,10 @@ export default function StudentHomeworkModal({
                     }}
                   />
                 </div>
-              </div>
-            </div>
+             </div>
           )}
+
         </div>
-        
-        {/* Footer */}
-        {activeTab === 'workspace' && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#0c0d12] flex justify-end gap-3">
-            <button 
-              onClick={onClose}
-              className="px-5 py-2.5 text-sm text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl font-bold transition"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleSubmit}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm"
-            >
-              <Send className="w-4 h-4" /> Submit Processing
-            </button>
-          </div>
-        )}
       </motion.div>
     </div>
   );
