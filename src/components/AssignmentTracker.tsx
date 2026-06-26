@@ -40,6 +40,7 @@ export default function AssignmentTracker({
 
   // Inline grading state
   const [gradingSubId, setGradingSubId] = useState<string | null>(null);
+  const [playingVideoSubId, setPlayingVideoSubId] = useState<string | null>(null);
   const [inlineScore, setInlineScore] = useState<number>(100);
   const [inlineFeedback, setInlineFeedback] = useState<string>('');
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
@@ -677,27 +678,58 @@ export default function AssignmentTracker({
                                 {/* Video playback preview */}
                                 <div className="space-y-1.5">
                                   <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Recorded Session Video Feed</p>
-                                  <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-500/15 bg-zinc-950 flex flex-col items-center justify-center p-4 text-center group">
-                                    {/* Simulated webcam video feed of student movement */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-950/20 to-zinc-900/90 flex items-center justify-center">
-                                      <div className="w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg transition cursor-pointer transform group-hover:scale-105">
-                                        {/* Play icon */}
-                                        <svg className="w-5 h-5 fill-current pl-0.5" viewBox="0 0 24 24">
-                                          <path d="M8 5v14l11-7z"/>
-                                        </svg>
+                                  <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-500/15 bg-zinc-950 flex flex-col items-center justify-center text-center group">
+                                    {playingVideoSubId === submission.id ? (
+                                      <div className="absolute inset-0 w-full h-full bg-black">
+                                        <video
+                                          src={
+                                            (submission.recordedVideoUrl && (submission.recordedVideoUrl.startsWith('blob:') || submission.recordedVideoUrl.startsWith('data:')))
+                                              ? submission.recordedVideoUrl
+                                              : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+                                          }
+                                          controls
+                                          autoPlay
+                                          loop
+                                          playsInline
+                                          referrerPolicy="no-referrer"
+                                          className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => setPlayingVideoSubId(null)}
+                                          className="absolute top-2 right-2 bg-black/75 hover:bg-black/95 text-white px-2 py-1 rounded font-mono text-[9px] font-bold z-10 transition cursor-pointer"
+                                        >
+                                          ✕ Close
+                                        </button>
                                       </div>
-                                    </div>
-                                    
-                                    {/* Flashing badge */}
-                                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded font-mono text-[9px] font-bold text-rose-500">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
-                                      RECORDING PLAYBACK
-                                    </div>
+                                    ) : (
+                                      <>
+                                        <div 
+                                          className="absolute inset-0 bg-gradient-to-br from-rose-950/20 to-zinc-900/90 flex items-center justify-center cursor-pointer z-5"
+                                          onClick={() => setPlayingVideoSubId(submission.id)}
+                                        >
+                                          <div className="w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg transition transform group-hover:scale-105">
+                                            {/* Play icon */}
+                                            <svg className="w-5 h-5 fill-current pl-0.5" viewBox="0 0 24 24">
+                                              <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Flashing badge */}
+                                        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded font-mono text-[9px] font-bold text-rose-500 z-5">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                                          RECORDING PLAYBACK
+                                        </div>
 
-                                    <div className="absolute bottom-2 inset-x-2 text-center">
-                                      <p className="text-[10px] font-bold text-rose-300">proctor_rec_stream.mp4</p>
-                                      <p className="text-[9px] text-zinc-400 mt-0.5">Click to verify candidate's identity & movement</p>
-                                    </div>
+                                        <div className="absolute bottom-2 inset-x-2 text-center pointer-events-none z-5">
+                                          <p className="text-[10px] font-bold text-rose-300">
+                                            {submission.recordedVideoUrl && (submission.recordedVideoUrl.startsWith('blob:') || submission.recordedVideoUrl.startsWith('data:')) ? 'recorded_session.webm' : 'proctor_rec_stream.mp4'}
+                                          </p>
+                                          <p className="text-[9px] text-zinc-400 mt-0.5">Click to verify candidate's identity & movement</p>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
 
