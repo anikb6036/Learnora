@@ -416,6 +416,29 @@ async function startServer() {
     }
   });
 
+  // Proxy endpoint for Piston code execution to bypass browser CORS constraints
+  app.post("/api/execute-code", async (req, res) => {
+    try {
+      const { language, version, files } = req.body;
+      const response = await fetch("https://emacs.piston.rs/api/v2/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language, version, files })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      const result = await response.json();
+      return res.status(200).json(result);
+    } catch (err: any) {
+      console.error("Proxy execution to Piston failed:", err);
+      return res.status(500).json({ error: err.message || "Failed to execute code" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

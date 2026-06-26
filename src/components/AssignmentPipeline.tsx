@@ -1323,7 +1323,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             Selected Cohort Live Deployment Count Auditing
                           </p>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-[10px] text-slate-400">
                           {selectedCourse} • {getBatchDisplayName(selectedBatch) || 'All Batches'} • {selectedTrack === 'assignment' ? selectedMonthStr : `Month ${selectedMonthNum}`}
                         </span>
                       </div>
@@ -1334,7 +1334,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             <span className="text-[10px] font-bold uppercase tracking-wider">Assignment Task Count</span>
                             <ClipboardList className="w-4 h-4 opacity-75" />
                           </div>
-                          <div className="mt-1 text-base font-black font-mono">
+                          <div className="mt-1 text-base font-black">
                             {currentAssignedCount} {currentAssignedCount === 1 ? 'Task' : 'Tasks'} Deployed
                           </div>
                         </div>
@@ -1344,7 +1344,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             <span className="text-[10px] font-bold uppercase tracking-wider">Evolution Checklist Count</span>
                             <TrendingUp className="w-4 h-4 opacity-75" />
                           </div>
-                          <div className="mt-1 text-base font-black font-mono">
+                          <div className="mt-1 text-base font-black">
                             {currentEvolutionCount} {currentEvolutionCount === 1 ? 'Profile track' : 'Profile tracks'} Tracked
                           </div>
                         </div>

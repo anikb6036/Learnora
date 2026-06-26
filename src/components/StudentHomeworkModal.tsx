@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StudentAssignment, StudentEvolution } from '../types';
 import { motion } from 'motion/react';
-import { X, CheckCircle, FileText, Code, Send, Layout, PenTool, LayoutTemplate, Activity } from 'lucide-react';
+import { X, CheckCircle, FileText, Code, Send, Layout, PenTool, LayoutTemplate, Activity, RotateCcw } from 'lucide-react';
 import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
@@ -10,6 +10,165 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-c';
 import 'prismjs/components/prism-cpp';
 import 'prismjs/themes/prism-tomorrow.css';
+
+function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (typeof a !== typeof b) return false;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  if (typeof a === 'object') {
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+    for (const key of keysA) {
+      if (!keysB.includes(key)) return false;
+      if (!deepEqual(a[key], b[key])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+interface ParsedTestCase {
+  id: number;
+  inputRaw: string;
+  expectedRaw: string;
+  inputVars: Record<string, any>;
+  expectedVal: any;
+}
+
+function parseTestCases(rawText: string): ParsedTestCase[] {
+  if (!rawText) return [];
+  const cases: ParsedTestCase[] = [];
+  
+  const parts = rawText.split(/(?=Input:|input:|INPUT:)/i);
+  let id = 1;
+  for (const part of parts) {
+    if (!part.trim()) continue;
+    
+    const inputMatch = part.match(/(?:Input|input|INPUT):\s*([^\n]+)/i);
+    const outputMatch = part.match(/(?:Output|output|OUTPUT):\s*([^\n]+)/i);
+    
+    if (inputMatch) {
+      const inputRaw = inputMatch[1].trim();
+      const expectedRaw = outputMatch ? outputMatch[1].trim() : '';
+      
+      const inputVars: Record<string, any> = {};
+      try {
+        const eqMatches = [...inputRaw.matchAll(/([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g)];
+        const varNames = eqMatches.map(m => m[1]);
+        if (varNames.length > 0) {
+          const evaluator = new Function(`return (function(){ 
+            try {
+              let ${inputRaw}; 
+              return { ${varNames.join(', ')} }; 
+            } catch(e) {
+              return {};
+            }
+          })()`);
+          Object.assign(inputVars, evaluator());
+        } else {
+          const evaluator = new Function(`return (function(){
+            try {
+              return [${inputRaw}];
+            } catch(e) {
+              return [];
+            }
+          })()`);
+          const vals = evaluator();
+          if (Array.isArray(vals)) {
+            vals.forEach((v: any, idx: number) => {
+              inputVars[`param${idx}`] = v;
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to parse inputs for test case:", inputRaw, err);
+      }
+      
+      let expectedVal: any = expectedRaw;
+      try {
+        expectedVal = new Function(`return (${expectedRaw})`)();
+      } catch (e) {
+        expectedVal = expectedRaw;
+      }
+      
+      cases.push({
+        id: id++,
+        inputRaw,
+        expectedRaw,
+        inputVars,
+        expectedVal
+      });
+    }
+  }
+  return cases;
+}
+
+function getBoilerplateForLanguage(jsTemplate: string, language: string): string {
+  if (!jsTemplate) return '';
+  
+  let funcName = 'solution';
+  let params: string[] = [];
+  
+  // Try JS function pattern
+  const namedFuncMatch = jsTemplate.match(/function\s+([a-zA-Z0-9_$]+)\s*\(([^)]*)\)/);
+  // Try Java/C++ method pattern: public/private/static type name(params)
+  const javaMethodMatch = jsTemplate.match(/(?:public|private|protected|static|\s)\s+[a-zA-Z0-9_<>[\]]+\s+([a-zA-Z0-9_$]+)\s*\(([^)]*)\)/);
+  // Try Python def pattern
+  const pyDefMatch = jsTemplate.match(/def\s+([a-zA-Z0-9_$]+)\s*\(([^)]*)\)/);
+  
+  if (namedFuncMatch) {
+    funcName = namedFuncMatch[1];
+    params = namedFuncMatch[2].split(',').map(p => p.trim()).filter(Boolean);
+  } else if (javaMethodMatch) {
+    funcName = javaMethodMatch[1];
+    const rawParams = javaMethodMatch[2].split(',').map(p => p.trim()).filter(Boolean);
+    params = rawParams.map(p => {
+      const parts = p.split(/\s+/);
+      return parts[parts.length - 1] || p;
+    });
+  } else if (pyDefMatch) {
+    funcName = pyDefMatch[1];
+    const rawParams = pyDefMatch[2].split(',').map(p => p.trim()).filter(Boolean);
+    params = rawParams.filter(p => p !== 'self').map(p => p.split(':')[0].trim());
+  } else {
+    const firstWordMatch = jsTemplate.match(/([a-zA-Z0-9_$]+)\s*=/);
+    if (firstWordMatch) {
+      funcName = firstWordMatch[1];
+    }
+  }
+
+  // Clean parameters of pointers or references
+  params = params.map(p => p.replace(/[*&]/g, '').trim()).filter(p => p && p !== 'self');
+  
+  if (language === 'python') {
+    const pyParams = params.map(p => {
+      const lp = p.toLowerCase();
+      if (lp.includes('nums') || lp.includes('arr')) return p + ': list';
+      if (lp.includes('target') || lp.includes('val')) return p + ': int';
+      return p;
+    });
+    return `class Solution:\n    def ${funcName}(self, ${pyParams.length > 0 ? pyParams.join(', ') : 'self'}):\n        # Write your code here\n        pass\n`;
+  }
+  
+  if (language === 'cpp') {
+    return `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> ${funcName}(vector<int>& nums, int target) {\n        // Write your code here\n        return {};\n    }\n};\n`;
+  }
+  
+  if (language === 'java') {
+    return `import java.util.*;\n\nclass Solution {\n    public int[] ${funcName}(int[] nums, int target) {\n        // Write your code here\n        return new int[]{};\n    }\n}\n`;
+  }
+  
+  // Clean empty starter code for JavaScript/TypeScript
+  return `function ${funcName}(${params.join(', ')}) {\n    // Write your code here\n    \n}`;
+}
 
 interface StudentHomeworkModalProps {
   isOpen: boolean;
@@ -39,12 +198,19 @@ export default function StudentHomeworkModal({
     status: 'success' | 'error' | 'running'; 
     message: string; 
     output?: string;
-    testCases?: { id: number; passed: boolean; input: string; output: string; expected: string }[];
+    testCases?: { id: number; passed: boolean; input: string; output: string; expected: string; logs?: string; duration?: string }[];
   } | null>(null);
 
   // Proctoring States
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [micStream, setMicStream] = useState<MediaStream | null>(null);
+  
+  const cameraStreamRef = React.useRef<MediaStream | null>(null);
+  const screenStreamRef = React.useRef<MediaStream | null>(null);
+  const micStreamRef = React.useRef<MediaStream | null>(null);
+  const allStreamsRef = React.useRef<MediaStream[]>([]);
+  
   const [cameraGranted, setCameraGranted] = useState(false);
   const [micGranted, setMicGranted] = useState(false);
   const [screenGranted, setScreenGranted] = useState(false);
@@ -165,7 +331,9 @@ export default function StudentHomeworkModal({
   const requestCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      allStreamsRef.current.push(stream);
       setCameraStream(stream);
+      cameraStreamRef.current = stream;
       setCameraGranted(true);
       
       setProctorLogs(prev => [{
@@ -189,6 +357,9 @@ export default function StudentHomeworkModal({
   const requestMic = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      allStreamsRef.current.push(stream);
+      setMicStream(stream);
+      micStreamRef.current = stream;
       setMicGranted(true);
       
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -241,7 +412,9 @@ export default function StudentHomeworkModal({
   const requestScreenShare = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      allStreamsRef.current.push(stream);
       setScreenStream(stream);
+      screenStreamRef.current = stream;
       setScreenGranted(true);
 
       setProctorLogs(prev => [{
@@ -301,16 +474,19 @@ export default function StudentHomeworkModal({
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
-      if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-      if (screenStream) screenStream.getTracks().forEach(t => t.stop());
+      allStreamsRef.current.forEach(s => s.getTracks().forEach(t => t.stop()));
     };
-  }, [cameraStream, screenStream]);
+  }, []);
 
   React.useEffect(() => {
-    if (isDSA && !submissionText && defaultCode) {
-      setSubmissionText(defaultCode);
+    if (isDSA && defaultCode) {
+      const prevBoilerplates = ['javascript', 'python', 'cpp', 'java'].map(lang => getBoilerplateForLanguage(defaultCode, lang).trim());
+      const currentTrimmed = submissionText.trim();
+      if (!submissionText || prevBoilerplates.includes(currentTrimmed) || currentTrimmed === defaultCode.trim()) {
+        setSubmissionText(getBoilerplateForLanguage(defaultCode, language));
+      }
     }
-  }, [isDSA, defaultCode, submissionText]);
+  }, [language, isDSA, defaultCode]);
 
   const handlePaneDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -386,24 +562,147 @@ export default function StudentHomeworkModal({
                     'cpp': '10.2.0'
                 };
 
-                const response = await fetch('https://emacs.piston.rs/api/v2/execute', {
+                const parsedCases = parseTestCases(dsaTestCases);
+
+                let contentToRun = submissionText;
+                if (language === 'python' && parsedCases.length > 0) {
+                  const pythonTestCasesListJson = JSON.stringify(parsedCases.map(tc => ({
+                    id: tc.id,
+                    input_raw: tc.inputRaw,
+                    expected_raw: tc.expectedRaw,
+                    inputs: tc.inputVars,
+                    expected: tc.expectedVal
+                  }))).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+                  contentToRun = `import json
+import sys
+import io
+
+# Student Submission Code
+${submissionText}
+
+# Test Cases Data
+test_cases = json.loads('${pythonTestCasesListJson}')
+
+# Locate entry point function
+entry_func = None
+if 'Solution' in globals() and isinstance(globals()['Solution'], type):
+    try:
+        sol_instance = globals()['Solution']()
+        methods = [m for m in dir(sol_instance) if not m.startswith('_') and callable(getattr(sol_instance, m))]
+        if methods:
+            entry_func = getattr(sol_instance, methods[0])
+    except Exception as e:
+        pass
+
+if not entry_func:
+    for k, v in list(globals().items()):
+        if callable(v) and not k.startswith('_') and k not in ['json', 'sys', 'io', 'test_cases', 'entry_func', 'Solution']:
+            entry_func = v
+            break
+
+results = []
+if entry_func:
+    for tc in test_cases:
+        old_stdout = sys.stdout
+        new_stdout = io.StringIO()
+        sys.stdout = new_stdout
+        
+        tc_passed = False
+        tc_output = None
+        tc_logs = ""
+        
+        try:
+            args = list(tc["inputs"].values())
+            tc_output = entry_func(*args)
+            
+            def deep_compare(a, b):
+                if a == b:
+                    return True
+                if isinstance(a, list) and isinstance(b, list):
+                    if len(a) != len(b):
+                        return False
+                    if all(deep_compare(x, y) for x, y in zip(a, b)):
+                        return True
+                    try:
+                        return sorted(a) == sorted(b)
+                    except:
+                        pass
+                return False
+                
+            tc_passed = deep_compare(tc_output, tc["expected"])
+            tc_logs = new_stdout.getvalue()
+        except Exception as ex:
+            tc_passed = False
+            tc_output = "Runtime Error: " + str(ex)
+            tc_logs = new_stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+            
+        results.append({
+            "id": tc["id"],
+            "passed": tc_passed,
+            "input": tc["input_raw"],
+            "output": json.dumps(tc_output) if not isinstance(tc_output, str) or not tc_output.startswith("Runtime Error") else tc_output,
+            "expected": tc["expected_raw"],
+            "logs": tc_logs
+        })
+else:
+    results.append({
+        "id": 1,
+        "passed": True,
+        "input": "Procedural Script Run",
+        "output": "Python script executed successfully.",
+        "expected": "N/A",
+        "logs": ""
+    })
+
+print("TEST_RESULTS_JSON_START")
+print(json.dumps(results))
+print("TEST_RESULTS_JSON_END")
+`;
+                }
+
+                const response = await fetch('/api/execute-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         language: langMap[language] || language,
                         version: versionMap[language] || '*',
-                        files: [{ content: submissionText }]
+                        files: [{ content: contentToRun }]
                     })
                 });
 
                 if (response.ok) {
                     const result = await response.json();
+                    const runOutput = result.run?.output || '';
+                    const startIdx = runOutput.indexOf('TEST_RESULTS_JSON_START');
+                    const endIdx = runOutput.indexOf('TEST_RESULTS_JSON_END');
+                    
+                    if (startIdx !== -1 && endIdx !== -1) {
+                      const jsonStr = runOutput.substring(startIdx + 'TEST_RESULTS_JSON_START'.length, endIdx).trim();
+                      try {
+                        const parsedResults = JSON.parse(jsonStr);
+                        const allPassed = parsedResults.every((r: any) => r.passed);
+                        setTestResults({
+                          status: 'success',
+                          message: allPassed ? 'Accepted' : 'Wrong Answer',
+                          testCases: parsedResults
+                        });
+                        setConsoleTab('testResults');
+                        setIsRunning(false);
+                        return;
+                      } catch (err) {
+                        console.error("Failed to parse wrapped results:", err);
+                      }
+                    }
+
                     setTestResults({
                         status: result.run?.code === 0 ? 'success' : 'error',
                         message: result.run?.code === 0 ? 'Accepted' : 'Runtime Error',
-                        output: result.run?.output || 'No output',
+                        output: result.run?.output || result.run?.stderr || 'No output',
                         testCases: [
-                            { id: 1, passed: result.run?.code === 0, input: 'Sample Input', output: result.run?.output || 'No output', expected: 'Depends on the question' }
+                            { id: 1, passed: result.run?.code === 0, input: 'Sample Input', output: result.run?.output || result.run?.stderr || 'No output', expected: 'Depends on the question' }
                         ]
                     });
                     setConsoleTab('codeOutput');
@@ -427,67 +726,164 @@ export default function StudentHomeworkModal({
             return;
         }
 
-        // Try to find function definitions to execute them
-        const funcMatches = [...submissionText.matchAll(/function\s+([a-zA-Z0-9_]+)\s*\(/g)];
-        const funcNames = funcMatches.map(m => m[1]);
-        
-        let executionCode = submissionText + '\n\n';
-        if (funcNames.length > 0) {
-            executionCode += `console.log("Running defined functions against sample test cases...");\n`;
-            for (const name of funcNames) {
-                if (name === 'lengthOfLongestSubstring') {
-                    executionCode += `console.log("${name}('abcabcbb') =>", ${name}('abcabcbb'));\n`;
-                    executionCode += `console.log("${name}('bbbbb') =>", ${name}('bbbbb'));\n`;
-                } else if (name === 'maxArea') {
-                    executionCode += `console.log("${name}([1,8,6,2,5,4,8,3,7]) =>", ${name}([1,8,6,2,5,4,8,3,7]));\n`;
-                } else if (name === 'threeSum') {
-                    executionCode += `console.log("${name}([-1,0,1,2,-1,-4]) =>", JSON.stringify(${name}([-1,0,1,2,-1,-4])));\n`;
-                } else if (name === 'twoSum') {
-                    executionCode += `console.log("${name}([2,7,11,15], 9) =>", JSON.stringify(${name}([2,7,11,15], 9)));\n`;
-                } else {
-                    // Try with generic arguments if we don't know the function
-                    executionCode += `try { console.log("${name}() =>", JSON.stringify(${name}())); } catch(e) {}\n`;
-                }
-            }
-        } else {
-             // If no function defined, maybe it's just inline code, just log that it ran
-             executionCode += `\nconsole.log("Code execution completed.");\n`;
+        // JavaScript / TypeScript Local Execution
+        const parsedCases = parseTestCases(dsaTestCases);
+        if (parsedCases.length === 0) {
+          // Add default dummy test case if none was parsed
+          parsedCases.push({
+            id: 1,
+            inputRaw: 'No input provided',
+            expectedRaw: 'true',
+            inputVars: {},
+            expectedVal: true
+          });
         }
 
-        // eslint-disable-next-line no-new-func
-        const fn = new Function(executionCode);
-        fn();
+        let funcName = '';
+        let paramNames: string[] = [];
         
-        // Mock test cases evaluation based on dsaTestCases content
-        const lines = dsaTestCases.split('\n').filter(l => l.trim().startsWith('Input:'));
-        let cases = [];
-        if (lines.length > 0) {
-            cases = lines.map((l, i) => ({
-                id: i + 1,
-                passed: true,
-                input: l.replace('Input:', '').trim(),
-                output: 'Accepted',
-                expected: 'Accepted'
-            }));
-        } else {
-             cases = [
-                 { id: 1, passed: true, input: 'nums = [2,7,11,15], target = 9', output: '[0, 1]', expected: '[0, 1]' },
-                 { id: 2, passed: true, input: 'nums = [3,2,4], target = 6', output: '[1, 2]', expected: '[1, 2]' }
-             ];
+        const namedFuncMatch = submissionText.match(/function\s+([a-zA-Z0-9_$]+)\s*\(([^)]*)\)/);
+        const arrowFuncMatch = submissionText.match(/(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:\(([^)]*)\)|([a-zA-Z0-9_$]+))\s*=>/);
+        const assignedFuncMatch = submissionText.match(/(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*function\s*\(([^)]*)\)/);
+        
+        if (namedFuncMatch) {
+          funcName = namedFuncMatch[1];
+          paramNames = namedFuncMatch[2].split(',').map(p => p.trim()).filter(Boolean);
+        } else if (arrowFuncMatch) {
+          funcName = arrowFuncMatch[1];
+          const params = arrowFuncMatch[2] || arrowFuncMatch[3] || '';
+          paramNames = params.split(',').map(p => p.trim()).filter(Boolean);
+        } else if (assignedFuncMatch) {
+          funcName = assignedFuncMatch[1];
+          paramNames = assignedFuncMatch[2].split(',').map(p => p.trim()).filter(Boolean);
         }
+
+        if (!funcName) {
+          // No function defined, run as plain script and capture prints
+          let tcLogs: string[] = [];
+          const originalLog = console.log;
+          console.log = (...args) => {
+            const formatted = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+            tcLogs.push(formatted);
+            originalLog(...args);
+          };
+          
+          try {
+            const runner = new Function(submissionText);
+            runner();
+            setTestResults({
+              status: 'success',
+              message: 'Code Executed Successfully',
+              output: tcLogs.join('\n'),
+              testCases: [{
+                id: 1,
+                passed: true,
+                input: 'None (Procedural Script Run)',
+                output: tcLogs.length > 0 ? tcLogs.join('\n') : 'No print statement executed.',
+                expected: 'N/A'
+              }]
+            });
+            setConsoleTab('testResults');
+          } catch (err: any) {
+            setTestResults({
+              status: 'error',
+              message: 'Runtime Error',
+              output: err.toString()
+            });
+            setConsoleTab('codeOutput');
+          } finally {
+            console.log = originalLog;
+            setIsRunning(false);
+          }
+          return;
+        }
+
+        // Evaluate user's function reference
+        const userFunc = new Function(submissionText + `\nreturn ${funcName};`)();
         
+        const evaluatedCases = [];
+        let allPassed = true;
+        
+        for (const tc of parsedCases) {
+          let tcLogs: string[] = [];
+          const originalLog = console.log;
+          console.log = (...args) => {
+            const formatted = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+            tcLogs.push(formatted);
+            originalLog(...args);
+          };
+          
+          try {
+            const args: any[] = [];
+            if (paramNames.length > 0) {
+              paramNames.forEach(name => {
+                if (name in tc.inputVars) {
+                  args.push(tc.inputVars[name]);
+                } else {
+                  const keys = Object.keys(tc.inputVars);
+                  const idx = paramNames.indexOf(name);
+                  if (idx !== -1 && idx < keys.length) {
+                    args.push(tc.inputVars[keys[idx]]);
+                  } else {
+                    args.push(undefined);
+                  }
+                }
+              });
+            } else {
+              args.push(...Object.values(tc.inputVars));
+            }
+            
+            const startTime = performance.now();
+            const actualOutput = userFunc(...args);
+            const duration = performance.now() - startTime;
+            
+            let passed = deepEqual(actualOutput, tc.expectedVal);
+            if (!passed && Array.isArray(actualOutput) && Array.isArray(tc.expectedVal)) {
+              const sortedActual = [...actualOutput].sort((x, y) => String(x).localeCompare(String(y)));
+              const sortedExpected = [...tc.expectedVal].sort((x, y) => String(x).localeCompare(String(y)));
+              passed = deepEqual(sortedActual, sortedExpected);
+            }
+            
+            if (!passed) allPassed = false;
+            
+            evaluatedCases.push({
+              id: tc.id,
+              passed,
+              input: tc.inputRaw,
+              output: typeof actualOutput === 'object' ? JSON.stringify(actualOutput) : String(actualOutput),
+              expected: tc.expectedRaw,
+              logs: tcLogs.join('\n'),
+              duration: `${duration.toFixed(1)}ms`
+            });
+          } catch (err: any) {
+            allPassed = false;
+            evaluatedCases.push({
+              id: tc.id,
+              passed: false,
+              input: tc.inputRaw,
+              output: `Runtime Error: ${err.message || err}`,
+              expected: tc.expectedRaw,
+              logs: tcLogs.join('\n')
+            });
+          } finally {
+            console.log = originalLog;
+          }
+        }
+
         setTestResults({
           status: 'success',
-          message: 'Accepted',
-          output: logs.length > 0 ? logs.join('\n') : '',
-          testCases: cases
+          message: allPassed ? 'Accepted' : 'Wrong Answer',
+          output: logs.join('\n'),
+          testCases: evaluatedCases
         });
+        setConsoleTab('testResults');
       } catch (err: any) {
         setTestResults({
           status: 'error',
           message: 'Execution Error',
           output: err.toString()
         });
+        setConsoleTab('codeOutput');
       } finally {
         console.log = originalConsoleLog;
         setIsRunning(false);
@@ -495,7 +891,7 @@ export default function StudentHomeworkModal({
     }, 1200);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!submissionText.trim() && !fileUrn.trim()) {
       setErrorMessage('Please provide a submission text or attach a file.');
       return;
@@ -505,15 +901,28 @@ export default function StudentHomeworkModal({
     const idToSubmit = assignment?.id || (evolution as any)?.id;
     
     let videoUrl: string | undefined = undefined;
-    if (requireRecording && mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      if (recordedChunksRef.current.length > 0) {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        videoUrl = URL.createObjectURL(blob);
-      }
+    if (requireRecording && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      const recorder = mediaRecorderRef.current;
+      await new Promise<void>(resolve => {
+        recorder.onstop = () => {
+          if (recordedChunksRef.current.length > 0) {
+            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+            videoUrl = URL.createObjectURL(blob);
+          }
+          resolve();
+        };
+        recorder.stop();
+      });
     } else if (isProctored) {
       videoUrl = `https://storage.googleapis.com/proctoring-videos/rec-${Date.now()}.mp4`; // fake url
     }
+
+    // Stop streams
+    allStreamsRef.current.forEach(s => s.getTracks().forEach(t => t.stop()));
+
+    setCameraStream(null);
+    setScreenStream(null);
+    setMicStream(null);
 
     onSubmit(
       idToSubmit, 
@@ -648,6 +1057,17 @@ export default function StudentHomeworkModal({
                 <Code className="w-4 h-4" /> Code Solution
               </div>
               <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to reset your code to the default template? Your current changes will be lost.')) {
+                      setSubmissionText(getBoilerplateForLanguage(defaultCode, language));
+                    }
+                  }}
+                  title="Reset code template"
+                  className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors rounded border border-transparent hover:border-[#303030]"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
                 <select 
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
@@ -724,43 +1144,61 @@ export default function StudentHomeworkModal({
                     </div>
                   ) : testResults.status === 'success' && testResults.testCases ? (
                     <div className="flex-1 flex flex-col overflow-hidden">
-                      <div className="px-4 py-3 shrink-0">
-                         <div className="font-bold text-emerald-400 text-lg mb-3">Accepted</div>
-                         <div className="flex gap-2">
+                      <div className="px-4 py-3 shrink-0 border-b border-[#303030]">
+                         <div className={`font-bold text-lg mb-3 ${testResults.message === 'Accepted' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                           {testResults.message}
+                         </div>
+                         <div className="flex gap-2 flex-wrap">
                             {testResults.testCases.map((tc, idx) => (
                                <button 
                                  key={tc.id}
                                  onClick={() => setSelectedTestCase(idx)}
                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${selectedTestCase === idx ? 'bg-zinc-700 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700/80'}`}
                                >
-                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                 <span className={`w-2 h-2 rounded-full ${tc.passed ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
                                  Case {tc.id}
                                </button>
                             ))}
                          </div>
                       </div>
                       
-                      <div className="flex-1 p-4 pt-0 overflow-y-auto custom-scrollbar space-y-4">
+                      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-4">
                          {testResults.testCases[selectedTestCase] && (
                             <>
+                              <div className="flex items-center justify-between">
+                                <span className="text-zinc-500 text-[11px] font-bold uppercase tracking-wider">Test Details</span>
+                                {testResults.testCases[selectedTestCase].duration && (
+                                  <span className="text-[11px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono font-bold">
+                                    Runtime: {testResults.testCases[selectedTestCase].duration}
+                                  </span>
+                                )}
+                              </div>
                               <div>
                                 <div className="text-zinc-500 mb-1 text-[11px] font-bold">Input</div>
-                                <div className="bg-[#2d2d2d] rounded-lg p-3 text-zinc-300 whitespace-pre-wrap font-mono">
+                                <div className="bg-[#2d2d2d] rounded-lg p-3 text-zinc-300 whitespace-pre-wrap font-mono text-[13px]">
                                   {testResults.testCases[selectedTestCase].input}
                                 </div>
                               </div>
                               <div>
                                 <div className="text-zinc-500 mb-1 text-[11px] font-bold">Output</div>
-                                <div className="bg-[#2d2d2d] rounded-lg p-3 text-zinc-300 whitespace-pre-wrap font-mono">
+                                <div className={`bg-[#2d2d2d] rounded-lg p-3 whitespace-pre-wrap font-mono text-[13px] ${testResults.testCases[selectedTestCase].passed ? 'text-emerald-400' : 'text-rose-400'}`}>
                                   {testResults.testCases[selectedTestCase].output}
                                 </div>
                               </div>
                               <div>
                                 <div className="text-zinc-500 mb-1 text-[11px] font-bold">Expected</div>
-                                <div className="bg-[#2d2d2d] rounded-lg p-3 text-zinc-300 whitespace-pre-wrap font-mono">
+                                <div className="bg-[#2d2d2d] rounded-lg p-3 text-zinc-300 whitespace-pre-wrap font-mono text-[13px]">
                                   {testResults.testCases[selectedTestCase].expected}
                                 </div>
                               </div>
+                              {testResults.testCases[selectedTestCase].logs && (
+                                <div>
+                                  <div className="text-zinc-500 mb-1 text-[11px] font-bold">Stdout Console Logs</div>
+                                  <div className="bg-[#111111] border border-white/5 rounded-lg p-3 text-amber-200/90 whitespace-pre-wrap font-mono text-[12px] leading-relaxed">
+                                    {testResults.testCases[selectedTestCase].logs}
+                                  </div>
+                                </div>
+                              )}
                             </>
                          )}
                       </div>
@@ -839,128 +1277,42 @@ export default function StudentHomeworkModal({
              </div>
           )}
 
-          {/* Proctoring Sidebar Panel */}
-          {(isProctored || requireCamera || requireMic || requireScreenShare || requireRecording) && (
-            <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-rose-500/10 dark:border-rose-500/20 bg-rose-50/5 dark:bg-zinc-950/80 flex flex-col h-full shrink-0">
-              <div className="p-4 border-b border-rose-500/10 dark:border-rose-500/20 bg-rose-500/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                  <p className="text-xs font-black text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-                    🛡️ Proctoring Active
-                    {requireRecording && isRecording && <span className="ml-2 text-[9px] bg-rose-600 text-white px-1.5 py-0.5 rounded shadow-sm tracking-widest font-mono">REC🔴</span>}
-                  </p>
+          {/* Floating Camera Widget */}
+          {requireCamera && (
+            <motion.div
+              drag
+              dragMomentum={false}
+              className="fixed bottom-6 right-6 w-48 aspect-video bg-zinc-900 rounded-xl overflow-hidden shadow-2xl border-2 border-rose-500/50 z-[100] cursor-move"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {cameraStream && cameraGranted ? (
+                <video
+                  ref={el => {
+                    if (el && cameraStream) {
+                      el.srcObject = cameraStream;
+                      el.play().catch(() => {});
+                    }
+                  }}
+                  className="w-full h-full object-cover pointer-events-none"
+                  muted
+                  playsInline
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-950/50 to-zinc-950 flex flex-col items-center justify-center p-3 text-center pointer-events-none">
+                  <div className="w-6 h-6 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 mb-1">
+                    <Activity className="w-3 h-3 animate-spin" />
+                  </div>
+                  <p className="text-[9px] font-bold text-rose-400">Secure Feed</p>
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono font-bold rounded">
-                  {proctorWarnings} warnings
-                </span>
+              )}
+              
+              {/* Recording / Proctoring indicator */}
+              <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded font-mono text-[8px] font-bold text-rose-500 pointer-events-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                REC
               </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                {/* 1. CAMERA SECURE PREVIEW */}
-                {requireCamera && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Webcam Secure Stream</p>
-                    <div className="relative aspect-video bg-zinc-900 rounded-xl overflow-hidden border border-rose-500/20 flex items-center justify-center">
-                      {cameraStream && cameraGranted ? (
-                        <video
-                          ref={el => {
-                            if (el && cameraStream) {
-                              el.srcObject = cameraStream;
-                              el.play().catch(() => {});
-                            }
-                          }}
-                          className="w-full h-full object-cover"
-                          muted
-                          playsInline
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/50 to-zinc-950 flex flex-col items-center justify-center p-3 text-center">
-                          <div className="w-8 h-8 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 mb-2">
-                            <Activity className="w-4 h-4 animate-spin" />
-                          </div>
-                          <p className="text-[11px] font-bold text-rose-400">Secure Camera Feed</p>
-                          <p className="text-[9px] text-zinc-400 mt-1">Facial scanner active</p>
-                        </div>
-                      )}
-                      
-                      {/* Green facial rectangle overlays */}
-                      <div className="absolute inset-x-8 inset-y-6 border border-emerald-500/40 pointer-events-none rounded-md">
-                        <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-emerald-400"></div>
-                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-emerald-400"></div>
-                        <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-emerald-400"></div>
-                        <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-emerald-400"></div>
-                        <div className="absolute top-2 left-2 text-[8px] font-mono font-bold text-emerald-400 bg-black/60 px-1 py-0.2 rounded">
-                          TRACKING OK
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. AUDIO LEVEL PREVIEW */}
-                {requireMic && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Acoustic Decibel Bar</p>
-                    <div className="p-3 bg-zinc-900 rounded-xl border border-rose-500/10">
-                      <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
-                        <span>Acoustic Monitor</span>
-                        <span>{micVolume}% volume</span>
-                      </div>
-                      <div className="h-2.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800 flex items-center px-0.5">
-                        <div 
-                          className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 transition-all duration-100" 
-                          style={{ width: `${micVolume}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. SCREEN SHARE badge */}
-                {requireScreenShare && (
-                  <div className="p-3 bg-zinc-900 rounded-xl border border-rose-500/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-mono text-zinc-400">Desktop Capture Stream</p>
-                      <p className="text-xs font-bold text-emerald-400">Active (Secure Rec)</p>
-                    </div>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                )}
-
-                {/* 4. ANTI-CHEAT WARNING RULES */}
-                <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-400 rounded-xl text-[10px] space-y-1 font-medium">
-                  <p className="font-bold uppercase tracking-wide">Cheating Prevention Controls:</p>
-                  <ul className="list-disc pl-3.5 space-y-0.5">
-                    <li>Camera recording student movement.</li>
-                    <li>Tab-switching triggers auto violations.</li>
-                    <li>Audio background voice scanning is live.</li>
-                  </ul>
-                </div>
-
-                {/* 5. LOGS STREAM */}
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Live Security Event Logs</p>
-                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar font-mono text-[9px]">
-                    {proctorLogs.length === 0 ? (
-                      <p className="text-zinc-500 italic text-center py-2">No security logs recorded yet.</p>
-                    ) : (
-                      proctorLogs.map(log => (
-                        <div key={log.id} className="p-2 rounded bg-zinc-900 border border-zinc-800 space-y-1">
-                          <div className="flex justify-between text-zinc-500">
-                            <span>{log.timestamp}</span>
-                            <span className="text-[8px] font-bold uppercase text-rose-400">{log.type}</span>
-                          </div>
-                          <p className="text-zinc-300">{log.message}</p>
-                          {log.snapshotUrl && (
-                            <img src={log.snapshotUrl} alt="Violation thumbnail" className="w-full h-10 object-cover rounded mt-1 border border-zinc-700" referrerPolicy="no-referrer" />
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            </motion.div>
           )}
 
         </div>
