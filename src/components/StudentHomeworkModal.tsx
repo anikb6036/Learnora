@@ -326,7 +326,7 @@ export default function StudentHomeworkModal({
 
           {/* Right Pane: Code Editor / Submission */}
           <div className={`${isDSA ? 'md:w-1/2 lg:w-7/12' : 'hidden'} flex flex-col h-full bg-[#1e1e1e] border-l border-zinc-800`}>
-            <div className="flex bg-[#252526] border-b border-[#303030] justify-between items-center pr-4">
+            <div className="flex bg-[#252526] border-b border-[#303030] justify-between items-center pr-4 shrink-0">
               <div className="px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-[#1e1e1e] text-emerald-400 border-t-2 border-emerald-500">
                 <Code className="w-4 h-4" /> Code Solution
               </div>
@@ -344,8 +344,8 @@ export default function StudentHomeworkModal({
               </div>
             </div>
             
-            <div className="flex-1 flex flex-col relative">
-              <div className="flex-1 relative">
+            <div className="flex-1 flex flex-col relative overflow-hidden min-h-0">
+              <div className="flex-1 relative min-h-[100px]">
                 <textarea
                   spellCheck="false"
                   className="absolute inset-0 w-full h-full p-6 text-[13px] bg-transparent text-slate-300 focus:outline-none resize-none font-mono leading-relaxed custom-scrollbar selection:bg-indigo-500/30"
