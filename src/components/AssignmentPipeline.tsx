@@ -217,6 +217,13 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
   const [useCustomAssignment, setUseCustomAssignment] = useState(false);
   const [deployAssignmentStatus, setDeployAssignmentStatus] = useState<'published' | 'closed'>('published'); // NEW: "set the status"
 
+  // Deployment Proctoring Configurations
+  const [pipelineRequireCamera, setPipelineRequireCamera] = useState(false);
+  const [pipelineRequireMic, setPipelineRequireMic] = useState(false);
+  const [pipelineRequireScreenShare, setPipelineRequireScreenShare] = useState(false);
+  const [pipelineRequireRecording, setPipelineRequireRecording] = useState(false);
+  const [pipelineIsProctored, setPipelineIsProctored] = useState(false);
+
   // Assignment template builder fields
   const [editingTemplate, setEditingTemplate] = useState<AssignmentBankItem | null>(null);
   const [templateTitle, setTemplateTitle] = useState('');
@@ -403,7 +410,12 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
       dsaQuestion: finalType === 'dsa' ? finalDsaQuestion : undefined,
       dsaConstraints: finalType === 'dsa' ? finalDsaConstraints : undefined,
       dsaTestCases: finalType === 'dsa' ? finalDsaTestCases : undefined,
-      dsaTemplateCode: finalType === 'dsa' ? finalDsaTemplateCode : undefined
+      dsaTemplateCode: finalType === 'dsa' ? finalDsaTemplateCode : undefined,
+      requireCamera: pipelineRequireCamera,
+      requireMic: pipelineRequireMic,
+      requireScreenShare: pipelineRequireScreenShare,
+      requireRecording: pipelineRequireRecording,
+      isProctored: pipelineIsProctored
     };
 
     setAssignments(prev => [newAsg, ...prev]);
@@ -821,6 +833,11 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
           feedback2: existingIdx !== -1 ? updatedList[existingIdx].feedback2 : undefined,
           feedback3: existingIdx !== -1 ? updatedList[existingIdx].feedback3 : undefined,
           feedback4: existingIdx !== -1 ? updatedList[existingIdx].feedback4 : undefined,
+          requireCamera: pipelineRequireCamera,
+          requireMic: pipelineRequireMic,
+          requireScreenShare: pipelineRequireScreenShare,
+          requireRecording: pipelineRequireRecording,
+          isProctored: pipelineIsProctored
         };
 
         if (existingIdx !== -1) {
@@ -1444,8 +1461,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                                 <input
                                   type="number"
                                   className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 px-3 py-2 text-xs rounded-lg text-slate-800 dark:text-zinc-200"
-                                  value={customMaxPoints}
-                                  onChange={e => setCustomMaxPoints(parseInt(e.target.value))}
+                                  value={customMaxPoints || ''}
+                                  onChange={e => setCustomMaxPoints(parseInt(e.target.value) || 0)}
                                 />
                               </div>
                             </div>
@@ -1684,6 +1701,84 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             <option value="draft">🛑 Draft (Saved, but track parameters are temporarily inactive)</option>
                           </select>
                         )}
+                      </div>
+                    </div>
+
+                    {/* Proctoring and Security Telemetry Control Panel */}
+                    <div className="p-4 bg-rose-500/5 dark:bg-rose-950/10 border border-rose-500/15 rounded-2xl space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                        <h4 className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">🛡️ Proctoring & Cheating Prevention Telemetry</h4>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                        Require candidate device permissions to enable automated identity verification, environment acoustics scanning, and background screen capture recording during submissions.
+                      </p>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+                        <label className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-3 rounded-xl cursor-pointer hover:bg-rose-500/5 dark:hover:bg-rose-500/5 transition select-none">
+                          <input
+                            type="checkbox"
+                            checked={pipelineRequireCamera}
+                            onChange={e => setPipelineRequireCamera(e.target.checked)}
+                            className="w-4 h-4 text-rose-500 focus:ring-rose-400 border-slate-300 rounded"
+                          />
+                          <div className="text-left">
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">Camera Feed</p>
+                            <p className="text-[9px] text-slate-400">Facial tracking</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-3 rounded-xl cursor-pointer hover:bg-rose-500/5 dark:hover:bg-rose-500/5 transition select-none">
+                          <input
+                            type="checkbox"
+                            checked={pipelineRequireMic}
+                            onChange={e => setPipelineRequireMic(e.target.checked)}
+                            className="w-4 h-4 text-rose-500 focus:ring-rose-400 border-slate-300 rounded"
+                          />
+                          <div className="text-left">
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">Microphone Feed</p>
+                            <p className="text-[9px] text-slate-400">Acoustic analysis</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-3 rounded-xl cursor-pointer hover:bg-rose-500/5 dark:hover:bg-rose-500/5 transition select-none">
+                          <input
+                            type="checkbox"
+                            checked={pipelineRequireScreenShare}
+                            onChange={e => setPipelineRequireScreenShare(e.target.checked)}
+                            className="w-4 h-4 text-rose-500 focus:ring-rose-400 border-slate-300 rounded"
+                          />
+                          <div className="text-left">
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">Screen Share</p>
+                            <p className="text-[9px] text-slate-400">Capture desktop</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-3 rounded-xl cursor-pointer hover:bg-rose-500/5 dark:hover:bg-rose-500/5 transition select-none">
+                          <input
+                            type="checkbox"
+                            checked={pipelineRequireRecording}
+                            onChange={e => setPipelineRequireRecording(e.target.checked)}
+                            className="w-4 h-4 text-rose-500 focus:ring-rose-400 border-slate-300 rounded"
+                          />
+                          <div className="text-left">
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">Record Session</p>
+                            <p className="text-[9px] text-slate-400">Save recording</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 p-3 rounded-xl cursor-pointer hover:bg-rose-500/5 dark:hover:bg-rose-500/5 transition select-none">
+                          <input
+                            type="checkbox"
+                            checked={pipelineIsProctored}
+                            onChange={e => setPipelineIsProctored(e.target.checked)}
+                            className="w-4 h-4 text-rose-500 focus:ring-rose-400 border-slate-300 rounded"
+                          />
+                          <div className="text-left">
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">Enable AI Proctor</p>
+                            <p className="text-[9px] text-slate-400">Tab out warnings</p>
+                          </div>
+                        </label>
                       </div>
                     </div>
 
@@ -1968,7 +2063,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                         </div>
                         <div>
                           <label className="text-[10px] font-bold text-slate-500">Max Points</label>
-                          <input type="number" className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 px-3 py-2 text-xs rounded-lg" value={templateMaxPoints} onChange={e => setTemplateMaxPoints(parseInt(e.target.value))}/>
+                          <input type="number" className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 px-3 py-2 text-xs rounded-lg" value={templateMaxPoints || ''} onChange={e => setTemplateMaxPoints(parseInt(e.target.value) || 0)}/>
                         </div>
                       </div>
 

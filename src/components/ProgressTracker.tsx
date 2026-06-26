@@ -2167,6 +2167,23 @@ export default function ProgressTracker({
                                 </pre>
                               </div>
 
+                              {evoRec?.recordedVideoUrl && (
+                                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-between text-xs mt-3">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                                    <span className="text-rose-400 font-bold">Proctored Session Recording</span>
+                                  </div>
+                                  <a
+                                    href={evoRec.recordedVideoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-extrabold text-[10px] rounded transition"
+                                  >
+                                    View Video
+                                  </a>
+                                </div>
+                              )}
+
                               {fields.feedback && (
                                 <div className="p-4 bg-[#1b253c] border border-blue-500/20 text-[#85b5ff] text-xs rounded-xl space-y-1">
                                   <span className="font-extrabold uppercase text-[10px] tracking-widest text-[#bfdaff] flex items-center gap-1">

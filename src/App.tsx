@@ -1432,7 +1432,9 @@ function AppContent() {
   const handleStudentSubmitAssignment = (
     asgId: string,
     ansText: string,
-    fileUrnVal?: string
+    fileUrnVal?: string,
+    proctoringLogs?: any[],
+    recordedVideoUrl?: string
   ) => {
     if (!currentUser) return;
     setAssignments(prev => prev.map(asg => {
@@ -1445,7 +1447,9 @@ function AppContent() {
           submittedDate: new Date().toISOString(),
           answerText: ansText,
           fileUrn: fileUrnVal || 'homework_solution_uploaded.pdf',
-          status: 'pending' as const
+          status: 'pending' as const,
+          proctoringLogs,
+          recordedVideoUrl
         };
 
         let updatedSubmissions = [...asg.submissions];
@@ -5039,13 +5043,34 @@ function AppContent() {
           }}
           assignment={activeStudentModalAssignment}
           evolution={activeStudentModalEvolution}
-          onSubmit={(id, text, fileUrn) => {
+          onSubmit={(id, text, fileUrn, proctorLogs, videoUrl) => {
              if (activeStudentModalAssignment) {
-               handleStudentSubmitAssignment(id, text, fileUrn);
+               handleStudentSubmitAssignment(id, text, fileUrn, proctorLogs, videoUrl);
              } else if (activeStudentModalEvolution) {
-               // We could handle evolution submission here.
-               // Currently, evolutions are tracked separately, we can just alert or mark them as pending review
-               alert("Evolution Exam submission recorded!");
+               setStudentEvolutions(prev => prev.map(ev => {
+                 if (ev.id === id) {
+                   return {
+                     ...ev,
+                     isCompleted: true,
+                     week1Submission: text,
+                     week1SubmissionDate: new Date().toLocaleDateString(),
+                     proctoringLogs: proctorLogs,
+                     recordedVideoUrl: videoUrl,
+                   };
+                 }
+                 return ev;
+               }));
+               
+               const toastNotif: AppNotification = {
+                 id: generateUniqueId('notif-toast'),
+                 title: 'Evolution Exam Submitted',
+                 message: `Your monthly evaluation exam has been securely submitted with live proctoring telemetry.`,
+                 timestamp: new Date().toISOString(),
+                 read: false,
+                 type: 'general',
+                 channel: 'system'
+               };
+               triggerToast(toastNotif);
              }
              setIsStudentModalOpen(false);
              setActiveStudentModalAssignment(undefined);

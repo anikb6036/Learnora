@@ -641,6 +641,13 @@ export default function AssignmentTracker({
                             </div>
                           )}
 
+                          {submission.recordedVideoUrl && (
+                            <div className="flex items-center gap-2 p-2 bg-rose-500/5 rounded border border-rose-100 dark:border-rose-500/10 max-w-sm">
+                              <span className="text-xs text-rose-600 font-bold bg-rose-100 dark:bg-rose-500/20 px-1.5 py-0.5 rounded">VIDEO</span>
+                              <a href={submission.recordedVideoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-rose-600 dark:text-rose-400 hover:underline truncate">View Session Recording</a>
+                            </div>
+                          )}
+
                           {/* Render Feedback if graded and not actively grading */}
                           {submission.status === 'graded' && !isGradingNow && (
                             <div className="p-3 bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-150 dark:border-indigo-500/10 rounded space-y-1 mt-2">
@@ -650,6 +657,66 @@ export default function AssignmentTracker({
                               <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed italic">
                                 "{submission.feedback || 'No comments logged.'}"
                               </p>
+                            </div>
+                          )}
+
+                          {/* Proctoring Logs Section */}
+                          {submission.proctoringLogs && submission.proctoringLogs.length > 0 && (
+                            <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-xl space-y-3 mt-3">
+                              <div className="flex items-center justify-between">
+                                <h5 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                                  🛡️ Anti-Cheat Proctoring Logs
+                                </h5>
+                                <span className="text-[10px] font-mono text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full font-bold">
+                                  {submission.proctoringLogs.length} incident(s) flagged
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Video playback preview */}
+                                <div className="space-y-1.5">
+                                  <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Recorded Session Video Feed</p>
+                                  <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-500/15 bg-zinc-950 flex flex-col items-center justify-center p-4 text-center group">
+                                    {/* Simulated webcam video feed of student movement */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-950/20 to-zinc-900/90 flex items-center justify-center">
+                                      <div className="w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg transition cursor-pointer transform group-hover:scale-105">
+                                        {/* Play icon */}
+                                        <svg className="w-5 h-5 fill-current pl-0.5" viewBox="0 0 24 24">
+                                          <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Flashing badge */}
+                                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded font-mono text-[9px] font-bold text-rose-500">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                                      RECORDING PLAYBACK
+                                    </div>
+
+                                    <div className="absolute bottom-2 inset-x-2 text-center">
+                                      <p className="text-[10px] font-bold text-rose-300">proctor_rec_stream.mp4</p>
+                                      <p className="text-[9px] text-zinc-400 mt-0.5">Click to verify candidate's identity & movement</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Incident logs list */}
+                                <div className="space-y-1.5">
+                                  <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Incident Log Stream</p>
+                                  <div className="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar font-mono text-[10px]">
+                                    {submission.proctoringLogs.map((log: any) => (
+                                      <div key={log.id} className="p-2 rounded bg-white dark:bg-[#121215] border border-rose-500/10 space-y-1">
+                                        <div className="flex justify-between text-zinc-500">
+                                          <span className="font-bold text-rose-600 dark:text-rose-400">{log.type.toUpperCase()}</span>
+                                          <span>{log.timestamp}</span>
+                                        </div>
+                                        <p className="text-slate-700 dark:text-zinc-300 leading-normal">{log.message}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>

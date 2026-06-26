@@ -178,6 +178,16 @@ export interface StudentSubmission {
   score?: number; // Graded score
   feedback?: string; // Instructor feedback
   status: 'pending' | 'graded';
+  
+  // Proctoring logs for this submission
+  proctoringLogs?: {
+    id: string;
+    timestamp: string;
+    type: 'tab-switch' | 'face-missing' | 'multiple-faces' | 'gaze-away' | 'voice-detected';
+    message: string;
+    snapshotUrl?: string;
+  }[];
+  recordedVideoUrl?: string;
 }
 
 export interface StudentAssignment {
@@ -206,6 +216,21 @@ export interface StudentAssignment {
   dsaConstraints?: string;
   dsaTestCases?: string;
   dsaTemplateCode?: string;
+
+  // Proctoring Settings
+  requireCamera?: boolean;
+  requireMic?: boolean;
+  requireScreenShare?: boolean;
+  requireRecording?: boolean;
+  isProctored?: boolean;
+  proctoringLogs?: {
+    id: string;
+    timestamp: string;
+    type: 'tab-switch' | 'face-missing' | 'multiple-faces' | 'gaze-away' | 'voice-detected';
+    message: string;
+    snapshotUrl?: string;
+  }[];
+  recordedVideoUrl?: string;
 }
 
 export interface AssignmentBankItem {
@@ -227,6 +252,13 @@ export interface AssignmentBankItem {
   dsaConstraints?: string;
   dsaTestCases?: string;
   dsaTemplateCode?: string;
+
+  // Proctoring Settings
+  requireCamera?: boolean;
+  requireMic?: boolean;
+  requireScreenShare?: boolean;
+  requireRecording?: boolean;
+  isProctored?: boolean;
 }
 
 export interface StudentEvolution {
@@ -299,6 +331,21 @@ export interface StudentEvolution {
   week3SubmissionDate?: string;
   week4Submission?: string;
   week4SubmissionDate?: string;
+
+  // Proctoring Settings
+  requireCamera?: boolean;
+  requireMic?: boolean;
+  requireScreenShare?: boolean;
+  requireRecording?: boolean;
+  isProctored?: boolean;
+  proctoringLogs?: {
+    id: string;
+    timestamp: string;
+    type: 'tab-switch' | 'face-missing' | 'multiple-faces' | 'gaze-away' | 'voice-detected';
+    message: string;
+    snapshotUrl?: string;
+  }[];
+  recordedVideoUrl?: string;
 }
 
 export interface EvolutionBankItem {
@@ -341,6 +388,13 @@ export interface EvolutionBankItem {
   week4Constraints?: string;
   week4TestCases?: string;
   week4TemplateCode?: string;
+
+  // Proctoring Settings
+  requireCamera?: boolean;
+  requireMic?: boolean;
+  requireScreenShare?: boolean;
+  requireRecording?: boolean;
+  isProctored?: boolean;
 }
 
 
