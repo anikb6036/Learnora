@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { StudentAssignment, StudentEvolution } from '../types';
 import { motion } from 'motion/react';
 import { X, CheckCircle, FileText, Code, Send, Layout, PenTool, LayoutTemplate, Activity } from 'lucide-react';
+import Editor from 'react-simple-code-editor';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-cpp';
+import 'prismjs/themes/prism-tomorrow.css';
 
 interface StudentHomeworkModalProps {
   isOpen: boolean;
@@ -26,6 +34,7 @@ export default function StudentHomeworkModal({
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [consoleTab, setConsoleTab] = useState<'testResults' | 'codeOutput'>('testResults');
   const [language, setLanguage] = useState('javascript');
+  const [leftPaneWidth, setLeftPaneWidth] = useState(45);
   const [testResults, setTestResults] = useState<{ 
     status: 'success' | 'error' | 'running'; 
     message: string; 
@@ -50,6 +59,30 @@ export default function StudentHomeworkModal({
       setSubmissionText(defaultCode);
     }
   }, [isDSA, defaultCode, submissionText]);
+
+  const handlePaneDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = leftPaneWidth;
+    const containerWidth = window.innerWidth; // Approximate, assuming modal is full screen
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaPercent = (deltaX / containerWidth) * 100;
+      const newWidth = Math.max(20, Math.min(80, startWidth + deltaPercent));
+      setLeftPaneWidth(newWidth);
+    };
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+    };
+    
+    document.body.style.cursor = 'col-resize';
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   const handleDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -274,7 +307,10 @@ export default function StudentHomeworkModal({
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-100 dark:bg-zinc-950/50">
           
           {/* Left Pane: Instructions */}
-          <div className={`${isDSA ? 'md:w-1/2 lg:w-5/12 border-b md:border-b-0 md:border-r' : 'w-full max-w-4xl mx-auto border-x'} bg-white dark:bg-[#161618] border-slate-200 dark:border-white/10 flex flex-col h-full`}>
+          <div 
+            className={`${isDSA ? 'border-b md:border-b-0 flex-shrink-0' : 'w-full max-w-4xl mx-auto border-x'} bg-white dark:bg-[#161618] border-slate-200 dark:border-white/10 flex flex-col h-full`}
+            style={isDSA ? { width: `${leftPaneWidth}%` } : {}}
+          >
             <div className="flex bg-slate-50 dark:bg-[#121315] border-b border-slate-200 dark:border-white/10">
               <div className="px-4 py-2.5 text-xs font-bold flex items-center gap-2 border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-[#161618]">
                 <FileText className="w-4 h-4" /> Description
@@ -324,8 +360,16 @@ export default function StudentHomeworkModal({
             </div>
           </div>
 
+          {/* Resize Handle */}
+          {isDSA && (
+            <div 
+              className="w-1.5 cursor-col-resize bg-zinc-800 hover:bg-emerald-500/50 transition-colors z-10 shrink-0 hidden md:block"
+              onMouseDown={handlePaneDragStart}
+            />
+          )}
+
           {/* Right Pane: Code Editor / Submission */}
-          <div className={`${isDSA ? 'md:w-1/2 lg:w-7/12' : 'hidden'} flex flex-col h-full bg-[#1e1e1e] border-l border-zinc-800`}>
+          <div className={`${isDSA ? 'flex-1' : 'hidden'} flex flex-col h-full bg-[#1e1e1e] border-l border-zinc-800 min-w-0`}>
             <div className="flex bg-[#252526] border-b border-[#303030] justify-between items-center pr-4 shrink-0">
               <div className="px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-[#1e1e1e] text-emerald-400 border-t-2 border-emerald-500">
                 <Code className="w-4 h-4" /> Code Solution
@@ -345,15 +389,23 @@ export default function StudentHomeworkModal({
             </div>
             
             <div className="flex-1 flex flex-col relative overflow-hidden min-h-0">
-              <div className="flex-1 relative min-h-[100px]">
-                <textarea
-                  spellCheck="false"
-                  className="absolute inset-0 w-full h-full p-6 text-[13px] bg-transparent text-slate-300 focus:outline-none resize-none font-mono leading-relaxed custom-scrollbar selection:bg-indigo-500/30"
+              <div className="flex-1 relative min-h-[100px] overflow-y-auto custom-scrollbar bg-[#1e1e1e]">
+                <Editor
                   value={submissionText}
-                  onChange={(e) => {
-                    setSubmissionText(e.target.value);
+                  onValueChange={(code) => {
+                    setSubmissionText(code);
                     if (errorMessage) setErrorMessage('');
                   }}
+                  highlight={code => Prism.highlight(code, Prism.languages[language === 'cpp' ? 'cpp' : language] || Prism.languages.javascript, language)}
+                  padding={24}
+                  style={{
+                    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                    fontSize: 13,
+                    minHeight: '100%',
+                    color: '#e2e8f0',
+                  }}
+                  className="editor-container"
+                  textareaClassName="focus:outline-none"
                 />
               </div>
 
