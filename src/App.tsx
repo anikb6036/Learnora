@@ -2653,9 +2653,9 @@ function AppContent() {
                   <button
                     type="button"
                     onClick={() => setShowPortal(false)}
-                    className="text-sm font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-3 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm"
+                    className="text-xs font-sans font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 py-1 px-2.5 rounded-lg border border-slate-200/50 dark:border-white/5 shadow-2xs active:scale-95"
                   >
-                    ← Back To Home
+                    <ChevronLeft className="w-3.5 h-3.5 -ml-0.5" /> Back to Home
                   </button>
                 </div>
               )}
@@ -2670,9 +2670,9 @@ function AppContent() {
                     <button
                       type="button"
                       onClick={() => setShowPortal(false)}
-                      className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 hover:text-amber-500 transition-colors cursor-pointer flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 p-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-white/5 shadow-2xs"
+                      className="text-xs font-sans font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 py-1 px-2.5 rounded-lg border border-slate-200/50 dark:border-white/5 shadow-2xs active:scale-95"
                     >
-                      ← Back
+                      <ChevronLeft className="w-3.5 h-3.5 -ml-0.5" /> Back
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">

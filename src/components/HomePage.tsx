@@ -1,8 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
-import { ArrowRight, BookOpen, Users, Shield, Code2, Atom, Target } from 'lucide-react';
+import { 
+  ArrowRight, 
+  BookOpen, 
+  Users, 
+  Shield, 
+  Code2, 
+  Atom, 
+  Target, 
+  Sparkles, 
+  ChevronRight, 
+  Bookmark, 
+  CheckCircle2, 
+  ArrowUpRight, 
+  TrendingUp,
+  Clock,
+  Calendar,
+  Award,
+  Terminal,
+  Activity,
+  Cpu,
+  Lock,
+  MessageSquare,
+  Sparkle,
+  Percent,
+  Check,
+  Search,
+  BookMarked,
+  UserCheck,
+  GraduationCap,
+  Calculator
+} from 'lucide-react';
 import { Course } from '../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import admissionHeroImg from '../assets/images/admission_hero_1781153839906.png';
 
 // Dynamic Area of Interest Categorizer
@@ -45,60 +75,49 @@ const areasOfInterest: AreaOfInterest[] = [
 ];
 
 const PMIcon = () => (
-  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
-    <div className="grid grid-cols-2 gap-1 w-11 h-11">
-      <div className="bg-[#8E8EF0] rounded-md shadow-xs"></div>
-      <div className="bg-amber-400 rounded-md shadow-xs flex items-center justify-center relative">
-        <span className="text-white font-black text-sm leading-none">+</span>
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-indigo-50 dark:bg-indigo-950/40 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
+    <div className="grid grid-cols-2 gap-0.5 w-6 h-6">
+      <div className="bg-[#8E8EF0] rounded-xs shadow-xs"></div>
+      <div className="bg-amber-450 rounded-xs shadow-xs flex items-center justify-center relative">
+        <span className="text-white font-black text-[9px] leading-none">+</span>
       </div>
-      <div className="bg-[#5D7BEE] rounded-md shadow-xs"></div>
-      <div className="bg-[#C96CEB] rounded-md shadow-xs"></div>
+      <div className="bg-[#5D7BEE] rounded-xs shadow-xs"></div>
+      <div className="bg-[#C96CEB] rounded-xs shadow-xs"></div>
     </div>
   </div>
 );
 
 const AnalyticsIcon = () => (
-  <div className="relative w-16 h-16 flex items-end justify-center pb-2.5 shrink-0 select-none">
-    <div className="flex items-end gap-1.5 h-11">
-      <div className="w-3 h-5 bg-[#3B82F6] rounded-sm shadow-xs" />
-      <div className="w-3 h-8 bg-[#A855F7] rounded-sm shadow-xs" />
-      <div className="w-3 h-11 bg-[#EF4444] rounded-sm shadow-xs" />
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-100/50 dark:border-blue-900/30">
+    <div className="flex items-end gap-0.5 h-5">
+      <div className="w-1 h-2 bg-[#3B82F6] rounded-xs shadow-xs" />
+      <div className="w-1 h-3.5 bg-[#A855F7] rounded-xs shadow-xs" />
+      <div className="w-1 h-5 bg-[#EF4444] rounded-xs shadow-xs" />
     </div>
   </div>
 );
 
 const DataScienceIcon = () => (
-  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
-    <div className="relative w-12 h-12 rounded-full bg-[#1F2937] dark:bg-slate-800 flex items-center justify-center border-2 border-slate-500 shadow-sm">
-      <Atom className="w-7 h-7 text-white animate-[spin_20s_linear_infinite]" />
-    </div>
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-100/50 dark:border-purple-900/30">
+    <Atom className="w-5 h-5 text-[#A855F7] animate-[spin_10s_linear_infinite]" />
   </div>
 );
 
 const SDEIcon = () => (
-  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
-    <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25" />
-    </svg>
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-100/50 dark:border-red-900/30">
+    <Code2 className="w-5 h-5 text-red-500" />
   </div>
 );
 
 const MarketingIcon = () => (
-  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
-    <div className="relative w-12 h-12 rounded-full border-4 border-[#EF4444] bg-white flex items-center justify-center shadow-xs">
-      <div className="w-7 h-7 rounded-full border-2 border-[#EF4444] bg-white flex items-center justify-center">
-        <div className="w-3.5 h-3.5 rounded-full bg-[#EF4444] flex items-center justify-center" />
-      </div>
-      <div className="absolute top-0 left-0 w-3 h-3 bg-amber-400 rotate-45 transform -translate-x-0.5 -translate-y-0.5 rounded-xs shadow-xs" />
-    </div>
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-100/50 dark:border-rose-900/30">
+    <Target className="w-5 h-5 text-rose-500" />
   </div>
 );
 
 const FinanceIcon = () => (
-  <div className="relative w-16 h-16 flex items-center justify-center shrink-0 select-none">
-    <div className="w-12 h-12 rounded-full bg-[#2563EB] flex items-center justify-center border-2 border-blue-300 shadow-md">
-      <span className="text-white font-extrabold text-[#FFFFFF] text-lg font-sans leading-none">$</span>
-    </div>
+  <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-[#2563EB]/10 rounded-xl border border-blue-500/20">
+    <span className="text-[#2563EB] dark:text-blue-400 font-extrabold text-sm font-sans">$</span>
   </div>
 );
 
@@ -111,8 +130,101 @@ interface HomePageProps {
 export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePageProps) {
   const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const activeCourseId = selectedCourseId || hoveredCourseId;
+  
+  // Interactive Console Demo States
+  const [activeConsoleTab, setActiveConsoleTab] = useState<'status' | 'metrics' | 'proctor'>('status');
+  const [countdownMinutes, setCountdownMinutes] = useState(11);
+  const [countdownSeconds, setCountdownSeconds] = useState(48);
+
+  // Eligibility & Scholarship Calculator States
+  const [calcCourse, setCalcCourse] = useState<string>('course-1');
+  const [calcQualification, setCalcQualification] = useState<string>('Undergraduate');
+  const [calcGrade, setCalcGrade] = useState<number>(85);
+  const [eligibilityResult, setEligibilityResult] = useState<{
+    status: 'High' | 'Moderate' | 'Ineligible';
+    scholarship: number;
+    baseFee: number;
+    estimatedFee: number;
+    badgeColor: string;
+  }>({ status: 'High', scholarship: 30, baseFee: 14999, estimatedFee: 10499, badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' });
+
+  // FAQ Accordion States
+  const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
+
+  // Synchronize initial calcCourse when courses are loaded
+  useEffect(() => {
+    if (courses && courses.length > 0) {
+      if (!calcCourse || !courses.some(c => c.id === calcCourse)) {
+        setCalcCourse(courses[0].id);
+      }
+    }
+  }, [courses]);
+
+  // Active Live Class countdown simulator
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (countdownSeconds > 0) {
+        setCountdownSeconds(prev => prev - 1);
+      } else if (countdownMinutes > 0) {
+        setCountdownMinutes(prev => prev - 1);
+        setCountdownSeconds(59);
+      } else {
+        setCountdownMinutes(15);
+        setCountdownSeconds(0);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdownSeconds, countdownMinutes]);
+
+  // Recalculate scholarship and fees in real-time
+  useEffect(() => {
+    let baseFee = 12000;
+    
+    // Find course from list
+    const foundCourse = courses.find(c => c.id === calcCourse || c.name === calcCourse || c.code === calcCourse);
+    if (foundCourse && foundCourse.fee !== undefined) {
+      baseFee = foundCourse.fee;
+    } else {
+      // Fallback matching names or ids
+      if (calcCourse === 'course-1' || calcCourse === 'Java Masterclass' || calcCourse === 'JAVA') baseFee = 14999;
+      else if (calcCourse === 'course-2' || calcCourse === 'Full-Stack JavaScript Development' || calcCourse === 'JS') baseFee = 11999;
+      else if (calcCourse === 'course-3' || calcCourse === 'Python AI & Data Science' || calcCourse === 'PY') baseFee = 12999;
+      else if (calcCourse === 'course-4' || calcCourse === 'SDET Specialization (QA Automation)' || calcCourse === 'SDET') baseFee = 9999;
+      else if (calcCourse === 'course-5' || calcCourse === 'UI/UX Design Academy' || calcCourse === 'UIUX') baseFee = 8999;
+      else if (calcCourse === 'course-6' || calcCourse === 'Cybersecurity Professional' || calcCourse === 'CYBER') baseFee = 15999;
+    }
+
+    let schPercent = 0;
+    if (calcGrade >= 95) schPercent = 50;
+    else if (calcGrade >= 85) schPercent = 30;
+    else if (calcGrade >= 75) schPercent = 15;
+    else if (calcGrade >= 60) schPercent = 5;
+
+    // Additional boost based on qualification
+    if (calcQualification === 'High School' && schPercent > 0) {
+      schPercent = Math.min(schPercent + 5, 55);
+    }
+
+    const discounted = baseFee * (1 - schPercent / 100);
+    let eligibilityStatus: 'High' | 'Moderate' | 'Ineligible' = 'High';
+    let badgeColor = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+
+    if (calcGrade < 60) {
+      eligibilityStatus = 'Ineligible';
+      badgeColor = 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20';
+    } else if (calcGrade < 75) {
+      eligibilityStatus = 'Moderate';
+      badgeColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+    }
+
+    setEligibilityResult({
+      status: eligibilityStatus,
+      scholarship: schPercent,
+      baseFee,
+      estimatedFee: Math.round(discounted),
+      badgeColor
+    });
+  }, [calcCourse, calcQualification, calcGrade, courses]);
 
   const getCourseRoadmap = (courseName: string = '', courseCode: string = '') => {
     const nameLower = courseName.toLowerCase();
@@ -153,388 +265,767 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
     }
   };
 
-  const selectedCourse = courses.find(c => c.id === selectedCourseId);
+  const selectedCourse = courses.find(c => c.id === selectedCourseId) || courses[0];
+
+  const faqs = [
+    { id: 1, q: "How does the digitized academic console work?", a: "Learnora provides a single unified dashboard where students can attend live interactive webinars, submit automated coding & academic assignments with real-time feedback, view visual progression metrics, and directly contact their assigned industry mentors." },
+    { id: 2, q: "Is there a guaranteed placement assistance program?", a: "Yes. Our premium tracks (such as Software Development and Product Management) include dedicated career counseling, mock interview evaluations, resume critiques, and direct partner placements. We maintain a 98.2% direct placement rate." },
+    { id: 3, q: "What are the continuous evolution assessments?", a: "Unlike static year-end exams, our system utilizes continuous week-by-week micro-evaluations (Evolutions). Students must score at least 80% to be automatically promoted to the next syllabus module, maintaining peak cohort quality." },
+    { id: 4, q: "How is proctoring implemented during evaluations?", a: "Our evaluations feature optional browser proctoring overlays including tab-switch records, camera gaze-away alerts, and voice checks, preparing students for highly disciplined enterprise-level recruitment exams." }
+  ];
+
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#E0E6ED_0%,#EDF2F7_50%,#E2E8F0_100%)] dark:bg-[linear-gradient(135deg,#0E131F_0%,#151D30_50%,#090D16_100%)] text-[#1E293B] dark:text-slate-200 transition-colors duration-300 flex flex-col justify-between relative overflow-hidden font-sans z-0">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] transition-colors duration-300 flex flex-col justify-between relative overflow-hidden font-sans z-0 selection:bg-red-500/10 selection:text-red-900">
       
-      {/* High-Resolution Modern Geometric & Wave Background (Matching the reference picture) */}
+      {/* High-Fidelity Editorial Visual Background Grid and Glowing Nodes */}
       <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden">
-        {/* Subtle split plane layout backgrounds */}
-        <div className="absolute top-0 right-0 w-[60%] h-full bg-[#E5ECF6] dark:bg-[#131A2C] opacity-40 dark:opacity-20 [clip-path:polygon(40%_0,100%_0,100%_100%,0_100%)]" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-full bg-[#D9E2EC] dark:bg-[#0D1525] opacity-35 dark:opacity-15 [clip-path:polygon(0_0,100%_100%,0_100%)]" />
+        {/* Soft elegant neon glowing radial nodes */}
+        <div className="absolute top-[10%] left-[20%] w-[450px] h-[450px] rounded-full bg-indigo-400/5 blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] rounded-full bg-red-400/5 blur-[130px]" />
+        <div className="absolute top-[40%] right-[30%] w-[350px] h-[350px] rounded-full bg-fuchsia-400/3 blur-[100px]" />
 
-        <svg className="absolute w-full h-full opacity-80 dark:opacity-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 800" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7"/>
-              <stop offset="50%" stopColor="#D9E4F5" stopOpacity="0.45"/>
-              <stop offset="100%" stopColor="#C4D4EC" stopOpacity="0.8"/>
-            </linearGradient>
-            <linearGradient id="wave2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#B0CBE9" stopOpacity="0.3"/>
-              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.6"/>
-              <stop offset="100%" stopColor="#9BBEE3" stopOpacity="0.25"/>
-            </linearGradient>
-            <linearGradient id="lineGrad" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stopColor="#8DA9C4" stopOpacity="0"/>
-              <stop offset="25%" stopColor="#8DA9C4" stopOpacity="0.35"/>
-              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.8"/>
-              <stop offset="75%" stopColor="#6C8EBF" stopOpacity="0.5"/>
-              <stop offset="100%" stopColor="#6C8EBF" stopOpacity="0"/>
-            </linearGradient>
-            <linearGradient id="darkLineGrad" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stopColor="#334E68" stopOpacity="0"/>
-              <stop offset="30%" stopColor="#486581" stopOpacity="0.4"/>
-              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.6"/>
-              <stop offset="70%" stopColor="#243B53" stopOpacity="0.4"/>
-              <stop offset="100%" stopColor="#243B53" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
+        {/* Minimalist architectural layout grids */}
+        <div className="absolute inset-0 opacity-[0.06]" 
+             style={{ backgroundImage: 'radial-gradient(circle, #8F9BB3 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-          {/* Smooth layered backdrop ribbons */}
-          <path d="M-100,280 C300,120 500,450 900,220 C1100,105 1300,200 1600,150 L1600,850 L-100,850 Z" fill="url(#wave1)" />
-          <path d="M-50,380 C250,520 600,180 1000,380 C1200,480 1350,350 1550,420 L1550,850 L-50,850 Z" fill="url(#wave2)" />
-
-          {/* Precision high resolution guilloche contour waves */}
-          <g stroke="url(#lineGrad)" fill="none" strokeWidth="1.2" className="dark:hidden">
-            <path d="M-100,290 Q200,380 500,240 T1100,350 T1600,210" />
-            <path d="M-100,310 Q200,400 500,260 T1100,370 T1600,230" />
-            <path d="M-100,330 Q200,420 500,280 T1100,390 T1600,250" />
-            <path d="M-100,350 Q200,440 500,300 T1100,410 T1600,270" />
-            <path d="M-100,370 Q200,460 500,320 T1100,430 T1600,290" />
-            <path d="M-100,390 Q200,480 500,340 T1100,450 T1600,310" />
-            <path d="M-100,410 Q200,500 500,360 T1100,470 T1600,330" />
-            <path d="M-100,430 Q200,520 500,380 T1100,490 T1600,350" />
-            <path d="M-100,450 Q200,540 500,400 T1100,510 T1600,370" />
-            <path d="M-100,470 Q200,560 500,420 T1100,530 T1600,390" />
-            <path d="M-100,490 Q200,580 500,440 T1100,550 T1600,410" />
-          </g>
-
-          <g stroke="url(#darkLineGrad)" fill="none" strokeWidth="1.2" className="hidden dark:g">
-            <path d="M-100,290 Q200,380 500,240 T1100,350 T1600,210" />
-            <path d="M-100,310 Q200,400 500,260 T1100,370 T1600,230" />
-            <path d="M-100,330 Q200,420 500,280 T1100,390 T1600,250" />
-            <path d="M-100,350 Q200,440 500,300 T1100,410 T1600,270" />
-            <path d="M-100,370 Q200,460 500,320 T1100,430 T1600,290" />
-            <path d="M-100,390 Q200,480 500,340 T1100,450 T1600,310" />
-            <path d="M-100,410 Q200,500 500,360 T1100,470 T1600,330" />
-            <path d="M-100,430 Q200,520 500,380 T1100,490 T1600,350" />
-            <path d="M-100,450 Q200,540 500,400 T1100,510 T1600,370" />
-          </g>
+        {/* Horizontal linear accents mimicking premium SaaS frameworks */}
+        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-300/30 to-transparent" />
+        <div className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-300/30 to-transparent" />
+        
+        {/* Abstract structural vector guides */}
+        <svg className="absolute top-12 right-12 w-[50%] h-[700px] opacity-[0.04] text-slate-900" fill="none" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="300" cy="300" r="250" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" />
+          <circle cx="300" cy="300" r="150" stroke="currentColor" strokeWidth="0.5" />
+          <line x1="50" y1="300" x2="550" y2="300" stroke="currentColor" strokeWidth="0.5" />
+          <line x1="300" y1="50" x2="300" y2="550" stroke="currentColor" strokeWidth="0.5" />
         </svg>
-
-        {/* Soft, crisp radial glowing point */}
-        <div className="absolute right-[10%] top-[25%] w-[450px] h-[450px] rounded-full bg-blue-400/20 dark:bg-blue-500/10 blur-[120px]" />
-        <div className="absolute left-[5%] bottom-[15%] w-[350px] h-[350px] rounded-full bg-slate-300/30 dark:bg-indigo-900/15 blur-[100px]" />
       </div>
 
       {/* Nav Header */}
-      <header className="w-full border-b border-slate-200/50 dark:border-white/5 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-50 transition-colors shadow-sm">
+      <header className="w-full border-b border-black/5 bg-white/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
         <div className="w-full max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
           {/* Logo / Brand */}
-          <Logo size="sm" withStrapline={true} inverse={isDark} />
+          <Logo size="sm" withStrapline={true} inverse={false} />
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 font-medium text-sm">
-            <button type="button" onClick={() => onEnterPortal('fastReg')} className="hover:text-amber-500 transition-colors text-left cursor-pointer">
-              Apply Now
+          <nav className="hidden md:flex items-center gap-8 font-semibold text-sm">
+            <button type="button" onClick={() => onEnterPortal('fastReg')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer flex items-center gap-1.5">
+              Apply Now <Sparkle className="w-3 h-3 text-red-500 animate-pulse" />
             </button>
-            <button type="button" onClick={() => onEnterPortal('authLogin')} className="hover:text-amber-500 transition-colors text-left cursor-pointer">
+            <button type="button" onClick={() => onEnterPortal('authLogin')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">
               Student Login
             </button>
-            <button type="button" onClick={() => onEnterPortal('adminLogin')} className="hover:text-amber-500 transition-colors text-left cursor-pointer">
+            <button type="button" onClick={() => onEnterPortal('adminLogin')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">
               Staff Portal
             </button>
             
             <button 
               type="button" 
               onClick={() => onEnterPortal('authLogin')}
-              className="ml-4 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-slate-900 rounded-xl font-bold transition-all shadow-sm active:scale-95"
+              className="ml-4 px-5 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-slate-950/10 active:scale-97 cursor-pointer"
             >
-              Sign In
+              Enter Console
             </button>
           </nav>
 
-          {/* Mobile Nav Toggle (Simplified) */}
+          {/* Mobile Nav Toggle */}
           <div className="md:hidden">
-            <button type="button" onClick={() => onEnterPortal('authLogin')} className="px-5 py-2 bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-900 rounded-lg font-bold text-sm">
+            <button 
+              type="button" 
+              onClick={() => onEnterPortal('authLogin')} 
+              className="px-4.5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl font-bold text-xs shadow-md transition-all active:scale-95"
+            >
               Login
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Hero Content */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+      {/* Premium Hero and Live Interactive Console Panel Grid */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center relative z-10">
         
-        {/* Left Side: Typography & Calls to Action */}
-        <div className="flex flex-col items-start gap-8 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-widest">
-            Admissions Open 2026
+        {/* Left Column: Premium Interactive Typography */}
+        <div className="lg:col-span-6 flex flex-col items-start gap-6 text-left">
+          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[11px] font-bold tracking-wider uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+            Live Admission Portal 2026 Active
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-sans font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight">
-            Learn<span className="text-red-500">ora</span> <br/>
-            <span className="text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-400 block mt-2">Empowering Minds, Shaping Futures</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] leading-[1.05] tracking-tight">
+            Digitized Cohorts.<br />
+            Continuous <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-amber-500 to-red-600 bg-300% animate-[gradient_8s_ease_infinite]">Evolution.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-600 dark:text-gray-400 font-medium leading-relaxed">
-            The next generation platform for collaborative academic discovery. Streamlined courses, real-time administrative workflows, and a thriving student community.
+          <p className="text-md sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl">
+            A premium cooperative workspace for technical academics. Master schedules, build fully automated and proctored assignments, receive evaluation charts, and thrive within elite peer-to-peer pipelines.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-3">
             <button 
               onClick={() => onEnterPortal('fastReg')}
-              className="w-full sm:w-auto px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-[0_8px_20px_-6px_rgba(245,158,11,0.4)] active:scale-95 text-lg"
+              className="w-full sm:w-auto px-7 py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10 active:scale-97 text-sm cursor-pointer"
             >
-              Start Application <ArrowRight className="w-5 h-5" />
+              Start Application <ArrowRight className="w-4 h-4" />
             </button>
             <button 
               onClick={() => onEnterPortal('authLogin')}
-              className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 rounded-xl font-bold transition-all active:scale-95 text-lg"
+              className="w-full sm:w-auto px-7 py-4 bg-white hover:bg-slate-50 text-[#1D1D1F] border border-slate-200 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-97 text-sm"
             >
-              Student Login
+              Student Portal <ArrowUpRight className="w-4 h-4 text-slate-500" />
             </button>
           </div>
 
-          {/* Feature Highlights row */}
-          <div className="grid grid-cols-3 gap-6 pt-8 w-full border-t border-slate-200 dark:border-white/10 mt-4">
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Smart Curriculum</h3>
+          {/* Minimalist Micro Stats Banner */}
+          <div className="grid grid-cols-3 gap-6 pt-8 w-full border-t border-slate-200 mt-4">
+            <div>
+              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">98.2%</div>
+              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Placement Rate</div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Live Coaching</h3>
+            <div>
+              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">1:12</div>
+              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Mentor Ratio</div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Secure Sandbox</h3>
+            <div>
+              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">100%</div>
+              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Digital Records</div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Beautiful Illustration Graphic with Motion Effects */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="hidden lg:flex items-center justify-center relative w-full h-full min-h-[400px]"
-        >
-          {/* Decorative glowing background circles */}
-          <div className="absolute w-[350px] h-[350px] rounded-full bg-red-400/10 dark:bg-red-500/5 blur-3xl -z-10 animate-pulse" />
-          <div className="absolute w-[250px] h-[250px] rounded-full bg-amber-400/10 dark:bg-amber-500/5 blur-2xl -z-10" />
+        {/* Right Column: Interactive Mock Console Terminal Panel */}
+        <div className="lg:col-span-6 flex items-center justify-center relative w-full">
+          <div className="absolute inset-0 border border-slate-200 rounded-3xl transform rotate-1 -z-10 bg-indigo-500/5 blur-xl scale-98" />
+          
+          <div className="bg-white/85 border border-slate-200/80 rounded-3xl p-5 shadow-2xl w-full max-w-lg overflow-hidden backdrop-blur-sm">
+            {/* Header / Tab Selector */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="w-3 h-3 rounded-full bg-yellow-500" />
+                <span className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="text-[11px] font-mono text-slate-400 ml-2">academic-console-v2.6</span>
+              </div>
+              
+              {/* Dynamic Status Badges */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> Live
+                </span>
+              </div>
+            </div>
 
-          {/* Floated Image Container */}
-          <motion.div
-            animate={{ y: [0, -12, 0] }}
-            transition={{
-              repeat: Infinity,
-              duration: 5,
-              ease: "easeInOut"
-            }}
-            className="relative max-w-full lg:max-w-md xl:max-w-xl flex items-center justify-center select-none"
-          >
-            <img 
-              src={admissionHeroImg}
-              alt="Unlock Learning Capabilities"
-              referrerPolicy="no-referrer"
-              className="w-full h-auto max-h-[480px] object-contain drop-shadow-[0_15px_30px_rgba(239,68,68,0.15)] dark:drop-shadow-[0_15px_40px_rgba(239,68,68,0.08)] filter"
-              style={{ transform: 'scaleX(-1)' }}
-            />
-          </motion.div>
-        </motion.div>
+            {/* Interactive Tab Controls */}
+            <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+              <button 
+                onClick={() => setActiveConsoleTab('status')}
+                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
+                  activeConsoleTab === 'status' 
+                    ? 'bg-white text-slate-900 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                Schedule Status
+              </button>
+              <button 
+                onClick={() => setActiveConsoleTab('metrics')}
+                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
+                  activeConsoleTab === 'metrics' 
+                    ? 'bg-white text-slate-900 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                Performance Metrics
+              </button>
+              <button 
+                onClick={() => setActiveConsoleTab('proctor')}
+                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
+                  activeConsoleTab === 'proctor' 
+                    ? 'bg-white text-slate-900 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                Proctored Sandbox
+              </button>
+            </div>
+
+            {/* Tab content screens */}
+            <div className="h-[250px] flex flex-col justify-between relative">
+              <AnimatePresence mode="wait">
+                {activeConsoleTab === 'status' && (
+                  <motion.div 
+                    key="status-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4 flex flex-col justify-between h-full"
+                  >
+                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-200/60 shadow-xs space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Upcoming Lecture</span>
+                          <h4 className="font-bold text-sm text-[#1D1D1F] mt-0.5">Advanced DSA: Greedy Algorithm & Proofs</h4>
+                        </div>
+                        <span className="text-[10px] bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 px-2 py-0.5 rounded-md font-black">
+                          CSE-102
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-6 pt-1">
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <Clock className="w-3.5 h-3.5 text-red-500" />
+                          <span>Starts in {countdownMinutes}:{countdownSeconds < 10 ? `0${countdownSeconds}` : countdownSeconds}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <Users className="w-3.5 h-3.5 text-slate-400" />
+                          <span>42 Enrolled</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs bg-slate-50/50 px-3 py-2.5 rounded-xl border border-slate-200/60 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="font-semibold text-slate-700">Staff Portal Sync Status</span>
+                        </div>
+                        <span className="font-mono text-emerald-600 text-[11px] font-bold">ACTIVE ●</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs bg-slate-50/50 px-3 py-2.5 rounded-xl border border-slate-200/60 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="font-semibold text-slate-700">Database Backup Routine</span>
+                        </div>
+                        <span className="font-mono text-emerald-600 text-[11px] font-bold">SECURED ●</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeConsoleTab === 'metrics' && (
+                  <motion.div 
+                    key="metrics-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4 flex flex-col justify-between h-full"
+                  >
+                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-200/60 shadow-xs space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-xs font-bold text-slate-600 uppercase">Interactive Grading Curve</h4>
+                        <span className="text-[10px] text-slate-500 font-mono">My Score: 88.5%</span>
+                      </div>
+                      
+                      {/* Interactive Sparkline Progress Chart */}
+                      <div className="h-20 w-full flex items-end gap-1.5 pt-2">
+                        {[40, 55, 62, 58, 75, 88, 82, 92, 85, 96, 90, 98].map((score, idx) => (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 group cursor-pointer">
+                            <div className="text-[9px] text-white font-black opacity-0 group-hover:opacity-100 transition-opacity absolute -translate-y-4 bg-slate-900 px-1 rounded">
+                              {score}%
+                            </div>
+                            <div 
+                              className={`w-full rounded-t-xs transition-all duration-300 ${
+                                idx === 11 ? 'bg-red-500 shadow-lg shadow-red-500/25' : 'bg-indigo-500/30 group-hover:bg-indigo-400'
+                              }`} 
+                              style={{ height: `${score / 1.3}%` }} 
+                            />
+                            <span className="text-[8px] text-slate-500 font-mono">E{idx + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-1 bg-slate-50/50 rounded-xl p-3 border border-slate-200/60 shadow-xs text-left">
+                        <span className="text-[9px] text-slate-500 font-bold uppercase block">Avg Evolution Score</span>
+                        <span className="text-md font-black text-[#1D1D1F] font-sans mt-0.5 block">85.4%</span>
+                      </div>
+                      <div className="flex-1 bg-slate-50/50 rounded-xl p-3 border border-slate-200/60 shadow-xs text-left">
+                        <span className="text-[9px] text-slate-500 font-bold uppercase block">Current Badge Level</span>
+                        <span className="text-md font-black text-rose-600 font-sans mt-0.5 block flex items-center gap-1">
+                          <Award className="w-4 h-4 text-rose-500" /> Platinum
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeConsoleTab === 'proctor' && (
+                  <motion.div 
+                    key="proctor-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4 flex flex-col justify-between h-full"
+                  >
+                    <div className="relative bg-slate-100 rounded-2xl h-44 border border-slate-200/60 overflow-hidden flex items-center justify-center">
+                      <div className="absolute top-3 left-3 bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.5 rounded-md font-mono text-[9px] flex items-center gap-1 font-bold z-20">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                        PROCTOR FEED: ACTIVE
+                      </div>
+
+                      <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md text-slate-700 px-2.5 py-1 border border-slate-200/60 rounded-lg font-mono text-[9.5px] z-20">
+                        Gaze Deviation: 0.00%
+                      </div>
+
+                      {/* Mock scan line */}
+                      <div className="absolute inset-x-0 h-0.5 bg-red-500/10 shadow-lg shadow-red-500/30 animate-[scan_4s_linear_infinite] z-10" />
+
+                      {/* Animated vector faces mockup */}
+                      <svg className="w-24 h-24 text-red-500/10 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs bg-red-500/5 border border-red-150 p-2.5 rounded-xl">
+                      <div className="flex items-center gap-2 text-red-600 font-bold">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Continuous Proctor Monitoring Enabled</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-mono">Auto Guard v1.2</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
 
       </main>
 
-      {/* Active Running Courses Section */}
-      <section className="w-full bg-[#fbd4d6] dark:bg-[#1a0e10] py-12 md:py-20 relative z-10 border-t border-slate-200/50 dark:border-white/5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="bg-white dark:bg-[#0B0C10] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 relative overflow-hidden">
-            
-            {/* Choose Your Area of Interest Section */}
-            <div className="flex flex-col lg:flex-row gap-12 xl:gap-16">
-              <div className="flex-1">
-                <h2 className="text-3xl md:text-5xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mb-12">
-                  Choose Your Program
-                </h2>
-
-                {courses.filter(c => c.status === 'upcoming').length === 0 ? (
-                  <div className="p-8 md:p-12 text-center rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5">
-                    <BookOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-slate-600 dark:text-gray-305">
-                      No upcoming academic programs available yet.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    {courses.filter(c => c.status === 'upcoming').map((course, idx) => {
-                      const isSelected = selectedCourseId === course.id;
-                      const isHovered = hoveredCourseId === course.id;
-                      const isActive = isSelected || isHovered;
-                      return (
-                        <div
-                          key={course.id}
-                          className={`p-6 rounded-[1.5rem] bg-white dark:bg-[#15161A] border-2 transition-all duration-300 flex items-center justify-between cursor-pointer select-none group relative ${
-                            isSelected
-                              ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg col-span-1'
-                              : 'border-slate-100 dark:border-white/5 hover:border-red-400 dark:hover:border-red-500/30 shadow-xs col-span-1'
-                          }`}
-                          onClick={() => {
-                            setSelectedCourseId(isSelected ? null : course.id);
-                          }}
-                          onMouseEnter={() => setHoveredCourseId(course.id)}
-                          onMouseLeave={() => setHoveredCourseId(null)}
-                        >
-                          <div className="flex-1 pr-4">
-                            <h3 className={`font-extrabold text-base md:text-md leading-snug transition-colors ${isSelected ? 'text-red-500 dark:text-red-400' : 'text-slate-800 dark:text-zinc-100 group-hover:text-red-500'}`}>
-                              {course.name}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-semibold font-sans">
-                                {course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}
-                              </span>
-                              {course.batchNumber && (
-                                <>
-                                  <span className="text-slate-300 dark:text-zinc-700 text-xs font-sans">•</span>
-                                  <span className="text-[10.5px] bg-red-500/10 text-red-600 dark:text-red-400 font-semibold font-sans px-2 py-0.5 rounded-md inline-flex items-center gap-1">
-                                    Batch: {course.batchNumber}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-2.5">
-                              {(course.publishDate || course.createdDate) && (
-                                <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
-                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                  <p className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-semibold font-sans">
-                                    Starts: {new Date(course.publishDate || course.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                  </p>
-                                </div>
-                              )}
-                              {course.admissionLastDate && (
-                                <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-md">
-                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                  <p className="text-[10.5px] text-amber-700 dark:text-amber-400 font-semibold font-sans">
-                                    Admission Closes: {new Date(course.admissionLastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                      
-                          <div className="shrink-0 flex items-center justify-center mix-blend-multiply dark:mix-blend-normal">
-                            {getCourseCategory(course.name) === 'Product Management with AI' && <PMIcon />}
-                            {getCourseCategory(course.name) === 'Analytics and AI' && <AnalyticsIcon />}
-                            {getCourseCategory(course.name) === 'Data Science and AI-ML' && <DataScienceIcon />}
-                            {getCourseCategory(course.name) === 'Software Development Engineering' && <SDEIcon />}
-                            {getCourseCategory(course.name) === 'Marketing and Analytics' && <MarketingIcon />}
-                            {getCourseCategory(course.name) === 'Finance and Technology' && <FinanceIcon />}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+      {/* Interactive Academic Pathways Explorer */}
+      <section className="w-full border-t border-slate-200/60 bg-white py-16 md:py-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16 text-left">
+            <div className="max-w-xl">
+              <div className="text-xs font-bold text-red-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <Bookmark className="w-3.5 h-3.5 text-red-500" /> Curated Syllabus Pathways
               </div>
-
-              {/* Roadmap Section */}
-              <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:border-l border-slate-200 dark:border-white/10 lg:pl-12 xl:pl-16 pt-12 lg:pt-0">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                  {selectedCourse ? `${selectedCourse.name} Path` : 'Admission Roadmap'}
-                </h3>
-                {selectedCourse && (
-                   <p className="text-xs text-slate-500 mb-8">5-Month Technology Curriculum</p>
-                )}
-                {!selectedCourse && (
-                   <p className="text-xs text-slate-500 mb-8">Follow these steps to get enrolled.</p>
-                )}
-                
-                <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto lg:before:ml-5 lg:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-red-500 before:via-red-300 before:to-transparent">
-                  {selectedCourse ? (
-                    (selectedCourse.roadmap && selectedCourse.roadmap.length > 0
-                      ? selectedCourse.roadmap
-                      : getCourseRoadmap(selectedCourse.name, selectedCourse.code)
-                    ).map((step, idx) => (
-                      <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                          {step.month}
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
-                          <h4 className="font-bold text-slate-900 dark:text-white">Month {step.month}: {step.title}</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{step.desc || (step as any).description}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-red-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                          1
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left">
-                          <h4 className="font-bold text-slate-900 dark:text-white">Apply Online</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fill out the quick registration form and submit your basic details.</p>
-                        </div>
-                      </div>
-
-                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                          2
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                          <h4 className="font-bold text-slate-900 dark:text-white">Entrance Test</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Take our online aptitude assessment to evaluate your foundation.</p>
-                        </div>
-                      </div>
-
-                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                          3
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                          <h4 className="font-bold text-slate-900 dark:text-white">Counseling</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Discuss your goals and pick the right course track with our advisors.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0B0C10] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 lg:translate-x-0 lg:order-none z-10 font-bold text-sm">
-                          4
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] lg:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#15161A] shadow-sm ml-4 lg:ml-4 md:ml-0 md:group-odd:mr-4 lg:mr-0 text-left opacity-70">
-                          <h4 className="font-bold text-slate-900 dark:text-white">Enrollment</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Complete your registration, receive credentials and get onboarded.</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                {selectedCourse && (
-                   <div className="mt-8 relative z-10">
-                     <button
-                       onClick={() => onEnterPortal('fastReg', selectedCourse.name)}
-                       className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm"
-                     >
-                       Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />
-                     </button>
-                   </div>
-                )}
+              <h2 className="text-3xl sm:text-4xl font-sans font-black text-[#1D1D1F] tracking-tight leading-tight">
+                Our Interactive Cohort Programs
+              </h2>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                Click on any course card below to view its month-by-month evolution roadmap, batch timings, and curriculum scope instantly.
+              </p>
+            </div>
+            
+            <div className="flex gap-4 sm:gap-8 shrink-0 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 shadow-xs">
+              <div>
+                <div className="text-xs text-slate-500 font-medium">Available Pathways</div>
+                <div className="text-lg font-bold text-[#1D1D1F] mt-0.5">6 Core Tracks</div>
+              </div>
+              <div className="w-px bg-slate-200" />
+              <div>
+                <div className="text-xs text-slate-500 font-medium">Standard Duration</div>
+                <div className="text-lg font-bold text-[#1D1D1F] mt-0.5">5 Months</div>
               </div>
             </div>
           </div>
+
+          {/* Interactive Cohorts Grid & Timeline */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Courses Grid (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col gap-6">
+              {courses.filter(c => c.status === 'upcoming').length === 0 ? (
+                <div className="p-12 text-center rounded-3xl bg-slate-50 border border-slate-200/60 shadow-xs">
+                  <BookOpen className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-slate-600">
+                    No upcoming cohorts currently open for enrollment. Check back soon.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {courses.filter(c => c.status === 'upcoming').map((course) => {
+                    const isSelected = selectedCourseId === course.id || (!selectedCourseId && courses[0]?.id === course.id);
+                    const category = getCourseCategory(course.name);
+                    
+                    return (
+                      <div
+                        key={course.id}
+                        onClick={() => setSelectedCourseId(course.id)}
+                        className={`p-5 rounded-2xl transition-all duration-300 cursor-pointer select-none border text-left flex flex-col justify-between h-[200px] relative overflow-hidden group ${
+                          isSelected
+                            ? 'bg-white border-red-500 shadow-xl shadow-red-500/5 ring-1 ring-red-500/20'
+                            : 'bg-slate-50/50 border-slate-250/60 hover:border-slate-300 hover:bg-slate-100/30'
+                        }`}
+                      >
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-slate-200/20 to-transparent opacity-10 group-hover:scale-110 transition-transform" />
+
+                        <div>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              {category === 'Product Management with AI' && <PMIcon />}
+                              {category === 'Analytics and AI' && <AnalyticsIcon />}
+                              {category === 'Data Science and AI-ML' && <DataScienceIcon />}
+                              {category === 'Software Development Engineering' && <SDEIcon />}
+                              {category === 'Marketing and Analytics' && <MarketingIcon />}
+                              {category === 'Finance and Technology' && <FinanceIcon />}
+                            </div>
+                            
+                            {course.batchNumber && (
+                              <span className="text-[9.5px] bg-slate-100 border border-slate-200/60 text-slate-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                Batch {course.batchNumber}
+                              </span>
+                            )}
+                          </div>
+
+                          <h3 className={`font-bold text-sm leading-snug mt-4 transition-colors ${
+                            isSelected ? 'text-red-600' : 'text-[#1D1D1F] group-hover:text-red-600'
+                          }`}>
+                            {course.name}
+                          </h3>
+                        </div>
+
+                        {/* Card Footer info */}
+                        <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                          <span>{course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}</span>
+                          <span className="text-red-600 font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            View Syllabus <ChevronRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Detailed Timeline Tracker (5 cols) */}
+            <div className="lg:col-span-5">
+              <div className="bg-slate-50/70 border border-slate-200/60 p-6 rounded-3xl shadow-lg relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
+                    {selectedCourse ? `${selectedCourse.name} Milestone Path` : 'Syllabus Journey Map'}
+                  </h3>
+                </div>
+
+                <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                  A rigorous, industry-aligned syllabus structured around continuous projects and proctored assessment validations.
+                </p>
+
+                {/* Timeline Roadmap */}
+                <div className="relative space-y-5 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
+                  {(selectedCourse && selectedCourse.roadmap && selectedCourse.roadmap.length > 0
+                    ? selectedCourse.roadmap
+                    : getCourseRoadmap(selectedCourse?.name || '', selectedCourse?.code || '')
+                  ).slice(0, 5).map((step, idx) => (
+                    <div key={idx} className="relative flex items-start gap-4">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-black text-xs z-10 shrink-0 shadow-md">
+                        {step.month}
+                      </div>
+                      <div className="text-left bg-white p-3.5 rounded-xl border border-slate-200/60 w-full shadow-xs">
+                        <h4 className="font-bold text-xs text-[#1D1D1F]">Month {step.month}: {step.title}</h4>
+                        <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{step.desc || (step as any).description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action CTA */}
+                {selectedCourse && (
+                  <div className="mt-6 pt-2">
+                    <button
+                      onClick={() => onEnterPortal('fastReg', selectedCourse.name)}
+                      className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-97 text-xs cursor-pointer"
+                    >
+                      Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
-      
-      {/* Footer */}
+
+      {/* Interactive Eligibility & Scholarship Estimator Section */}
+      <section className="w-full border-t border-slate-200/60 bg-[#F5F5F7] py-16 md:py-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left side: Copy (5 cols) */}
+            <div className="lg:col-span-5 text-left space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[10px] font-bold tracking-wider uppercase">
+                <Calculator className="w-3.5 h-3.5" /> Merit Scholarships
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-sans font-black text-[#1D1D1F] tracking-tight leading-tight">
+                Evaluate Your Eligibility & Fee Structure Instantly
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                At Learnora, we support academic talent. Use our live interactive calculator to select your desired cohort pathway, adjust your grade thresholds, and view potential merit scholarships and final discounted fees in real-time.
+              </p>
+              
+              <div className="space-y-3.5 pt-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                  </div>
+                  <span className="text-xs text-slate-700 font-medium">Up to 55% Tuition waivers for eligible students</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                  </div>
+                  <span className="text-xs text-slate-700 font-medium">Interest-free monthly academic installment facilities</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                  </div>
+                  <span className="text-xs text-slate-700 font-medium">Automatic interview screening bypass for scores above 90%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side: Interactive Form Container (7 cols) */}
+            <div className="lg:col-span-7 bg-white border border-slate-200/60 p-6 sm:p-8 rounded-3xl shadow-xl text-left relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-radial from-indigo-500/5 to-transparent blur-2xl" />
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                {/* Course Selection */}
+                <div>
+                  <label className="block text-xs text-slate-500 font-bold uppercase mb-2">Select Target Program</label>
+                  <select 
+                    value={calcCourse} 
+                    onChange={(e) => setCalcCourse(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold focus:outline-none focus:border-red-500 transition-colors cursor-pointer shadow-xs"
+                  >
+                    {courses && courses.length > 0 ? (
+                      courses.map(course => (
+                        <option key={course.id} value={course.id}>
+                          {course.name} ({course.code || 'COHORT'})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="course-1">Java Masterclass (JAVA)</option>
+                        <option value="course-2">Full-Stack JavaScript Development (JS)</option>
+                        <option value="course-3">Python AI & Data Science (PY)</option>
+                        <option value="course-4">SDET Specialization (QA Automation) (SDET)</option>
+                        <option value="course-5">UI/UX Design Academy (UIUX)</option>
+                        <option value="course-6">Cybersecurity Professional (CYBER)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                {/* Qualification */}
+                <div>
+                  <label className="block text-xs text-slate-500 font-bold uppercase mb-2">Highest Qualification</label>
+                  <select 
+                    value={calcQualification} 
+                    onChange={(e) => setCalcQualification(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold focus:outline-none focus:border-red-500 transition-colors cursor-pointer shadow-xs"
+                  >
+                    <option value="High School">High School (Grade 12)</option>
+                    <option value="Undergraduate">Undergraduate (B.Tech / B.Sc / BCA)</option>
+                    <option value="Graduate">Postgraduate (M.Tech / MBA / MCA)</option>
+                    <option value="Working Professional">Working Professional (1+ Years Exp)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Slider for percentage grade */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-2.5">
+                  <label className="block text-xs text-slate-500 font-bold uppercase">Average Grade / Academic Score</label>
+                  <span className="text-sm font-black text-slate-900 font-mono">{calcGrade}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="50" 
+                  max="100" 
+                  value={calcGrade} 
+                  onChange={(e) => setCalcGrade(Number(e.target.value))}
+                  className="w-full accent-red-500 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1.5 uppercase">
+                  <span>50% (Min Pass)</span>
+                  <span>75% (First Div)</span>
+                  <span>100% (Perfect)</span>
+                </div>
+              </div>
+
+              {/* Dynamic Outcomes Card */}
+              <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/60 grid grid-cols-2 sm:grid-cols-4 gap-4 items-center shadow-xs">
+                {/* Eligibility Indicator */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Eligibility</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-xs font-black px-2 py-1 rounded-md border ${eligibilityResult.badgeColor}`}>
+                      {eligibilityResult.status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Set Course Amount (Base Fee) */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Course Fee</span>
+                  <span className="text-sm font-black text-slate-700 font-mono tracking-tight mt-1 block">
+                    ₹{eligibilityResult.baseFee.toLocaleString('en-IN')}
+                  </span>
+                </div>
+
+                {/* Scholarship Applied */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Scholarship</span>
+                  <span className="text-sm font-black text-rose-600 font-mono tracking-tight mt-1 block">
+                    {eligibilityResult.scholarship}% Waiver
+                  </span>
+                </div>
+
+                {/* Discounted Fee */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Estimated Fee</span>
+                  <span className="text-sm font-black text-slate-900 font-mono tracking-tight mt-1 block">
+                    ₹{eligibilityResult.estimatedFee.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+                <button
+                  onClick={() => {
+                    const selectedCourseObj = courses?.find(c => c.id === calcCourse) || 
+                      (calcCourse === 'course-1' ? { name: 'Java Masterclass' } :
+                       calcCourse === 'course-2' ? { name: 'Full-Stack JavaScript Development' } :
+                       calcCourse === 'course-3' ? { name: 'Python AI & Data Science' } :
+                       calcCourse === 'course-4' ? { name: 'SDET Specialization (QA Automation)' } :
+                       calcCourse === 'course-5' ? { name: 'UI/UX Design Academy' } :
+                       calcCourse === 'course-6' ? { name: 'Cybersecurity Professional' } : null);
+                    const courseDisplayName = selectedCourseObj?.name || calcCourse;
+                    onEnterPortal('fastReg', `${courseDisplayName} - Applied with ${eligibilityResult.scholarship}% Scholarship`);
+                  }}
+                  className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-97 shadow-md cursor-pointer"
+                >
+                  Submit Registration With Scholarship <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Bento Grid Highlights: Complete Platform Ecosystem */}
+      <section className="w-full border-t border-slate-200/60 bg-white py-16 md:py-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          <div className="text-center max-w-xl mx-auto mb-16 space-y-3">
+            <span className="text-xs font-bold text-red-500 uppercase tracking-widest block">Continuous Evaluation Ecosystem</span>
+            <h2 className="text-3xl sm:text-4xl font-sans font-black text-[#1D1D1F] tracking-tight">
+              One Workspace. Endless Growth.
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Experience a highly structured academic model optimized for rigorous preparation, deep mentoring, and clear career milestones.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Box 1 */}
+            <div className="bg-slate-50/50 border border-slate-200/60 rounded-3xl p-6 hover:border-slate-300 transition-colors flex flex-col justify-between text-left h-[280px] shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div className="space-y-1.5 mt-6">
+                <h3 className="font-bold text-md text-[#1D1D1F]">Assigned Faculty Mentors</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Every student gets paired with an industry expert instructor who hosts periodic mock reviews, grades assignments, and provides customized study directives.
+                </p>
+              </div>
+            </div>
+
+            {/* Box 2 */}
+            <div className="bg-slate-50/50 border border-slate-200/60 rounded-3xl p-6 hover:border-slate-300 transition-colors flex flex-col justify-between text-left h-[280px] shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-red-500" />
+              </div>
+              <div className="space-y-1.5 mt-6">
+                <h3 className="font-bold text-md text-[#1D1D1F]">Continuous Evolutions</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Skip massive high-stakes finals. Our curriculum relies on 4 dynamic week-by-week evaluations every single month with an 80% baseline promotion rule.
+                </p>
+              </div>
+            </div>
+
+            {/* Box 3 */}
+            <div className="bg-slate-50/50 border border-slate-200/60 rounded-3xl p-6 hover:border-slate-300 transition-colors flex flex-col justify-between text-left h-[280px] shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div className="space-y-1.5 mt-6">
+                <h3 className="font-bold text-md text-[#1D1D1F]">Verified Digital Credentials</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Every successfully completed program module triggers cryptographic badges and verified certificates easily syncable with Linkedin and recruitment portals.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="w-full border-t border-slate-200/60 bg-[#F5F5F7] py-16 md:py-24 relative z-10">
+        <div className="max-w-4xl mx-auto px-6 text-left">
+          
+          <div className="text-center mb-16 space-y-3">
+            <span className="text-xs font-bold text-red-500 uppercase tracking-widest block">Academic Portal Inquiries</span>
+            <h2 className="text-3xl font-sans font-black text-[#1D1D1F] tracking-tight">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq) => {
+              const isExpanded = expandedFaqId === faq.id;
+              return (
+                <div 
+                  key={faq.id} 
+                  className="bg-white border border-slate-200/60 rounded-2xl overflow-hidden transition-colors shadow-xs"
+                >
+                  <button
+                    onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
+                    className="w-full px-6 py-5 text-left flex justify-between items-center font-bold text-sm text-[#1D1D1F] focus:outline-none"
+                  >
+                    <span>{faq.q}</span>
+                    <span className="text-slate-500">
+                      {isExpanded ? '−' : '+'}
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="px-6 pb-5 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* Footer (PRESERVED IDENTICALLY) */}
       <footer className="w-full bg-[#0B0C10] text-white pt-12 pb-12 relative z-10 overflow-hidden font-sans mt-0">
         <div className="max-w-7xl mx-auto px-6 h-full flex flex-col justify-between min-h-[500px]">
           {/* Top Header inside footer */}
