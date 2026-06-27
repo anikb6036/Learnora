@@ -673,8 +673,12 @@ print("TEST_RESULTS_JSON_END")
                     })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || 'Execution API failed');
+                }
+
+                const result = await response.json();
                     const runOutput = result.run?.output || '';
                     const startIdx = runOutput.indexOf('TEST_RESULTS_JSON_START');
                     const endIdx = runOutput.indexOf('TEST_RESULTS_JSON_END');
@@ -708,7 +712,6 @@ print("TEST_RESULTS_JSON_END")
                     setConsoleTab('codeOutput');
                     setIsRunning(false);
                     return;
-                }
             } catch (e) {
                 console.error("Piston execution failed, falling back to simulation", e);
             }
