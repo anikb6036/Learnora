@@ -1039,7 +1039,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {courses.filter(c => c.status === 'upcoming').map((course) => {
-                    const isSelected = selectedCourseId === course.id || (!selectedCourseId && courses[0]?.id === course.id);
+                    const isSelected = selectedCourseId === course.id;
                     const category = getCourseCategory(course.name);
                     
                     return (
@@ -1096,48 +1096,130 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
             {/* Right Column: Detailed Timeline Tracker (5 cols) */}
             <div className="lg:col-span-5">
               <div className="bg-slate-50/70 border border-slate-200/60 p-6 rounded-3xl shadow-lg relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
-                    {selectedCourse ? `${selectedCourse.name} Milestone Path` : 'Syllabus Journey Map'}
-                  </h3>
-                </div>
-
-                <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-                  A rigorous, industry-aligned syllabus structured around continuous projects and proctored assessment validations.
-                </p>
-
-                {/* Timeline Roadmap */}
-                <div className="relative space-y-5 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
-                  {(selectedCourse && selectedCourse.roadmap && selectedCourse.roadmap.length > 0
-                    ? selectedCourse.roadmap
-                    : getCourseRoadmap(selectedCourse?.name || '', selectedCourse?.code || '')
-                  ).slice(0, 5).map((step, idx) => {
-                    const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
-                    return (
-                      <div key={idx} className="relative flex items-start gap-4">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-black text-xs z-10 shrink-0 shadow-md">
-                          {step.month}
-                        </div>
-                        <div className="text-left bg-white p-3.5 rounded-xl border border-slate-200/60 w-full shadow-xs">
-                          <h4 className="font-bold text-xs text-[#1D1D1F]">Month {step.month}: {cleanTitle}</h4>
-                          <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{step.desc || (step as any).description}</p>
-                        </div>
+                {!selectedCourseId ? (
+                  <>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                        <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
+                          Admission & Onboarding Roadmap
+                        </h3>
                       </div>
-                    );
-                  })}
-                </div>
+                      <span className="text-[9.5px] bg-indigo-50 border border-indigo-200/60 text-indigo-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        Default Path
+                      </span>
+                    </div>
 
-                {/* Action CTA */}
-                {selectedCourse && (
-                  <div className="mt-6 pt-2">
-                    <button
-                      onClick={() => onEnterPortal('fastReg', selectedCourse.name)}
-                      className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-97 text-xs cursor-pointer"
-                    >
-                      Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                    <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                      Follow these essential stages to secure your academic seat, obtain automated scholarship approval, and onboard into your cohort.
+                    </p>
+
+                    {/* Admission Timeline Roadmap */}
+                    <div className="relative space-y-5 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
+                      {[
+                        {
+                          step: 1,
+                          title: "Online Registration",
+                          desc: "Fill in your demographic & academic metrics in our streamlined application system to register."
+                        },
+                        {
+                          step: 2,
+                          title: "Scholarship Computation",
+                          desc: "Calculate automated fee reductions up to 100% using our real-time merit & socioeconomic criteria algorithm."
+                        },
+                        {
+                          step: 3,
+                          title: "Academic Micro-Aptitude",
+                          desc: "Complete a structured, proctor-ready web test evaluating logical, data, or analytical fundamentals."
+                        },
+                        {
+                          step: 4,
+                          title: "Advisor Alignment Sync",
+                          desc: "Conduct a brief profile assessment and interview with Learnora faculty to match your academic aims."
+                        },
+                        {
+                          step: 5,
+                          title: "Secure Workspace Credentials",
+                          desc: "Obtain your digitized student portal profile, meet your cohort, and access your custom active progress roadmap."
+                        }
+                      ].map((step, idx) => (
+                        <div key={idx} className="relative flex items-start gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500 text-white font-black text-xs z-10 shrink-0 shadow-md">
+                            {step.step}
+                          </div>
+                          <div className="text-left bg-white p-3.5 rounded-xl border border-slate-200/60 w-full shadow-xs">
+                            <h4 className="font-bold text-xs text-[#1D1D1F]">Step {step.step}: {step.title}</h4>
+                            <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{step.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action CTA for Admission */}
+                    <div className="mt-6 pt-2">
+                      <button
+                        onClick={() => onEnterPortal('fastReg')}
+                        className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-97 text-xs cursor-pointer"
+                      >
+                        Start Admission Application <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
+                          {selectedCourse ? `${selectedCourse.name} Milestone Path` : 'Syllabus Journey Map'}
+                        </h3>
+                      </div>
+                      
+                      <button
+                        onClick={() => setSelectedCourseId(null)}
+                        className="text-[10px] text-slate-500 hover:text-red-500 font-bold flex items-center gap-1 transition-colors border border-slate-200 hover:border-red-200 bg-white hover:bg-red-50/50 px-2.5 py-1 rounded-lg cursor-pointer"
+                      >
+                        ← Admission Road
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                      A rigorous, industry-aligned syllabus structured around continuous projects and proctored assessment validations.
+                    </p>
+
+                    {/* Timeline Roadmap */}
+                    <div className="relative space-y-5 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
+                      {(selectedCourse && selectedCourse.roadmap && selectedCourse.roadmap.length > 0
+                        ? selectedCourse.roadmap
+                        : getCourseRoadmap(selectedCourse?.name || '', selectedCourse?.code || '')
+                      ).slice(0, 5).map((step, idx) => {
+                        const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
+                        return (
+                          <div key={idx} className="relative flex items-start gap-4">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-black text-xs z-10 shrink-0 shadow-md">
+                              {step.month}
+                            </div>
+                            <div className="text-left bg-white p-3.5 rounded-xl border border-slate-200/60 w-full shadow-xs">
+                              <h4 className="font-bold text-xs text-[#1D1D1F]">Month {step.month}: {cleanTitle}</h4>
+                              <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{step.desc || (step as any).description}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Action CTA */}
+                    {selectedCourse && (
+                      <div className="mt-6 pt-2">
+                        <button
+                          onClick={() => onEnterPortal('fastReg', selectedCourse.name)}
+                          className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-97 text-xs cursor-pointer"
+                        >
+                          Apply for {selectedCourse.name} <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
