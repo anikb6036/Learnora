@@ -310,7 +310,9 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
         } else {
           // Init record remotely if it doesn't exist
           const initialLocalData = getSavedState<T>(key, defaultValue);
-          setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true });
+          setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true }).catch(err => {
+            console.error(`Failed to init remote state for ${key}`, err);
+          });
         }
         setIsLoaded(true);
       },
