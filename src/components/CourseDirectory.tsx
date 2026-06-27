@@ -669,13 +669,14 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
                           <div className="space-y-4 pt-2 font-sans">
                             {c.roadmap.map((step, idx) => {
+                              const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
                               return (
                                 <div key={step.month} className="group/terminal-row flex items-start gap-4 hover:bg-white/[0.02] p-1 rounded transition duration-150">
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                       <span className="text-amber-550 font-bold text-xs">[Milestone {step.month}]</span>
                                       <span className="text-zinc-100 font-bold tracking-tight text-sm">
-                                        &ldquo;{step.title}&rdquo;
+                                        &ldquo;{cleanTitle}&rdquo;
                                       </span>
                                     </div>
                                     <div className="flex items-start gap-1">
@@ -700,30 +701,33 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                         /* Visualization timeline chart graph mockup view */
                         <div className="bg-slate-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-lg p-5 space-y-4 font-sans">
                           <div className="relative pl-6 border-l-2 border-amber-500/50 space-y-6">
-                            {c.roadmap.map((step, idx) => (
-                              <div key={step.month} className="relative animate-fadeIn">
-                                
-                                {/* Timeline nodes circles */}
-                                <div className="absolute left-[-30px] top-1.5 w-4 h-4 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[8px] font-bold text-amber-500 select-none">
-                                  {step.month}
-                                </div>
-
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
-                                      Month {step.month} Milestone
-                                    </span>
-                                    <span className="text-slate-450 dark:text-zinc-400 font-sans text-[9px] bg-slate-100 dark:bg-white/5 py-0.5 px-1.5 rounded-sm">
-                                      Stage {idx + 1}
-                                    </span>
+                            {c.roadmap.map((step, idx) => {
+                              const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
+                              return (
+                                <div key={step.month} className="relative animate-fadeIn">
+                                  
+                                  {/* Timeline nodes circles */}
+                                  <div className="absolute left-[-30px] top-1.5 w-4 h-4 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[8px] font-bold text-amber-500 select-none">
+                                    {step.month}
                                   </div>
-                                  <h4 className="text-xs font-bold text-slate-800 dark:text-white">{step.title}</h4>
-                                  <p className="text-xs text-slate-550 dark:text-zinc-400 leading-relaxed font-sans mt-1">
-                                    {step.description}
-                                  </p>
+
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+                                        Month {step.month} Milestone
+                                      </span>
+                                      <span className="text-slate-450 dark:text-zinc-400 font-sans text-[9px] bg-slate-100 dark:bg-white/5 py-0.5 px-1.5 rounded-sm">
+                                        Stage {idx + 1}
+                                      </span>
+                                    </div>
+                                    <h4 className="text-xs font-bold text-slate-800 dark:text-white">{cleanTitle}</h4>
+                                    <p className="text-xs text-slate-550 dark:text-zinc-400 leading-relaxed font-sans mt-1">
+                                      {step.description}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}

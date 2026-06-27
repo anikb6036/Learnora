@@ -259,7 +259,11 @@ function AppContent() {
   const [batches, setBatches, batchesLoaded] = useFirebaseState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
 
   // Student courses published by admin/sub-admin
-  const [courses, setCourses, coursesLoaded] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
+  const [rawCourses, setCourses, coursesLoaded] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
+  const courses = rawCourses.map(c => ({
+    ...c,
+    name: c.name ? c.name.replace(/\.+$/, '').trim() : ''
+  }));
 
   // Master base courses bank
   const [masterCourses, setMasterCourses, masterCoursesLoaded] = useFirebaseState<MasterCourse[]>('db-master-courses', INITIAL_MASTER_COURSES);
