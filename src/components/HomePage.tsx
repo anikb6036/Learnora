@@ -151,11 +151,18 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
   // FAQ Accordion States
   const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
 
-  // Synchronize initial calcCourse when courses are loaded
+  // Synchronize initial calcCourse when courses are loaded (prioritize upcoming courses)
   useEffect(() => {
     if (courses && courses.length > 0) {
-      if (!calcCourse || !courses.some(c => c.id === calcCourse)) {
-        setCalcCourse(courses[0].id);
+      const upcoming = courses.filter(c => c.status === 'upcoming');
+      if (upcoming.length > 0) {
+        if (!calcCourse || !upcoming.some(c => c.id === calcCourse)) {
+          setCalcCourse(upcoming[0].id);
+        }
+      } else {
+        if (!calcCourse || !courses.some(c => c.id === calcCourse)) {
+          setCalcCourse(courses[0].id);
+        }
       }
     }
   }, [courses]);
@@ -347,9 +354,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         
         {/* Left Column: Premium Interactive Typography */}
         <div className="lg:col-span-6 flex flex-col items-start gap-6 text-left">
-          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[11px] font-bold tracking-wider uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-            Live Admission Portal 2026 Active
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/60 shadow-2xs">
+            <span className="bg-red-600 text-white text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full leading-none">LIVE</span>
+            <span className="text-[11px] text-slate-600 font-bold uppercase tracking-wider pr-1.5">Admission Portal 2026 Active</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] leading-[1.05] tracking-tight">
@@ -393,24 +400,23 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
           </div>
         </div>
 
-        {/* Right Column: Interactive Mock Console Terminal Panel */}
+        {/* Right Column: Premium Student & Coaching Dashboard Preview */}
         <div className="lg:col-span-6 flex items-center justify-center relative w-full">
           <div className="absolute inset-0 border border-slate-200 rounded-3xl transform rotate-1 -z-10 bg-indigo-500/5 blur-xl scale-98" />
           
-          <div className="bg-white/85 border border-slate-200/80 rounded-3xl p-5 shadow-2xl w-full max-w-lg overflow-hidden backdrop-blur-sm">
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-2xl w-full max-w-lg overflow-hidden">
             {/* Header / Tab Selector */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="w-3 h-3 rounded-full bg-yellow-500" />
-                <span className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-[11px] font-mono text-slate-400 ml-2">academic-console-v2.6</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] bg-slate-100 text-slate-600 font-black px-2 py-0.5 rounded uppercase tracking-wider">Workspace</span>
+                <span className="text-xs text-slate-300 font-semibold font-sans">/</span>
+                <span className="text-xs text-slate-800 font-bold font-sans">Student Planner</span>
               </div>
               
-              {/* Dynamic Status Badges */}
+              {/* Active info indicator without noisy dots */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> Live
+                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  Sync Active
                 </span>
               </div>
             </div>
@@ -425,7 +431,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Schedule Status
+                Weekly Schedule
               </button>
               <button 
                 onClick={() => setActiveConsoleTab('metrics')}
@@ -435,7 +441,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Performance Metrics
+                Academic Progress
               </button>
               <button 
                 onClick={() => setActiveConsoleTab('proctor')}
@@ -445,7 +451,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Proctored Sandbox
+                Mentor Support
               </button>
             </div>
 
@@ -459,45 +465,45 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2 }}
-                    className="space-y-4 flex flex-col justify-between h-full"
+                    className="space-y-3 flex flex-col justify-between h-full text-left"
                   >
-                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-200/60 shadow-xs space-y-3">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 shadow-2xs space-y-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Upcoming Lecture</span>
-                          <h4 className="font-bold text-sm text-[#1D1D1F] mt-0.5">Advanced DSA: Greedy Algorithm & Proofs</h4>
+                          <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider">Next Live Session</span>
+                          <h4 className="font-bold text-sm text-[#1D1D1F] mt-0.5">Advanced System Design & Scalability</h4>
                         </div>
-                        <span className="text-[10px] bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 px-2 py-0.5 rounded-md font-black">
-                          CSE-102
+                        <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold">
+                          SYS-301
                         </span>
                       </div>
 
                       <div className="flex items-center gap-6 pt-1">
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <Clock className="w-3.5 h-3.5 text-red-500" />
+                        <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
                           <span>Starts in {countdownMinutes}:{countdownSeconds < 10 ? `0${countdownSeconds}` : countdownSeconds}</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500">
                           <Users className="w-3.5 h-3.5 text-slate-400" />
-                          <span>42 Enrolled</span>
+                          <span>42 Registered</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs bg-slate-50/50 px-3 py-2.5 rounded-xl border border-slate-200/60 shadow-xs">
+                      <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="font-semibold text-slate-700">Staff Portal Sync Status</span>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <span className="font-semibold text-slate-700">Assignment: Promise Pool Optimizer</span>
                         </div>
-                        <span className="font-mono text-emerald-600 text-[11px] font-bold">ACTIVE ●</span>
+                        <span className="text-emerald-600 text-[10.5px] font-bold">Submitted</span>
                       </div>
-                      <div className="flex items-center justify-between text-xs bg-slate-50/50 px-3 py-2.5 rounded-xl border border-slate-200/60 shadow-xs">
+                      <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="font-semibold text-slate-700">Database Backup Routine</span>
+                          <Calendar className="w-4 h-4 text-indigo-500" />
+                          <span className="font-semibold text-slate-700">Milestone Assessment Evolution</span>
                         </div>
-                        <span className="font-mono text-emerald-600 text-[11px] font-bold">SECURED ●</span>
+                        <span className="text-slate-500 text-[10.5px] font-bold">Fri, 8 PM</span>
                       </div>
                     </div>
                   </motion.div>
@@ -510,42 +516,35 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2 }}
-                    className="space-y-4 flex flex-col justify-between h-full"
+                    className="space-y-3 flex flex-col justify-between h-full text-left"
                   >
-                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-200/60 shadow-xs space-y-4">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 shadow-2xs space-y-3">
                       <div className="flex justify-between items-center">
-                        <h4 className="text-xs font-bold text-slate-600 uppercase">Interactive Grading Curve</h4>
-                        <span className="text-[10px] text-slate-500 font-mono">My Score: 88.5%</span>
+                        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Evolution Promotion Criteria</h4>
+                        <span className="text-[10.5px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">Current Score: 88.5%</span>
                       </div>
                       
-                      {/* Interactive Sparkline Progress Chart */}
-                      <div className="h-20 w-full flex items-end gap-1.5 pt-2">
-                        {[40, 55, 62, 58, 75, 88, 82, 92, 85, 96, 90, 98].map((score, idx) => (
-                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 group cursor-pointer">
-                            <div className="text-[9px] text-white font-black opacity-0 group-hover:opacity-100 transition-opacity absolute -translate-y-4 bg-slate-900 px-1 rounded">
-                              {score}%
-                            </div>
-                            <div 
-                              className={`w-full rounded-t-xs transition-all duration-300 ${
-                                idx === 11 ? 'bg-red-500 shadow-lg shadow-red-500/25' : 'bg-indigo-500/30 group-hover:bg-indigo-400'
-                              }`} 
-                              style={{ height: `${score / 1.3}%` }} 
-                            />
-                            <span className="text-[8px] text-slate-500 font-mono">E{idx + 1}</span>
-                          </div>
-                        ))}
+                      {/* Elegant Progress tracker */}
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex justify-between text-[11px] text-slate-500 font-bold">
+                          <span>Syllabus Covered</span>
+                          <span>78% Complete</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                          <div className="bg-red-500 h-full rounded-full" style={{ width: '78%' }} />
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-3">
-                      <div className="flex-1 bg-slate-50/50 rounded-xl p-3 border border-slate-200/60 shadow-xs text-left">
-                        <span className="text-[9px] text-slate-500 font-bold uppercase block">Avg Evolution Score</span>
-                        <span className="text-md font-black text-[#1D1D1F] font-sans mt-0.5 block">85.4%</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-2xs text-left">
+                        <span className="text-[9.5px] text-slate-500 font-bold uppercase block">Minimum Promotion Req.</span>
+                        <span className="text-sm font-bold text-[#1D1D1F] mt-0.5 block">80.0% Grade</span>
                       </div>
-                      <div className="flex-1 bg-slate-50/50 rounded-xl p-3 border border-slate-200/60 shadow-xs text-left">
-                        <span className="text-[9px] text-slate-500 font-bold uppercase block">Current Badge Level</span>
-                        <span className="text-md font-black text-rose-600 font-sans mt-0.5 block flex items-center gap-1">
-                          <Award className="w-4 h-4 text-rose-500" /> Platinum
+                      <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-2xs text-left">
+                        <span className="text-[9.5px] text-slate-500 font-bold uppercase block">Earned Badges</span>
+                        <span className="text-sm font-bold text-rose-600 mt-0.5 block flex items-center gap-1">
+                          <Award className="w-4 h-4 text-rose-500" /> 12 Credentials
                         </span>
                       </div>
                     </div>
@@ -559,33 +558,37 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2 }}
-                    className="space-y-4 flex flex-col justify-between h-full"
+                    className="space-y-3 flex flex-col justify-between h-full text-left"
                   >
-                    <div className="relative bg-slate-100 rounded-2xl h-44 border border-slate-200/60 overflow-hidden flex items-center justify-center">
-                      <div className="absolute top-3 left-3 bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.5 rounded-md font-mono text-[9px] flex items-center gap-1 font-bold z-20">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                        PROCTOR FEED: ACTIVE
+                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/60 shadow-2xs overflow-hidden flex-1 flex flex-col justify-end">
+                      <div className="space-y-2.5">
+                        {/* Message 1 (Mentor) */}
+                        <div className="flex gap-2 items-start">
+                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-[10px] font-black text-slate-600">
+                            M
+                          </div>
+                          <div className="bg-white border border-slate-150 p-2.5 rounded-2xl rounded-tl-none shadow-3xs max-w-[85%]">
+                            <p className="text-[10px] font-bold text-slate-900 leading-none">Amit K. <span className="text-[8.5px] text-slate-400 font-normal">SDE Mentor</span></p>
+                            <p className="text-[11px] text-slate-600 mt-1 leading-normal">Your code optimization for the API gateway looks great. Let's schedule your mockup review.</p>
+                          </div>
+                        </div>
+
+                        {/* Message 2 (Student) */}
+                        <div className="flex gap-2 items-start justify-end">
+                          <div className="bg-red-50 text-red-950 border border-red-100 p-2.5 rounded-2xl rounded-tr-none shadow-3xs max-w-[85%] text-right">
+                            <p className="text-[10px] font-bold text-red-900 leading-none">You <span className="text-[8.5px] text-red-600/60 font-normal">Student</span></p>
+                            <p className="text-[11px] text-slate-800 mt-1 leading-normal">Awesome! I have updated the repository with the changes.</p>
+                          </div>
+                        </div>
                       </div>
-
-                      <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md text-slate-700 px-2.5 py-1 border border-slate-200/60 rounded-lg font-mono text-[9.5px] z-20">
-                        Gaze Deviation: 0.00%
-                      </div>
-
-                      {/* Mock scan line */}
-                      <div className="absolute inset-x-0 h-0.5 bg-red-500/10 shadow-lg shadow-red-500/30 animate-[scan_4s_linear_infinite] z-10" />
-
-                      {/* Animated vector faces mockup */}
-                      <svg className="w-24 h-24 text-red-500/10 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs bg-red-500/5 border border-red-150 p-2.5 rounded-xl">
-                      <div className="flex items-center gap-2 text-red-600 font-bold">
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Continuous Proctor Monitoring Enabled</span>
+                    <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
+                      <div className="flex items-center gap-2 text-slate-700 font-semibold">
+                        <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Direct Mentor Channel</span>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-mono">Auto Guard v1.2</span>
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">Active</span>
                     </div>
                   </motion.div>
                 )}
@@ -800,7 +803,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     className="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold focus:outline-none focus:border-red-500 transition-colors cursor-pointer shadow-xs"
                   >
                     {courses && courses.length > 0 ? (
-                      courses.map(course => (
+                      (courses.filter(course => course.status === 'upcoming').length > 0
+                        ? courses.filter(course => course.status === 'upcoming')
+                        : courses
+                      ).map(course => (
                         <option key={course.id} value={course.id}>
                           {course.name} ({course.code || 'COHORT'})
                         </option>
