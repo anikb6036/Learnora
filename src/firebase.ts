@@ -64,12 +64,4 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    // Gracefully handle any connection errors or offline conditions
-    console.warn("Firestore connection diagnostic warning: Backend currently unreachable or running in offline mode. Persistent local cache is fully active and ready.", error);
-  }
-}
-testConnection();
+
