@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Logo from './Logo';
 import { 
   ArrowRight, 
@@ -144,6 +144,163 @@ const stripTypes = (code: string): string => {
     .trim();
 };
 
+const JS_SUGGESTION_WORDS = [
+  'function', 'const', 'let', 'return', 'if', 'else', 'for', 'while',
+  'console.log', 'new Map()', 'new Set()', 'Math.max', 'Math.min',
+  'nums', 'target', 'length', 'push', 'pop', 'JSON.stringify', 'Array.isArray',
+  'true', 'false', 'null', 'undefined', 'map', 'filter', 'reduce', 'slice'
+];
+
+const PY_SUGGESTION_WORDS = [
+  'def', 'class', 'return', 'if', 'elif', 'else', 'for', 'while', 'in',
+  'print', 'len', 'enumerate', 'range', 'list', 'dict', 'set', 'isinstance',
+  'True', 'False', 'None', 'self', 'append', 'pop', 'keys', 'values', 'items'
+];
+
+const highlightCode = (code: string, lang: string): string => {
+  if (!code) return '';
+  // Escape HTML characters
+  let html = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const placeholders: string[] = [];
+
+  if (lang === 'python') {
+    // Comments: # ...
+    html = html.replace(/(#.*$)/gm, (match) => {
+      placeholders.push(`<span style="color: #008000; font-style: italic;">${match}</span>`);
+      return `___PLACEHOLDER_${placeholders.length - 1}___`;
+    });
+
+    // Strings
+    html = html.replace(/(["'])(.*?)\1/g, (match) => {
+      placeholders.push(`<span style="color: #a31515;">${match}</span>`);
+      return `___PLACEHOLDER_${placeholders.length - 1}___`;
+    });
+
+    // Python Keywords
+    const pyKeywords = /\b(def|class|return|if|elif|else|for|while|in|and|or|not|import|from|as|try|except|pass|break|continue|lambda|global)\b/g;
+    html = html.replace(pyKeywords, '<span style="color: #0000ff; font-weight: bold;">$1</span>');
+
+    // Constants
+    const pyConstants = /\b(True|False|None)\b/g;
+    html = html.replace(pyConstants, '<span style="color: #0000ff;">$1</span>');
+
+    // Numbers
+    html = html.replace(/\b(\d+)\b/g, '<span style="color: #098658;">$1</span>');
+
+    // Methods/Built-ins
+    const pyBuiltins = /\b(print|len|enumerate|range|list|dict|set|tuple|isinstance|sum|max|min|abs|append|pop|keys|values|items|self)\b/g;
+    html = html.replace(pyBuiltins, '<span style="color: #795e26;">$1</span>');
+  } else {
+    // JS/TS
+    // Comments // ...
+    html = html.replace(/(\/\/.*$)/gm, (match) => {
+      placeholders.push(`<span style="color: #008000; font-style: italic;">${match}</span>`);
+      return `___PLACEHOLDER_${placeholders.length - 1}___`;
+    });
+
+    // Comments /* ... */
+    html = html.replace(/(\/\*[\s\S]*?\*\/)/gm, (match) => {
+      placeholders.push(`<span style="color: #008000; font-style: italic;">${match}</span>`);
+      return `___PLACEHOLDER_${placeholders.length - 1}___`;
+    });
+
+    // Strings
+    html = html.replace(/(["'`])(.*?)\1/g, (match) => {
+      placeholders.push(`<span style="color: #a31515;">${match}</span>`);
+      return `___PLACEHOLDER_${placeholders.length - 1}___`;
+    });
+
+    // Keywords
+    const keywords = /\b(const|let|var|function|return|if|else|for|while|in|of|new|typeof|instanceof|try|catch|finally|throw|class|import|export|from|as|extends|implements|public|private|protected|readonly|static)\b/g;
+    html = html.replace(keywords, '<span style="color: #0000ff; font-weight: bold;">$1</span>');
+
+    // Types
+    const types = /\b(interface|type|any|number|string|boolean|void|never|unknown|Record|Parameters|ReturnType|Map|Set|JSON|Math|Array)\b/g;
+    html = html.replace(types, '<span style="color: #267f99; font-weight: 500;">$1</span>');
+
+    // Constants
+    const jsConstants = /\b(true|false|null|undefined|NaN)\b/g;
+    html = html.replace(jsConstants, '<span style="color: #0000ff;">$1</span>');
+
+    // Numbers
+    html = html.replace(/\b(\d+)\b/g, '<span style="color: #098658;">$1</span>');
+
+    // Builtins/Methods
+    const jsBuiltins = /\b(console|log|warn|error|push|pop|has|get|set|max|min|stringify|parse|isArray|reduce|concat)\b/g;
+    html = html.replace(jsBuiltins, '<span style="color: #795e26;">$1</span>');
+  }
+
+  // Restore placeholders from last to first
+  for (let i = placeholders.length - 1; i >= 0; i--) {
+    html = html.replace(`___PLACEHOLDER_${i}___`, placeholders[i]);
+  }
+
+  return html;
+};
+
+const getCaretCoordinates = (element: HTMLTextAreaElement, position: number) => {
+  const div = document.createElement('div');
+  const style = window.getComputedStyle(element);
+  
+  const properties = [
+    'direction',
+    'boxSizing',
+    'width',
+    'height',
+    'overflowX',
+    'overflowY',
+    'borderWidth',
+    'borderStyle',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'fontStyle',
+    'lineHeight',
+    'letterSpacing',
+    'textTransform',
+    'wordSpacing',
+    'textIndent',
+    'whiteSpace',
+    'wordBreak',
+    'wordWrap',
+  ];
+  
+  properties.forEach(prop => {
+    (div.style as any)[prop] = (style as any)[prop];
+  });
+  
+  div.style.position = 'absolute';
+  div.style.visibility = 'hidden';
+  div.style.whiteSpace = 'pre';
+  div.style.overflowWrap = 'normal';
+  div.style.top = '0px';
+  div.style.left = '-9999px';
+  
+  const text = element.value.substring(0, position);
+  div.textContent = text;
+  
+  const span = document.createElement('span');
+  span.textContent = element.value.substring(position, position + 1) || '.';
+  div.appendChild(span);
+  
+  document.body.appendChild(div);
+  
+  const top = span.offsetTop - element.scrollTop;
+  const left = span.offsetLeft - element.scrollLeft;
+  const lineHeight = parseInt(style.lineHeight) || 16;
+  
+  document.body.removeChild(div);
+  return { top, left, lineHeight };
+};
+
 const deepEqual = (a: any, b: any): boolean => {
   if (a === b) return true;
   if (a && b && typeof a === 'object' && typeof b === 'object') {
@@ -216,9 +373,9 @@ const PRACTICE_QUESTIONS: PracticeQuestion[] = [
       '-10^9 <= target <= 10^9'
     ],
     starterCode: {
-      javascript: `function twoSum(nums, target) {\n  // Write your code here\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) {\n      return [map.get(complement), i];\n    }\n    map.set(nums[i], i);\n  }\n  return [];\n}`,
-      typescript: `function twoSum(nums: number[], target: number): number[] {\n  // Write your code here\n  const map = new Map<number, number>();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) {\n      return [map.get(complement)!, i];\n    }\n    map.set(nums[i], i);\n  }\n  return [];\n}`,
-      python: `def two_sum(nums, target):\n    # Write your code here\n    num_to_index = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in num_to_index:\n            return [num_to_index[complement], i]\n        num_to_index[num] = i\n    return []`
+      javascript: `function twoSum(nums, target) {\n  // Write your code here\n  return [];\n}`,
+      typescript: `function twoSum(nums: number[], target: number): number[] {\n  // Write your code here\n  return [];\n}`,
+      python: `def two_sum(nums, target):\n    # Write your code here\n    return []`
     },
     testCases: [
       { input: 'nums = [2,7,11,15], target = 9', output: '[0, 1]' },
@@ -243,9 +400,9 @@ const PRACTICE_QUESTIONS: PracticeQuestion[] = [
       's consists of parentheses only: "()[]{}"'
     ],
     starterCode: {
-      javascript: `function isValid(s) {\n  // Write your code here\n  const stack = [];\n  const map = { ")": "(", "}": "{", "]": "[" };\n  for (let char of s) {\n    if (char in map) {\n      if (stack.pop() !== map[char]) return false;\n    } else {\n      stack.push(char);\n    }\n  }\n  return stack.length === 0;\n}`,
-      typescript: `function isValid(s: string): boolean {\n  // Write your code here\n  const stack: string[] = [];\n  const map: Record<string, string> = { ")": "(", "}": "{", "]": "[" };\n  for (let char of s) {\n    if (char in map) {\n      if (stack.pop() !== map[char]) return false;\n    } else {\n      stack.push(char);\n    }\n  }\n  return stack.length === 0;\n}`,
-      python: `def is_valid(s: str) -> bool:\n    # Write your code here\n    stack = []\n    mapping = {")": "(", "}": "{", "]": "["}\n    for char in s:\n        if char in mapping:\n            top_element = stack.pop() if stack else "#"\n            if mapping[char] != top_element:\n                return False\n        else:\n            stack.append(char)\n    return not stack`
+      javascript: `function isValid(s) {\n  // Write your code here\n  return false;\n}`,
+      typescript: `function isValid(s: string): boolean {\n  // Write your code here\n  return false;\n}`,
+      python: `def is_valid(s: str) -> bool:\n    # Write your code here\n    return False`
     },
     testCases: [
       { input: 's = "()[]{}"', output: 'true' },
@@ -271,9 +428,9 @@ const PRACTICE_QUESTIONS: PracticeQuestion[] = [
       's consists of English letters, digits, symbols and spaces.'
     ],
     starterCode: {
-      javascript: `function lengthOfLongestSubstring(s) {\n  // Write your code here\n  let maxLen = 0;\n  let start = 0;\n  const seen = new Map();\n  for (let end = 0; end < s.length; end++) {\n    if (seen.has(s[end])) {\n      start = Math.max(start, seen.get(s[end]) + 1);\n    }\n    seen.set(s[end], end);\n    maxLen = Math.max(maxLen, end - start + 1);\n  }\n  return maxLen;\n}`,
-      typescript: `function lengthOfLongestSubstring(s: string): number {\n  // Write your code here\n  let maxLen = 0;\n  let start = 0;\n  const seen = new Map<string, number>();\n  for (let end = 0; end < s.length; end++) {\n    if (seen.has(s[end])) {\n      start = Math.max(start, seen.get(s[end])! + 1);\n    }\n    seen.set(s[end], end);\n    maxLen = Math.max(maxLen, end - start + 1);\n  }\n  return maxLen;\n}`,
-      python: `def length_of_longest_substring(s: str) -> int:\n    # Write your code here\n    char_map = {}\n    max_len = 0\n    start = 0\n    for end, char in enumerate(s):\n        if char in char_map and char_map[char] >= start:\n            start = char_map[char] + 1\n        char_map[char] = end\n        max_len = max(max_len, end - start + 1)\n    return max_len`
+      javascript: `function lengthOfLongestSubstring(s) {\n  // Write your code here\n  return 0;\n}`,
+      typescript: `function lengthOfLongestSubstring(s: string): number {\n  // Write your code here\n  return 0;\n}`,
+      python: `def length_of_longest_substring(s: str) -> int:\n    # Write your code here\n    return 0`
     },
     testCases: [
       { input: 's = "abcabcbb"', output: '3' },
@@ -299,9 +456,9 @@ const PRACTICE_QUESTIONS: PracticeQuestion[] = [
       'Should cache outputs correctly'
     ],
     starterCode: {
-      javascript: `function memoize(fn) {\n  const cache = new Map();\n  return function (...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) {\n      return cache.get(key);\n    }\n    const result = fn(...args);\n    cache.set(key, result);\n    return result;\n  };\n}`,
-      typescript: `function memoize<T extends (...args: any[]) => any>(\n  fn: T\n): (...args: Parameters<T>) => ReturnType<T> {\n  const cache = new Map<string, any>();\n  return function (this: any, ...args: Parameters<T>) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) {\n      return cache.get(key);\n    }\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}`,
-      python: `def memoize(fn):\n    cache = {}\n    def memoized(*args):\n        if args in cache:\n            return cache[args]\n        result = fn(*args)\n        cache[args] = result\n        return result\n    return memoized`
+      javascript: `function memoize(fn) {\n  // Write your code here\n  return function (...args) {\n    return null;\n  };\n}`,
+      typescript: `function memoize<T extends (...args: any[]) => any>(\n  fn: T\n): (...args: Parameters<T>) => ReturnType<T> {\n  // Write your code here\n  return function (this: any, ...args: Parameters<T>) {\n    return null as any;\n  };\n}`,
+      python: `def memoize(fn):\n    # Write your code here\n    def memoized(*args):\n        return None\n    return memoized`
     },
     testCases: [
       { input: 'memoize(x => x * 2)', output: 'Caches results and avoids redundant invocations' }
@@ -323,9 +480,9 @@ const PRACTICE_QUESTIONS: PracticeQuestion[] = [
       'Handle arbitrary nesting depths'
     ],
     starterCode: {
-      javascript: `function deepFlatten(arr) {\n  // Write your code here\n  return arr.reduce((acc, val) => \n    Array.isArray(val) ? acc.concat(deepFlatten(val)) : acc.concat(val),\n    []\n  );\n}`,
-      typescript: `function deepFlatten(arr: any[]): any[] {\n  // Write your code here\n  return arr.reduce((acc, val) => \n    Array.isArray(val) ? acc.concat(deepFlatten(val)) : acc.concat(val),\n    []\n  );\n}`,
-      python: `def deep_flatten(lst):\n    # Write your code here\n    flat_list = []\n    for item in lst:\n        if isinstance(item, list):\n            flat_list.extend(deep_flatten(item))\n        else:\n            flat_list.append(item)\n    return flat_list`
+      javascript: `function deepFlatten(arr) {\n  // Write your code here\n  return [];\n}`,
+      typescript: `function deepFlatten(arr: any[]): any[] {\n  // Write your code here\n  return [];\n}`,
+      python: `def deep_flatten(lst):\n    # Write your code here\n    return []`
     },
     testCases: [
       { input: '[1, [2, [3, [4]], 5]]', output: '[1, 2, 3, 4, 5]' }
@@ -348,7 +505,7 @@ interface HomePageProps {
 export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePageProps) {
   const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  
+
   // Coding Practice Sandbox States
   const [practiceType, setPracticeType] = useState<'DSA' | 'Coding'>('DSA');
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('dsa-1');
@@ -357,6 +514,98 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
   const [consoleOutput, setConsoleOutput] = useState<string>('// Welcome to Learnora Sandbox Terminal.\n// Select a question and press "Run Code" to test.');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+
+  // Autocomplete & Highlight state and refs
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const preRef = useRef<HTMLPreElement>(null);
+  const consoleRef = useRef<HTMLDivElement>(null);
+
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [activeSuggestionIdx, setActiveSuggestionIdx] = useState<number>(0);
+  const [currentWord, setCurrentWord] = useState<string>('');
+  const [cursorLine, setCursorLine] = useState<number>(1);
+  const [cursorCol, setCursorCol] = useState<number>(1);
+  const [suggestionCoords, setSuggestionCoords] = useState<{ top: number; left: number; showAbove: boolean }>({ top: 0, left: 0, showAbove: false });
+
+  const updateCursorPos = (textarea: HTMLTextAreaElement) => {
+    const textBeforeCursor = textarea.value.slice(0, textarea.selectionStart);
+    const lines = textBeforeCursor.split('\n');
+    setCursorLine(lines.length);
+    setCursorCol(lines[lines.length - 1].length + 1);
+  };
+
+  const checkSuggestions = (text: string, selectionStart: number) => {
+    const textBeforeCursor = text.slice(0, selectionStart);
+    const match = textBeforeCursor.match(/[\w.$()\[\]]+$/);
+    if (!match) {
+      setSuggestions([]);
+      setCurrentWord('');
+      return;
+    }
+    const lastWord = match[0].toLowerCase();
+    setCurrentWord(lastWord);
+
+    if (lastWord.length < 1) {
+      setSuggestions([]);
+      return;
+    }
+
+    const pool = practiceLanguage === 'python' ? PY_SUGGESTION_WORDS : JS_SUGGESTION_WORDS;
+    const filtered = pool.filter(w => w.toLowerCase().startsWith(lastWord) && w.toLowerCase() !== lastWord);
+    
+    setSuggestions(filtered.slice(0, 5));
+    setActiveSuggestionIdx(0);
+
+    if (editorRef.current) {
+      const coords = getCaretCoordinates(editorRef.current, selectionStart);
+      const showAbove = coords.top > 160;
+      setSuggestionCoords({
+        top: showAbove ? coords.top - 170 : coords.top + coords.lineHeight,
+        left: coords.left,
+        showAbove
+      });
+    }
+  };
+
+  const applySuggestion = (suggestion: string) => {
+    if (!editorRef.current) return;
+    const cursor = editorRef.current.selectionStart;
+    const text = codeSnippet;
+    const textBeforeCursor = text.slice(0, cursor);
+    const textAfterCursor = text.slice(cursor);
+    
+    const match = textBeforeCursor.match(/[\w.$()\[\]]+$/);
+    if (!match) return;
+    
+    const wordLength = match[0].length;
+    const startPos = cursor - wordLength;
+    
+    const newCode = text.slice(0, startPos) + suggestion + textAfterCursor;
+    setCodeSnippet(newCode);
+    setSuggestions([]);
+    
+    setTimeout(() => {
+      if (editorRef.current) {
+        const newCursorPos = startPos + suggestion.length;
+        editorRef.current.focus();
+        editorRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 10);
+  };
+
+  const handleScroll = () => {
+    if (editorRef.current && preRef.current) {
+      preRef.current.scrollTop = editorRef.current.scrollTop;
+      preRef.current.scrollLeft = editorRef.current.scrollLeft;
+    }
+  };
+
+  // Auto-scroll console output to the bottom when logs or run states update
+  useEffect(() => {
+    if (consoleRef.current) {
+      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+    }
+  }, [consoleOutput]);
 
   // Auto load starter code when selected question or language changes
   useEffect(() => {
@@ -469,64 +718,100 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         // Live execution for JavaScript and TypeScript!
         const stripped = stripTypes(codeSnippet);
         
-        // Define standard eval context
-        // Wrap the code into a function constructor and extract the function by name
-        const functionToCall = new Function(`
-          ${stripped}
-          if (typeof ${activeQuestion.functionName} !== 'undefined') {
-            return ${activeQuestion.functionName};
-          }
-          throw new Error("Function '${activeQuestion.functionName}' is not defined in your code. Please preserve the function declaration name.");
-        `)();
+        // Intercept console.log to support interactive debugging!
+        let logs: string[] = [];
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        console.log = (...args) => {
+          logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalLog(...args);
+        };
+        console.warn = (...args) => {
+          logs.push(`[WARN] ` + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalWarn(...args);
+        };
+        console.error = (...args) => {
+          logs.push(`[ERROR] ` + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalError(...args);
+        };
+
+        let functionToCall;
+        try {
+          // Wrap the code into a function constructor and extract the function by name
+          functionToCall = new Function(`
+            ${stripped}
+            if (typeof ${activeQuestion.functionName} !== 'undefined') {
+              return ${activeQuestion.functionName};
+            }
+            throw new Error("Function '${activeQuestion.functionName}' is not defined in your code. Please preserve the function declaration name.");
+          `)();
+        } catch (err: any) {
+          console.log = originalLog;
+          console.warn = originalWarn;
+          console.error = originalError;
+          throw err;
+        }
 
         if (typeof functionToCall !== 'function') {
+          console.log = originalLog;
+          console.warn = originalWarn;
+          console.error = originalError;
           throw new Error(`Could not locate function '${activeQuestion.functionName}' inside execution tree.`);
         }
 
         let output = `[RUN STATE] Initializing test harness for "${activeQuestion.title}"...\n\n`;
         let passedCount = 0;
 
-        // Custom evaluator for special challenges like Memoize
-        if (activeQuestion.id === 'coding-1') {
-          output += `Running memoization and closure validation tests...\n`;
-          let callCount = 0;
-          const originalFn = (x: number) => { callCount++; return x * 2; };
-          const memoizedFn = functionToCall(originalFn);
-          
-          if (typeof memoizedFn !== 'function') {
-            throw new Error("Returned value from memoize is not a function.");
-          }
-
-          const r1 = memoizedFn(5);
-          const r2 = memoizedFn(5);
-          const r3 = memoizedFn(10);
-          const r4 = memoizedFn(10);
-
-          output += `Test 1 (Initial run): memoized(5) -> ${r1}\n`;
-          output += `Test 2 (Cached run): memoized(5) -> ${r2}\n`;
-          output += `Test 3 (New parameter): memoized(10) -> ${r3}\n`;
-          output += `Test 4 (Cached run): memoized(10) -> ${r4}\n`;
-          
-          if (r1 === 10 && r2 === 10 && r3 === 20 && r4 === 20 && callCount === 2) {
-            output += `✔ Test Case 1: Passed.\n  Input: Multiple call sequence with repeat arguments\n  Output: Redundant executions skipped correctly! (Total fn runs: 2)\n`;
-            passedCount = 1;
-          } else {
-            output += `❌ Test Case 1: Failed.\n  Expected correct memoized values and cache hit, but got:\n  Runs: ${callCount} (expected 2)\n  Values: [${r1}, ${r2}, ${r3}, ${r4}]\n`;
-          }
-        } else {
-          // Regular questions (Two Sum, Valid Parentheses, Longest Substring, Deep Flatten)
-          activeQuestion.execTestCases.forEach((tc, i) => {
-            const argsCopy = JSON.parse(JSON.stringify(tc.args));
-            const actual = functionToCall(...argsCopy);
-            const isCorrect = arrayCompare(actual, tc.expected);
-
-            if (isCorrect) {
-              passedCount++;
-              output += `✔ Test Case ${i + 1}: Passed.\n  Input:  ${tc.inputStr}\n  Output: ${JSON.stringify(actual)}\n`;
-            } else {
-              output += `❌ Test Case ${i + 1}: Failed.\n  Input:    ${tc.inputStr}\n  Expected: ${tc.expectedStr}\n  Got:      ${JSON.stringify(actual)}\n`;
+        try {
+          // Custom evaluator for special challenges like Memoize
+          if (activeQuestion.id === 'coding-1') {
+            output += `Running memoization and closure validation tests...\n`;
+            let callCount = 0;
+            const originalFn = (x: number) => { callCount++; return x * 2; };
+            const memoizedFn = functionToCall(originalFn);
+            
+            if (typeof memoizedFn !== 'function') {
+              throw new Error("Returned value from memoize is not a function.");
             }
-          });
+
+            const r1 = memoizedFn(5);
+            const r2 = memoizedFn(5);
+            const r3 = memoizedFn(10);
+            const r4 = memoizedFn(10);
+
+            output += `Test 1 (Initial run): memoized(5) -> ${r1}\n`;
+            output += `Test 2 (Cached run): memoized(5) -> ${r2}\n`;
+            output += `Test 3 (New parameter): memoized(10) -> ${r3}\n`;
+            output += `Test 4 (Cached run): memoized(10) -> ${r4}\n`;
+            
+            if (r1 === 10 && r2 === 10 && r3 === 20 && r4 === 20 && callCount === 2) {
+              output += `✔ Test Case 1: Passed.\n  Input: Multiple call sequence with repeat arguments\n  Output: Redundant executions skipped correctly! (Total fn runs: 2)\n`;
+              passedCount = 1;
+            } else {
+              output += `❌ Test Case 1: Failed.\n  Expected correct memoized values and cache hit, but got:\n  Runs: ${callCount} (expected 2)\n  Values: [${r1}, ${r2}, ${r3}, ${r4}]\n`;
+            }
+          } else {
+            // Regular questions (Two Sum, Valid Parentheses, Longest Substring, Deep Flatten)
+            activeQuestion.execTestCases.forEach((tc, i) => {
+              const argsCopy = JSON.parse(JSON.stringify(tc.args));
+              const actual = functionToCall(...argsCopy);
+              const isCorrect = arrayCompare(actual, tc.expected);
+
+              if (isCorrect) {
+                passedCount++;
+                output += `✔ Test Case ${i + 1}: Passed.\n  Input:  ${tc.inputStr}\n  Output: ${JSON.stringify(actual)}\n`;
+              } else {
+                output += `❌ Test Case ${i + 1}: Failed.\n  Input:    ${tc.inputStr}\n  Expected: ${tc.expectedStr}\n  Got:      ${JSON.stringify(actual)}\n`;
+              }
+            });
+          }
+        } finally {
+          // Restore standard console functions
+          console.log = originalLog;
+          console.warn = originalWarn;
+          console.error = originalError;
         }
 
         const totalTests = activeQuestion.id === 'coding-1' ? 1 : activeQuestion.execTestCases.length;
@@ -534,6 +819,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
           output += `\n🎉 All ${passedCount}/${totalTests} test cases passed successfully! Feel free to Submit.`;
         } else {
           output += `\n❌ Failed ${totalTests - passedCount}/${totalTests} test cases. Review your logic and edge cases!`;
+        }
+
+        if (logs.length > 0) {
+          output += `\n\n[Console Standard Output]\n` + logs.map(l => `  ▶ ${l}`).join('\n');
         }
 
         setConsoleOutput(output);
@@ -558,44 +847,84 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         }
 
         const stripped = stripTypes(codeSnippet);
-        const functionToCall = new Function(`
-          ${stripped}
-          if (typeof ${activeQuestion.functionName} !== 'undefined') {
-            return ${activeQuestion.functionName};
-          }
-          throw new Error("Function '${activeQuestion.functionName}' is not defined in your code.");
-        `)();
+        
+        let logs: string[] = [];
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        console.log = (...args) => {
+          logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalLog(...args);
+        };
+        console.warn = (...args) => {
+          logs.push(`[WARN] ` + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalWarn(...args);
+        };
+        console.error = (...args) => {
+          logs.push(`[ERROR] ` + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+          originalError(...args);
+        };
+
+        let functionToCall;
+        try {
+          functionToCall = new Function(`
+            ${stripped}
+            if (typeof ${activeQuestion.functionName} !== 'undefined') {
+              return ${activeQuestion.functionName};
+            }
+            throw new Error("Function '${activeQuestion.functionName}' is not defined in your code.");
+          `)();
+        } catch (err: any) {
+          console.log = originalLog;
+          console.warn = originalWarn;
+          console.error = originalError;
+          throw err;
+        }
 
         // Run verification
         let allPassed = true;
         
-        if (activeQuestion.id === 'coding-1') {
-          let callCount = 0;
-          const originalFn = (x: number) => { callCount++; return x * 2; };
-          const memoizedFn = functionToCall(originalFn);
-          const r1 = memoizedFn(5);
-          const r2 = memoizedFn(5);
-          const r3 = memoizedFn(10);
-          if (r1 !== 10 || r2 !== 10 || r3 !== 20 || callCount !== 2) {
-            allPassed = false;
-          }
-        } else {
-          activeQuestion.execTestCases.forEach((tc) => {
-            const argsCopy = JSON.parse(JSON.stringify(tc.args));
-            const actual = functionToCall(...argsCopy);
-            if (!arrayCompare(actual, tc.expected)) {
+        try {
+          if (activeQuestion.id === 'coding-1') {
+            let callCount = 0;
+            const originalFn = (x: number) => { callCount++; return x * 2; };
+            const memoizedFn = functionToCall(originalFn);
+            const r1 = memoizedFn(5);
+            const r2 = memoizedFn(5);
+            const r3 = memoizedFn(10);
+            if (r1 !== 10 || r2 !== 10 || r3 !== 20 || callCount !== 2) {
               allPassed = false;
             }
-          });
+          } else {
+            activeQuestion.execTestCases.forEach((tc) => {
+              const argsCopy = JSON.parse(JSON.stringify(tc.args));
+              const actual = functionToCall(...argsCopy);
+              if (!arrayCompare(actual, tc.expected)) {
+                allPassed = false;
+              }
+            });
+          }
+        } finally {
+          console.log = originalLog;
+          console.warn = originalWarn;
+          console.error = originalError;
         }
 
+        let output = '';
         if (allPassed) {
           setIsSubmitted(true);
-          setConsoleOutput(`[GRAD STATE] Verifying comprehensive suite & edge cases...\n✔ Executed 45 test cases against extreme inputs & random seeds.\n✔ Performance bounds verified: Time complexity satisfies optimal O(N) constraints.\n✔ Memory limits verified: Sandbox footprint < 4MB.\n\nSTATUS: ACCEPTED 🎉`);
+          output = `[GRAD STATE] Verifying comprehensive suite & edge cases...\n✔ Executed 45 test cases against extreme inputs & random seeds.\n✔ Performance bounds verified: Time complexity satisfies optimal O(N) constraints.\n✔ Memory limits verified: Sandbox footprint < 4MB.\n\nSTATUS: ACCEPTED 🎉`;
         } else {
           setIsSubmitted(false);
-          setConsoleOutput(`[GRAD STATE] Verifying comprehensive suite & edge cases...\n❌ Submission Rejected: Code failed one or more verified test cases.\n\nSTATUS: WRONG ANSWER ❌`);
+          output = `[GRAD STATE] Verifying comprehensive suite & edge cases...\n❌ Submission Rejected: Code failed one or more verified test cases.\n\nSTATUS: WRONG ANSWER ❌`;
         }
+
+        if (logs.length > 0) {
+          output += `\n\n[Console Standard Output]\n` + logs.map(l => `  ▶ ${l}`).join('\n');
+        }
+
+        setConsoleOutput(output);
       } catch (err: any) {
         setConsoleOutput(`❌ Submission Rejected:\n  Compilation or runtime error: ${err.message || err}\n\nSTATUS: COMPILE ERROR ❌`);
       }
@@ -2981,17 +3310,17 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
 
             {/* Right Column: Code Sandbox Interactive View (7 cols) */}
             <div className="lg:col-span-7">
-              <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-3xl p-5 shadow-2xl flex flex-col min-h-[580px] overflow-hidden">
+              <div className="bg-white border border-slate-200 text-slate-800 rounded-3xl p-5 shadow-lg flex flex-col min-h-[580px] overflow-hidden">
                 
                 {/* Editor Header */}
-                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 rounded-full bg-rose-500" />
                       <span className="w-3 h-3 rounded-full bg-amber-500" />
                       <span className="w-3 h-3 rounded-full bg-emerald-500" />
                     </div>
-                    <span className="text-slate-400 font-mono text-xs ml-2 select-none border-l border-slate-800 pl-3">
+                    <span className="text-slate-500 font-mono text-xs ml-2 select-none border-l border-slate-150 pl-3">
                       learnora_editor_v1.0.sh
                     </span>
                   </div>
@@ -3001,7 +3330,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                     <select
                       value={practiceLanguage}
                       onChange={(e) => setPracticeLanguage(e.target.value as any)}
-                      className="bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-500 transition-colors"
+                      className="bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-500 transition-colors"
                     >
                       <option value="javascript">JavaScript</option>
                       <option value="typescript">TypeScript</option>
@@ -3015,48 +3344,210 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                         setIsSubmitted(false);
                       }}
                       title="Reset snippet"
-                      className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
+                      className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-600 transition-colors"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Editor code input */}
-                <div className="flex-1 flex gap-3 min-h-[220px] font-mono text-xs text-left relative">
-                  {/* Fake line numbers */}
-                  <div className="text-slate-600 select-none text-right pr-2 border-r border-slate-800/80 flex flex-col space-y-1 pt-1.5">
-                    {Array.from({ length: 14 }).map((_, i) => (
-                      <span key={i} className="leading-relaxed block w-5">{i + 1}</span>
-                    ))}
+                {/* Editor code input wrapper styled like VS Code editor window */}
+                <div className="flex-1 flex flex-col min-h-[300px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white mb-2 relative">
+                  {/* VS Code Tab Bar */}
+                  <div className="bg-[#f3f3f3] border-b border-slate-200 px-3 py-0 flex items-center justify-between select-none font-sans text-xs">
+                    <div className="flex items-center">
+                      <div className="bg-white border-r border-slate-200 px-4 py-2 flex items-center gap-2 text-slate-800 font-medium relative border-t-2 border-t-indigo-600">
+                        {/* Language-specific icon simulation */}
+                        <span className={`text-[10px] px-1 py-0.5 rounded font-extrabold ${
+                          practiceLanguage === 'python' 
+                            ? 'bg-sky-100 text-sky-700' 
+                            : practiceLanguage === 'typescript' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {practiceLanguage === 'python' ? 'PY' : practiceLanguage === 'typescript' ? 'TS' : 'JS'}
+                        </span>
+                        <span>
+                          {practiceLanguage === 'python' ? 'main.py' : practiceLanguage === 'typescript' ? 'solution.ts' : 'solution.js'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 hover:text-slate-600 cursor-pointer ml-1">×</span>
+                      </div>
+                      <div className="px-4 py-2 flex items-center gap-1.5 text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <span className="text-[10px] font-bold">README.md</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-400 font-mono text-[10px]">
+                      <span>TAB SIZE: 2</span>
+                    </div>
                   </div>
-                  
-                  {/* Textarea code field */}
-                  <textarea
-                    value={codeSnippet}
-                    onChange={(e) => setCodeSnippet(e.target.value)}
-                    spellCheck={false}
-                    autoCapitalize="off"
-                    autoComplete="off"
-                    className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none p-0 pt-1.5 resize-none text-emerald-400 font-mono leading-relaxed h-[250px] overflow-y-auto focus:ring-offset-0 focus:border-transparent focus:shadow-none"
-                    style={{ whiteSpace: 'pre', overflowWrap: 'normal' }}
-                  />
+
+                  {/* Main editing workspace with line numbers */}
+                  <div className="flex-1 flex gap-3 min-h-[250px] font-mono text-xs text-left p-4 relative bg-white">
+                    {/* Dynamic line numbers */}
+                    <div className="text-slate-350 select-none text-right pr-2.5 border-r border-slate-100 flex flex-col pt-1.5" style={{ lineHeight: '1.625rem', fontSize: '11px', minWidth: '24px' }}>
+                      {Array.from({ length: Math.max(codeSnippet.split('\n').length, 10) }).map((_, i) => (
+                        <span key={i} className="block w-5">{i + 1}</span>
+                      ))}
+                    </div>
+                    
+                    {/* Textarea code field layered over highlighted code */}
+                    <div className="flex-1 h-[250px] relative">
+                      {/* The Syntax Highlighted layer behind the transparent input */}
+                      <pre
+                        ref={preRef}
+                        className="absolute inset-0 p-0 pt-1.5 pointer-events-none select-none overflow-hidden h-full w-full font-mono text-left bg-transparent"
+                        style={{
+                          whiteSpace: 'pre',
+                          overflowWrap: 'normal',
+                          lineHeight: '1.625rem',
+                          fontSize: '11px'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: highlightCode(codeSnippet, practiceLanguage) }}
+                      />
+
+                      {/* Transparent input textarea capturing keyboard and mouse events */}
+                      <textarea
+                        ref={editorRef}
+                        value={codeSnippet}
+                        onChange={(e) => {
+                          setCodeSnippet(e.target.value);
+                          checkSuggestions(e.target.value, e.target.selectionStart);
+                          updateCursorPos(e.currentTarget);
+                        }}
+                        onSelect={(e) => {
+                          checkSuggestions(e.currentTarget.value, e.currentTarget.selectionStart);
+                          updateCursorPos(e.currentTarget);
+                        }}
+                        onKeyUp={(e) => {
+                          updateCursorPos(e.currentTarget);
+                        }}
+                        onScroll={handleScroll}
+                        onKeyDown={(e) => {
+                          if (suggestions.length > 0) {
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault();
+                              setActiveSuggestionIdx(prev => (prev + 1) % suggestions.length);
+                            } else if (e.key === 'ArrowUp') {
+                              e.preventDefault();
+                              setActiveSuggestionIdx(prev => (prev - 1 + suggestions.length) % suggestions.length);
+                            } else if (e.key === 'Tab' || e.key === 'Enter') {
+                              e.preventDefault();
+                              applySuggestion(suggestions[activeSuggestionIdx]);
+                            } else if (e.key === 'Escape') {
+                              e.preventDefault();
+                              setSuggestions([]);
+                            }
+                          } else {
+                            if (e.key === 'Tab') {
+                              e.preventDefault();
+                              const start = e.currentTarget.selectionStart;
+                              const end = e.currentTarget.selectionEnd;
+                              const newCode = codeSnippet.substring(0, start) + "  " + codeSnippet.substring(end);
+                              setCodeSnippet(newCode);
+                              setTimeout(() => {
+                                if (editorRef.current) {
+                                  editorRef.current.selectionStart = editorRef.current.selectionEnd = start + 2;
+                                }
+                              }, 0);
+                            }
+                          }
+                        }}
+                        spellCheck={false}
+                        autoCapitalize="off"
+                        autoComplete="off"
+                        className="absolute inset-0 bg-transparent border-0 focus:ring-0 focus:outline-none p-0 pt-1.5 resize-none font-mono leading-relaxed h-full w-full overflow-auto focus:ring-offset-0 focus:border-transparent focus:shadow-none"
+                        style={{
+                          whiteSpace: 'pre',
+                          overflowWrap: 'normal',
+                          color: 'transparent',
+                          WebkitTextFillColor: 'transparent',
+                          caretColor: '#005fb8',
+                          lineHeight: '1.625rem',
+                          fontSize: '11px'
+                        }}
+                      />
+                    </div>
+
+                    {/* Highly Polished VS Code IntelliSense Style Autocomplete Overlay positioned dynamically near cursor */}
+                    <AnimatePresence>
+                      {suggestions.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: suggestionCoords.showAbove ? 5 : -5 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: suggestionCoords.showAbove ? 5 : -5 }}
+                          style={{
+                            position: 'absolute',
+                            top: `${suggestionCoords.top + 4}px`,
+                            left: `${Math.min(suggestionCoords.left, (editorRef.current?.clientWidth || 500) - 250)}px`,
+                          }}
+                          className="absolute z-30 bg-white border border-[#c8c8c8] shadow-lg rounded overflow-hidden p-0 w-[240px] font-mono text-[11px] text-left"
+                        >
+                          <div className="max-h-[150px] overflow-y-auto space-y-0 bg-white">
+                            {suggestions.map((s, idx) => {
+                              // Dynamically resolve VS Code emblem badges
+                              const getBadge = (word: string) => {
+                                const keywords = ['function', 'const', 'let', 'return', 'if', 'else', 'for', 'while', 'def', 'class', 'elif', 'in', 'and', 'or', 'not', 'import', 'from', 'as', 'try', 'except', 'pass', 'break', 'continue', 'lambda', 'global', 'true', 'false', 'null', 'undefined', 'True', 'False', 'None'];
+                                const methods = ['log', 'push', 'pop', 'has', 'get', 'set', 'max', 'min', 'stringify', 'parse', 'isArray', 'reduce', 'slice', 'filter', 'map', 'append', 'keys', 'values', 'items'];
+                                if (keywords.includes(word)) return { char: 'K', color: '#005fb8', bg: '#e0efff', label: 'keyword' };
+                                if (methods.includes(word) || word.includes('.')) return { char: 'M', color: '#a31515', bg: '#ffeef0', label: 'method' };
+                                return { char: 'V', color: '#008000', bg: '#eafaf1', label: 'variable' };
+                              };
+                              const b = getBadge(s);
+
+                              return (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => applySuggestion(s)}
+                                  className={`w-full text-left px-2 py-1 flex items-center justify-between gap-3 group transition-colors duration-75 select-none ${
+                                    idx === activeSuggestionIdx 
+                                      ? 'bg-[#0060c0] text-white' 
+                                      : 'text-slate-700 hover:bg-[#e4e4e4]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-normal font-mono">{s}</span>
+                                  </div>
+                                  <span className={`text-[8.5px] ${idx === activeSuggestionIdx ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                    {b.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* VS Code Status Bar */}
+                  <div className="bg-[#007acc] text-white px-3 py-1 text-[10px] font-mono flex items-center justify-between select-none">
+                    <div className="flex items-center gap-3">
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer">learnora-sandbox</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer">Ln {cursorLine}, Col {cursorCol}</span>
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer">Spaces: 2</span>
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer uppercase">{practiceLanguage}</span>
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer hidden sm:inline">UTF-8</span>
+                      <span className="hover:bg-white/10 px-1 rounded transition-colors cursor-pointer hidden sm:inline">LF</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Editor Action Buttons Row */}
-                <div className="flex items-center justify-between border-t border-slate-800 pt-4 mt-4">
+                <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-4">
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                    <span className="text-[10px] font-mono text-slate-400">Sandbox state: Healthy</span>
+                    <span className="text-[10px] font-mono text-slate-500">Sandbox state: Healthy</span>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={handleRunCode}
                       disabled={isRunning}
-                      className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs px-4 py-2 rounded-xl transition duration-150 border border-slate-700 hover:border-slate-600 disabled:opacity-50 select-none"
+                      className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl transition duration-150 border border-slate-200 hover:border-slate-300 disabled:opacity-50 select-none shadow-sm"
                     >
-                      <Play className="w-3.5 h-3.5 text-indigo-400" />
+                      <Play className="w-3.5 h-3.5 text-indigo-500" />
                       {isRunning ? 'Running...' : 'Run Code'}
                     </button>
 
@@ -3072,12 +3563,12 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                 </div>
 
                 {/* Console Output Area */}
-                <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 mt-4 text-left font-mono text-[10.5px] space-y-2 h-[150px] overflow-y-auto">
-                  <div className="flex items-center justify-between border-b border-slate-900 pb-1.5 mb-1.5">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">CONSOLE OUTPUT / TEST BENCH</span>
+                <div ref={consoleRef} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mt-4 text-left font-mono text-[10.5px] space-y-2 h-[150px] overflow-y-auto">
+                  <div className="flex items-center justify-between border-b border-slate-150 pb-1.5 mb-1.5">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CONSOLE OUTPUT / TEST BENCH</span>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
-                  <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap select-text">
+                  <pre className="text-slate-700 leading-relaxed overflow-x-auto whitespace-pre-wrap select-text">
                     {consoleOutput}
                   </pre>
                 </div>
@@ -3089,12 +3580,12 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
-                      className="mt-4 bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3.5 text-left"
+                      className="mt-4 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3.5 text-left"
                     >
                       <span className="text-2xl select-none">🎉</span>
                       <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-emerald-400">Challenge Completed Successfully!</h4>
-                        <p className="text-[10.5px] text-emerald-300 leading-relaxed">
+                        <h4 className="text-xs font-bold text-emerald-800">Challenge Completed Successfully!</h4>
+                        <p className="text-[10.5px] text-emerald-700 leading-relaxed">
                           Your logic is highly optimal and successfully completed all verified Learnora performance bounds. Keep practicing to build high-performance core intuition!
                         </p>
                       </div>
