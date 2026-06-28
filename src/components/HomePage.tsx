@@ -33,7 +33,9 @@ import {
   Briefcase,
   Play,
   HelpCircle,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
 import { Course } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -385,6 +387,29 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
 
   // FAQ Accordion States
   const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
+
+  // System Workflow Visualizer States
+  const [activeWorkflowTab, setActiveWorkflowTab] = useState<'student' | 'course' | 'assessment' | 'evolution'>('student');
+  
+  // Interactive Simulator States for each Section
+  const [studentActiveTab, setStudentActiveTab] = useState<'profile' | 'cohort' | 'scholarship'>('profile');
+  const [scholarshipTier, setScholarshipTier] = useState<'standard' | 'merit' | 'socioeconomic'>('merit');
+  
+  const [courseActiveTab, setCourseActiveTab] = useState<'progress' | 'lecture' | 'assets'>('progress');
+  const [isJoiningClassroom, setIsJoiningClassroom] = useState<boolean>(false);
+  const [joinedClassroomSuccess, setJoinedClassroomSuccess] = useState<boolean>(false);
+  
+  const [assessmentActiveTab, setAssessmentActiveTab] = useState<'editor' | 'results' | 'metrics'>('editor');
+  const [userCode, setUserCode] = useState<string>('function checkPrime(n) {\n  if (n <= 1) return false;\n  for (let i = 2; i <= Math.sqrt(n); i++) {\n    if (n % i === 0) return false;\n  }\n  return true;\n}');
+  const [isRunningCode, setIsRunningCode] = useState<boolean>(false);
+  const [runCodeSuccess, setRunCodeSuccess] = useState<boolean>(false);
+
+  // Milestone & Placement Dashboard Interactive States
+  const [evolutionActiveTab, setEvolutionActiveTab] = useState<'milestones' | 'credential' | 'placements'>('milestones');
+  const [isPingingRecruiters, setIsPingingRecruiters] = useState<boolean>(false);
+  const [pingSuccess, setPingSuccess] = useState<boolean>(false);
+  const [verifyingLedger, setVerifyingLedger] = useState<boolean>(false);
+  const [verificationResult, setVerificationResult] = useState<boolean>(false);
 
   // Synchronize initial calcCourse when courses are loaded (prioritize upcoming courses)
   useEffect(() => {
@@ -1351,6 +1376,1416 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Learnora Integrated System Workflows Section */}
+      <section id="learnora-workflows" className="w-full border-t border-slate-200/60 bg-slate-50 py-16 md:py-24 relative z-10 text-left">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          {/* Section Header */}
+          <div className="max-w-3xl mb-16 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 text-[10px] font-bold tracking-wider uppercase">
+              <Sparkles className="w-3.5 h-3.5" /> SYSTEM PIPELINES
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-sans font-black text-[#1D1D1F] tracking-tight leading-tight">
+              Interactive Operational Workflows
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Explore the automated pipelines, human-guided mentor networks, and real-time grading engines that run behind the scenes. Select a workspace module below to see how our systems communicate to secure student progress.
+            </p>
+          </div>
+
+          {/* Workflow Tab Selectors */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
+            {[
+              {
+                id: 'student',
+                label: 'Student Portal Flow',
+                desc: 'Onboarding & Cohorts',
+                icon: Users,
+                activeColor: 'border-indigo-500 bg-indigo-500/5 text-indigo-600'
+              },
+              {
+                id: 'course',
+                label: 'Course Progression Flow',
+                desc: 'Modular Content Delivery',
+                icon: BookOpen,
+                activeColor: 'border-red-500 bg-red-500/5 text-red-600'
+              },
+              {
+                id: 'assessment',
+                label: 'Interactive Assessment',
+                desc: 'Sandbox Auto-Grading',
+                icon: Code2,
+                activeColor: 'border-amber-500 bg-amber-500/5 text-amber-600'
+              },
+              {
+                id: 'evolution',
+                label: 'Milestone Evolution',
+                desc: 'GPA & Career Placements',
+                icon: Award,
+                activeColor: 'border-emerald-500 bg-emerald-500/5 text-emerald-600'
+              }
+            ].map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = activeWorkflowTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveWorkflowTab(tab.id as any)}
+                  className={`p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer group hover:shadow-xs ${
+                    isActive 
+                      ? tab.activeColor + ' border-2 shadow-xs' 
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-1.5 rounded-lg border ${
+                      isActive 
+                        ? 'bg-white border-transparent' 
+                        : 'bg-slate-50 border-slate-200/60 group-hover:bg-slate-100'
+                    }`}>
+                      <TabIcon className={`w-4 h-4 ${
+                        isActive ? 'text-inherit' : 'text-slate-500'
+                      }`} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-black text-[#1D1D1F] tracking-tight">{tab.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{tab.desc}</div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Core Content Area - Tabs View */}
+          <div className="bg-white border border-slate-200/60 rounded-3xl p-6 md:p-10 shadow-lg relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              {activeWorkflowTab === 'student' && (
+                <motion.div
+                  key="student"
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -15 }}
+                  transition={{ duration: 0.25 }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center"
+                >
+                  {/* Left: Detailed Workflow Process */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">PILLAR 01</span>
+                      <h3 className="text-2xl font-black text-[#1D1D1F] tracking-tight">Student Portal & Cohort Allocation Flow</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Say goodbye to standard scattered spreadsheets. Our Student Management System automates scholarship checks, structures proctor-compliant student identities, and assigns balanced peer cohorts to maximize study group collaboration.
+                      </p>
+                    </div>
+
+                    <div className="relative space-y-6 before:absolute before:inset-0 before:left-4 before:h-full before:w-0.5 before:bg-slate-100">
+                      {[
+                        {
+                          step: "01",
+                          title: "Socioeconomic Scholarship Review",
+                          desc: "The system ingests self-reported credentials and merit indexes, automatically applying up to a 100% tuition waiver based on localized algorithms."
+                        },
+                        {
+                          step: "02",
+                          title: "Algorithmic Cohort Sorting",
+                          desc: "Learners with matching academic backgrounds and time zones are paired dynamically into focused peer workspaces."
+                        },
+                        {
+                          step: "03",
+                          title: "Calendar & Lecture Synchronization",
+                          desc: "Allocates active course schedules, setting proctored lecture counters and automatic Q&A reminder alarms directly on the user dashboard."
+                        },
+                        {
+                          step: "04",
+                          title: "Unified Student Workspace Credentials",
+                          desc: "Deploys a central identity profile with secure access, linking the student folder, live countdowns, and active chat groups."
+                        }
+                      ].map((item, i) => (
+                        <div key={i} className="relative flex items-start gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500 text-white font-black text-xs z-10 shrink-0 shadow-sm">
+                            {item.step}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-xs text-[#1D1D1F]">{item.title}</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Live Interactive Simulator */}
+                  <div className="lg:col-span-5 space-y-6">
+                    <div className="bg-white border border-slate-200/85 rounded-2xl shadow-sm text-left text-slate-800 overflow-hidden">
+                      {/* Card Header with Real-time Status and Nav */}
+                      <div className="bg-slate-50/70 border-b border-slate-100 p-5 pb-4">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Live Registration Cockpit</span>
+                          </div>
+                          <span className="text-[10px] bg-emerald-50 border border-emerald-100 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                            Active Session
+                          </span>
+                        </div>
+
+                        {/* Interactive Pill Tabs */}
+                        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+                          <button
+                            onClick={() => setStudentActiveTab('profile')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              studentActiveTab === 'profile'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <UserCheck className="w-3.5 h-3.5" />
+                            <span>Identity</span>
+                          </button>
+                          <button
+                            onClick={() => setStudentActiveTab('cohort')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              studentActiveTab === 'cohort'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            <span>Cohort Workspace</span>
+                          </button>
+                          <button
+                            onClick={() => setStudentActiveTab('scholarship')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              studentActiveTab === 'scholarship'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Calculator className="w-3.5 h-3.5" />
+                            <span>Waiver Calc</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Tab Contents with AnimatePresence */}
+                      <div className="p-5 min-h-[340px] flex flex-col justify-between">
+                        <AnimatePresence mode="wait">
+                          {studentActiveTab === 'profile' && (
+                            <motion.div
+                              key="profile"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Profile Card Header */}
+                              <div className="flex items-center gap-3 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100/40">
+                                <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-black shadow-sm shrink-0">
+                                  ST
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[9px] text-indigo-700 font-bold uppercase tracking-wider block">Verified Student Account</span>
+                                  <h4 className="text-sm font-bold text-slate-800 truncate mt-0.5">student@example.com</h4>
+                                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">LID: #LRN-984210-CO</p>
+                                </div>
+                                <span className="text-[10.5px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md shrink-0">
+                                  ONLINE
+                                </span>
+                              </div>
+
+                              {/* Onboarding Checklist Status */}
+                              <div className="space-y-2">
+                                <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block">Security & Verifications Status</span>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    { name: "Proctored Verification", status: "Secure", color: "text-emerald-700 bg-emerald-50 border-emerald-150" },
+                                    { name: "Socioeconomic Proof", status: "Approved", color: "text-indigo-700 bg-indigo-50 border-indigo-150" },
+                                    { name: "Calendar Sync", status: "Synchronized", color: "text-emerald-700 bg-emerald-50 border-emerald-150" },
+                                    { name: "Workspace Storage", status: "50GB Deployed", color: "text-slate-700 bg-slate-50 border-slate-150" }
+                                  ].map((check, idx) => (
+                                    <div key={idx} className={`p-2.5 rounded-lg border text-xs ${check.color}`}>
+                                      <span className="block font-medium opacity-75 text-[10px]">{check.name}</span>
+                                      <span className="block font-bold mt-0.5">{check.status}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {studentActiveTab === 'cohort' && (
+                            <motion.div
+                              key="cohort"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Cohort Assigned Block */}
+                              <div className="grid grid-cols-2 gap-3.5 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 font-semibold uppercase block">Assigned Cohort</span>
+                                  <div className="text-sm font-black text-indigo-600 mt-1">Batch STB_003</div>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-slate-400 font-semibold uppercase block">Active Peers</span>
+                                  <div className="text-sm font-black text-slate-800 mt-1">42 Global Learners</div>
+                                </div>
+                              </div>
+
+                              {/* Collaborative Workspaces Status */}
+                              <div className="space-y-2">
+                                <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block">Assigned Study Group Squad</span>
+                                <div className="space-y-2">
+                                  {[
+                                    { name: "Rohit S. (Bengaluru)", role: "Study Lead", status: "Solving Module 2", color: "bg-emerald-500" },
+                                    { name: "Alex M. (San Francisco)", role: "Peer Companion", status: "Joined Classroom", color: "bg-amber-500" },
+                                    { name: "Jane D. (London)", role: "Alumni Mentor", status: "Directly Monitoring Workspace", color: "bg-indigo-600" }
+                                  ].map((peer, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/60 rounded-lg border border-slate-100 transition-all text-xs">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-2 h-2 rounded-full ${peer.color}`} />
+                                        <div>
+                                          <span className="font-bold text-slate-800 block">{peer.name}</span>
+                                          <span className="text-[10px] text-slate-400 block">{peer.role}</span>
+                                        </div>
+                                      </div>
+                                      <span className="text-[10px] text-indigo-700 font-medium">{peer.status}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {studentActiveTab === 'scholarship' && (
+                            <motion.div
+                              key="scholarship"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Scholarship Selector Header */}
+                              <div className="space-y-2">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Interactive Tuition Waiver Calculator</span>
+                                <div className="grid grid-cols-3 gap-2 bg-slate-100/80 p-1 rounded-xl">
+                                  {[
+                                    { id: 'standard', label: 'Standard', waiver: '0%' },
+                                    { id: 'merit', label: 'Merit-Based', waiver: '30%' },
+                                    { id: 'socioeconomic', label: 'Socioeconomic', waiver: '100%' }
+                                  ].map((tier) => (
+                                    <button
+                                      key={tier.id}
+                                      onClick={() => setScholarshipTier(tier.id as any)}
+                                      className={`py-1.5 px-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                        scholarshipTier === tier.id
+                                          ? 'bg-white text-indigo-700 shadow-sm'
+                                          : 'text-slate-500 hover:text-slate-900'
+                                      }`}
+                                    >
+                                      <div>{tier.label}</div>
+                                      <div className="text-[9px] opacity-75 mt-0.5">Waiver: {tier.waiver}</div>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Progress calculation display */}
+                              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3.5">
+                                <div className="flex justify-between items-center text-xs">
+                                  <span className="text-slate-500 font-semibold uppercase text-[10px]">Financial Outcomes Matrix</span>
+                                  <span className="text-xs font-black text-emerald-600">
+                                    {scholarshipTier === 'standard' && 'Standard Rate Applied'}
+                                    {scholarshipTier === 'merit' && '30% Approved Scholarship'}
+                                    {scholarshipTier === 'socioeconomic' && '100% Fully-Funded Grant'}
+                                  </span>
+                                </div>
+
+                                <div className="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
+                                  <div 
+                                    className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
+                                    style={{ 
+                                      width: scholarshipTier === 'standard' ? '0%' : scholarshipTier === 'merit' ? '30%' : '100%' 
+                                    }} 
+                                  />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 text-xs">
+                                  <div>
+                                    <span className="text-[9px] text-slate-400 uppercase font-semibold">Net Outstanding Fee</span>
+                                    <p className="text-sm font-bold text-slate-800 mt-0.5">
+                                      {scholarshipTier === 'standard' && '$1,499 USD'}
+                                      {scholarshipTier === 'merit' && '$1,049 USD'}
+                                      {scholarshipTier === 'socioeconomic' && '$0 USD'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-[9px] text-slate-400 uppercase font-semibold">Sponsor Aid Saved</span>
+                                    <p className="text-sm font-bold text-emerald-600 mt-0.5">
+                                      {scholarshipTier === 'standard' && '$0 USD'}
+                                      {scholarshipTier === 'merit' && '$450 USD'}
+                                      {scholarshipTier === 'socioeconomic' && '$1,499 USD'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Interactive Footer */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-450">
+                          <span className="flex items-center gap-1">
+                            <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>Proctor-Compliant Sorting</span>
+                          </span>
+                          <span className="font-semibold text-indigo-600">Locked & Verified</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Highlight Image */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-16/10 border border-slate-200/80 shadow-md">
+                      <img
+                        src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80"
+                        alt="Student Cohorts Collaboration"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4">
+                        <div className="text-left">
+                          <div className="text-[9px] text-indigo-300 font-bold uppercase tracking-wider">Operational Outcome</div>
+                          <p className="text-xs text-white font-bold leading-tight mt-0.5">Automated student registration & balanced team assignments.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeWorkflowTab === 'course' && (
+                <motion.div
+                  key="course"
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -15 }}
+                  transition={{ duration: 0.25 }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center"
+                >
+                  {/* Left: Detailed Workflow Process */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-red-500 uppercase tracking-widest block">PILLAR 02</span>
+                      <h3 className="text-2xl font-black text-[#1D1D1F] tracking-tight">Modular Course Flow & Content Delivery Engine</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Traditional educational systems throw high-stress static text or long, boring pre-recorded videos at students. Learnora delivers a modular course pipeline where concepts unlock progressively through a series of live, proctored sessions.
+                      </p>
+                    </div>
+
+                    <div className="relative space-y-6 before:absolute before:inset-0 before:left-4 before:h-full before:w-0.5 before:bg-slate-100">
+                      {[
+                        {
+                          step: "01",
+                          title: "Concept-by-Concept Gated Unlocking",
+                          desc: "Advanced modules and curriculum sub-topics unlock dynamically as students achieve satisfactory grades in core prerequisites."
+                        },
+                        {
+                          step: "02",
+                          title: "Live Walkthrough & Discussion Session",
+                          desc: "Industry professionals lead interactive webinars using real-time split-screen code sandboxes, answering live student questions."
+                        },
+                        {
+                          step: "03",
+                          title: "Direct Codebase & Resource Ingestion",
+                          desc: "The system automatically pushes associated slide decks, template repos, and reference notes directly into the student's workspace tab."
+                        },
+                        {
+                          step: "04",
+                          title: "Adaptive Daily Micro-Challenges",
+                          desc: "Triggers mini logical assessments within the workspace, immediately establishing key coding intuition while concepts are fresh."
+                        }
+                      ].map((item, i) => (
+                        <div key={i} className="relative flex items-start gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-black text-xs z-10 shrink-0 shadow-sm">
+                            {item.step}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-xs text-[#1D1D1F]">{item.title}</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Live Interactive Simulator */}
+                  <div className="lg:col-span-5 space-y-6">
+                    <div className="bg-white border border-slate-200/85 rounded-2xl shadow-sm text-left text-slate-800 overflow-hidden">
+                      {/* Card Header with Real-time Status and Nav */}
+                      <div className="bg-slate-50/70 border-b border-slate-100 p-5 pb-4">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Live Course Progression</span>
+                          </div>
+                          <span className="text-[10px] bg-red-50 border border-red-100 text-red-700 font-semibold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                            Active Path
+                          </span>
+                        </div>
+
+                        {/* Interactive Pill Tabs */}
+                        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+                          <button
+                            onClick={() => setCourseActiveTab('progress')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              courseActiveTab === 'progress'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <TrendingUp className="w-3.5 h-3.5" />
+                            <span>Roadmap</span>
+                          </button>
+                          <button
+                            onClick={() => setCourseActiveTab('lecture')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              courseActiveTab === 'lecture'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                            <span>Live Class</span>
+                          </button>
+                          <button
+                            onClick={() => setCourseActiveTab('assets')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              courseActiveTab === 'assets'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <BookMarked className="w-3.5 h-3.5" />
+                            <span>Resources</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Tab Contents with AnimatePresence */}
+                      <div className="p-5 min-h-[340px] flex flex-col justify-between">
+                        <AnimatePresence mode="wait">
+                          {courseActiveTab === 'progress' && (
+                            <motion.div
+                              key="progress"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Roadmap timeline details */}
+                              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Cohort progress roadmap</span>
+                                
+                                <div className="space-y-3.5">
+                                  {/* Step 1 Completed */}
+                                  <div className="flex items-center justify-between text-xs">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</span>
+                                      <span className="text-slate-500 font-medium">Month 1: Fundamentals</span>
+                                    </div>
+                                    <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">100% Passed</span>
+                                  </div>
+
+                                  {/* Step 2 Active */}
+                                  <div className="flex items-center justify-between text-xs bg-white p-2.5 -mx-1 rounded-lg border border-slate-150 shadow-2xs">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px] font-bold">●</span>
+                                      <div>
+                                        <span className="font-bold text-slate-800 block">Month 2: Core JavaScript</span>
+                                        <span className="text-[9.5px] text-slate-400 font-medium">Async & Web API Architectures</span>
+                                      </div>
+                                    </div>
+                                    <span className="text-[11px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">In Progress</span>
+                                  </div>
+
+                                  {/* Step 3 Locked */}
+                                  <div className="flex items-center justify-between text-xs opacity-50">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] font-bold">🔒</span>
+                                      <span className="text-slate-500">Month 3: Advanced Frameworks</span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-400">Locked</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Interactive Submodule checklist toggle */}
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block">Current Month Tasks</span>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2 text-slate-700">
+                                    <span className="text-emerald-600 font-bold">✓</span>
+                                    <span>Promises & Async/Await</span>
+                                  </div>
+                                  <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2 text-slate-700">
+                                    <span className="text-emerald-600 font-bold">✓</span>
+                                    <span>Memory Optimization</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {courseActiveTab === 'lecture' && (
+                            <motion.div
+                              key="lecture"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Live Classroom Info */}
+                              <div className="bg-red-50/20 border-2 border-dashed border-red-150 rounded-xl p-4 space-y-3 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-[pulse_1.5s_infinite]" />
+                                  <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">PROCTORED LECTURE BROADCAST</span>
+                                </div>
+
+                                <div className="space-y-1">
+                                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">Advanced Asynchronous Engines & Event Loop</h4>
+                                  <p className="text-[10px] text-slate-500 font-medium">Led by Instructor Jane Foster, Principal Engineer</p>
+                                </div>
+
+                                <div className="flex justify-center gap-3 text-xs font-mono text-slate-400 border-t border-slate-100 pt-2.5">
+                                  <div>
+                                    <span className="text-[9px] block uppercase text-slate-400">Duration</span>
+                                    <span className="font-bold text-slate-700">90 Mins</span>
+                                  </div>
+                                  <div className="border-r border-slate-100" />
+                                  <div>
+                                    <span className="text-[9px] block uppercase text-slate-400">Attendees</span>
+                                    <span className="font-bold text-indigo-600">34 Active</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Simulation Button to join session */}
+                              <div className="space-y-2">
+                                <button
+                                  onClick={() => {
+                                    setIsJoiningClassroom(true);
+                                    setJoinedClassroomSuccess(false);
+                                    setTimeout(() => {
+                                      setIsJoiningClassroom(false);
+                                      setJoinedClassroomSuccess(true);
+                                    }, 1200);
+                                  }}
+                                  disabled={isJoiningClassroom || joinedClassroomSuccess}
+                                  className={`w-full font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                    joinedClassroomSuccess
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-100 hover:shadow-red-200'
+                                  }`}
+                                >
+                                  {isJoiningClassroom ? (
+                                    <>
+                                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                      <span>Initializing feed camera...</span>
+                                    </>
+                                  ) : joinedClassroomSuccess ? (
+                                    <>
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>Stream Connected (Proctored Feed Active)</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="w-3.5 h-3.5 fill-current" />
+                                      <span>Join Live Classroom Session</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {joinedClassroomSuccess && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-[11px] text-emerald-850 flex items-start gap-2"
+                                  >
+                                    <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <div>
+                                      <p className="font-bold">Identity Confirmed</p>
+                                      <p className="text-emerald-700 mt-0.5">Dual-factor proctor check synchronized. Attendance logged successfully.</p>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {courseActiveTab === 'assets' && (
+                            <motion.div
+                              key="assets"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              <div className="space-y-2.5">
+                                <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block">Modular Asset Provisioning</span>
+                                <div className="space-y-2">
+                                  {[
+                                    { name: "JS_Async_v2_Loop.pdf", type: "Slides & Notes", size: "4.2 MB", desc: "Detailed timeline of macroscopic execution" },
+                                    { name: "M2_Node_Event_Boilerplate", type: "GitHub Starter", size: "12 KB", desc: "Starter template configured for the sandbox" },
+                                    { name: "Event_Emitter_Cheat_Sheet", type: "Quick Reference", size: "1.1 MB", desc: "API schema definitions for modules" }
+                                  ].map((asset, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/75 rounded-xl border border-slate-100 transition-colors text-xs">
+                                      <div className="min-w-0">
+                                        <span className="font-bold text-slate-800 block truncate">{asset.name}</span>
+                                        <span className="text-[10px] text-slate-450 block">{asset.type} • {asset.size}</span>
+                                      </div>
+                                      <span className="text-[10px] bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0 cursor-pointer">
+                                        Get
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Interactive Footer */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-450">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-red-500" />
+                            <span>Progress Lock Synced</span>
+                          </span>
+                          <span className="font-semibold text-red-600">Active Path Valid</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Highlight Image */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-16/10 border border-slate-200/80 shadow-md">
+                      <img
+                        src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"
+                        alt="Digital Course Progression"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4">
+                        <div className="text-left">
+                          <div className="text-[9px] text-red-400 font-bold uppercase tracking-wider">Operational Outcome</div>
+                          <p className="text-xs text-white font-bold leading-tight mt-0.5">Syllabus progression mapping and real-time asset provisioning.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeWorkflowTab === 'assessment' && (
+                <motion.div
+                  key="assessment"
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -15 }}
+                  transition={{ duration: 0.25 }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center"
+                >
+                  {/* Left: Detailed Workflow Process */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest block">PILLAR 03</span>
+                      <h3 className="text-2xl font-black text-[#1D1D1F] tracking-tight">Proctor-Aligned Sandbox & Assessment Flow</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        The heartbeat of practical intelligence. Rather than relying on simple quiz questions, student evaluation on Learnora runs entirely through coding sandbox milestones. Our sandbox compiles student logic live against test suites right inside the web page.
+                      </p>
+                    </div>
+
+                    <div className="relative space-y-6 before:absolute before:inset-0 before:left-4 before:h-full before:w-0.5 before:bg-slate-100">
+                      {[
+                        {
+                          step: "01",
+                          title: "Challenge Prompt Initialization",
+                          desc: "Once a milestone chapter is active, the sandbox pre-loads custom starter snippets with specific parameter constraints."
+                        },
+                        {
+                          step: "02",
+                          title: "Active Anti-Proctoring Monitor",
+                          desc: "High-stakes certification challenges log tab focus indices, warning the student to maintain concentrate flow."
+                        },
+                        {
+                          step: "03",
+                          title: "Interactive Test Suite Evaluation",
+                          desc: "Clicking 'Run Code' instantly triggers standard input/output checks, reporting detailed results on the web terminal."
+                        },
+                        {
+                          step: "04",
+                          title: "Deep-Seed Random Input Grading",
+                          desc: "On final submission, code runs against 45+ comprehensive edge-case seeds, evaluating big-O complexity profiles."
+                        }
+                      ].map((item, i) => (
+                        <div key={i} className="relative flex items-start gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-white font-black text-xs z-10 shrink-0 shadow-sm">
+                            {item.step}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-xs text-[#1D1D1F]">{item.title}</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Live Interactive Simulator */}
+                  <div className="lg:col-span-5 space-y-6">
+                    <div className="bg-white border border-slate-200/85 rounded-2xl shadow-sm text-left text-slate-800 overflow-hidden">
+                      {/* Card Header with Real-time Status and Nav */}
+                      <div className="bg-slate-50/70 border-b border-slate-100 p-5 pb-4">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Live Evaluation Terminal</span>
+                          </div>
+                          <span className="text-[10px] bg-amber-50 border border-amber-100 text-amber-700 font-semibold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                            Verified Sandbox
+                          </span>
+                        </div>
+
+                        {/* Interactive Pill Tabs */}
+                        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+                          <button
+                            onClick={() => setAssessmentActiveTab('sandbox')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              assessmentActiveTab === 'sandbox'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Terminal className="w-3.5 h-3.5" />
+                            <span>Sandbox</span>
+                          </button>
+                          <button
+                            onClick={() => setAssessmentActiveTab('proctor')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              assessmentActiveTab === 'proctor'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Proctor Log</span>
+                          </button>
+                          <button
+                            onClick={() => setAssessmentActiveTab('grading')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              assessmentActiveTab === 'grading'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Award className="w-3.5 h-3.5" />
+                            <span>Grading</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Tab Contents with AnimatePresence */}
+                      <div className="p-5 min-h-[340px] flex flex-col justify-between">
+                        <AnimatePresence mode="wait">
+                          {assessmentActiveTab === 'sandbox' && (
+                            <motion.div
+                              key="sandbox"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Custom Interactive Code Block */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                  <span>JavaScript Workspace Sandbox</span>
+                                  <span className="font-mono text-indigo-600">index.js</span>
+                                </div>
+
+                                <div className="bg-slate-950 rounded-xl p-3.5 border border-slate-900 font-mono text-[11px] text-slate-300 relative shadow-inner">
+                                  <div className="text-slate-500 select-none pb-1 text-[10px] border-b border-slate-900 mb-2 flex items-center justify-between">
+                                    <span>// Implement core array reduction logic</span>
+                                    <span className="text-[9px] bg-slate-900 px-1.5 py-0.5 rounded text-indigo-400">ES6</span>
+                                  </div>
+                                  
+                                  <textarea
+                                    value={userCode}
+                                    onChange={(e) => {
+                                      setUserCode(e.target.value);
+                                      setRunCodeSuccess(false);
+                                    }}
+                                    className="w-full bg-transparent border-0 outline-hidden focus:ring-0 text-slate-250 resize-none h-24 leading-normal focus:outline-hidden"
+                                    spellCheck={false}
+                                  />
+
+                                  <div className="absolute bottom-2 right-2.5 flex items-center gap-1 text-[9px] text-slate-500">
+                                    <span>Lines: {userCode.split('\n').length}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Simulation run triggers */}
+                              <div className="space-y-2">
+                                <button
+                                  onClick={() => {
+                                    setIsRunningCode(true);
+                                    setRunCodeSuccess(false);
+                                    setTimeout(() => {
+                                      setIsRunningCode(false);
+                                      setRunCodeSuccess(true);
+                                    }, 900);
+                                  }}
+                                  disabled={isRunningCode || runCodeSuccess}
+                                  className={`w-full font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                    runCodeSuccess
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100 hover:shadow-indigo-250'
+                                  }`}
+                                >
+                                  {isRunningCode ? (
+                                    <>
+                                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                      <span>Compiling and running assertions...</span>
+                                    </>
+                                  ) : runCodeSuccess ? (
+                                    <>
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>All Test Cases Passed Successfully (100%)</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="w-3.5 h-3.5 fill-current" />
+                                      <span>Run Local Sandbox Assertion Suite</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {runCodeSuccess && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-slate-950 rounded-xl p-3 border border-slate-900 font-mono text-[10px] leading-relaxed space-y-1 text-emerald-400 text-left"
+                                  >
+                                    <p className="text-slate-500 font-bold border-b border-slate-900 pb-1 mb-1">// ASSERTION TEST LOGS</p>
+                                    <p>✓ [PASS] sum(2, 3) | Output: 5 (Expected: 5)</p>
+                                    <p>✓ [PASS] sum(-10, 10) | Output: 0 (Expected: 0)</p>
+                                    <p>✓ [PASS] sum(BigInt, BigInt) | Output: 9007199254740992n</p>
+                                    <p className="text-indigo-400 font-bold pt-1">Result: Success. Benchmark runtime: 12 ms</p>
+                                  </motion.div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {assessmentActiveTab === 'proctor' && (
+                            <motion.div
+                              key="proctor"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Proctor active logger */}
+                              <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-900 text-left">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Security & Integrity Metrics</span>
+                                
+                                <div className="space-y-2.5 font-mono text-[10.5px]">
+                                  <div className="flex items-center justify-between text-slate-300">
+                                    <span>Webcam Biometric Feed:</span>
+                                    <span className="text-emerald-400 font-bold">ACTIVE (Dual-Match)</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-slate-300">
+                                    <span>Active Workspace Focus:</span>
+                                    <span className="text-emerald-400 font-bold">UNBROKEN (100% Locked)</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-slate-300">
+                                    <span>Device Tab Focus Shifts:</span>
+                                    <span className="text-emerald-400 font-bold">0 Detected</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-slate-300">
+                                    <span>Clipboard Injection Block:</span>
+                                    <span className="text-slate-400">INTEGRITY OK</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-xl flex items-start gap-2 text-xs text-amber-850">
+                                <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="font-bold">Identity Confirmed via Web Biometrics</p>
+                                  <p className="text-amber-700 mt-0.5 text-[11px]">Attendance metrics, timezone location, and keystroke patterns are continuously verified as compliant with accrediting guidelines.</p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {assessmentActiveTab === 'grading' && (
+                            <motion.div
+                              key="grading"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Auto-Grading criteria */}
+                              <div className="bg-slate-50 p-4 rounded-xl border border-slate-150 space-y-3">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Requirement Verification Checklist</span>
+                                
+                                <div className="space-y-2.5 text-xs text-slate-700">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">✓ Input Validation Constraints</span>
+                                    <span className="text-emerald-600 font-bold">Passed (100%)</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">✓ Boundary Limit Executions</span>
+                                    <span className="text-emerald-600 font-bold">Passed (100%)</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">✓ Algorithmic Optimization O(N)</span>
+                                    <span className="text-emerald-600 font-bold">Passed (100%)</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Performance metrics score display */}
+                              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-xs">
+                                <div>
+                                  <span className="text-[9px] text-slate-400 uppercase font-bold">Execution Speed</span>
+                                  <p className="text-sm font-bold text-slate-800 mt-0.5">12 ms</p>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] text-slate-400 uppercase font-bold">Performance Score</span>
+                                  <p className="text-sm font-bold text-emerald-600 mt-0.5">100 / 100 Points</p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Interactive Footer */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-450">
+                          <span className="flex items-center gap-1">
+                            <Shield className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Proctor Integrity Active</span>
+                          </span>
+                          <span className="font-semibold text-amber-600">Secure Assessment Verified</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Highlight Image */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-16/10 border border-slate-200/80 shadow-md">
+                      <img
+                        src="https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80"
+                        alt="Proctored Coding Sandbox"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4">
+                        <div className="text-left">
+                          <div className="text-[9px] text-amber-400 font-bold uppercase tracking-wider">Operational Outcome</div>
+                          <p className="text-xs text-white font-bold leading-tight mt-0.5">Real-time code compilation, validation, and proctor analysis.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeWorkflowTab === 'evolution' && (
+                <motion.div
+                  key="evolution"
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -15 }}
+                  transition={{ duration: 0.25 }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center"
+                >
+                  {/* Left: Detailed Workflow Process */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest block">PILLAR 04</span>
+                      <h3 className="text-2xl font-black text-[#1D1D1F] tracking-tight">Milestone Evolution & Placements Engine</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        We prioritize continuous consistency over high-stress cramming. Four consecutive weekly milestone badges qualify a student to "evolve" into the next tier, locking in high performance metrics and triggering automatic career placement referrals.
+                      </p>
+                    </div>
+
+                    <div className="relative space-y-6 before:absolute before:inset-0 before:left-4 before:h-full before:w-0.5 before:bg-slate-100">
+                      {[
+                        {
+                          step: "01",
+                          title: "Continuous Milestone Checkpoints",
+                          desc: "Collects sandbox grades and proctor feedback weekly, building a holistic GPA tracker that maps long-term coding consistency."
+                        },
+                        {
+                          step: "02",
+                          title: "Cohort Evolution Validation",
+                          desc: "The system runs performance sweeps, validating if students maintain the required 80% baseline to advance to the next level."
+                        },
+                        {
+                          step: "03",
+                          title: "Verifiable PDF Certificate Minting",
+                          desc: "Generates digital graduation certificates with permanent, public hashes confirming skills mastery and proctored authenticity."
+                        },
+                        {
+                          step: "04",
+                          title: "Direct Recruiter Placement Push",
+                          desc: "Top-performing profiles are automatically synchronized with partner networks for direct interview pipelines and fast placements."
+                        }
+                      ].map((item, i) => (
+                        <div key={i} className="relative flex items-start gap-4">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500 text-white font-black text-xs z-10 shrink-0 shadow-sm">
+                            {item.step}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-xs text-[#1D1D1F]">{item.title}</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Live Interactive Simulator */}
+                  <div className="lg:col-span-5 space-y-6">
+                    {/* Professional Milestone & Graduation Tracker Card */}
+                    <div className="bg-white border border-slate-200/85 rounded-2xl shadow-sm text-left text-slate-800 overflow-hidden">
+                      {/* Card Header with Real-time Status and Nav */}
+                      <div className="bg-slate-50/70 border-b border-slate-100 p-5 pb-4">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Live Evolution Dossier</span>
+                          </div>
+                          <span className="text-[10px] bg-emerald-50 border border-emerald-100 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                            Ready for Placement
+                          </span>
+                        </div>
+
+                        {/* Interactive Pill Tabs */}
+                        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+                          <button
+                            onClick={() => setEvolutionActiveTab('milestones')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              evolutionActiveTab === 'milestones'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Award className="w-3.5 h-3.5" />
+                            <span>Milestones</span>
+                          </button>
+                          <button
+                            onClick={() => setEvolutionActiveTab('credential')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              evolutionActiveTab === 'credential'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <GraduationCap className="w-3.5 h-3.5" />
+                            <span>Certificate</span>
+                          </button>
+                          <button
+                            onClick={() => setEvolutionActiveTab('placements')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 text-xs font-semibold rounded-lg transition-all ${
+                              evolutionActiveTab === 'placements'
+                                ? 'bg-white text-indigo-700 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Briefcase className="w-3.5 h-3.5" />
+                            <span>Placements</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Tab Contents with AnimatePresence */}
+                      <div className="p-5 min-h-[340px] flex flex-col justify-between">
+                        <AnimatePresence mode="wait">
+                          {evolutionActiveTab === 'milestones' && (
+                            <motion.div
+                              key="milestones"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              {/* Circular GPA Meter & Milestone Count */}
+                              <div className="grid grid-cols-12 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 items-center">
+                                <div className="col-span-4 flex flex-col items-center justify-center border-r border-slate-150 pr-2">
+                                  {/* Custom beautiful SVG circle progress */}
+                                  <div className="relative w-16 h-16 flex items-center justify-center">
+                                    <svg className="w-full h-full transform -rotate-90">
+                                      <circle cx="32" cy="32" r="28" stroke="#E2E8F0" strokeWidth="4" fill="transparent" />
+                                      <circle cx="32" cy="32" r="28" stroke="#4F46E5" strokeWidth="4" fill="transparent" strokeDasharray={175} strokeDashoffset={175 * (1 - 3.88 / 4.0)} />
+                                    </svg>
+                                    <div className="absolute text-center flex flex-col items-center justify-center">
+                                      <span className="text-sm font-extrabold text-slate-800 leading-none">3.88</span>
+                                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">GPA</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="col-span-8 flex flex-col justify-center pl-2 space-y-1">
+                                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Academic Standing</div>
+                                  <div className="text-sm font-bold text-slate-800">Top 3% of Active Cohort</div>
+                                  <div className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>5 of 5 Milestones Locked-in</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Milestone Checklist Timeline */}
+                              <div className="space-y-2">
+                                <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block">Consecutive Milestone Badges</span>
+                                <div className="space-y-2">
+                                  {[
+                                    { week: "Week 1", topic: "Programming Foundations", score: "96%", status: "PASSED" },
+                                    { week: "Week 2", topic: "Advanced Web Architecture", score: "98%", status: "PASSED" },
+                                    { week: "Week 3", topic: "Framework Optimization", score: "95%", status: "PASSED" },
+                                    { week: "Week 4", topic: "Scalable Deployments & CI/CD", score: "100%", status: "PASSED" }
+                                  ].map((badge, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-slate-50/80 hover:bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs transition-colors">
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[9px] font-bold shrink-0">✓</span>
+                                        <div className="min-w-0">
+                                          <span className="font-semibold text-slate-700 block truncate">{badge.topic}</span>
+                                          <span className="text-[9.5px] text-slate-400 font-medium block">{badge.week} evaluation</span>
+                                        </div>
+                                      </div>
+                                      <div className="text-right shrink-0">
+                                        <span className="text-[11px] font-bold text-slate-800 block">{badge.score}</span>
+                                        <span className="text-[8.5px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">{badge.status}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {evolutionActiveTab === 'credential' && (
+                            <motion.div
+                              key="credential"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full flex flex-col justify-between"
+                            >
+                              {/* Premium Realistic Certificate Container */}
+                              <div className="relative bg-indigo-50/10 border-2 border-dashed border-indigo-200 rounded-xl p-5 text-center overflow-hidden">
+                                {/* Decorative geometric shapes like a true certificate border */}
+                                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-indigo-300 rounded-tl-lg m-1" />
+                                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-indigo-300 rounded-tr-lg m-1" />
+                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-indigo-300 rounded-bl-lg m-1" />
+                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-indigo-300 rounded-br-lg m-1" />
+
+                                <div className="space-y-3">
+                                  <div className="flex justify-center">
+                                    <Award className="w-10 h-10 text-indigo-600 animate-[pulse_3s_infinite]" />
+                                  </div>
+                                  <div>
+                                    <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-widest block">Learnora Professional Academy</span>
+                                    <h4 className="text-xs font-black text-slate-800 mt-1 uppercase tracking-tight">Verified Graduate Credential</h4>
+                                    <p className="text-[9.5px] text-slate-400 mt-0.5">This certifies that</p>
+                                    <p className="text-xs font-bold text-indigo-950 border-b border-indigo-100 max-w-[180px] mx-auto pb-1 mt-1 truncate">student@example.com</p>
+                                    <p className="text-[10px] text-slate-500 leading-relaxed max-w-[280px] mx-auto mt-2">
+                                      has completed the comprehensive engineering curriculum, demonstrating absolute mastery over proctored assessments.
+                                    </p>
+                                  </div>
+
+                                  <div className="pt-2 flex justify-between items-center text-[8.5px] font-mono text-slate-400 max-w-[260px] mx-auto border-t border-slate-100">
+                                    <span>HASH: SHA256://8a2c7...</span>
+                                    <span className="text-emerald-600 font-bold uppercase flex items-center gap-0.5">✓ VERIFIED</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Interactive Actions */}
+                              <div className="space-y-2 pt-1">
+                                <button
+                                  onClick={() => {
+                                    setVerifyingLedger(true);
+                                    setVerificationResult(false);
+                                    setTimeout(() => {
+                                      setVerifyingLedger(false);
+                                      setVerificationResult(true);
+                                    }, 1200);
+                                  }}
+                                  disabled={verifyingLedger}
+                                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center justify-center gap-2 disabled:opacity-80 cursor-pointer"
+                                >
+                                  {verifyingLedger ? (
+                                    <>
+                                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                      <span>Verifying Ledger...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Shield className="w-3.5 h-3.5" />
+                                      <span>Verify Blockchain Authenticity</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {verificationResult && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-[11px] text-emerald-850 flex items-start gap-2"
+                                  >
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <div>
+                                      <p className="font-bold">Cryptographically Secured</p>
+                                      <p className="text-emerald-700 mt-0.5">Verified on-chain. Signature and GPA score are immutable and genuine.</p>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {evolutionActiveTab === 'placements' && (
+                            <motion.div
+                              key="placements"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.18 }}
+                              className="space-y-4 w-full"
+                            >
+                              <div className="space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider">Top Recruiter Match Pipeline</span>
+                                  <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">
+                                    14 Partners Live
+                                  </span>
+                                </div>
+
+                                <div className="space-y-2">
+                                  {[
+                                    { company: "Stripe", role: "Software Engineer I", match: "98% Match", logoBg: "bg-purple-600 text-white", badge: "Direct Interview" },
+                                    { company: "Canva", role: "Full-Stack Developer", match: "95% Match", logoBg: "bg-cyan-500 text-white", badge: "Reviewing Profile" },
+                                    { company: "Airbnb", role: "Frontend Specialist", match: "92% Match", logoBg: "bg-rose-500 text-white", badge: "Resume Dispatched" }
+                                  ].map((partner, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/75 rounded-xl border border-slate-100 transition-colors">
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <div className={`w-8 h-8 rounded-lg ${partner.logoBg} flex items-center justify-center text-[10px] font-black tracking-tight shrink-0 shadow-sm`}>
+                                          {partner.company.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="min-w-0">
+                                          <span className="font-bold text-slate-800 text-xs block">{partner.company}</span>
+                                          <span className="text-[10px] text-slate-450 block truncate">{partner.role} • <span className="text-indigo-600 font-semibold">{partner.match}</span></span>
+                                        </div>
+                                      </div>
+                                      <span className="text-[9.5px] bg-white border border-slate-200 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0">
+                                        {partner.badge}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Simulation Button to dispatch profile */}
+                              <button
+                                onClick={() => {
+                                  setIsPingingRecruiters(true);
+                                  setPingSuccess(false);
+                                  setTimeout(() => {
+                                    setIsPingingRecruiters(false);
+                                    setPingSuccess(true);
+                                  }, 1500);
+                                }}
+                                disabled={isPingingRecruiters || pingSuccess}
+                                className={`w-full font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                  pingSuccess 
+                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100 hover:shadow-indigo-200'
+                                }`}
+                              >
+                                {isPingingRecruiters ? (
+                                  <>
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Synchronizing portfolio...</span>
+                                  </>
+                                ) : pingSuccess ? (
+                                  <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>Profile Dispatched & Synced!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>Sync Profile with Recruiters</span>
+                                  </>
+                                )}
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    {/* Highlight Image */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-16/10 border border-slate-200/80 shadow-md">
+                      <img
+                        src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80"
+                        alt="Milestone Placement Achievement"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4">
+                        <div className="text-left">
+                          <div className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Operational Outcome</div>
+                          <p className="text-xs text-white font-bold leading-tight mt-0.5">Secure credential minting & automated placement sync.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
         </div>
       </section>
 
