@@ -1131,21 +1131,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
             </button>
           </div>
 
-          {/* Minimalist Micro Stats Banner */}
-          <div className="grid grid-cols-3 gap-6 pt-8 w-full border-t border-slate-200 mt-4">
-            <div>
-              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">98.2%</div>
-              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Placement Rate</div>
-            </div>
-            <div>
-              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">1:12</div>
-              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Mentor Ratio</div>
-            </div>
-            <div>
-              <div className="text-lg font-black text-[#1D1D1F] font-sans tracking-tight">100%</div>
-              <div className="text-[11px] text-slate-500 font-semibold uppercase mt-0.5 tracking-wider">Digital Records</div>
-            </div>
-          </div>
+
         </div>
 
         {/* Right Column: Premium Student & Coaching Dashboard Preview */}
