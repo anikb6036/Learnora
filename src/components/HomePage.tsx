@@ -1065,14 +1065,29 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 font-semibold text-sm">
-            <button type="button" onClick={() => onEnterPortal('fastReg')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer flex items-center gap-1.5">
-              Apply Now <Sparkle className="w-3 h-3 text-red-500 animate-pulse" />
+            <button 
+              type="button" 
+              onClick={() => onEnterPortal('fastReg')} 
+              className="relative py-1.5 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1.5 group"
+            >
+              <span>Apply Now</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-600 transition-all duration-300 ease-out group-hover:w-full" />
             </button>
-            <button type="button" onClick={() => onEnterPortal('authLogin')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">
-              Student Login
+            <button 
+              type="button" 
+              onClick={() => onEnterPortal('authLogin')} 
+              className="relative py-1.5 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer group"
+            >
+              <span>Student Login</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-600 transition-all duration-300 ease-out group-hover:w-full" />
             </button>
-            <button type="button" onClick={() => onEnterPortal('adminLogin')} className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">
-              Staff Portal
+            <button 
+              type="button" 
+              onClick={() => onEnterPortal('adminLogin')} 
+              className="relative py-1.5 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer group"
+            >
+              <span>Staff Portal</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-600 transition-all duration-300 ease-out group-hover:w-full" />
             </button>
             
             <button 
@@ -1700,8 +1715,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
           
           {/* Section Header */}
           <div className="max-w-3xl mb-16 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 text-[10px] font-bold tracking-wider uppercase">
-              <Sparkles className="w-3.5 h-3.5" /> SYSTEM PIPELINES
+            <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 text-[10px] font-bold tracking-wider uppercase">
+              SYSTEM PIPELINES
             </div>
             <h2 className="text-3xl sm:text-4xl font-sans font-black text-[#1D1D1F] tracking-tight leading-tight">
               Interactive Operational Workflows
