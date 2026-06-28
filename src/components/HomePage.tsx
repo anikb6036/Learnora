@@ -1455,7 +1455,6 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   <>
                     <div className="flex items-center justify-between gap-2 mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
                         <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
                           Admission & Onboarding Roadmap
                         </h3>
@@ -1524,7 +1523,6 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   <>
                     <div className="flex items-center justify-between gap-2 mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                         <h3 className="text-md font-bold text-[#1D1D1F] tracking-tight">
                           {selectedCourse ? `${selectedCourse.name} Milestone Path` : 'Syllabus Journey Map'}
                         </h3>
