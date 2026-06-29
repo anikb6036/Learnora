@@ -137,6 +137,7 @@ export default function EnrollmentManager({
   const [newCourse, setNewCourse] = useState('');
   const [editCourse, setEditCourse] = useState('');
   const [editSpecialization, setEditSpecialization] = useState('');
+  const [editPaymentStatus, setEditPaymentStatus] = useState<'pending' | 'paid'>('pending');
 
   // Phone country verification states
   const [newPhonePrefix, setNewPhonePrefix] = useState('+91');
@@ -1407,6 +1408,7 @@ export default function EnrollmentManager({
                                   setEditPassword(student.password || '');
                                   setEditBatch(student.batch || 'Batch A');
                                   setEditCourse(student.course || '');
+                                  setEditPaymentStatus(student.paymentStatus || 'pending');
                                   setEditPhoneError('');
                                   setEditFatherPhoneError('');
 
@@ -1784,6 +1786,9 @@ export default function EnrollmentManager({
                     password: editPassword.trim() || undefined,
                     batch: editBatch,
                     course: editCourse || undefined,
+                    paymentStatus: editPaymentStatus,
+                    paidAmount: editPaymentStatus === 'paid' ? (editingStudent.paidAmount || 9999) : undefined,
+                    paymentId: editPaymentStatus === 'paid' ? (editingStudent.paymentId || 'ADMIN_VERIFIED') : undefined,
                     specialization: editSpecialization.trim() || undefined,
                   };
 
@@ -1871,6 +1876,22 @@ export default function EnrollmentManager({
                       {instructors.map(ins => (
                         <option key={ins.id} value={ins.id}>{ins.name} ({ins.specialization || 'Coaching'})</option>
                       ))}
+                    </select>
+                  </div>
+
+                  {/* Payment Status */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500 dark:text-gray-400 font-semibold flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      Student Payment / Fee Settle Status
+                    </label>
+                    <select
+                      value={editPaymentStatus}
+                      onChange={e => setEditPaymentStatus(e.target.value as 'pending' | 'paid')}
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-bold"
+                    >
+                      <option value="pending" className="text-rose-500 dark:text-rose-400 font-semibold bg-white dark:bg-[#161618]">Unpaid / Fee Settle Required (Locked out of Panel)</option>
+                      <option value="paid" className="text-emerald-500 dark:text-emerald-450 font-semibold bg-white dark:bg-[#161618]">Paid / Settle Accomplished (Full Access Granted)</option>
                     </select>
                   </div>
                   </>
