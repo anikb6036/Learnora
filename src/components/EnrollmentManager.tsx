@@ -92,6 +92,7 @@ export default function EnrollmentManager({
   const [editingStudent, setEditingStudent] = useState<UserAccount | null>(null);
   const [userToDelete, setUserToDelete] = useState<{ id: string; name: string; role: 'student' | 'instructor' | 'sub-admin' } | null>(null);
   const [pendingStudentUpdate, setPendingStudentUpdate] = useState<UserAccount | null>(null);
+  const [paymentSettleStudent, setPaymentSettleStudent] = useState<UserAccount | null>(null);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhoneRaw, setEditPhoneRaw] = useState('');
@@ -1285,11 +1286,48 @@ export default function EnrollmentManager({
                             Registered
                           </span>
                           {student.paymentStatus === 'paid' ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 text-[10px] font-bold" title={`Transaction Ref: ${student.paymentId || 'N/A'}`}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (['admin', 'sub-admin'].includes(currentUser.role)) {
+                                  setPaymentSettleStudent(student);
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 text-left ${
+                                ['admin', 'sub-admin'].includes(currentUser.role)
+                                  ? 'cursor-pointer hover:bg-emerald-500/20 active:scale-95 transition-all'
+                                  : ''
+                              }`}
+                              title={
+                                ['admin', 'sub-admin'].includes(currentUser.role)
+                                  ? `Click to mark as UNPAID (Ref: ${student.paymentId || 'N/A'})`
+                                  : `Transaction Ref: ${student.paymentId || 'N/A'}`
+                              }
+                            >
                               <span>₹{(student.paidAmount || 9999).toLocaleString('en-IN')} Paid</span>
-                            </span>
+                              {['admin', 'sub-admin'].includes(currentUser.role) && (
+                                <Pencil className="w-2.5 h-2.5 opacity-60 hover:opacity-100" />
+                              )}
+                            </button>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (['admin', 'sub-admin'].includes(currentUser.role)) {
+                                  setPaymentSettleStudent(student);
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-left ${
+                                ['admin', 'sub-admin'].includes(currentUser.role)
+                                  ? 'cursor-pointer hover:bg-amber-500/20 active:scale-95 transition-all animate-pulse'
+                                  : ''
+                              }`}
+                              title={
+                                ['admin', 'sub-admin'].includes(currentUser.role)
+                                  ? 'Click to settle fees & mark as PAID'
+                                  : 'Payment Pending'
+                              }
+                            >
                               <span>₹{(() => {
                                 if (!student.course || !courses || courses.length === 0) return 9999;
                                 const userCourseClean = student.course.trim().replace(/\.+$/, "").toLowerCase();
@@ -1312,7 +1350,10 @@ export default function EnrollmentManager({
                                 
                                 return (matched || courses[0])?.fee || 9999;
                               })().toLocaleString('en-IN')} Unpaid</span>
-                            </span>
+                              {['admin', 'sub-admin'].includes(currentUser.role) && (
+                                <Pencil className="w-2.5 h-2.5 opacity-60 hover:opacity-100 animate-bounce" />
+                              )}
+                            </button>
                           )}
                           {student.phone ? (
                             <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-full " title={student.phone}>
@@ -2205,6 +2246,137 @@ export default function EnrollmentManager({
                     Confirm & Update
                   </button>
                 </div>
+              </motion.div>
+            </div>
+          )}
+
+          {/* Quick Payment Settlement Modal */}
+          {paymentSettleStudent && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-md bg-white dark:bg-[#161618] rounded-2xl border border-slate-100 dark:border-white/5 p-6 shadow-2xl relative"
+              >
+                {paymentSettleStudent.paymentStatus === 'paid' ? (
+                  <>
+                    <div className="flex items-center gap-3 text-rose-500 mb-4">
+                      <div className="p-2.5 bg-rose-500/10 rounded-xl">
+                        <X className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
+                          Revert Student Payment Status
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Lock Access Ledger
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-gray-350 leading-relaxed mb-6">
+                      Are you sure you want to mark <strong className="font-bold text-slate-900 dark:text-white">{paymentSettleStudent.name}</strong> as <strong className="text-rose-500 font-bold">Unpaid</strong>? 
+                      This will lock them out of their student dashboard panel, requiring payment resolution or administrator override to restore access.
+                    </p>
+
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentSettleStudent(null)}
+                        className="px-4 py-2.5 text-xs bg-slate-100 dark:bg-white/5 text-slate-705 dark:text-gray-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl cursor-pointer transition active:scale-[0.98]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onUpdateStudent) {
+                            const updated: UserAccount = {
+                              ...paymentSettleStudent,
+                              paymentStatus: 'pending',
+                              paidAmount: undefined,
+                              paymentId: undefined,
+                            };
+                            onUpdateStudent(updated);
+                          }
+                          setPaymentSettleStudent(null);
+                        }}
+                        className="px-5 py-2.5 text-xs bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl cursor-pointer transition shadow-md active:scale-[0.98]"
+                      >
+                        Yes, Mark as Unpaid
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3 text-emerald-500 mb-4">
+                      <div className="p-2.5 bg-emerald-500/10 rounded-xl">
+                        <Check className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
+                          Settle Student Account Payment
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Bypass Fee Gate
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-gray-350 leading-relaxed mb-6">
+                      Are you sure you want to mark <strong className="font-bold text-slate-900 dark:text-white">{paymentSettleStudent.name}</strong> as <strong className="text-emerald-500 font-bold">Paid</strong>? 
+                      This will instantly bypass the payment gateway, register their account as fully settled, and grant them complete access to their student dashboard.
+                    </p>
+
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentSettleStudent(null)}
+                        className="px-4 py-2.5 text-xs bg-slate-100 dark:bg-white/5 text-slate-705 dark:text-gray-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl cursor-pointer transition active:scale-[0.98]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onUpdateStudent) {
+                            // Calculate fee helper
+                            const getFee = () => {
+                              if (!paymentSettleStudent.course || !courses || courses.length === 0) return 9999;
+                              const userCourseClean = paymentSettleStudent.course.trim().replace(/\.+$/, "").toLowerCase();
+                              let matched = courses.find(c => {
+                                const cId = c.id?.trim().toLowerCase() || "";
+                                const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                                const cCode = c.code?.trim().toLowerCase() || "";
+                                return cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+                              });
+                              if (matched) return matched.fee || 9999;
+                              matched = courses.find(c => {
+                                const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                                return cName.includes(userCourseClean) || userCourseClean.includes(cName);
+                              });
+                              return (matched || courses[0])?.fee || 9999;
+                            };
+
+                            const fee = getFee();
+                            const updated: UserAccount = {
+                              ...paymentSettleStudent,
+                              paymentStatus: 'paid',
+                              paidAmount: fee,
+                              paymentId: 'ADMIN_VERIFIED_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                            };
+                            onUpdateStudent(updated);
+                          }
+                          setPaymentSettleStudent(null);
+                        }}
+                        className="px-5 py-2.5 text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl cursor-pointer transition shadow-md active:scale-[0.98]"
+                      >
+                        Yes, Mark as Paid
+                      </button>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </div>
           )}
