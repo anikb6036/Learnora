@@ -222,6 +222,7 @@ function AppContent() {
 
   // Root states synchronized with Firebase Live Queries
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getSavedState('active-user', null));
+  const [originalAdminUser, setOriginalAdminUser] = useState<UserAccount | null>(() => getSavedState('original-admin-user', null));
   const [users, setUsers, usersLoaded] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
   const [schedules, setSchedules, schedulesLoaded] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
   const [progressRecords, setProgressRecords, progressLoaded] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
@@ -234,6 +235,10 @@ function AppContent() {
   useEffect(() => {
     saveState('active-user', currentUser);
   }, [currentUser]);
+
+  useEffect(() => {
+    saveState('original-admin-user', originalAdminUser);
+  }, [originalAdminUser]);
 
   // Pending admission registration requests state
   const [registrationRequests, setRegistrationRequests, registrationLoaded] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
@@ -751,6 +756,44 @@ function AppContent() {
     setTimeout(() => {
       setToastAlert(null);
     }, 4500);
+  };
+
+  const handleImpersonateStudent = (student: UserAccount) => {
+    if (!currentUser) return;
+    if (!['admin', 'sub-admin'].includes(currentUser.role)) return;
+
+    // Save original user
+    setOriginalAdminUser(currentUser);
+    // Switch active user to student
+    setCurrentUser(student);
+
+    triggerToast({
+      id: `impersonate-${Date.now()}`,
+      title: 'Emergency View Mode',
+      message: `Impersonating student: ${student.name}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'push'
+    });
+  };
+
+  const handleExitImpersonation = () => {
+    if (!originalAdminUser) return;
+
+    // Restore original user
+    setCurrentUser(originalAdminUser);
+    setOriginalAdminUser(null);
+
+    triggerToast({
+      id: `exit-impersonate-${Date.now()}`,
+      title: 'View Mode Ended',
+      message: 'Returned to administrator panel',
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'push'
+    });
   };
 
   // Update Profile details or password handler
@@ -2500,6 +2543,25 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#FFF3F5] via-[#FFF8F9] to-[#FFFBFB] text-slate-800 dark:from-[#110D12] dark:via-[#160E14] dark:to-[#0A0A0B] dark:text-gray-200 transition-colors duration-300 font-sans">
       
+      {originalAdminUser && currentUser && (
+        <div className="sticky top-0 z-[9999] w-full bg-amber-600 dark:bg-amber-700 text-white px-4 py-2.5 shadow-md flex flex-wrap items-center justify-between gap-3 font-sans border-b border-amber-500/30">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-amber-100 animate-pulse flex-shrink-0" />
+            <p className="text-xs md:text-sm font-semibold tracking-wide">
+              EMERGENCY IMPERSONATION: Currently viewing student profile for <span className="underline font-bold">{currentUser.name}</span> ({currentUser.username || currentUser.email})
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExitImpersonation}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white text-amber-700 dark:text-amber-800 hover:bg-amber-50 font-bold rounded-xl shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+            Exit View Mode
+          </button>
+        </div>
+      )}
+
       {/* Real-time Toast Popups */}
       <AnimatePresence>
         {toastAlert && (
@@ -4479,7 +4541,7 @@ function AppContent() {
                                               </span>
                                             ) : (
                                               <span className="bg-rose-500/10 text-rose-605 dark:text-rose-450 px-2.5 py-0.5 rounded text-[10px] font-bold border border-rose-550/20 animate-pulse">
-                                                🚨 Pending Submission
+                                                Pending Submission
                                               </span>
                                             )}
                                           </div>
@@ -4608,7 +4670,7 @@ function AppContent() {
                                               Due Date: {asg.dueDate}
                                             </span>
                                             <span className="bg-rose-500/10 text-rose-605 dark:text-rose-450 px-2.5 py-0.5 rounded text-[10px] font-bold border border-rose-550/20 animate-pulse">
-                                              🚨 Pending Submission
+                                              Pending Submission
                                             </span>
                                           </div>
                                         </div>
@@ -4772,6 +4834,7 @@ function AppContent() {
                 onRejectRequest={handleRejectRegistration}
                 onUpdateStudent={handleUpdateProfile}
                 onUpdateRegistrationRequest={handleUpdateRegistrationRequest}
+                onImpersonateStudent={handleImpersonateStudent}
               />
             )}
 

@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, RegistrationRequest, StudentBatch, Course } from '../types';
-import { UserPlus, Search, User, Filter, Trash2, Mail, Phone, Calendar, ArrowRight, BookOpen, Check, X, ShieldAlert, MapPin, GraduationCap, Camera, Upload, Pencil, Clock, Video, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Search, User, Filter, Trash2, Mail, Phone, Calendar, ArrowRight, BookOpen, Check, X, ShieldAlert, MapPin, GraduationCap, Camera, Upload, Pencil, Clock, Video, CheckCircle2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from '../countryPhoneData';
 import { compressImage } from '../imageUtils';
@@ -30,6 +30,7 @@ interface EnrollmentManagerProps {
   onRejectRequest: (id: string) => void;
   onUpdateStudent?: (updatedStudent: UserAccount) => void;
   onUpdateRegistrationRequest?: (updatedReq: RegistrationRequest) => void;
+  onImpersonateStudent?: (student: UserAccount) => void;
 }
 
 export default function EnrollmentManager({
@@ -51,7 +52,8 @@ export default function EnrollmentManager({
   onApproveRequest,
   onRejectRequest,
   onUpdateStudent,
-  onUpdateRegistrationRequest
+  onUpdateRegistrationRequest,
+  onImpersonateStudent
 }: EnrollmentManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInstructorId, setSelectedInstructorId] = useState<'all' | string>('all');
@@ -1369,10 +1371,22 @@ export default function EnrollmentManager({
                       <div className="col-span-4 md:col-span-4 min-w-0">
                         <div className="space-y-1.5">
                           {/* Advisor name */}
-                          <p className="font-semibold text-slate-700 dark:text-slate-350 flex items-center gap-1.5 truncate">
-                            <GraduationCap className="w-4 h-4 text-amber-500" />
-                            Advisor: <span className="text-slate-900 dark:text-white font-medium">{getInstructorName(student.assignedInstructorId)}</span>
-                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-semibold text-slate-700 dark:text-slate-350 flex items-center gap-1.5 truncate">
+                              <GraduationCap className="w-4 h-4 text-amber-500" />
+                              Advisor: <span className="text-slate-900 dark:text-white font-medium">{getInstructorName(student.assignedInstructorId)}</span>
+                            </p>
+                            {['admin', 'sub-admin'].includes(currentUser.role) && onImpersonateStudent && (
+                              <button
+                                onClick={() => onImpersonateStudent(student)}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-lg text-[10px] font-bold hover:bg-indigo-500/20 active:scale-95 transition-all cursor-pointer shadow-3xs whitespace-nowrap"
+                                title="Emergency View Student Account"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>Look Account</span>
+                              </button>
+                            )}
+                          </div>
                           
                           {/* Active courses tags */}
                           <div className="flex flex-wrap gap-1 items-center">
@@ -1385,14 +1399,7 @@ export default function EnrollmentManager({
                                 {cl.subject}
                               </span>
                             ))}
-                            {currentUser.role !== 'student' && (
-                              <button
-                                onClick={() => setEnrollmentStudentId(student.id)}
-                                className="text-xs font-bold text-amber-500 hover:underline px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/10 text-amber-600 dark:text-amber-400 cursor-pointer flex items-center gap-0.5 whitespace-nowrap"
-                              >
-                                + Enroll Class
-                              </button>
-                            )}
+
                           </div>
                         </div>
 
@@ -1452,7 +1459,7 @@ export default function EnrollmentManager({
                                   setEditPaymentStatus(student.paymentStatus || 'pending');
                                   setEditPhoneError('');
                                   setEditFatherPhoneError('');
-
+ 
                                   if (student.phone) {
                                     const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.phone?.startsWith(cfg.code));
                                     setEditPhonePrefix(match ? match.code : '+91');
@@ -1461,7 +1468,7 @@ export default function EnrollmentManager({
                                     setEditPhoneRaw('');
                                     setEditPhonePrefix('+91');
                                   }
-
+ 
                                   if (student.fatherPhone) {
                                     const match = COUNTRY_PHONE_CONFIGS.find(cfg => student.fatherPhone?.startsWith(cfg.code));
                                     setEditFatherPhonePrefix(match ? match.code : '+91');
@@ -1475,6 +1482,15 @@ export default function EnrollmentManager({
                                 title="Edit Student Details"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {['admin', 'sub-admin'].includes(currentUser.role) && onImpersonateStudent && (
+                              <button
+                                onClick={() => onImpersonateStudent(student)}
+                                className="p-1.5 hover:bg-indigo-500/10 text-slate-444 hover:text-indigo-500 rounded-lg transition cursor-pointer"
+                                title="Emergency View Student Account"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
                             )}
                             <button
