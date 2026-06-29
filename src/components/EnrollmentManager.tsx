@@ -279,7 +279,8 @@ export default function EnrollmentManager({
       return false;
     }
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
+                          student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (student.universalId && student.universalId.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesInstructor = selectedInstructorId === 'all' || student.assignedInstructorId === selectedInstructorId;
     const matchesCourse = selectedCourseName === 'all' || student.course === selectedCourseName;
     const matchesBatch = selectedBatchName === 'all' || student.batch === selectedBatchName;
@@ -1258,8 +1259,8 @@ export default function EnrollmentManager({
                             {student.email}
                           </p>
                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                              ID: {student.id.slice(0, 8)}
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-450 border border-amber-500/20 font-bold" title="6-digit Universal Student ID">
+                              UID: {student.universalId || student.id.slice(0, 6)}
                             </span>
                             {student.course && (
                               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/10">

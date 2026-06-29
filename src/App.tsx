@@ -144,6 +144,22 @@ const generateUniqueId = (prefix: string) => {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000000)}`;
 };
 
+const generateUniversalId = (existingUsers?: UserAccount[]) => {
+  let uid = '';
+  let isUnique = false;
+  let attempts = 0;
+  while (!isUnique && attempts < 100) {
+    uid = Math.floor(100000 + Math.random() * 900000).toString();
+    if (!existingUsers) {
+      isUnique = true;
+    } else {
+      isUnique = !existingUsers.some(u => u.universalId === uid);
+    }
+    attempts++;
+  }
+  return uid;
+};
+
 declare global {
   interface Window {
     recaptchaVerifier: any;
@@ -752,11 +768,13 @@ function AppContent() {
   const handleAddStudent = (studentData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
     const generatedUsername = studentData.username || studentData.email.toLowerCase();
     const generatedPassword = studentData.password || `pass_${Math.floor(1000 + Math.random() * 9000)}`;
+    const studentUid = generateUniversalId(users);
 
     const newStudent: UserAccount = {
       ...studentData,
       id: generateUniqueId('student'),
       joinedDate: new Date().toLocaleDateString('en-US'),
+      universalId: studentUid,
       username: generatedUsername,
       password: generatedPassword,
       avatarUrl: studentData.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
@@ -764,7 +782,7 @@ function AppContent() {
 
     setUsers(prev => [...prev, newStudent]);
 
-    const emailBodyTxt = `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    const emailBodyTxt = `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials and Universal ID below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
     sendSystemEmail(
       newStudent.email,
       'Welcome to Learnora! - Access Credentials & Quick Start',
@@ -774,8 +792,9 @@ function AppContent() {
         <p>Dear ${newStudent.name},</p>
         <p>Welcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.</p>
         <p>Your profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.</p>
-        <p>Please find your secure system access credentials below:</p>
+        <p>Please find your secure system access credentials and Universal ID below:</p>
         <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
           <p style="margin: 0;"><strong>USERNAME:</strong> ${generatedUsername}</p>
           <p style="margin: 0;"><strong>PASSWORD:</strong> ${generatedPassword}</p>
         </div>
@@ -788,7 +807,7 @@ function AppContent() {
     const notif: AppNotification = {
       id: generateUniqueId('notif'),
       title: 'Student Account Registered',
-      message: `Successful registration folder instantiated for ${newStudent.name}. Profile active and welcome email dispatched.`,
+      message: `Successful registration folder instantiated for ${newStudent.name} (Universal ID: ${studentUid}). Profile active and welcome email dispatched.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'enrollment',
@@ -1889,6 +1908,8 @@ function AppContent() {
     const r = registrationRequests.find(req => req.id === requestId);
     if (!r || r.status !== 'pending') return;
 
+    const studentUid = generateUniversalId(users);
+
     // Add user profile
     const newStudent: UserAccount = {
       id: generateUniqueId('student'),
@@ -1898,6 +1919,7 @@ function AppContent() {
       role: 'student',
       joinedDate: new Date().toLocaleDateString('en-US'),
       assignedInstructorId: r.assignedInstructorId,
+      universalId: studentUid,
       username: r.username,
       password: r.password,
       avatarUrl: r.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
@@ -1912,7 +1934,7 @@ function AppContent() {
     };
 
     const loginUrl = `${window.location.protocol}//${window.location.host}/`;
-    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that your Enrollment Request has been APPROVED and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that your Enrollment Request has been APPROVED and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
     
     sendSystemEmail(
       r.email,
@@ -1921,8 +1943,9 @@ function AppContent() {
       `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
         <h2>Learnora Admissions</h2>
         <p>Dear ${r.name},</p>
-        <p>We are absolutely delighted to inform you that your Enrollment Request has been <strong>APPROVED</strong> and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:</p>
+        <p>We are absolutely delighted to inform you that your Enrollment Request has been <strong>APPROVED</strong> and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:</p>
         <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
           <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
           <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
         </div>
@@ -1935,7 +1958,7 @@ function AppContent() {
     const notif: AppNotification = {
       id: generateUniqueId('notif-appr'),
       title: 'Admissions Request Accepted',
-      message: `Student account created for ${r.name}. Security credentials dispatched to email.`,
+      message: `Student account created for ${r.name} (Universal ID: ${studentUid}). Security credentials dispatched to email.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'enrollment',
@@ -1968,6 +1991,8 @@ function AppContent() {
       return;
     }
 
+    const studentUid = generateUniversalId(users);
+
     // Add user profile
     const newStudent: UserAccount = {
       id: generateUniqueId('student'),
@@ -1977,6 +2002,7 @@ function AppContent() {
       role: 'student',
       joinedDate: new Date().toLocaleDateString('en-US'),
       assignedInstructorId: r.assignedInstructorId,
+      universalId: studentUid,
       username: r.username,
       password: r.password,
       avatarUrl: r.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
@@ -1991,7 +2017,7 @@ function AppContent() {
     };
 
     const loginUrl = `${window.location.protocol}//${window.location.host}/`;
-    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that you have PASSED the Mandatory English Placement Exam with a qualifying score of ${score}% (Threshold: 25% for auto-admission)!\n\nAs a result, your enrollment has been AUTOMATICALLY APPROVED and instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that you have PASSED the Mandatory English Placement Exam with a qualifying score of ${score}% (Threshold: 25% for auto-admission)!\n\nAs a result, your enrollment has been AUTOMATICALLY APPROVED and instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
     
     sendSystemEmail(
       r.email,
@@ -2001,8 +2027,9 @@ function AppContent() {
         <h2>Learnora Admissions</h2>
         <p>Dear ${r.name},</p>
         <p>We are absolutely delighted to inform you that you have <strong>PASSED</strong> the Mandatory English Placement Exam with a qualifying score of <strong>${score}%</strong> (Threshold: 25% for auto-admission)!</p>
-        <p>As a result, your enrollment has been <strong>AUTOMATICALLY APPROVED</strong> and instantiated within our main Student Ledger database. Your auto-generated security credentials are listed below:</p>
+        <p>As a result, your enrollment has been <strong>AUTOMATICALLY APPROVED</strong> and instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:</p>
         <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
           <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
           <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
         </div>
@@ -2015,7 +2042,7 @@ function AppContent() {
     const notif: AppNotification = {
       id: generateUniqueId('notif-appr'),
       title: 'Auto Admission Passed!',
-      message: `${r.name} achieved a scoring grade of ${score}% on their entrance test. Admitted automatically.`,
+      message: `${r.name} (Universal ID: ${studentUid}) achieved a scoring grade of ${score}% on their entrance test. Admitted automatically.`,
       timestamp: new Date().toISOString(),
       read: false,
       type: 'enrollment',

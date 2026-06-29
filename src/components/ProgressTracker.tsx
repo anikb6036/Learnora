@@ -407,8 +407,8 @@ export default function ProgressTracker({
       month: 'long',
       day: 'numeric'
     });
-    const certNo = `LRN-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
-    const studentIdNo = `STU-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
+    const certNo = currentUser.universalId ? `LRN-${currentUser.universalId}` : `LRN-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
+    const studentIdNo = currentUser.universalId ? `STU-${currentUser.universalId}` : `STU-2024-${currentUser.id.slice(0, 6).toUpperCase()}`;
     const courseName = currentUser.course || 'Learnora Elite Coaching Program';
 
     const downloadCertificateAsPNG = () => {

@@ -13,6 +13,7 @@ export interface UserAccount {
   avatarUrl?: string;
   phone?: string;
   joinedDate: string;
+  universalId?: string; // 6-digit universal student ID
   specialization?: string; // For instructors
   assignedInstructorId?: string; // For students
   username?: string; // Optional username for credentials login
