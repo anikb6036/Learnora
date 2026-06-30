@@ -1392,7 +1392,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {courses.filter(c => c.status === 'upcoming').map((course) => {
                     const isSelected = selectedCourseId === course.id;
                     const category = getCourseCategory(course.name);
@@ -1401,17 +1401,15 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseId(course.id)}
-                        className={`p-5 rounded-2xl transition-all duration-300 cursor-pointer select-none border text-left flex flex-col justify-between h-[200px] relative overflow-hidden group ${
+                        className={`p-6 rounded-[20px] transition-all duration-300 cursor-pointer select-none border text-left flex flex-col justify-between min-h-[220px] bg-white dark:bg-zinc-950 ${
                           isSelected
-                            ? 'bg-white border-red-500 shadow-xl shadow-red-500/5 ring-1 ring-red-500/20'
-                            : 'bg-slate-50/50 border-slate-250/60 hover:border-slate-300 hover:bg-slate-100/30'
+                            ? 'border-slate-800 dark:border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.04)] ring-1 ring-slate-800 dark:ring-slate-300'
+                            : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-[0_8px_20px_rgb(0,0,0,0.04)] dark:hover:shadow-none hover:-translate-y-0.5'
                         }`}
                       >
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-slate-200/20 to-transparent opacity-10 group-hover:scale-110 transition-transform" />
-
                         <div>
-                          <div className="flex items-start justify-between">
-                            <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="shrink-0 bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-2xl border border-slate-100 dark:border-zinc-800/80 shadow-sm">
                               {category === 'Product Management with AI' && <PMIcon />}
                               {category === 'Analytics and AI' && <AnalyticsIcon />}
                               {category === 'Data Science and AI-ML' && <DataScienceIcon />}
@@ -1421,24 +1419,37 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                             </div>
                             
                             {course.batchNumber && (
-                              <span className="text-[9.5px] bg-slate-100 border border-slate-200/60 text-slate-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              <span className="text-[10px] bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                 Batch {course.batchNumber}
                               </span>
                             )}
                           </div>
 
-                          <h3 className={`font-bold text-sm leading-snug mt-4 transition-colors ${
-                            isSelected ? 'text-red-600' : 'text-[#1D1D1F] group-hover:text-red-600'
-                          }`}>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-snug mt-5 tracking-tight">
                             {course.name}
                           </h3>
+
+                          <div className="mt-4.5 flex items-baseline gap-2">
+                            <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Fee</span>
+                            <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                              ₹{(course.fee || 14999).toLocaleString('en-IN')}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Card Footer info */}
-                        <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                          <span>{course.durationWeeks ? `${course.durationWeeks} Months` : '5 Months'} • {course.code || 'COHORT'}</span>
-                          <span className="text-red-600 font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            View Syllabus <ChevronRight className="w-3 h-3" />
+                        <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-6 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                            {course.durationWeeks ? `${course.durationWeeks} Months` : '24 Months'} • {course.code || course.batchNumber || 'COHORT'}
+                          </span>
+                          <span className={`font-semibold transition-colors flex items-center gap-1 ${
+                            isSelected 
+                              ? 'text-slate-800 dark:text-slate-200' 
+                              : 'text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300'
+                          }`}>
+                            View Syllabus <ChevronRight className="w-3.5 h-3.5" />
                           </span>
                         </div>
                       </div>
