@@ -4,13 +4,14 @@
  */
 
 import React, { useState } from 'react';
-import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentEvolution } from '../types';
+import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentEvolution, Course } from '../types';
 import { Award, BookOpen, Clock, Calendar, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle, Terminal, Code, Copy, History, Play, Flame, RotateCcw, BookOpenText, ChevronLeft, HelpCircle, Maximize2, Settings, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProgressTrackerProps {
   currentUser: UserAccount;
   students: UserAccount[];
+  courses?: Course[];
   schedules: ClassSchedule[];
   progressRecords: ProgressRecord[];
   assignments?: StudentAssignment[];
@@ -24,6 +25,7 @@ interface ProgressTrackerProps {
 export default function ProgressTracker({
   currentUser,
   students,
+  courses = [],
   schedules,
   progressRecords,
   assignments = [],
@@ -392,15 +394,17 @@ export default function ProgressTracker({
       return (matchesCourse && matchesBatch) || isEnrolledInClass;
     });
 
-    const gradedAssignments = studentAssignmentsList.filter(asg => {
-      const submission = asg.submissions.find(s => s.studentId === currentUser.id);
-      return submission && submission.score !== undefined;
-    });
+    const currentCourseInfo = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
+    const totalEvolutionsCount = currentCourseInfo?.roadmap?.length || currentCourseInfo?.durationMonths || 6;
 
-    const totalEvaluations = studentAssignmentsList.length;
-    const completedEvaluations = gradedAssignments.length;
+    const studentClearedEvolutions = studentEvolutions.filter(ev => 
+      ev.studentId === currentUser.id && ev.promoted === true
+    );
+
+    const totalEvaluations = totalEvolutionsCount;
+    const completedEvaluations = studentClearedEvolutions.length;
     const progressPercentage = totalEvaluations > 0 ? (completedEvaluations / totalEvaluations) * 100 : 0;
-    const isComplete = totalEvaluations > 0 && completedEvaluations === totalEvaluations;
+    const isComplete = totalEvaluations > 0 && completedEvaluations >= totalEvaluations;
 
     const todayStr = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -1447,7 +1451,7 @@ export default function ProgressTracker({
                   Certificate Progress
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-gray-400">
-                  Track your course evaluation milestones to automatically unlock your completion certificate.
+                  Track your monthly evolution milestones to automatically unlock your completion certificate.
                 </p>
               </div>
               {isComplete && (
@@ -1468,7 +1472,7 @@ export default function ProgressTracker({
                     Course Completion
                   </p>
                   <p className="text-xs text-slate-500 dark:text-zinc-400">
-                    {completedEvaluations} of {totalEvaluations} evaluations cleared
+                    {completedEvaluations} of {totalEvaluations} month evolutions cleared
                   </p>
                 </div>
                 <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
@@ -1626,6 +1630,8 @@ export default function ProgressTracker({
                     <div className={`p-5 rounded-2xl border transition-all ${
                       isPromoted 
                         ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300' 
+                        : scoresCount === 4 && !overallPass
+                        ? 'bg-red-500/10 border-red-500/20 text-red-800 dark:text-red-400'
                         : scoresCount > 0 
                         ? 'bg-amber-500/5 border-amber-500/10 text-amber-700 dark:text-amber-400'
                         : 'bg-slate-100/50 dark:bg-white/[0.01] border-slate-200/50 dark:border-white/5 text-slate-500'
@@ -1634,7 +1640,12 @@ export default function ProgressTracker({
                       <div className="flex items-center gap-1.5 mt-1">
                         {isPromoted ? (
                           <span className="text-lg font-extrabold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                            🏆 Promoted!
+                            🏆 Cleared!
+                          </span>
+                        ) : scoresCount === 4 && !overallPass ? (
+                          <span className="text-lg font-extrabold flex items-center gap-1.5 text-red-600 dark:text-red-500">
+                            <AlertCircle className="w-5 h-5" />
+                            Redo Required
                           </span>
                         ) : (
                           <span className="text-lg font-extrabold">In Progress</span>
@@ -1643,6 +1654,8 @@ export default function ProgressTracker({
                       <p className="text-xs mt-1.5">
                         {isPromoted 
                           ? `Automatically promoted on ${evoRec?.promotedDate || 'this month'}`
+                          : scoresCount === 4 && !overallPass
+                          ? `Did not meet the 80% threshold. You must redo this month.`
                           : `Passing mark: Average score >= 80% with all 4 weeks completed`
                         }
                       </p>

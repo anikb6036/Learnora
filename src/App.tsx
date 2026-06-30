@@ -4920,6 +4920,7 @@ function AppContent() {
               <ProgressTracker
                 currentUser={currentUser}
                 students={users.filter(u => u.role === 'student')}
+                courses={courses}
                 schedules={schedules}
                 progressRecords={progressRecords}
                 assignments={assignments}
