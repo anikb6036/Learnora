@@ -186,6 +186,40 @@ export default function ProgressTracker({
     setEv4Feedback('');
   };
 
+  const handleResetMonth = (studentId: string, monthNum: number) => {
+    if (!onUpdateStudentEvolutions) return;
+    onUpdateStudentEvolutions(prev => {
+      return prev.map(ev => {
+        if (ev.studentId === studentId && ev.month === monthNum) {
+          return {
+            ...ev,
+            evolution1: undefined,
+            evolution2: undefined,
+            evolution3: undefined,
+            evolution4: undefined,
+            feedback1: undefined,
+            feedback2: undefined,
+            feedback3: undefined,
+            feedback4: undefined,
+            week1Submission: undefined,
+            week1SubmissionDate: undefined,
+            week2Submission: undefined,
+            week2SubmissionDate: undefined,
+            week3Submission: undefined,
+            week3SubmissionDate: undefined,
+            week4Submission: undefined,
+            week4SubmissionDate: undefined,
+            overallScore: undefined,
+            promoted: false,
+            promotedDate: undefined,
+            lastUpdated: new Date().toISOString()
+          };
+        }
+        return ev;
+      });
+    });
+  };
+
   // New Record state
   const [studentId, setStudentId] = useState('');
   const [classId, setClassId] = useState('');
@@ -1512,61 +1546,99 @@ export default function ProgressTracker({
 
             <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-slate-400" />
-              Evaluation Milestones
+              Monthly Evolution Milestones
             </h3>
             
-            {studentAssignmentsList.length === 0 ? (
-              <div className="text-center py-12 border border-slate-100 dark:border-white/5 rounded-2xl bg-slate-50 dark:bg-white/[0.02]">
-                <p className="text-sm text-slate-500 dark:text-zinc-400 font-medium">No evaluations assigned yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {studentAssignmentsList.map((asg, idx) => {
-                  const submission = asg.submissions.find(s => s.studentId === currentUser.id);
-                  const isCleared = submission && submission.score !== undefined;
-                  
-                  return (
-                    <div key={asg.id} className="p-4 bg-white dark:bg-[#0c0d12]/40 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                      <div className="flex gap-4">
-                        <div className="mt-1">
-                          {isCleared ? (
-                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#161618] border border-slate-200 dark:border-white/10 flex items-center justify-center">
-                              <span className="text-xs font-bold text-slate-400">{idx + 1}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <h4 className={`text-sm font-bold ${isCleared ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-zinc-300'}`}>
-                            {asg.title}
-                          </h4>
-                          <p className="text-xs text-slate-500 mt-1">Class Ref: {asg.className}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-white/5">
+            <div className="space-y-4">
+              {Array.from({ length: totalEvaluations }, (_, i) => i + 1).map((m) => {
+                const evoRec = studentEvolutions.find(ev => ev.studentId === currentUser.id && ev.month === m && ev.status !== 'draft');
+                const scoresCount = evoRec ? [evoRec.evolution1, evoRec.evolution2, evoRec.evolution3, evoRec.evolution4].filter(s => s !== undefined).length : 0;
+                const overallPass = evoRec?.overallScore !== undefined && evoRec.overallScore >= 80;
+                const isCleared = evoRec?.promoted === true;
+                const isRedo = scoresCount === 4 && !overallPass;
+                const isLocked = m > (currentUser.currentMonth || 1);
+                const isInProgress = m === (currentUser.currentMonth || 1) && !isCleared;
+
+                return (
+                  <div 
+                    key={m} 
+                    className={`p-4 border rounded-xl shadow-sm flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center transition-all ${
+                      isCleared 
+                        ? 'bg-emerald-500/5 border-emerald-500/20' 
+                        : isRedo 
+                        ? 'bg-red-500/5 border-red-500/20' 
+                        : isInProgress 
+                        ? 'bg-amber-500/5 border-amber-500/15 animate-pulse'
+                        : 'bg-slate-50/50 dark:bg-white/[0.01] border-slate-200/50 dark:border-white/5 opacity-60'
+                    }`}
+                  >
+                    <div className="flex gap-4">
+                      <div className="mt-1">
                         {isCleared ? (
-                          <div className="text-right flex-1 sm:flex-none">
-                            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded inline-block">
-                              Cleared &bull; {submission.score}/{asg.maxPoints} pts
-                            </p>
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                        ) : isRedo ? (
+                          <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          </div>
+                        ) : isInProgress ? (
+                          <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
                           </div>
                         ) : (
-                          <div className="text-right flex-1 sm:flex-none">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 px-2 py-1 rounded inline-block">
-                              Pending Evaluation
-                            </p>
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-white/5">
+                            <span className="text-xs font-bold text-slate-400">🔒</span>
                           </div>
                         )}
                       </div>
+                      <div>
+                        <h4 className={`text-sm font-bold ${isLocked ? 'text-slate-400 dark:text-zinc-500' : 'text-slate-900 dark:text-white'}`}>
+                          Study Month {m} Evolution Tracker {isLocked && '(Locked)'}
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {isCleared 
+                            ? `Completed successfully with ${evoRec?.overallScore}% average score!` 
+                            : isRedo 
+                            ? `Grade average of ${evoRec?.overallScore}% is below the 80% benchmark. Redo required.` 
+                            : isInProgress 
+                            ? `${scoresCount} of 4 weekly submissions graded.` 
+                            : `Prerequisite: Clear Month ${m - 1} first.`}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    
+                    <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-white/5">
+                      {isCleared ? (
+                        <span className="text-xs font-bold text-emerald-750 bg-emerald-500/15 px-2.5 py-1 rounded-lg">
+                          CLEARED &bull; {evoRec?.overallScore}%
+                        </span>
+                      ) : isRedo ? (
+                        <div className="flex flex-col sm:items-end gap-1.5 w-full">
+                          <span className="text-xs font-bold text-red-700 bg-red-500/15 px-2.5 py-1 rounded-lg">
+                            REDO REQUIRED &bull; {evoRec?.overallScore}%
+                          </span>
+                          <button
+                            onClick={() => handleResetMonth(currentUser.id, m)}
+                            className="text-[10px] font-bold text-red-600 hover:text-red-700 underline flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <RotateCcw className="w-2.5 h-2.5" /> Start Over
+                          </button>
+                        </div>
+                      ) : isInProgress ? (
+                        <span className="text-xs font-bold text-amber-700 bg-amber-500/15 px-2.5 py-1 rounded-lg">
+                          IN PROGRESS
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg">
+                          LOCKED
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : (
           /* THE NEW STUDENT MONTHLY EVOLUTION SYSTEM VIEW */
@@ -1659,6 +1731,15 @@ export default function ProgressTracker({
                           : `Passing mark: Average score >= 80% with all 4 weeks completed`
                         }
                       </p>
+                      {scoresCount === 4 && !overallPass && (
+                        <button
+                          onClick={() => handleResetMonth(currentUser.id, studentSelectedMonth)}
+                          className="mt-3 w-full py-2 px-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 animate-spin-reverse" />
+                          Reset & Restart Month {studentSelectedMonth}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -2618,7 +2699,35 @@ export default function ProgressTracker({
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Tracker metrics */}
+      {/* Sub-tab Selector for Instructors & Admins */}
+      <div className="flex bg-slate-100 dark:bg-white/[0.03] p-1 rounded-2xl max-w-sm border border-slate-200/50 dark:border-white/5 shadow-sm">
+        <button
+          onClick={() => setActiveSubTab('traditional')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none ${
+            activeSubTab === 'traditional'
+              ? 'bg-white dark:bg-[#1c1d22] text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/40 dark:border-white/5'
+              : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <Award className="w-3.5 h-3.5" />
+          Class Grades
+        </button>
+        <button
+          onClick={() => setActiveSubTab('evolution')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none ${
+            activeSubTab === 'evolution'
+              ? 'bg-white dark:bg-[#1c1d22] text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/40 dark:border-white/5'
+              : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          Monthly Evolutions
+        </button>
+      </div>
+
+      {activeSubTab === 'traditional' ? (
+        <>
+          {/* Tracker metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Reported Average Score</p>
@@ -2908,6 +3017,424 @@ export default function ProgressTracker({
           )}
         </div>
       </div>
+        </>
+      ) : (
+        <div className="space-y-6">
+          {/* Evolution Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Enrolled Student Players</p>
+              <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-1.5">{students.length}</p>
+              <p className="mt-2 text-xs text-slate-450 dark:text-gray-500">Active classroom learners</p>
+            </div>
+
+            <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Total Active Monthly Trackers</p>
+              <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-1.5">{studentEvolutions.length}</p>
+              <p className="mt-2 text-xs text-slate-450 dark:text-gray-500">Evaluations registered in database</p>
+            </div>
+
+            <div className="bg-white dark:bg-[#070708] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400">Promotions Granted</p>
+              <p className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-1.5">
+                {studentEvolutions.filter(ev => ev.promoted).length}
+              </p>
+              <p className="mt-2 text-xs text-slate-450 dark:text-gray-500">Automatic progression checkpoints met</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm p-6 md:p-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-indigo-500" />
+                Monthly Evolution Grading Dashboard
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+                Select a student and study month to review their weekly code/text submissions, assign scores, and log academic feedback.
+              </p>
+            </div>
+
+            {evolutionSuccessMessage && (
+              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                {evolutionSuccessMessage}
+              </div>
+            )}
+
+            {/* Selection row */}
+            <form onSubmit={handleUpdateEvolutionScore} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">1. Select Student</label>
+                  <select
+                    value={selectedEvolutionStudentId}
+                    onChange={(e) => setSelectedEvolutionStudentId(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="">-- Choose Student --</option>
+                    {students.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} (Month {s.currentMonth || 1})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">2. Select Study Month</label>
+                  <select
+                    value={selectedEvolutionMonth}
+                    onChange={(e) => setSelectedEvolutionMonth(parseInt(e.target.value))}
+                    required
+                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    {Array.from({ length: 6 }, (_, i) => i + 1).map(m => (
+                      <option key={m} value={m}>Month {m}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Registered Course Context</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={selectedEvolutionCourse || 'Automatic course discovery'}
+                    className="w-full px-3 py-2 text-xs border border-slate-100 dark:border-slate-800/40 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {selectedEvolutionStudentId ? (
+                <>
+                  {/* Scores Inputs Grid */}
+                  <div className="space-y-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                    <h3 className="text-xs font-extrabold uppercase text-slate-500 dark:text-gray-400 tracking-wider">
+                      Weekly Score Cards & Student Solution Submissions
+                    </h3>
+                    
+                    {(() => {
+                      const currentEvo = studentEvolutions.find(
+                        ev => ev.studentId === selectedEvolutionStudentId && ev.month === selectedEvolutionMonth && ev.status !== 'draft'
+                      );
+
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Week 1 */}
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                Week 1: {currentEvo?.title1 || 'Evolution Milestone 1'}
+                              </span>
+                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
+                                {currentEvo?.week1Type || 'code/text'}
+                              </span>
+                            </div>
+                            
+                            {/* Student submission preview */}
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student Solution:</p>
+                              {currentEvo?.week1Submission ? (
+                                <div className="p-3 bg-white dark:bg-black/45 border border-slate-200/50 dark:border-white/5 rounded-xl text-xs font-mono max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                                  {currentEvo.week1Submission}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400 italic">No solution submitted yet.</p>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                              <div className="sm:col-span-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Grade Score %</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={ev1Score}
+                                  onChange={(e) => setEv1Score(e.target.value)}
+                                  placeholder="Pending"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Actionable Feedback</label>
+                                <input
+                                  type="text"
+                                  value={ev1Feedback}
+                                  onChange={(e) => setEv1Feedback(e.target.value)}
+                                  placeholder="Well done, masterfully done!"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Week 2 */}
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                Week 2: {currentEvo?.title2 || 'Evolution Milestone 2'}
+                              </span>
+                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
+                                {currentEvo?.week2Type || 'code/text'}
+                              </span>
+                            </div>
+                            
+                            {/* Student submission preview */}
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student Solution:</p>
+                              {currentEvo?.week2Submission ? (
+                                <div className="p-3 bg-white dark:bg-black/45 border border-slate-200/50 dark:border-white/5 rounded-xl text-xs font-mono max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                                  {currentEvo.week2Submission}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400 italic">No solution submitted yet.</p>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                              <div className="sm:col-span-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Grade Score %</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={ev2Score}
+                                  onChange={(e) => setEv2Score(e.target.value)}
+                                  placeholder="Pending"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Actionable Feedback</label>
+                                <input
+                                  type="text"
+                                  value={ev2Feedback}
+                                  onChange={(e) => setEv2Feedback(e.target.value)}
+                                  placeholder="Excellent algorithmic logic."
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Week 3 */}
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                Week 3: {currentEvo?.title3 || 'Evolution Milestone 3'}
+                              </span>
+                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
+                                {currentEvo?.week3Type || 'code/text'}
+                              </span>
+                            </div>
+                            
+                            {/* Student submission preview */}
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student Solution:</p>
+                              {currentEvo?.week3Submission ? (
+                                <div className="p-3 bg-white dark:bg-black/45 border border-slate-200/50 dark:border-white/5 rounded-xl text-xs font-mono max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                                  {currentEvo.week3Submission}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400 italic">No solution submitted yet.</p>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                              <div className="sm:col-span-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Grade Score %</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={ev3Score}
+                                  onChange={(e) => setEv3Score(e.target.value)}
+                                  placeholder="Pending"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Actionable Feedback</label>
+                                <input
+                                  type="text"
+                                  value={ev3Feedback}
+                                  onChange={(e) => setEv3Feedback(e.target.value)}
+                                  placeholder="Correctly satisfies edge cases."
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Week 4 */}
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                Week 4: {currentEvo?.title4 || 'Evolution Milestone 4'}
+                              </span>
+                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
+                                {currentEvo?.week4Type || 'code/text'}
+                              </span>
+                            </div>
+                            
+                            {/* Student submission preview */}
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student Solution:</p>
+                              {currentEvo?.week4Submission ? (
+                                <div className="p-3 bg-white dark:bg-black/45 border border-slate-200/50 dark:border-white/5 rounded-xl text-xs font-mono max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                                  {currentEvo.week4Submission}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400 italic">No solution submitted yet.</p>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                              <div className="sm:col-span-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Grade Score %</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={ev4Score}
+                                  onChange={(e) => setEv4Score(e.target.value)}
+                                  placeholder="Pending"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-450 uppercase block">Actionable Feedback</label>
+                                <input
+                                  type="text"
+                                  value={ev4Feedback}
+                                  onChange={(e) => setEv4Feedback(e.target.value)}
+                                  placeholder="Fantastic summative project execution!"
+                                  className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Calculated Average */}
+                    {(() => {
+                      const s1 = ev1Score !== '' ? parseInt(ev1Score) : NaN;
+                      const s2 = ev2Score !== '' ? parseInt(ev2Score) : NaN;
+                      const s3 = ev3Score !== '' ? parseInt(ev3Score) : NaN;
+                      const s4 = ev4Score !== '' ? parseInt(ev4Score) : NaN;
+                      const nums = [s1, s2, s3, s4].filter(n => !isNaN(n));
+                      const avg = nums.length > 0 ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length) : 0;
+                      const hasAll = nums.length === 4;
+                      const pass = avg >= 80;
+
+                      return (
+                        <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/50 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <p className="text-xs text-slate-400">Monthly Aggregate Benchmark</p>
+                            <p className="text-sm font-bold text-slate-800 dark:text-zinc-200 mt-1">
+                              Current Average Score: <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-base">{avg}%</span>
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              {hasAll 
+                                ? pass 
+                                  ? '🏆 Meets 80% automatic promotion target.'
+                                  : '⚠️ Redo required: score is below 80% passing target.'
+                                : `${nums.length} of 4 continuous evaluations scored.`}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm('Wipe scores and submissions for this month to let the student redo?')) {
+                                  handleResetMonth(selectedEvolutionStudentId, selectedEvolutionMonth);
+                                }
+                              }}
+                              className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" /> Reset Month
+                            </button>
+
+                            <button
+                              type="submit"
+                              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md select-none"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Save Evaluation Grades
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12 border border-dashed border-slate-250/50 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-white/[0.01]">
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Please choose a student to start grading their continuous evolution metrics.</p>
+                </div>
+              )}
+            </form>
+
+            {/* Students List in Evolution tab */}
+            <div className="mt-12 pt-8 border-t border-slate-100 dark:border-white/5 space-y-4">
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200">
+                Registered Student Monthly Tracking Metrics
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {students.map(st => {
+                  const evos = studentEvolutions.filter(ev => ev.studentId === st.id);
+                  const currentMonthEvo = evos.find(e => e.month === (st.currentMonth || 1));
+                  const currentMonthScores = currentMonthEvo ? [currentMonthEvo.evolution1, currentMonthEvo.evolution2, currentMonthEvo.evolution3, currentMonthEvo.evolution4].filter(s => s !== undefined) : [];
+                  const lastUpdateStr = currentMonthEvo?.lastUpdated ? new Date(currentMonthEvo.lastUpdated).toLocaleDateString() : 'Never';
+
+                  return (
+                    <div 
+                      key={st.id} 
+                      onClick={() => {
+                        setSelectedEvolutionStudentId(st.id);
+                        setSelectedEvolutionMonth(st.currentMonth || 1);
+                      }}
+                      className={`p-4 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 select-none ${
+                        selectedEvolutionStudentId === st.id 
+                          ? 'bg-indigo-500/5 border-indigo-500/30' 
+                          : 'bg-white dark:bg-[#0c0d12]/40 border-slate-200 dark:border-white/5'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-200">{st.name}</span>
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                          Month {st.currentMonth || 1}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500">Course: {st.course || 'Unassigned'}</p>
+                      
+                      <div className="mt-3 flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Current Month Progress:</span>
+                        <span className="font-bold text-indigo-500">{currentMonthScores.length} of 4 Graded</span>
+                      </div>
+                      
+                      <div className="mt-1 flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Current Month Avg:</span>
+                        <span className="font-bold text-slate-700 dark:text-zinc-200">
+                          {currentMonthEvo?.overallScore !== undefined ? `${currentMonthEvo.overallScore}%` : 'Pending'}
+                        </span>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[9px] text-slate-450">
+                        <span>Last Updated: {lastUpdateStr}</span>
+                        <span className="text-indigo-500 font-bold hover:underline">Select &rarr;</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

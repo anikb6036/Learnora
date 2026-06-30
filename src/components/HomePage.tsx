@@ -1426,15 +1426,28 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                             )}
                           </div>
 
-                          <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-snug mt-5 tracking-tight">
-                            {course.name}
-                          </h3>
+                          <div className="flex justify-between items-end mt-5">
+                            <div className="min-w-0 pr-2">
+                              <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-snug tracking-tight">
+                                {course.name}
+                              </h3>
 
-                          <div className="mt-4.5 flex items-baseline gap-2">
-                            <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Fee</span>
-                            <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                              ₹{(course.fee || 14999).toLocaleString('en-IN')}
-                            </span>
+                              <div className="mt-3.5 flex items-baseline gap-2">
+                                <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Fee</span>
+                                <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                  ₹{(course.fee || 14999).toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 pb-1">
+                              <div className="bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-2xl px-3.5 py-2.5 flex flex-col items-center justify-center shadow-sm">
+                                <span className="text-[9px] uppercase font-bold text-indigo-500 dark:text-indigo-400 tracking-wider">Duration</span>
+                                <span className="text-xs font-black text-indigo-900 dark:text-indigo-300 mt-0.5">
+                                  {course.durationWeeks ? `${course.durationWeeks} Weeks` : '24 Weeks'}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -1442,7 +1455,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                         <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-6 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 font-medium">
                           <span className="flex items-center gap-1.5">
                             <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
-                            {course.durationWeeks ? `${course.durationWeeks} Months` : '24 Months'} • {course.code || course.batchNumber || 'COHORT'}
+                            {course.durationWeeks ? `${course.durationWeeks} Weeks` : '24 Weeks'} • {course.code || course.batchNumber || 'COHORT'}
                           </span>
                           <span className={`font-semibold transition-colors flex items-center gap-1 ${
                             isSelected 
