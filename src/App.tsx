@@ -4905,6 +4905,7 @@ function AppContent() {
               <CourseDirectory
                 currentUser={currentUser}
                 courses={courses}
+                users={users}
                 onUpdateCourse={handleUpdateCourse}
                 onDeleteCourse={handleDeleteCourse}
                 onTriggerEdit={(course) => {

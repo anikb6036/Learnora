@@ -21,13 +21,19 @@ import {
   Filter,
   User,
   Activity,
-  Play
+  Play,
+  Users,
+  CreditCard,
+  ArrowRight,
+  IndianRupee,
+  GraduationCap
 } from 'lucide-react';
 import { Course, UserAccount } from '../types';
 
 interface CourseDirectoryProps {
   currentUser: UserAccount;
   courses: Course[];
+  users?: UserAccount[];
   onUpdateCourse?: (course: Course) => void;
   onDeleteCourse?: (courseId: string) => void;
   onTriggerEdit?: (course: Course) => void;
@@ -36,11 +42,13 @@ interface CourseDirectoryProps {
 export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
   currentUser,
   courses,
+  users = [],
   onUpdateCourse,
   onDeleteCourse,
   onTriggerEdit
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
   
   // Vercel-style filters state
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -56,7 +64,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
   
   // Roadmap states
   const [expandedRoadmapId, setExpandedRoadmapId] = useState<string | null>(null);
-  const [roadmapViewMode, setRoadmapViewMode] = useState<Record<string, 'terminal' | 'timeline'>>({});
+  const [roadmapViewMode, setRoadmapViewMode] = useState<Record<string, 'timeline' | 'admissions'>>({});
   
   // Action context menus
   const [activeActionsId, setActiveActionsId] = useState<string | null>(null);
@@ -438,19 +446,19 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
           <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Try resetting filter metrics or entering a different search keyword.</p>
         </div>
       ) : (
-        <div id="deployments-rows-panel" className="border border-zinc-200 dark:border-white/5 bg-white dark:bg-black rounded-lg overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 shadow-2xs font-sans">
+        <div id="deployments-rows-panel" className="space-y-4 font-sans">
           
           {filteredCourses.map(c => {
             const hasRoadmap = c.roadmap && c.roadmap.length > 0;
             const statusConfig = getStatusBadgeStyles(c.status);
-            const viewMode = roadmapViewMode[c.id] || 'terminal';
+            const viewMode = roadmapViewMode[c.id] || 'admissions';
             const relativeTime = getRelativeLaunchTime(c.publishDate, c.createdDate);
             const durationText = c.durationWeeks ? `${c.durationWeeks} Weeks` : '6 Months';
             
             return (
               <div 
                 key={c.id} 
-                className="group/row hover:bg-slate-50/[0.3] dark:hover:bg-white/[0.01] transition-all duration-150 p-4 relative"
+                className="group/row bg-white dark:bg-[#070709] border border-slate-200/70 dark:border-white/5 rounded-xl p-5 shadow-xs hover:border-amber-500/35 dark:hover:border-amber-500/25 hover:shadow-sm transition-all duration-200 relative"
               >
                 
                 {/* Main horizontal flex content container */}
@@ -604,22 +612,25 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                 </div>
 
                 {/* Direct Action Expansion Toggle row on mobile/tablet */}
-                {hasRoadmap && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedRoadmapId(expandedRoadmapId === c.id ? null : c.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-md border border-zinc-200/50 dark:border-white/5 cursor-pointer transition font-sans"
-                    >
-                      <BookOpen className="w-3 h-3 text-amber-500" />
-                      <span>{expandedRoadmapId === c.id ? 'COLLAPSE ROADMAP' : `VIEW SYLLABUS ROADMAP (${c.roadmap?.length} Milestones)`}</span>
-                    </button>
-                  </div>
-                )}
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpandedRoadmapId(expandedRoadmapId === c.id ? null : c.id);
+                      if (expandedRoadmapId !== c.id) {
+                        setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'admissions' }));
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-md border border-zinc-200/50 dark:border-white/5 cursor-pointer transition font-sans"
+                  >
+                    <BookOpen className="w-3 h-3 text-amber-500" />
+                    <span>{expandedRoadmapId === c.id ? 'COLLAPSE DETAILS' : 'VIEW COURSE DETAILS & ADMISSIONS'}</span>
+                  </button>
+                </div>
 
                 {/* Vercel Terminals Logs view panel details */}
                 <AnimatePresence>
-                  {expandedRoadmapId === c.id && c.roadmap && (
+                  {expandedRoadmapId === c.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
@@ -628,100 +639,255 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                     >
                       
                       {/* Terminal View Switcher bar */}
-                      <div className="flex items-center justify-between mb-3 bg-slate-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 px-3 py-1.5 rounded-lg">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 bg-slate-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 px-3 py-1.5 rounded-lg gap-2">
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-zinc-400 font-bold select-none font-sans">
                           <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                          <span>Curriculum Milestones: ~/{(c.batchNumber || 'batch').toLowerCase()}/milestones</span>
+                          <span>~/{(c.batchNumber || 'batch').toLowerCase()}/{viewMode}</span>
                         </div>
                         
                         {/* Interactive toggle of presentation mode */}
-                        <div className="flex items-center gap-1 bg-white dark:bg-black rounded p-0.5 border border-zinc-200 dark:border-white/5 font-sans">
+                        <div className="flex items-center gap-1 bg-white dark:bg-black rounded p-0.5 border border-zinc-200 dark:border-white/5 font-sans overflow-x-auto">
+                          {c.roadmap && (
+                            <button
+                              type="button"
+                              onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'timeline' }))}
+                              className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer whitespace-nowrap ${viewMode === 'timeline' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
+                            >
+                              Timeline View
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'terminal' }))}
-                            className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer ${viewMode === 'terminal' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
+                            onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'admissions' }))}
+                            className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer whitespace-nowrap ${viewMode === 'admissions' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
                           >
-                            Milestones List
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setRoadmapViewMode(prev => ({ ...prev, [c.id]: 'timeline' }))}
-                            className={`px-2 py-0.5 text-[9px] font-bold rounded-xs cursor-pointer ${viewMode === 'timeline' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white'}`}
-                          >
-                            Timeline View
+                            Admissions & Analytics
                           </button>
                         </div>
                       </div>
 
                       {/* Display content base on selected toggle visualization */}
-                      {viewMode === 'terminal' ? (
+                      {viewMode === 'admissions' ? (() => {
+                        const courseStudents = users.filter(u => u.role === 'student' && u.course === c.name);
+                        const paidStudents = courseStudents.filter(u => u.paymentStatus === 'paid');
+                        const totalFeeCollected = paidStudents.length * (c.fee || 14999);
+                        const pendingDuesCount = courseStudents.length - paidStudents.length;
+                        const totalPotentialRevenue = courseStudents.length * (c.fee || 14999);
                         
-                        /* Log CLI console design output */
-                        <div className="bg-[#0A0A0C] border border-[#1E1E22] rounded-lg p-5 font-sans text-xs text-zinc-300 space-y-2.5 shadow-2xl relative select-text overflow-x-auto">
-                          
-                          {/* Live compilation header logs mimicking real vercel deployers */}
-                          <div className="space-y-0.5 select-none border-b border-zinc-800/80 pb-2 text-[11px] text-zinc-400 font-sans">
-                            <p>▲ Academy Syllabus Registry - Milestones and academic objectives loaded successfully</p>
-                            <p>▲ Course Code: <span className="text-emerald-450 font-semibold">&ldquo;{c.code || c.id.substring(0, 7).toUpperCase()}&rdquo;</span> | Batch Code: <span className="text-rose-400 font-semibold">&ldquo;{c.batchNumber || 'stb_001'}&rdquo;</span> | Sequence ID: {c.id.substring(0,8)}</p>
-                            <p>▲ Duration: {durationText} | Release Date: {c.publishDate || c.createdDate}</p>
-                            <p className="text-emerald-500 font-semibold">✓ All curriculum milestones verified... Active!</p>
-                          </div>
+                        const searchedStudents = courseStudents.filter(student => {
+                          if (!studentSearchQuery) return true;
+                          const q = studentSearchQuery.toLowerCase();
+                          return (
+                            student.name.toLowerCase().includes(q) ||
+                            student.email.toLowerCase().includes(q) ||
+                            (student.universalId || '').toLowerCase().includes(q)
+                          );
+                        });
 
-                          <div className="space-y-4 pt-2 font-sans">
-                            {c.roadmap.map((step, idx) => {
-                              const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
-                              return (
-                                <div key={step.month} className="group/terminal-row flex items-start gap-4 hover:bg-white/[0.02] p-1 rounded transition duration-150">
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="text-amber-550 font-bold text-xs">[Milestone {step.month}]</span>
-                                      <span className="text-zinc-100 font-bold tracking-tight text-sm">
-                                        &ldquo;{cleanTitle}&rdquo;
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start gap-1">
-                                      <p className="text-zinc-400 leading-relaxed text-[11px] font-normal font-sans">
-                                        {step.description}
-                                      </p>
-                                    </div>
+                        return (
+                          <div className="bg-slate-50/70 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-xl p-6 font-sans space-y-6">
+                            
+                            {/* Key Performance Indicators Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              
+                              {/* Stat Card 1: Total Admitted */}
+                              <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-5 shadow-sm relative overflow-hidden transition-all duration-250 hover:shadow-md">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Total Admitted</p>
+                                    <p className="text-3xl font-black text-slate-800 dark:text-zinc-100">{courseStudents.length}</p>
+                                  </div>
+                                  <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/20 rounded-xl text-indigo-500 dark:text-indigo-400">
+                                    <Users className="w-5 h-5" />
                                   </div>
                                 </div>
-                              );
-                            })}
+                                <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                  <span>Active enrollment roster</span>
+                                  <span className="font-bold text-indigo-500">100% Total</span>
+                                </div>
+                              </div>
+
+                              {/* Stat Card 2: Revenue Collected */}
+                              <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-5 shadow-sm relative overflow-hidden transition-all duration-250 hover:shadow-md">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Revenue Collected</p>
+                                    <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                                      {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalFeeCollected)}
+                                    </p>
+                                  </div>
+                                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-500 dark:text-emerald-450">
+                                    <IndianRupee className="w-5 h-5" />
+                                  </div>
+                                </div>
+                                <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                  <span>Potential: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalPotentialRevenue)}</span>
+                                  <span className="font-bold text-emerald-500">
+                                    {courseStudents.length > 0 ? `${Math.round((paidStudents.length / courseStudents.length) * 100)}%` : '0%'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Stat Card 3: Paid Students */}
+                              <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-5 shadow-sm relative overflow-hidden transition-all duration-250 hover:shadow-md">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Paid Accounts</p>
+                                    <p className="text-3xl font-black text-blue-600 dark:text-blue-400">{paidStudents.length}</p>
+                                  </div>
+                                  <div className="p-2.5 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-blue-500 dark:text-blue-400">
+                                    <GraduationCap className="w-5 h-5" />
+                                  </div>
+                                </div>
+                                <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                  <span>Cleared tuition fee</span>
+                                  <span className="font-bold text-blue-500">
+                                    {courseStudents.length > 0 ? `${paidStudents.length}/${courseStudents.length}` : '0/0'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Stat Card 4: Pending Dues */}
+                              <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-5 shadow-sm relative overflow-hidden transition-all duration-250 hover:shadow-md">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Outstanding Dues</p>
+                                    <p className="text-3xl font-black text-amber-600 dark:text-amber-550">{pendingDuesCount}</p>
+                                  </div>
+                                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-600 dark:text-amber-500">
+                                    <CreditCard className="w-5 h-5" />
+                                  </div>
+                                </div>
+                                <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                  <span>Awaiting payment clearance</span>
+                                  <span className="font-bold text-amber-600">
+                                    {courseStudents.length > 0 ? `${Math.round((pendingDuesCount / courseStudents.length) * 100)}%` : '0%'}
+                                  </span>
+                                </div>
+                              </div>
+
+                            </div>
+                            
+                            {/* Student Roster Section */}
+                            <div className="space-y-4">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1.5 bg-slate-100 dark:bg-white/5 rounded-lg text-slate-700 dark:text-zinc-300">
+                                    <Users className="w-4 h-4 text-slate-600 dark:text-zinc-400" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Enrolled Student Registry</h4>
+                                    <p className="text-[11px] text-slate-400 dark:text-zinc-500">Official student list enrolled in {c.name}</p>
+                                  </div>
+                                </div>
+
+                                {/* Live Student Search Box */}
+                                <div className="relative w-full sm:w-64">
+                                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                                  <input
+                                    type="text"
+                                    placeholder="Search student name or email..."
+                                    value={studentSearchQuery}
+                                    onChange={e => setStudentSearchQuery(e.target.value)}
+                                    className="w-full pl-8 pr-3 py-1 text-xs border border-zinc-250 dark:border-white/10 rounded-lg bg-white dark:bg-black text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500/20 transition-all"
+                                  />
+                                </div>
+                              </div>
+
+                              {searchedStudents.length > 0 ? (
+                                <div className="border border-slate-200/60 dark:border-white/5 rounded-xl overflow-hidden bg-white dark:bg-[#070709] shadow-2xs">
+                                  <table className="w-full text-left text-xs">
+                                    <thead className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-white/5 text-[10px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-zinc-400">
+                                      <tr>
+                                        <th className="px-5 py-3">Student Name</th>
+                                        <th className="px-5 py-3">Student Email</th>
+                                        <th className="px-5 py-3 text-center">Registration ID</th>
+                                        <th className="px-5 py-3 text-right">Payment Status</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-zinc-300">
+                                      {searchedStudents.map(student => {
+                                        const initials = student.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                        return (
+                                          <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition-colors">
+                                            <td className="px-5 py-3.5 flex items-center gap-3">
+                                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-2xs bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 text-slate-700 dark:text-zinc-200 border border-slate-200/50 dark:border-white/5`}>
+                                                {initials}
+                                              </div>
+                                              <div>
+                                                <p className="font-bold text-slate-800 dark:text-zinc-150">{student.name}</p>
+                                                <p className="text-[10px] text-slate-400 dark:text-zinc-500">Joined on {student.joinedDate || 'June 2026'}</p>
+                                              </div>
+                                            </td>
+                                            <td className="px-5 py-3.5 font-medium text-slate-600 dark:text-zinc-400">{student.email}</td>
+                                            <td className="px-5 py-3.5 text-center font-mono text-[11px] text-slate-500 dark:text-zinc-400">
+                                              {student.universalId || `STU-${student.id.substring(0, 5).toUpperCase()}`}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-right">
+                                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-2xs border ${
+                                                student.paymentStatus === 'paid' 
+                                                  ? 'bg-emerald-50/70 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/10' 
+                                                  : 'bg-amber-50/70 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/10'
+                                              }`}>
+                                                {student.paymentStatus === 'paid' ? 'Paid In Full' : 'Awaiting Fees'}
+                                              </span>
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <div className="text-center py-10 bg-white dark:bg-[#070709] border border-slate-200/60 dark:border-white/5 rounded-xl shadow-2xs">
+                                  <Users className="w-8 h-8 text-slate-300 dark:text-zinc-700 mx-auto mb-2" />
+                                  <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">No matching students found</p>
+                                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1">Try modifying your search criteria or enrolling new students in this course.</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })() : viewMode === 'timeline' && c.roadmap ? (
+                        
+                        /* Highly stylized interactive timeline registry milestones */
+                        <div className="bg-slate-50/70 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-xl p-6 font-sans space-y-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-lg text-amber-600">
+                              <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Curriculum Path & Milestones</h4>
+                              <p className="text-[11px] text-slate-400 dark:text-zinc-500">Step-by-step master roadmap sequence for academic success</p>
+                            </div>
                           </div>
 
-                          {/* Final success lines logs */}
-                          <div className="pt-2 select-none border-t border-zinc-800/80 text-[10px] text-zinc-500 flex justify-between font-sans">
-                            <span>▲ Curriculum mapped successfully for academic registry</span>
-                            <span className="text-emerald-500 font-bold">● PROGRAM ACTIVE</span>
-                          </div>
-                        </div>
-                      ) : (
-                        
-                        /* Visualization timeline chart graph mockup view */
-                        <div className="bg-slate-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-lg p-5 space-y-4 font-sans">
-                          <div className="relative pl-6 border-l-2 border-amber-500/50 space-y-6">
+                          <div className="relative pl-8 border-l-2 border-dashed border-amber-500/40 dark:border-amber-500/25 space-y-6">
                             {c.roadmap.map((step, idx) => {
                               const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
                               return (
-                                <div key={step.month} className="relative animate-fadeIn">
+                                <div key={step.month} className="relative group/timeline transition-all duration-200">
                                   
-                                  {/* Timeline nodes circles */}
-                                  <div className="absolute left-[-30px] top-1.5 w-4 h-4 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[8px] font-bold text-amber-500 select-none">
+                                  {/* Timeline nodes circles - large and beautiful */}
+                                  <div className="absolute left-[-42px] top-1 w-7 h-7 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[11px] font-black text-amber-600 dark:text-amber-400 select-none shadow-sm group-hover/timeline:scale-110 transition-transform">
                                     {step.month}
                                   </div>
 
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+                                  <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/25 dark:hover:border-amber-500/20 transition-all">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                                         Month {step.month} Milestone
                                       </span>
-                                      <span className="text-slate-450 dark:text-zinc-400 font-sans text-[9px] bg-slate-100 dark:bg-white/5 py-0.5 px-1.5 rounded-sm">
+                                      <span className="text-slate-400 dark:text-zinc-500 font-sans text-[9px] font-extrabold uppercase bg-slate-50 dark:bg-white/5 py-0.5 px-2 rounded-full border border-slate-100 dark:border-white/5">
                                         Stage {idx + 1}
                                       </span>
                                     </div>
-                                    <h4 className="text-xs font-bold text-slate-800 dark:text-white">{cleanTitle}</h4>
-                                    <p className="text-xs text-slate-550 dark:text-zinc-400 leading-relaxed font-sans mt-1">
+                                    <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-150 mt-1">{cleanTitle}</h5>
+                                    <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-2 font-medium">
                                       {step.description}
                                     </p>
                                   </div>
@@ -730,7 +896,7 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                             })}
                           </div>
                         </div>
-                      )}
+                      ) : null}
                       
                     </motion.div>
                   )}
