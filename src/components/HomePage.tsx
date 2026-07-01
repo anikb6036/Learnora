@@ -1569,7 +1569,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                       {(selectedCourse && selectedCourse.roadmap && selectedCourse.roadmap.length > 0
                         ? selectedCourse.roadmap
                         : getCourseRoadmap(selectedCourse?.name || '', selectedCourse?.code || '')
-                      ).slice(0, 5).map((step, idx) => {
+                      ).map((step, idx) => {
                         const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
                         return (
                           <div key={idx} className="relative flex items-start gap-4">
