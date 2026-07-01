@@ -4230,7 +4230,7 @@ function AppContent() {
                         {(() => {
                           const enrolledCourseConfig = (() => {
                             if (!currentUser.course || !courses || courses.length === 0) return undefined;
-                            const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase();
+                            const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase(); const userBatchClean = currentUser.batch?.trim().toLowerCase() || ""; let batchMatched = undefined; if (userBatchClean) { batchMatched = courses.find(c => { const cId = c.id?.trim().toLowerCase() || ""; const cName = c.name.trim().replace(/\.+$/, "").toLowerCase(); const cCode = c.code?.trim().toLowerCase() || ""; const cBatch = c.batchNumber?.trim().toLowerCase() || ""; const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean; const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean; return isCourseMatch && isBatchMatch; }); } if (batchMatched) return batchMatched;
                             
                             // 1. Exact/Normalized check
                             let matched = courses.find(c => {

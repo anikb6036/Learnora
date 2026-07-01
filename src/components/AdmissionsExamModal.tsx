@@ -593,9 +593,6 @@ export default function AdmissionsExamModal({
                 <div className="space-y-5">
                   <div className="flex flex-col items-center py-4 border bg-emerald-500/[0.02] border-emerald-500/20 rounded-3xl space-y-3 relative overflow-hidden text-center md:px-8">
                     <div className="absolute top-0 right-0 p-6 bg-radial-gradient from-emerald-500/10 to-transparent rounded-full pointer-events-none" />
-                    <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
-                      <Sparkles className="w-8 h-8" />
-                    </div>
                     <div>
                       <h3 className="text-lg font-bold text-emerald-500 tracking-tight font-sans">
                         Auto Admissions Qualification Achieved!

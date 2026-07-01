@@ -60,9 +60,27 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
     if (!currentUser.course || !courses || courses.length === 0) return undefined;
     
     const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase();
+    const userBatchClean = currentUser.batch?.trim().toLowerCase() || "";
     
-    // 1. Exact or normalized check (casing, trailing period, code/id matching)
-    let matched = courses.find(c => {
+    // 1. Exact or normalized check with batch/code matching if batch is provided
+    let matched = undefined;
+    if (userBatchClean) {
+      matched = courses.find(c => {
+        const cId = c.id?.trim().toLowerCase() || "";
+        const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+        const cCode = c.code?.trim().toLowerCase() || "";
+        const cBatch = c.batchNumber?.trim().toLowerCase() || "";
+        
+        const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+        const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean;
+        return isCourseMatch && isBatchMatch;
+      });
+    }
+    
+    if (matched) return matched;
+    
+    // 2. Exact or normalized check (casing, trailing period, code/id matching) - fallback
+    matched = courses.find(c => {
       const cId = c.id?.trim().toLowerCase() || "";
       const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
       const cCode = c.code?.trim().toLowerCase() || "";
@@ -71,7 +89,7 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
     
     if (matched) return matched;
     
-    // 2. Substring matching check (e.g. if one contains the other)
+    // 3. Substring matching check (e.g. if one contains the other) - fallback
     matched = courses.find(c => {
       const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
       return cName.includes(userCourseClean) || userCourseClean.includes(cName);

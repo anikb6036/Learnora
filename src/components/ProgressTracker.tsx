@@ -428,7 +428,26 @@ export default function ProgressTracker({
       return (matchesCourse && matchesBatch) || isEnrolledInClass;
     });
 
-    const currentCourseInfo = courses.find(c => c.name.toLowerCase() === currentUser.course?.toLowerCase());
+    const currentCourseInfo = (() => {
+      if (!currentUser.course || !courses || courses.length === 0) return undefined;
+      const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase();
+      const userBatchClean = currentUser.batch?.trim().toLowerCase() || "";
+      
+      let matched = undefined;
+      if (userBatchClean) {
+        matched = courses.find(c => {
+          const cId = c.id?.trim().toLowerCase() || "";
+          const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+          const cCode = c.code?.trim().toLowerCase() || "";
+          const cBatch = c.batchNumber?.trim().toLowerCase() || "";
+          const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+          const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean;
+          return isCourseMatch && isBatchMatch;
+        });
+      }
+      if (matched) return matched;
+      return courses.find(c => c.name.toLowerCase() === userCourseClean);
+    })();
     const totalEvolutionsCount = currentCourseInfo?.roadmap?.length || currentCourseInfo?.durationMonths || 6;
 
     const studentClearedEvolutions = studentEvolutions.filter(ev => 

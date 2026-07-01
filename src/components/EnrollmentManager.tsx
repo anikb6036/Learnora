@@ -1332,7 +1332,7 @@ export default function EnrollmentManager({
                             >
                               <span>₹{(() => {
                                 if (!student.course || !courses || courses.length === 0) return 9999;
-                                const userCourseClean = student.course.trim().replace(/\.+$/, "").toLowerCase();
+                                const userCourseClean = student.course.trim().replace(/\.+$/, "").toLowerCase(); const userBatchClean = student.batch?.trim().toLowerCase() || ""; let batchMatched = undefined; if (userBatchClean) { batchMatched = courses.find(c => { const cId = c.id?.trim().toLowerCase() || ""; const cName = c.name.trim().replace(/\.+$/, "").toLowerCase(); const cCode = c.code?.trim().toLowerCase() || ""; const cBatch = c.batchNumber?.trim().toLowerCase() || ""; const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean; const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean; return isCourseMatch && isBatchMatch; }); } if (batchMatched) return batchMatched.fee || 9999;
                                 
                                 // 1. Exact/Normalized check
                                 let matched = courses.find(c => {
@@ -2360,7 +2360,7 @@ export default function EnrollmentManager({
                             // Calculate fee helper
                             const getFee = () => {
                               if (!paymentSettleStudent.course || !courses || courses.length === 0) return 9999;
-                              const userCourseClean = paymentSettleStudent.course.trim().replace(/\.+$/, "").toLowerCase();
+                              const userCourseClean = paymentSettleStudent.course.trim().replace(/\.+$/, "").toLowerCase(); const userBatchClean = paymentSettleStudent.batch?.trim().toLowerCase() || ""; let batchMatched = undefined; if (userBatchClean) { batchMatched = courses.find(c => { const cId = c.id?.trim().toLowerCase() || ""; const cName = c.name.trim().replace(/\.+$/, "").toLowerCase(); const cCode = c.code?.trim().toLowerCase() || ""; const cBatch = c.batchNumber?.trim().toLowerCase() || ""; const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean; const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean; return isCourseMatch && isBatchMatch; }); } if (batchMatched) return batchMatched.fee || 9999;
                               let matched = courses.find(c => {
                                 const cId = c.id?.trim().toLowerCase() || "";
                                 const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
