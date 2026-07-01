@@ -339,24 +339,55 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
                 </div>
 
                 {/* Unlock terms and criteria */}
-                <div className="space-y-3.5 pt-2">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Unlocking Benefits</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-650 dark:text-slate-350">
-                    <div className="flex gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>Regular 1:1 doubt counseling & live lessons</span>
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-3 bg-indigo-600 rounded-full" />
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-300 uppercase tracking-widest">Unlocking Benefits</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Benefit 1 */}
+                    <div className="group relative flex items-start gap-3.5 p-3.5 rounded-2xl border border-slate-150 dark:border-white/[0.04] bg-slate-50/50 dark:bg-zinc-900/40 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40 transition-all duration-300 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200">1:1 Live Mentorship</p>
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-zinc-400">Regular 1:1 doubt counseling & live lessons</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>Assignments workspace & grader boards</span>
+
+                    {/* Benefit 2 */}
+                    <div className="group relative flex items-start gap-3.5 p-3.5 rounded-2xl border border-slate-150 dark:border-white/[0.04] bg-slate-50/50 dark:bg-zinc-900/40 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40 transition-all duration-300 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Interactive Workspace</p>
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-zinc-400">Assignments workspace & grader boards</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>Continuous evolution pipeline grading maps</span>
+
+                    {/* Benefit 3 */}
+                    <div className="group relative flex items-start gap-3.5 p-3.5 rounded-2xl border border-slate-150 dark:border-white/[0.04] bg-slate-50/50 dark:bg-zinc-900/40 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40 transition-all duration-300 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Continuous Evaluation</p>
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-zinc-400">Continuous evolution pipeline grading maps</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>Authorized certification roadmap validation</span>
+
+                    {/* Benefit 4 */}
+                    <div className="group relative flex items-start gap-3.5 p-3.5 rounded-2xl border border-slate-150 dark:border-white/[0.04] bg-slate-50/50 dark:bg-zinc-900/40 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40 transition-all duration-300 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Roadmap Validation</p>
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-zinc-400">Authorized certification roadmap validation</p>
+                      </div>
                     </div>
                   </div>
                 </div>
