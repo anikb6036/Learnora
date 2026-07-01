@@ -817,9 +817,6 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                           /* Highly stylized interactive timeline registry milestones */
                           <div className="bg-slate-50/70 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-xl p-6 font-sans space-y-6">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="p-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-lg text-amber-600">
-                                <Sparkles className="w-4 h-4" />
-                              </div>
                               <div>
                                 <h4 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Curriculum Path & Milestones</h4>
                                 <p className="text-[11px] text-slate-400 dark:text-zinc-500">Step-by-step master roadmap sequence for academic success</p>

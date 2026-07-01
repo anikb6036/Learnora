@@ -2930,7 +2930,7 @@ function AppContent() {
                                       <Upload className="w-3.5 h-3.5" />
                                       {fastAvatarUrl ? 'Change Avatar Asset' : 'Upload Student Photo'}
                                     </label>
-                                    <p className="text-sm text-slate-450 dark:text-gray-500 leading-snug">
+                                    <p className="text-[11px] text-slate-450 dark:text-gray-500 leading-snug">
                                       Supports JPEG, PNG, WebP format. Maximum file size budget: 2MB.
                                     </p>
                                     {fastAvatarError && (

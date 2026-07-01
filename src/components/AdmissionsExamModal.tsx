@@ -251,45 +251,45 @@ export default function AdmissionsExamModal({
   };
 
   return (
-    <div className="fixed inset-0 z-55 bg-white dark:bg-[#0C0D0E] overflow-y-auto overflow-x-hidden flex flex-col items-center">
+    <div className="fixed inset-0 z-55 bg-zinc-50 dark:bg-zinc-950 overflow-y-auto overflow-x-hidden flex flex-col items-center">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="relative w-full h-full min-h-screen flex flex-col bg-slate-50 dark:bg-black"
+        exit={{ opacity: 0, y: 15 }}
+        className="relative w-full h-full min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 font-sans"
       >
-        {/* Banner with spark pattern */}
-        <div className="relative bg-gradient-to-r from-amber-600 to-amber-500 py-6 px-8 text-white select-none shrink-0 flex justify-center shadow-md">
+        {/* Premium Minimalist Header */}
+        <div className="relative bg-white dark:bg-zinc-900 border-b border-zinc-200/80 dark:border-white/5 py-5 px-6 md:px-8 select-none shrink-0 flex justify-center shadow-xs">
           <div className="w-full max-w-4xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/15 rounded-xl backdrop-blur-md border border-white/10">
-                <Award className="w-5 h-5 text-white animate-bounce" />
+              <div className="h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-extrabold text-base select-none">
+                L
               </div>
               <div>
-                <h2 className="text-lg font-serif italic font-bold leading-tight">Learnora Official Admissions Gateway</h2>
-                <p className="text-[10px] uppercase font-mono tracking-widest text-amber-100 font-semibold opacity-90 mt-0.5">
-                  Qualified English Evaluation Node
+                <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">Learnora Admissions</h2>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono tracking-wider uppercase">
+                  Language Placement Exam
                 </p>
               </div>
             </div>
             {(step === 'intro' || step === 'result') && (
               <button
                 onClick={handleClose}
-                className="p-1 px-3 bg-black/15 hover:bg-black/30 border border-white/10 text-white rounded-lg text-xs font-bold cursor-pointer transition active:scale-95 flex items-center gap-1"
+                className="px-3.5 py-1.5 text-xs font-medium text-zinc-650 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border border-zinc-200 dark:border-white/10 hover:border-zinc-350 dark:hover:border-white/20 rounded-lg cursor-pointer transition-all active:scale-95"
               >
-                <X className="w-3.5 h-3.5" /> Close
+                Close
               </button>
             )}
           </div>
         </div>
 
-        <div className="flex-1 w-full flex justify-center relative">
-          {/* Anti-cheat Monitoring Video Feed */}
+        <div className="flex-1 w-full flex justify-center relative bg-zinc-50 dark:bg-[#070708]">
+          {/* Anti-cheat Monitoring Video Feed - Sleek overlay */}
           {monitoringStream && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute top-4 right-4 md:top-8 md:right-8 w-32 h-24 md:w-48 md:h-36 bg-black rounded-lg overflow-hidden border-2 border-amber-500 shadow-xl z-20 flex flex-col pointer-events-none"
+              className="absolute top-4 right-4 md:top-8 md:right-8 w-28 h-20 md:w-40 md:h-28 bg-black rounded-lg overflow-hidden border border-zinc-300 dark:border-white/10 shadow-lg z-20 flex flex-col pointer-events-none"
             >
               <video
                 ref={videoRef}
@@ -298,9 +298,9 @@ export default function AdmissionsExamModal({
                 muted
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-1 md:p-1.5 flex items-center justify-center gap-1.5 border-t border-white/10">
-                <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[8px] md:text-[10px] font-mono text-white tracking-widest uppercase font-bold">Proctoring</span>
+              <div className="absolute bottom-0 left-0 right-0 bg-black/75 backdrop-blur-xs p-1 flex items-center justify-center gap-1.5 border-t border-white/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-mono text-zinc-200 tracking-wider uppercase font-semibold">Live stream</span>
               </div>
             </motion.div>
           )}
@@ -310,67 +310,67 @@ export default function AdmissionsExamModal({
             {step === 'intro' && (
               <motion.div
                 key="intro"
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="space-y-5 flex-1 flex flex-col justify-between"
+                exit={{ opacity: 0, x: 8 }}
+                className="space-y-6 flex-1 flex flex-col justify-between"
               >
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <span className="p-1 px-2.5 border border-amber-500/10 bg-amber-500/5 text-amber-500 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider">
-                      Automatic Enrollment Active
-                    </span>
-                    <h3 className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-tight mt-2">
-                      Hello, {request.name}
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-650 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase">
+                      Assessment Mode
+                    </div>
+                    <h3 className="text-2xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight">
+                      Welcome, {request.name}
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
-                      This placement assessment assesses your English writing literacy and spoken cadence parameters. Under the automatic admissions act, scoring **25% or higher** triggers instant enrollment, releases active credentials into your mailbox, and grants access to scheduling tools immediately.
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl font-normal">
+                      This placement evaluation determines your English writing literacy and spoken cadence parameters. To qualify for automatic registration and instant course onboarding, you are required to secure an evaluation score of <strong>25% or higher</strong>.
                     </p>
                   </div>
 
                   {/* Syllabus / Evaluation breakdown boxes */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#161618] border dark:border-white/5 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-amber-500" />
-                        <span className="text-xs font-bold text-slate-800 dark:text-gray-200">1. Reading Comprehension</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                    <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-250/60 dark:border-white/5 space-y-2.5 shadow-sm hover:shadow-md transition duration-200">
+                      <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
+                        <BookOpen className="w-4 h-4 text-zinc-550 dark:text-zinc-400" />
+                        <span className="text-xs font-semibold">1. Reading Comprehension</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
-                        Read a small excerpt about language design theory and solve 2 multi-choice questions. Counts for 50% of weight.
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                        Analyze a short literary or ecological excerpt and answer two multiple-choice questions. This counts for 50% of the total score.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#161618] border dark:border-white/5 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Mic className="w-4 h-4 text-amber-500" />
-                        <span className="text-xs font-bold text-slate-800 dark:text-gray-200">2. Vocal Articulation</span>
+                    <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-250/60 dark:border-white/5 space-y-2.5 shadow-sm hover:shadow-md transition duration-200">
+                      <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
+                        <Mic className="w-4 h-4 text-zinc-550 dark:text-zinc-400" />
+                        <span className="text-xs font-semibold">2. Verbal Articulation</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
-                        Speak a phonetic sentence into your microphone. Our automatic cadence evaluator scans rhythm and frequency spectrums. Counts for 50%.
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                        Read a phonetically rich sentence aloud. Our articulation engine analyzes tone, cadence, and spelling coordinates in real-time. Counts for 50%.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-orange-500/[0.03] border border-amber-500/15 text-[10.5px] text-amber-600 dark:text-amber-400/90 leading-relaxed flex gap-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
+                  <div className="p-4 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-xs text-zinc-550 dark:text-zinc-450 leading-relaxed flex gap-3">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-zinc-400 mt-0.5" />
                     <span>
-                      Please verify that your microphone device triggers cleanly. Real-time capture is active inside this secure coaching portal.
+                      Please verify your audio and video inputs. Live monitoring coordinates remain active during the entire test duration to maintain strict academic evaluation integrity.
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 space-y-3">
+                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-3">
                   {monitoringError && (
-                    <div className="p-3 bg-red-50 dark:bg-rose-500/10 border border-red-200 dark:border-rose-500/20 rounded-xl text-xs text-red-600 dark:text-rose-400">
+                    <div className="p-3.5 bg-rose-50 dark:bg-rose-950/10 border border-rose-200 dark:border-rose-900/30 rounded-xl text-xs text-rose-600 dark:text-rose-400">
                       {monitoringError}
                     </div>
                   )}
                   <button
                     onClick={handleStartExam}
                     disabled={isRequestingPermissions}
-                    className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-lg active:scale-[0.99]"
+                    className="w-full py-3 bg-zinc-900 hover:bg-zinc-855 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 transition duration-200 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-50"
                   >
-                    {isRequestingPermissions ? 'Requesting Camera & Mic Access...' : 'Start Exam \u2192'}
+                    {isRequestingPermissions ? 'Configuring evaluation streams...' : 'Start Evaluation \u2192'}
                   </button>
                 </div>
               </motion.div>
@@ -379,28 +379,30 @@ export default function AdmissionsExamModal({
             {step === 'reading' && (
               <motion.div
                 key="reading"
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-5">
-                  <div className="flex justify-between items-center bg-slate-50 dark:bg-[#161618] px-4 py-2 rounded-xl border dark:border-white/5 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-gray-400">
+                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-white/5 font-mono text-[9px] uppercase font-bold text-zinc-400 dark:text-zinc-550">
                     <span>Part 1: Text Comprehension Analysis</span>
-                    <span className="text-amber-500">Weight: 50 points</span>
+                    <span>50 Points Max</span>
                   </div>
 
                   {/* Reading Passage Container */}
-                  <div className="p-5 rounded-2xl bg-amber-550/[0.02] border border-amber-500/10 text-sm font-normal leading-relaxed text-slate-800 dark:text-gray-200 select-none relative">
-                    <div className="absolute top-4 left-0 w-1 h-3/4 bg-amber-500 rounded-r" />
-                    "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
+                  <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-sm font-normal leading-relaxed text-zinc-800 dark:text-zinc-200 select-none relative shadow-xs">
+                    <div className="absolute top-4 left-0 w-1 h-3/4 bg-zinc-900 dark:bg-white rounded-r" />
+                    <p className="italic pl-3 text-zinc-650 dark:text-zinc-350 font-sans leading-relaxed">
+                      "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
+                    </p>
                   </div>
 
                   {/* MCQ Questions list */}
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {/* Q1 */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
+                    <div className="space-y-2.5">
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Q1. Why is the Amazon Rainforest called the 'lungs of the Earth'?
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -413,21 +415,21 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ1Answer(opt.key)}
-                            className={`p-2.5 px-3.5 text-left text-[11px] rounded-xl border transition cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
                               q1Answer === opt.key 
-                                ? 'bg-amber-500/10 border-amber-500 text-amber-500 font-bold' 
-                                : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-white/5'
+                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
+                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
                             }`}
                           >
-                            <span className="font-mono uppercase font-bold mr-1.5">{opt.key})</span> {opt.text}
+                            <span className={`font-mono uppercase font-bold mr-2 ${q1Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* Q2 */}
-                    <div className="space-y-2 pt-1">
-                      <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
+                    <div className="space-y-2.5 pt-2">
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Q2. Which two animals are mentioned as living in the rainforest?
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -440,13 +442,13 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ2Answer(opt.key)}
-                            className={`p-2.5 px-3.5 text-left text-[11px] rounded-xl border transition cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
                               q2Answer === opt.key 
-                                ? 'bg-amber-500/10 border-amber-500 text-amber-500 font-bold' 
-                                : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-white/5'
+                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
+                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
                             }`}
                           >
-                            <span className="font-mono uppercase font-bold mr-1.5">{opt.key})</span> {opt.text}
+                            <span className={`font-mono uppercase font-bold mr-2 ${q2Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
                           </button>
                         ))}
                       </div>
@@ -454,14 +456,14 @@ export default function AdmissionsExamModal({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end gap-3">
+                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex justify-end gap-3">
                   <button
                     disabled={!q1Answer || !q2Answer}
                     onClick={handleProceedToSpeaking}
-                    className={`py-2.5 px-6 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                    className={`py-2.5 px-6 font-medium rounded-lg text-xs flex items-center gap-1.5 transition duration-200 cursor-pointer ${
                       q1Answer && q2Answer 
-                        ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md active:scale-[0.98]' 
-                        : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-600 cursor-not-allowed border dark:border-white/5'
+                        ? 'bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white shadow-sm active:scale-[0.98]' 
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600 cursor-not-allowed border dark:border-white/5'
                     }`}
                   >
                     Proceed to Speaking Module &rarr;
@@ -473,37 +475,37 @@ export default function AdmissionsExamModal({
             {step === 'speaking' && (
               <motion.div
                 key="speaking"
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.99 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-5">
-                  <div className="flex justify-between items-center bg-slate-50 dark:bg-[#161618] px-4 py-2 rounded-xl border dark:border-white/5 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-gray-400">
+                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-white/5 font-mono text-[9px] uppercase font-bold text-zinc-400 dark:text-zinc-550">
                     <span>Part 2: Vocalic Expression & Articulation</span>
-                    <span className="text-amber-500">Weight: 50 points</span>
+                    <span>50 Points Max</span>
                   </div>
 
-                  <div className="space-y-2 text-center md:px-6">
-                    <p className="text-sm font-normal text-slate-800 dark:text-gray-200">
-                      Sentence to read aloud into your microphone:
+                  <div className="space-y-3 text-center md:px-6">
+                    <p className="text-xs font-semibold text-zinc-650 dark:text-zinc-350">
+                      Sentence to read aloud:
                     </p>
-                    <div className="p-6 rounded-3xl bg-slate-100 dark:bg-[#151516] border dark:border-white/5 text-sm font-normal leading-relaxed text-slate-900 dark:text-white text-center select-none shadow-inner">
+                    <div className="p-7 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-sm font-semibold leading-relaxed text-zinc-800 dark:text-zinc-100 text-center select-none shadow-xs font-sans max-w-2xl mx-auto">
                       "I am very excited to join Learnora! Learning new things is fun, and I want to read, write, and speak better every day. I promise to do my best in all my classes."
                     </div>
                   </div>
 
                   {/* Voice recording console widget */}
-                  <div className="flex flex-col items-center justify-center space-y-4 py-4 p-5 rounded-2xl bg-slate-50 dark:bg-[#1a1a1c]/20 border dark:border-white/5 relative overflow-hidden">
+                  <div className="flex flex-col items-center justify-center space-y-5 py-6 p-6 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 relative overflow-hidden shadow-xs">
                     {/* Visualizer wave form output */}
-                    <div className="flex items-end justify-center gap-1 h-12 w-full max-w-sm">
+                    <div className="flex items-end justify-center gap-1.5 h-10 w-full max-w-xs">
                       {audioLevels.map((l, idx) => (
                         <motion.div
                           key={idx}
                           animate={isRecording ? {} : { height: 4 }}
-                          style={{ height: l }}
-                          className={`w-[5px] rounded-t-md transition-all duration-75 ${
-                            isRecording ? 'bg-amber-500' : 'bg-slate-300 dark:bg-gray-700'
+                          style={{ height: Math.min(l, 40) }}
+                          className={`w-[4px] rounded-t-sm transition-all duration-75 ${
+                            isRecording ? 'bg-zinc-900 dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'
                           }`}
                         />
                       ))}
@@ -511,44 +513,44 @@ export default function AdmissionsExamModal({
 
                     {isRecording ? (
                       <div className="flex flex-col items-center gap-1">
-                        <span className="flex items-center gap-1.5 text-xs text-rose-500 font-bold font-mono">
-                          <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
-                          RECORDING IN PROGRESS... {recordingSeconds}s
+                        <span className="flex items-center gap-1.5 text-[11px] text-zinc-900 dark:text-white font-semibold font-mono tracking-wider">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                          RECORDING AUDIO ({recordingSeconds}s)
                         </span>
-                        <p className="text-[10px] text-slate-400 font-mono">Real-time spectrum analysis enabled</p>
                       </div>
                     ) : (
                       <div className="text-center">
-                        <span className="text-xs text-slate-500 flex items-center justify-center gap-1.5 font-mono">
-                          <Volume2 className="w-4 h-4 text-slate-400" /> State: Microphone Idle / Standby
+                        <span className="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center justify-center gap-1.5 font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                          System Status: Microphone Standby
                         </span>
                       </div>
                     )}
 
-                    <div className="flex justify-center pt-2">
+                    <div className="flex justify-center pt-1">
                       {isRecording ? (
                         <button
                           type="button"
                           onClick={handleStopRecording}
-                          className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl text-xs flex items-center gap-2 cursor-pointer shadow-lg active:scale-[0.98] transition animate-pulse"
+                          className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
                         >
-                          <Check className="w-4 h-4" /> Stop & Run Analysis &rarr;
+                          <Check className="w-4 h-4" /> Stop & Evaluate Output &rarr;
                         </button>
                       ) : (
                         <button
                           type="button"
                           onClick={handleStartRecording}
-                          className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-xs flex items-center gap-2 cursor-pointer shadow-lg active:scale-[0.98] transition"
+                          className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
                         >
-                          <Mic className="w-4 h-4" /> Permit Mic & Start Speak Test
+                          <Mic className="w-4 h-4" /> Start Speaking Test
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-between text-[11px] text-slate-400 leading-snug">
-                  <p>Speak clearly for at least 3 seconds at a balanced pace for maximum vocal articulation recognition score.</p>
+                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex justify-between text-[11px] text-zinc-400 dark:text-zinc-500 leading-snug">
+                  <p className="max-w-xl">Speak clearly for at least 3 seconds at a natural pace. The engine will evaluate articulation coordinates upon completion.</p>
                 </div>
               </motion.div>
             )}
@@ -558,25 +560,25 @@ export default function AdmissionsExamModal({
                 key="analyzing"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="py-12 flex flex-col items-center justify-center space-y-6 flex-1 text-center"
+                className="py-16 flex flex-col items-center justify-center space-y-6 flex-1 text-center"
               >
-                {/* Simulated scan radar circle */}
-                <div className="relative h-20 w-20 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center shadow-inner">
-                  <Activity className="w-8 h-8 text-amber-500 animate-pulse" />
-                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-500 animate-spin" style={{ animationDuration: '6s' }} />
+                {/* Clean and minimal loading loop */}
+                <div className="relative h-14 w-14 rounded-full border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-zinc-500 dark:text-zinc-400 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full border border-dashed border-zinc-400 dark:border-zinc-500 animate-spin" style={{ animationDuration: '8s' }} />
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-gray-200">Synchronous Evaluation Algorithm Running</h4>
-                  <p className="text-xs text-amber-500 font-mono italic max-w-sm mx-auto">{analysisText}</p>
+                <div className="space-y-1.5">
+                  <h4 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Evaluating Speech & Text Responses</h4>
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-550 font-mono tracking-tight">{analysisText}</p>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full max-w-xs h-1 px-1 bg-slate-100 dark:bg-white/5 border dark:border-white/10 rounded-full overflow-hidden">
+                <div className="w-full max-w-xs h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: '0%' }}
                     animate={{ width: `${analysisProgress}%` }}
-                    className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
+                    className="h-full bg-zinc-900 dark:bg-white rounded-full"
                   />
                 </div>
               </motion.div>
@@ -585,73 +587,75 @@ export default function AdmissionsExamModal({
             {step === 'result' && (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
-                <div className="space-y-5">
-                  <div className="flex flex-col items-center py-4 border bg-emerald-500/[0.02] border-emerald-500/20 rounded-3xl space-y-3 relative overflow-hidden text-center md:px-8">
-                    <div className="absolute top-0 right-0 p-6 bg-radial-gradient from-emerald-500/10 to-transparent rounded-full pointer-events-none" />
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center py-6 border border-emerald-500/15 bg-emerald-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
+                    <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-450">
+                      <FileCheck className="w-5 h-5" />
+                    </div>
                     <div>
-                      <h3 className="text-lg font-bold text-emerald-500 tracking-tight font-sans">
-                        Auto Admissions Qualification Achieved!
+                      <h3 className="text-base font-bold text-emerald-700 dark:text-emerald-400 tracking-tight">
+                        Admissions Qualification Successful
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-gray-400 max-w-md mx-auto mt-1 leading-relaxed">
-                        Congratulations! You have scored over the **25% threshold score** required for instantaneous administrative approval.
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed">
+                        Excellent work! Your evaluation performance has successfully satisfied the academic requirements for automatic registration.
                       </p>
                     </div>
 
-                    <div className="font-mono text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Final Consolidated Grade</span>
-                      <span className="text-4xl font-black text-slate-800 dark:text-white">{totalScore}%</span>
+                    <div className="text-center">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
+                      <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#161618] border dark:border-white/5 flex justify-between items-center">
+                    <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 flex justify-between items-center shadow-xs">
                       <div className="space-y-0.5">
-                        <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 font-bold uppercase block tracking-wider">Reading Score</span>
-                        <h5 className="text-sm font-bold text-slate-800 dark:text-gray-200">Text Comprehension</h5>
+                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase block tracking-wider">Reading Evaluation</span>
+                        <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Text Comprehension</h5>
                       </div>
-                      <span className="text-lg font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 border dark:border-white/5 px-3 py-1 rounded-xl">
-                        {readingScore}/50
+                      <span className="text-sm font-semibold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-lg">
+                        {readingScore} / 50
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#161618] border dark:border-white/5 flex justify-between items-center">
+                    <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 flex justify-between items-center shadow-xs">
                       <div className="space-y-0.5">
-                        <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 font-bold uppercase block tracking-wider">Speaking Score</span>
-                        <h5 className="text-sm font-bold text-slate-800 dark:text-gray-200">Phonetic Articulation</h5>
+                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase block tracking-wider">Speaking Evaluation</span>
+                        <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Phonetic Articulation</h5>
                       </div>
-                      <span className="text-lg font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 border dark:border-white/5 px-3 py-1 rounded-xl">
-                        {speakingScore}/50
+                      <span className="text-sm font-semibold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-lg">
+                        {speakingScore} / 50
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-3 bg-blue-500/[0.02] border border-blue-500/15 rounded-xl text-[10.5px] leading-relaxed text-blue-500 dark:text-blue-400/90 font-mono tracking-tight text-center">
-                    🔒 Credentials Automatically Released: Active student profiles automatically generated and dispatched to your simulated inbox.
+                  <div className="p-3.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl text-xs text-zinc-500 dark:text-zinc-450 text-center leading-relaxed font-sans">
+                    Your student profile has been automatically provisioned. Login credentials and onboarding schedules have been dispatched to your mailbox.
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex gap-3">
+                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex gap-3">
                   <button
                     onClick={handleResetExam}
-                    className="px-4 py-2 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-gray-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
+                    className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-medium rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
                   >
-                    Take Test Again
+                    Restart Assessment
                   </button>
                   <button
                     onClick={handleCompleteAssessment}
-                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-lg active:scale-[0.99]"
+                    className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
                   >
-                    Claim Automatic Admission & Let's Go &rarr;
+                    Access Your Dashboard &rarr;
                   </button>
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
