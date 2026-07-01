@@ -1318,7 +1318,6 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                           <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                             Selected Cohort Live Deployment Count Auditing
                           </p>
@@ -1688,8 +1687,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             onChange={e => setDeployAssignmentStatus(e.target.value as any)}
                             className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-205 dark:border-white/10 px-3 py-2.5 rounded-xl text-xs text-slate-800 dark:text-zinc-200 font-bold"
                           >
-                            <option value="published">🟢 Published (Instantly available to student homework tracks)</option>
-                            <option value="closed">🛑 Closed (Saved inside logs as draft but invisible to students)</option>
+                            <option value="published">Published (Instantly available to student homework tracks)</option>
+                            <option value="closed">Closed (Saved inside logs as draft but invisible to students)</option>
                           </select>
                         ) : (
                           <select
@@ -1697,8 +1696,8 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                             onChange={e => setDeployEvolutionStatus(e.target.value === 'active')}
                             className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-205 dark:border-white/10 px-3 py-2.5 rounded-xl text-xs text-slate-800 dark:text-zinc-200 font-bold"
                           >
-                            <option value="active">🟢 Active (Instantly starts continuous weekly grade card updates)</option>
-                            <option value="draft">🛑 Draft (Saved, but track parameters are temporarily inactive)</option>
+                            <option value="active">Active (Instantly starts continuous weekly grade card updates)</option>
+                            <option value="draft">Draft (Saved, but track parameters are temporarily inactive)</option>
                           </select>
                         )}
                       </div>
@@ -1707,8 +1706,7 @@ export const AssignmentPipeline: React.FC<AssignmentPipelineProps> = ({
                     {/* Proctoring and Security Telemetry Control Panel */}
                     <div className="p-4 bg-rose-500/5 dark:bg-rose-950/10 border border-rose-500/15 rounded-2xl space-y-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                        <h4 className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">🛡️ Proctoring & Cheating Prevention Telemetry</h4>
+                        <h4 className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Proctoring & Cheating Prevention Telemetry</h4>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         Require candidate device permissions to enable automated identity verification, environment acoustics scanning, and background screen capture recording during submissions.
