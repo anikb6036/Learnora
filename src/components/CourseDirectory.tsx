@@ -668,7 +668,27 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
                       {/* Display content base on selected toggle visualization */}
                       {viewMode === 'admissions' ? (() => {
-                        const courseStudents = users.filter(u => u.role === 'student' && u.course === c.name);
+                        const courseStudents = users.filter(u => {
+                          if (u.role !== 'student') return false;
+                          if (!u.course) return false;
+                          
+                          const userCourseClean = u.course.trim().toLowerCase().replace(/\.+$/, "");
+                          const userBatchClean = u.batch?.trim().toLowerCase() || "";
+                          
+                          const cId = c.id?.trim().toLowerCase() || "";
+                          const cName = c.name.trim().toLowerCase().replace(/\.+$/, "");
+                          const cCode = c.code?.trim().toLowerCase() || "";
+                          const cBatch = c.batchNumber?.trim().toLowerCase() || "";
+                          
+                          const isCourseMatch = userCourseClean === cName || userCourseClean === cId || userCourseClean === cCode;
+                          
+                          if (userBatchClean) {
+                            const isBatchMatch = userBatchClean === cBatch || userBatchClean === cCode || userBatchClean === cId;
+                            return isCourseMatch && isBatchMatch;
+                          }
+                          
+                          return isCourseMatch;
+                        });
                         const paidStudents = courseStudents.filter(u => u.paymentStatus === 'paid');
                         const totalFeeCollected = paidStudents.length * (c.fee || 14999);
                         const pendingDuesCount = courseStudents.length - paidStudents.length;
