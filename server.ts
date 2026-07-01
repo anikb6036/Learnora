@@ -41,14 +41,225 @@ const getFriendlyResendError = (resendError: any, targetEmail: string): string =
   return msg || "Failed to send email via Resend.";
 };
 
+// Custom memory-efficient rate limiting store with periodic cleanup
+const rateLimitStore: Record<string, { count: number; resetTime: number }> = {};
+
+// Clean up expired entries every 10 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const key in rateLimitStore) {
+    if (now > rateLimitStore[key].resetTime) {
+      delete rateLimitStore[key];
+    }
+  }
+}, 10 * 60 * 1000);
+
+function createRateLimiter(options: { windowMs: number; max: number; message: string }) {
+  return (req: any, res: any, next: any) => {
+    // Correctly handle reverse proxies (like Cloud Run / Cloudflare)
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = typeof forwarded === 'string' 
+      ? forwarded.split(',')[0].trim() 
+      : req.socket.remoteAddress || req.ip;
+      
+    const key = `${ip}:${req.path}`;
+    const now = Date.now();
+
+    if (!rateLimitStore[key] || now > rateLimitStore[key].resetTime) {
+      rateLimitStore[key] = {
+        count: 1,
+        resetTime: now + options.windowMs
+      };
+      return next();
+    }
+
+    rateLimitStore[key].count++;
+
+    if (rateLimitStore[key].count > options.max) {
+      const secondsLeft = Math.ceil((rateLimitStore[key].resetTime - now) / 1000);
+      res.setHeader('Retry-After', secondsLeft);
+      return res.status(429).json({
+        error: `${options.message} Please retry in ${secondsLeft} seconds.`,
+        retryAfterSeconds: secondsLeft
+      });
+    }
+
+    next();
+  };
+}
+
+// Define specialized limiters to counter automated attacks & brute-forcing
+const otpLimiter = createRateLimiter({
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: 5,                  // max 5 requests per IP
+  message: "Too many OTP attempts from this network interface."
+});
+
+const verifyOtpLimiter = createRateLimiter({
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: 10,                 // max 10 requests per IP
+  message: "Too many OTP verification attempts. Slow down."
+});
+
+const generateCourseLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10,                 // max 10 generations
+  message: "Syllabus generator limit reached. Please wait a few minutes."
+});
+
+const paymentLimiter = createRateLimiter({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 5,                  // max 5 order creates
+  message: "Order initiation threshold exceeded. Slow down."
+});
+
+const emailLimiter = createRateLimiter({
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: 5,                  // max 5 emails
+  message: "Email dispatch limit exceeded."
+});
+
+const codeExecuteLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 15,                 // max 15 requests
+  message: "Code execution limits reached."
+});
+
+// Memory block list for offending IPs
+const tempBlockedIPs: Record<string, { blockedUntil: number; reason: string }> = {};
+
+// Simple Web Application Firewall (WAF) middleware to prevent attacks
+function webApplicationFirewall(req: any, res: any, next: any) {
+  // Only apply WAF and request inspection to API routes to avoid interfering with Vite dev server assets
+  if (!req.path.startsWith('/api')) {
+    return next();
+  }
+
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = typeof forwarded === 'string' 
+    ? forwarded.split(',')[0].trim() 
+    : req.socket.remoteAddress || req.ip;
+
+  const now = Date.now();
+
+  // 1. Check if the IP is currently banned/blocked
+  if (tempBlockedIPs[ip] && now < tempBlockedIPs[ip].blockedUntil) {
+    const timeLeft = Math.ceil((tempBlockedIPs[ip].blockedUntil - now) / 1000);
+    return res.status(403).json({
+      error: `Access Denied: Your IP has been temporarily restricted due to security violations (${tempBlockedIPs[ip].reason}). Try again in ${timeLeft} seconds.`,
+      status: 403
+    });
+  } else if (tempBlockedIPs[ip]) {
+    // Unblock if expired
+    delete tempBlockedIPs[ip];
+  }
+
+  // 2. Identify common malicious path scanners (PHPMyAdmin, WordPress, Git, Env leaks, SQLi etc.)
+  const suspiciousPaths = [
+    /\.env/i,
+    /\.git/i,
+    /wp-admin/i,
+    /wp-login/i,
+    /xmlrpc\.php/i,
+    /phpinfo/i,
+    /config\.json/i,
+    /credentials/i,
+    /admin\/config/i,
+    /select.*from/i, // Basic SQLi path probe
+    /etc\/passwd/i,  // Path traversal
+    /\.\.\//         // Path traversal
+  ];
+
+  const requestPath = req.path || '';
+  for (const pattern of suspiciousPaths) {
+    if (pattern.test(requestPath)) {
+      // Block this IP for 15 minutes immediately
+      tempBlockedIPs[ip] = {
+        blockedUntil: now + 15 * 60 * 1000,
+        reason: `Accessing forbidden pathway: ${requestPath}`
+      };
+      console.warn(`[WAF Block] IP: ${ip} attempted to access suspicious path: ${requestPath}. Banned for 15 mins.`);
+      return res.status(403).json({ error: "Access Denied: Suspicious activity detected." });
+    }
+  }
+
+  // 3. Scan request body, query params, and headers for basic SQLi/XSS injection payloads
+  const payloadPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /union\s+select/i,
+    /or\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i, // e.g. "or 1=1"
+    /concurrently/i,
+    /pg_sleep/i
+  ];
+
+  const checkPayload = (value: any): boolean => {
+    if (typeof value === 'string') {
+      for (const pattern of payloadPatterns) {
+        if (pattern.test(value)) return true;
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      for (const key in value) {
+        if (checkPayload(value[key])) return true;
+      }
+    }
+    return false;
+  };
+
+  if (checkPayload(req.query) || checkPayload(req.body)) {
+    // Block this IP for 15 minutes immediately
+    tempBlockedIPs[ip] = {
+      blockedUntil: now + 15 * 60 * 1000,
+      reason: "Malicious injection payload detected"
+    };
+    console.warn(`[WAF Block] IP: ${ip} sent a payload matching injection signature.`);
+    return res.status(403).json({ error: "Access Denied: Malicious payload signature detected." });
+  }
+
+  next();
+}
+
+// Global Site-wide rate limiter (e.g. max 200 requests per minute per IP)
+const globalSiteLimiter = createRateLimiter({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 200,                // 200 requests per minute
+  message: "Global rate limit exceeded. Please wait a moment."
+});
+
+// Periodic memory clean-up for WAF blocks
+setInterval(() => {
+  const now = Date.now();
+  for (const ip in tempBlockedIPs) {
+    if (now > tempBlockedIPs[ip].blockedUntil) {
+      delete tempBlockedIPs[ip];
+    }
+  }
+}, 15 * 60 * 1000);
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  // Set trust proxy to correctly extract client IP behind reverse proxy / load balancer
+  app.set('trust proxy', 1);
+
+  // Apply strict security headers to prevent Clickjacking, MIME sniffing, and clickjacking (permitting iframe preview loading)
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+  });
+
+  // Apply global Web Application Firewall (WAF) & rate limiters to protect the API routes
+  app.use(webApplicationFirewall);
+  app.use("/api", globalSiteLimiter);
+
+  // Limit request body payloads to 100kb to mitigate payload-stuffing/DoS attacks
+  app.use(express.json({ limit: '100kb' }));
 
   // API Routes
-  app.post("/api/send-otp", async (req, res) => {
+  app.post("/api/send-otp", otpLimiter, async (req, res) => {
     const { email } = req.body;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: "Valid email is required" });
@@ -133,7 +344,7 @@ async function startServer() {
     });
   });
 
-  app.post("/api/verify-otp", async (req, res) => {
+  app.post("/api/verify-otp", verifyOtpLimiter, async (req, res) => {
     const { email, code, hash } = req.body;
     
     if (!email || !code) {
@@ -178,7 +389,7 @@ async function startServer() {
   });
 
   // Gemini AI Route to Generate Course Description & Roadmap
-  app.post("/api/generate-course-data", async (req, res) => {
+  app.post("/api/generate-course-data", generateCourseLimiter, async (req, res) => {
     const { courseName, durationMonths } = req.body;
     if (!courseName || typeof courseName !== 'string') {
       return res.status(400).json({ error: "courseName is required and must be a string." });
@@ -292,7 +503,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/razorpay/create-order", async (req, res) => {
+  app.post("/api/razorpay/create-order", paymentLimiter, async (req, res) => {
     try {
       const { amount } = req.body;
       if (!amount) {
@@ -352,7 +563,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/send-email", async (req, res) => {
+  app.post("/api/send-email", emailLimiter, async (req, res) => {
     const { to, subject, text, html } = req.body;
     
     if (!to || !subject || (!text && !html)) {
@@ -417,7 +628,7 @@ async function startServer() {
   });
 
   // Proxy endpoint for Piston code execution to bypass browser CORS constraints
-  app.post("/api/execute-code", async (req, res) => {
+  app.post("/api/execute-code", codeExecuteLimiter, async (req, res) => {
     try {
       const { language, version, files } = req.body;
       const response = await fetch("https://emacs.piston.rs/api/v2/execute", {
