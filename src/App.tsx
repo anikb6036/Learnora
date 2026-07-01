@@ -2121,6 +2121,65 @@ function AppContent() {
     }
   };
 
+  const handleExamFinished = (requestId: string, score: number) => {
+    if (score >= 25) {
+      handleAutoApproveRegistration(requestId, score);
+      return;
+    }
+
+    // Fail case: record failed state but keep status as pending
+    let r = registrationRequests.find(req => req.id === requestId);
+    if (!r && examRequest && examRequest.id === requestId) {
+      r = examRequest;
+    }
+    if (!r) return;
+
+    const rId = r.id;
+    const existsInRequests = registrationRequests.some(req => req.id === rId);
+    if (existsInRequests) {
+      setRegistrationRequests(prev => prev.map(req => {
+        if (req.id === rId) {
+          return { 
+            ...req, 
+            status: 'pending',
+            examScore: score,
+            examPassed: false
+          };
+        }
+        return req;
+      }));
+    } else {
+      const updatedReq: RegistrationRequest = {
+        ...r,
+        status: 'pending',
+        examScore: score,
+        examPassed: false
+      };
+      setRegistrationRequests(prev => [updatedReq, ...prev]);
+    }
+
+    // Send failure/encouragement email to the student (never send approval details if failed)
+    const emailBodyTxt = `Dear ${r.name},\n\nThank you for taking the Language Placement Exam for Learnora.\n\nYour score is ${score}%, which is below our auto-approval threshold of 25%.\n\nDo not worry! You have 3 total attempts to clear the exam. Please prepare and try again.\n\nBest regards,\nAdmissions Office,\nLearnora Institute`;
+    sendSystemEmail(
+      r.email,
+      'Learnora Placement Exam Update - Attention Required',
+      emailBodyTxt
+    );
+
+    // Trigger Fail Notification
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-fail'),
+      title: 'Entrance Exam Attempt Completed',
+      message: `${r.name} completed their entrance test with a grade of ${score}%. Minimum 25% required for auto-admission.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+    setNotifications(n => [notif, ...n]);
+    triggerToast(notif);
+  };
+
   const handleRejectRegistration = (requestId: string) => {
     const r = registrationRequests.find(req => req.id === requestId);
     if (!r || r.status !== 'pending') return;
@@ -2839,22 +2898,37 @@ function AppContent() {
                         </div>
 
                         <div className="pt-2 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                          {registrationRequests.find(r => r.id === fastRegSuccess.id)?.status === 'approved' ? (
-                            <div className="bg-emerald-55 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
-                              You have already cleared the exam.
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setExamRequest(fastRegSuccess);
-                                setShowExamModal(true);
-                              }}
-                              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer hover:opacity-90 flex items-center justify-center gap-1.5"
-                            >
-                              Launch Exam Now
-                            </button>
-                          )}
+                          {(() => {
+                            const req = registrationRequests.find(r => r.id === fastRegSuccess.id);
+                            if (req?.status === 'approved') {
+                              return (
+                                <div className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
+                                  You have already cleared the exam.
+                                </div>
+                              );
+                            }
+                            
+                            const attempts = parseInt(localStorage.getItem(`exam_attempts_${fastRegSuccess.id}`) || '0', 10);
+                            if (attempts >= 3) {
+                              return (
+                                <div className="bg-rose-50 border border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
+                                  You have run out of attempts (3/3 used).
+                                </div>
+                              );
+                            }
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setExamRequest(fastRegSuccess);
+                                  setShowExamModal(true);
+                                }}
+                                className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer hover:opacity-90 flex items-center justify-center gap-1.5"
+                              >
+                                {attempts > 0 ? `Retake Exam (${3 - attempts} left)` : 'Launch Exam Now'}
+                              </button>
+                            );
+                          })()}
 
                           <button
                             type="button"
@@ -5120,10 +5194,10 @@ function AppContent() {
           }}
           request={examRequest}
           onExamPassBg={(score) => {
-            handleAutoApproveRegistration(examRequest.id, score);
+            handleExamFinished(examRequest.id, score);
           }}
           onExamPass={(score) => {
-            handleAutoApproveRegistration(examRequest.id, score);
+            handleExamFinished(examRequest.id, score);
             setShowExamModal(false);
             setExamRequest(null);
           }}
