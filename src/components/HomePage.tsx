@@ -3589,7 +3589,6 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                 <div ref={consoleRef} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mt-4 text-left font-mono text-[10.5px] space-y-2 h-[150px] overflow-y-auto">
                   <div className="flex items-center justify-between border-b border-slate-150 pb-1.5 mb-1.5">
                     <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CONSOLE OUTPUT / TEST BENCH</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
                   <pre className="text-slate-700 leading-relaxed overflow-x-auto whitespace-pre-wrap select-text">
                     {consoleOutput}
