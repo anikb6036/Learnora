@@ -35,6 +35,11 @@ export default function AdmissionsExamModal({
   const [audioLevels, setAudioLevels] = useState<number[]>(new Array(15).fill(4));
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Vocal signal presence analytics
+  const [vocalTicks, setVocalTicks] = useState(0);
+  const [totalTicks, setTotalTicks] = useState(0);
+  const [hasMicrophone, setHasMicrophone] = useState(false);
+
   // Monitoring state
   const [monitoringStream, setMonitoringStream] = useState<MediaStream | null>(null);
   const [monitoringError, setMonitoringError] = useState('');
@@ -49,6 +54,93 @@ export default function AdmissionsExamModal({
   const [readingScore, setReadingScore] = useState(0);
   const [speakingScore, setSpeakingScore] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
+
+  // Reading MCQs definitions
+  const q1Correct = 'B';
+  const q2Correct = 'C';
+
+  // Time & attempt limits
+  const [timeLeft, setTimeLeft] = useState<number>(1200); // 20 minutes = 1200 seconds
+  const [attemptsUsed, setAttemptsUsed] = useState<number>(() => {
+    const saved = localStorage.getItem(`exam_attempts_${request.id}`);
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [isTimeout, setIsTimeout] = useState(false);
+
+  const handleTimeoutRef = useRef<() => void>(() => {});
+
+  // Keep handleTimeoutRef current function up to date with fresh state values
+  useEffect(() => {
+    handleTimeoutRef.current = () => {
+      setIsTimeout(true);
+      setIsRecording(false);
+      
+      // Grade reading portion immediately
+      let score = 0;
+      if (q1Answer === q1Correct) score += 25;
+      if (q2Answer === q2Correct) score += 25;
+      setReadingScore(score);
+
+      // Speaking is evaluated as 0 or evaluated on the spot
+      let speakResult = 0;
+      if (hasMicrophone && vocalTicks >= 8) {
+        const targetVocalTicks = 154;
+        const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
+        speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
+        if (speakResult > 50) speakResult = 50;
+      } else if (!hasMicrophone && recordingSeconds >= 2) {
+        const targetDuration = 8;
+        const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
+        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
+        if (speakResult > 50) speakResult = 50;
+      }
+      
+      setSpeakingScore(speakResult);
+      const finalTotal = score + speakResult;
+      setTotalScore(finalTotal);
+
+      if (monitoringStream) {
+        monitoringStream.getTracks().forEach(track => track.stop());
+        setMonitoringStream(null);
+      }
+
+      if (onExamPassBg) {
+        onExamPassBg(finalTotal);
+      }
+
+      setStep('result');
+    };
+  }, [q1Answer, q2Answer, hasMicrophone, vocalTicks, recordingSeconds, monitoringStream, onExamPassBg]);
+
+  // Overall 20 minutes countdown timer effect
+  useEffect(() => {
+    let timerId: NodeJS.Timeout | null = null;
+    if (step === 'reading' || step === 'speaking') {
+      timerId = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timerId!);
+            handleTimeoutRef.current();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (step === 'intro') {
+      setTimeLeft(1200);
+      setIsTimeout(false);
+    }
+
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [step]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Clear timer and stream on unmount
   useEffect(() => {
@@ -77,6 +169,8 @@ export default function AdmissionsExamModal({
 
     if (isRecording) {
       setRecordingSeconds(0);
+      setVocalTicks(0);
+      setTotalTicks(0);
       secondInterval = setInterval(() => {
         setRecordingSeconds(prev => prev + 1);
       }, 1000);
@@ -85,6 +179,7 @@ export default function AdmissionsExamModal({
       navigator.mediaDevices.getUserMedia({ audio: true, video: false })
         .then(s => {
           stream = s;
+          setHasMicrophone(true);
           const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
           audioContext = new AudioCtx();
           analyser = audioContext.createAnalyser();
@@ -102,6 +197,18 @@ export default function AdmissionsExamModal({
             if (!analyser) return;
             const array = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(array);
+
+            // Compute volume energy to assess speaking participation
+            let sumVal = 0;
+            for (let i = 0; i < array.length; i++) {
+              sumVal += array[i];
+            }
+            const avgVol = sumVal / array.length;
+            setTotalTicks(prev => prev + 1);
+            if (avgVol > 5) { // 5 is a robust threshold for spoken sound above silence
+              setVocalTicks(prev => prev + 1);
+            }
+
             const stepVal = Math.max(1, Math.round(array.length / 15));
             const levels = [];
             for (let i = 0; i < 15; i++) {
@@ -113,6 +220,7 @@ export default function AdmissionsExamModal({
         })
         .catch(err => {
           console.warn("Microphone access declined or unavailable, running fallback visualization", err);
+          setHasMicrophone(false);
           // Fallback wave simulation
           secondInterval = setInterval(() => {
             setAudioLevels(new Array(15).fill(0).map(() => Math.floor(Math.random() * 20) + 4));
@@ -135,11 +243,12 @@ export default function AdmissionsExamModal({
 
   if (!isOpen) return null;
 
-  // Reading MCQs definitions
-  const q1Correct = 'B';
-  const q2Correct = 'C';
-
   const handleStartExam = async () => {
+    if (attemptsUsed >= 3) {
+      setMonitoringError('You have already used all 3 attempts for this exam.');
+      return;
+    }
+
     setIsRequestingPermissions(true);
     setMonitoringError('');
     try {
@@ -148,6 +257,13 @@ export default function AdmissionsExamModal({
         audio: true
       });
       setMonitoringStream(stream);
+
+      // Increment and save attemptsUsed
+      const newAttempts = attemptsUsed + 1;
+      setAttemptsUsed(newAttempts);
+      localStorage.setItem(`exam_attempts_${request.id}`, String(newAttempts));
+
+      setIsTimeout(false);
       setStep('reading');
     } catch (err: any) {
       console.error('Failed to get media permissions', err);
@@ -167,6 +283,8 @@ export default function AdmissionsExamModal({
   };
 
   const handleStartRecording = () => {
+    setVocalTicks(0);
+    setTotalTicks(0);
     setIsRecording(true);
   };
 
@@ -202,11 +320,35 @@ export default function AdmissionsExamModal({
   };
 
   const evaluateFinalScores = () => {
-    // Evaluate speaking score: give 42-50 if they spoke for >= 3 seconds, or 30-40 if shorter but played
-    const speakResult = recordingSeconds >= 3 
-      ? Math.floor(Math.random() * 9) + 42 
-      : Math.floor(Math.random() * 11) + 30;
-    
+    let speakResult = 0;
+
+    if (hasMicrophone) {
+      // Evaluate speaking score strictly based on actual voice activity
+      if (vocalTicks < 8) {
+        // Did not speak or made barely any sound
+        speakResult = 0;
+      } else {
+        // Spoke. A typical fast reading of the 32-word sentence takes about 6-8 seconds of active audio.
+        // Firing 22 times per second, 7 seconds of active reading translates to ~154 vocal ticks.
+        const targetVocalTicks = 154;
+        const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
+        
+        // Base score up to 45 proportional to completion ratio, plus a small random pronunciation factor of 1-5
+        speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
+        if (speakResult > 50) speakResult = 50;
+      }
+    } else {
+      // If mic was unavailable/blocked (fallback mode), evaluate speaking score based on recording duration.
+      if (recordingSeconds < 2) {
+        speakResult = 0;
+      } else {
+        const targetDuration = 8; // target 8 seconds
+        const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
+        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
+        if (speakResult > 50) speakResult = 50;
+      }
+    }
+
     setSpeakingScore(speakResult);
     const finalTotal = readingScore + speakResult;
     setTotalScore(finalTotal);
@@ -248,6 +390,8 @@ export default function AdmissionsExamModal({
     setReadingScore(0);
     setSpeakingScore(0);
     setTotalScore(0);
+    setVocalTicks(0);
+    setTotalTicks(0);
   };
 
   return (
@@ -272,6 +416,12 @@ export default function AdmissionsExamModal({
                 </p>
               </div>
             </div>
+            {(step === 'reading' || step === 'speaking') && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/15 text-rose-600 dark:text-rose-400 font-mono text-xs font-semibold">
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                <span>Time: {formatTime(timeLeft)}</span>
+              </div>
+            )}
             {(step === 'intro' || step === 'result') && (
               <button
                 onClick={handleClose}
@@ -317,8 +467,17 @@ export default function AdmissionsExamModal({
               >
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-650 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase">
-                      Assessment Mode
+                    <div className="flex flex-wrap gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-650 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase">
+                        Assessment Mode
+                      </div>
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase border ${
+                        attemptsUsed >= 3 
+                          ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' 
+                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                      }`}>
+                        Attempts: {attemptsUsed} / 3 Used
+                      </div>
                     </div>
                     <h3 className="text-2xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight">
                       Welcome, {request.name}
@@ -367,10 +526,14 @@ export default function AdmissionsExamModal({
                   )}
                   <button
                     onClick={handleStartExam}
-                    disabled={isRequestingPermissions}
+                    disabled={isRequestingPermissions || attemptsUsed >= 3}
                     className="w-full py-3 bg-zinc-900 hover:bg-zinc-855 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 transition duration-200 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-50"
                   >
-                    {isRequestingPermissions ? 'Configuring evaluation streams...' : 'Start Evaluation \u2192'}
+                    {attemptsUsed >= 3 
+                      ? 'No Attempts Remaining (3/3 Used)' 
+                      : isRequestingPermissions 
+                        ? 'Configuring evaluation streams...' 
+                        : 'Start Evaluation \u2192'}
                   </button>
                 </div>
               </motion.div>
@@ -593,24 +756,51 @@ export default function AdmissionsExamModal({
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-6">
-                  <div className="flex flex-col items-center py-6 border border-emerald-500/15 bg-emerald-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
-                    <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-450">
-                      <FileCheck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-emerald-700 dark:text-emerald-400 tracking-tight">
-                        Admissions Qualification Successful
-                      </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed">
-                        Excellent work! Your evaluation performance has successfully satisfied the academic requirements for automatic registration.
-                      </p>
-                    </div>
+                  {totalScore >= 25 ? (
+                    <div className="flex flex-col items-center py-6 border border-emerald-500/15 bg-emerald-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
+                      <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-450">
+                        <FileCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-emerald-700 dark:text-emerald-400 tracking-tight">
+                          Admissions Qualification Successful
+                        </h3>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed animate-pulse">
+                          {isTimeout 
+                            ? "Even though time ran out, your evaluation performance successfully satisfied the academic requirements for registration!"
+                            : "Excellent work! Your evaluation performance has successfully satisfied the academic requirements for automatic registration."
+                          }
+                        </p>
+                      </div>
 
-                    <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
-                      <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
+                      <div className="text-center">
+                        <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
+                        <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-center py-6 border border-rose-500/15 bg-rose-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
+                      <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-450">
+                        <AlertCircle className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-rose-700 dark:text-rose-400 tracking-tight">
+                          {isTimeout ? "Evaluation Time Expired" : "Evaluation Score Below Requirement"}
+                        </h3>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed">
+                          {isTimeout 
+                            ? "The 20-minute exam timer has run out. You did not achieve the 25% score required to automatically qualify."
+                            : `You scored ${totalScore}%, which is below the 25% score threshold required to qualify for automatic registration.`
+                          }
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
+                        <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 flex justify-between items-center shadow-xs">
@@ -634,24 +824,52 @@ export default function AdmissionsExamModal({
                     </div>
                   </div>
 
-                  <div className="p-3.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl text-xs text-zinc-500 dark:text-zinc-450 text-center leading-relaxed font-sans">
-                    Your student profile has been automatically provisioned. Login credentials and onboarding schedules have been dispatched to your mailbox.
-                  </div>
+                  {totalScore >= 25 ? (
+                    <div className="p-3.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl text-xs text-zinc-550 dark:text-zinc-450 text-center leading-relaxed font-sans">
+                      Your student profile has been automatically provisioned. Login credentials and onboarding schedules have been dispatched to your mailbox.
+                    </div>
+                  ) : (
+                    <div className="p-3.5 bg-rose-500/[0.03] dark:bg-rose-500/[0.05] border border-rose-200/40 dark:border-rose-900/10 rounded-xl text-xs text-zinc-650 dark:text-zinc-400 text-center leading-relaxed font-sans">
+                      Don't worry! You can retake the Language Placement Exam. You have <strong>{3 - attemptsUsed}</strong> of 3 attempts remaining.
+                    </div>
+                  )}
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex gap-3">
-                  <button
-                    onClick={handleResetExam}
-                    className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-medium rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
-                  >
-                    Restart Assessment
-                  </button>
-                  <button
-                    onClick={handleCompleteAssessment}
-                    className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
-                  >
-                    Access Your Dashboard &rarr;
-                  </button>
+                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex flex-col gap-3">
+                  {totalScore < 25 && attemptsUsed >= 3 && (
+                    <div className="p-3 bg-rose-500/[0.04] border border-rose-500/25 rounded-xl text-xs text-rose-600 dark:text-rose-400 text-center font-semibold">
+                      ⚠️ You have used all 3 available attempts and did not reach the 25% passing score. Please contact administration for further support.
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 w-full">
+                    {totalScore < 25 ? (
+                      <button
+                        onClick={handleResetExam}
+                        disabled={attemptsUsed >= 3}
+                        className="flex-1 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Restart Exam ({3 - attemptsUsed} attempts remaining)
+                      </button>
+                    ) : (
+                      <>
+                        {attemptsUsed < 3 && (
+                          <button
+                            onClick={handleResetExam}
+                            className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
+                          >
+                            Restart Exam
+                          </button>
+                        )}
+                        <button
+                          onClick={handleCompleteAssessment}
+                          className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
+                        >
+                          Access Your Dashboard &rarr;
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )}
