@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Logo from './Logo';
+import HeroAnimation from './HeroAnimation';
 import { 
   ArrowRight, 
   BookOpen, 
@@ -512,7 +513,7 @@ const LearnoraWaysToBeSeen = () => {
   const tabs = [
     { id: 'search', label: 'Search', icon: Search, title: 'Start with search', desc: 'Help drive your career forward by getting your profile in front of people actively searching for top tech talent.' },
     { id: 'display', label: 'Display', icon: Monitor, title: 'Engage the eye', desc: 'Build awareness and consideration with memorable, visually engaging profiles that reach recruiters when they’re online.' },
-    { id: 'shopping', label: 'Shopping', icon: ShoppingBag, title: 'Showcase your skills', desc: 'Catch the eye of hiring managers who are looking for what you have to offer with rich, verified portfolios.' },
+    { id: 'shopping', label: 'Shopping', icon: ShoppingBag, title: 'Offer up your inventory', desc: 'Show up when people are shopping with visually engaging course listings and let them know what you have in stock to drive more enrollments.' },
     { id: 'video', label: 'Video', icon: Video, title: 'Bring your story to life', desc: 'Reach your audience and bring your projects to life with interactive video masterclass presentations.' },
     { id: 'app', label: 'App', icon: Smartphone, title: 'Learn on the go', desc: 'Promote your learning journey across our entire network, connecting with mentors and peers anywhere.' },
   ];
@@ -520,35 +521,35 @@ const LearnoraWaysToBeSeen = () => {
   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
 
   return (
-    <section className="w-full py-24 bg-transparent relative z-10 overflow-hidden">
+    <section className="w-full py-16 bg-white dark:bg-zinc-950 relative z-10 overflow-hidden border-t border-slate-100 dark:border-zinc-800">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl md:text-5xl font-sans font-medium text-[#1D1D1F] dark:text-white text-center mb-24 tracking-tight">
+        <h2 className="text-3xl md:text-4xl font-sans font-medium text-[#1D1D1F] dark:text-white text-center mb-16 tracking-tight">
           Learnora gives you many ways to be seen
         </h2>
         
-        <div className="flex flex-col lg:flex-row items-center justify-between max-w-5xl mx-auto relative h-auto lg:h-[600px] gap-12 lg:gap-0">
+        <div className="flex flex-col lg:flex-row items-center justify-between w-full mx-auto relative h-auto lg:h-[520px] gap-12 lg:gap-0">
           
           {/* Left Navigation */}
-          <div className="flex flex-row flex-wrap lg:flex-col justify-center gap-3 z-20 lg:absolute lg:left-0 lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-auto">
+          <div className="flex flex-row flex-wrap lg:flex-col justify-center gap-2.5 z-20 lg:absolute lg:left-0 lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-auto">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-6 py-3.5 rounded-full border transition-all duration-300 w-auto lg:w-48 ${
+                className={`flex items-center gap-3 px-5 py-3 rounded-full border transition-all duration-300 w-auto lg:w-44 ${
                   activeTab === tab.id 
-                    ? 'bg-[#202124] dark:bg-white border-[#202124] dark:border-white text-white dark:text-[#202124] shadow-xl' 
+                    ? 'bg-[#202124] dark:bg-white border-[#202124] dark:border-white text-white dark:text-[#202124] shadow-md' 
                     : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800'
                 }`}
               >
                 <tab.icon className={`w-4 h-4 shrink-0 ${activeTab === tab.id ? 'text-white dark:text-[#202124]' : 'text-slate-500 dark:text-zinc-400'}`} />
-                <span className="font-semibold text-[15px] hidden sm:block">{tab.label}</span>
+                <span className="font-semibold text-sm hidden sm:block">{tab.label}</span>
               </button>
             ))}
           </div>
 
           {/* Center Mobile Mockup */}
           <div className="relative z-10 lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 w-full flex justify-center">
-            <div className="w-[320px] h-[640px] rounded-[48px] border-[12px] border-[#F8F9FA] dark:border-zinc-900 bg-white dark:bg-zinc-950 shadow-2xl relative flex flex-col items-center">
+            <div className="w-[300px] h-[600px] rounded-[40px] border-[10px] border-[#F8F9FA] dark:border-zinc-900 bg-white dark:bg-zinc-950 shadow-xl relative flex flex-col items-center">
               {/* Fake top bar */}
               <div className="w-full h-12 bg-[#F8F9FA] dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-center shrink-0">
                  <div className="w-24 h-4 bg-slate-200 dark:bg-zinc-700 rounded-full" />
@@ -566,37 +567,30 @@ const LearnoraWaysToBeSeen = () => {
                   >
                     {/* Dynamic Content based on tab */}
                     {activeTab === 'search' && (
-                      <div className="w-full h-full flex flex-col pt-12 items-center relative">
-                        <h3 className="text-3xl font-black text-[#1D1D1F] dark:text-white tracking-tight mb-8">
-                          <span className="text-blue-500">L</span>
-                          <span className="text-red-500">e</span>
-                          <span className="text-amber-500">a</span>
-                          <span className="text-blue-500">r</span>
-                          <span className="text-emerald-500">n</span>
-                          <span className="text-red-500">o</span>
-                          <span className="text-blue-500">r</span>
-                          <span className="text-amber-500">a</span>
+                      <div className="w-full h-full flex flex-col pt-16 items-center relative">
+                        <h3 className="text-[32px] sm:text-4xl font-sans font-black tracking-tight mb-8">
+                          <span className="text-[#0A2A66] dark:text-white">Learn</span>
+                          <span className="text-[#FF3B5C]">ora</span>
                         </h3>
-                        <div className="w-full max-w-[260px] h-10 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-full shadow-sm flex items-center px-4 justify-between mb-16 relative z-10">
-                          <span className="text-sm text-slate-500 dark:text-zinc-400">System design expert</span>
-                          <Search className="w-4 h-4 text-blue-500" />
+                        <div className="w-full max-w-[260px] h-12 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-full shadow-sm flex items-center px-5 justify-between mb-16 relative z-10">
+                          <span className="text-[15px] text-slate-500 dark:text-zinc-400">System design expert</span>
+                          <Search className="w-5 h-5 text-[#0A2A66] dark:text-slate-300" />
                         </div>
                         
-                        <div className="w-[300px] sm:w-[480px] absolute top-[220px] left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] border border-slate-100 dark:border-zinc-800 p-6 z-30 flex flex-col text-left transition-transform hover:-translate-y-1">
+                        <div className="w-[300px] sm:w-[340px] absolute top-[210px] -left-[30px] sm:-left-[50px] bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-800 p-5 z-30 flex flex-col text-left transition-transform hover:-translate-y-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-slate-600 dark:text-zinc-300">Ad</span>
-                            <span className="text-xs text-slate-500 dark:text-zinc-400">learnora.com/profile</span>
+                            <span className="text-xs text-slate-600 dark:text-zinc-400">www.learnora.in</span>
                           </div>
-                          <h4 className="text-xl font-medium text-[#1A73E8] dark:text-blue-400 mb-2 leading-tight hover:underline cursor-pointer">
-                            Hire Top System Design Engineers
+                          <h4 className="text-lg font-medium text-[#1A73E8] dark:text-blue-400 mb-2 leading-tight hover:underline cursor-pointer">
+                            Learnora | Interactive Learning & Academic Console
                           </h4>
-                          <p className="text-sm text-[#4D5156] dark:text-zinc-400 leading-relaxed">
-                            Access our pool of elite candidates who have mastered distributed systems. Top 1% talent ready for deployment.
+                          <p className="text-xs text-[#4D5156] dark:text-zinc-400 leading-relaxed line-clamp-4">
+                            Learnora is an <strong className="font-bold text-slate-900 dark:text-zinc-200">online learning platform</strong> that connects students and educators through interactive courses and live classes.
                           </p>
                         </div>
                         
                         {/* Background wireframe lines */}
-                        <div className="w-full space-y-4 mt-24">
+                        <div className="w-full px-6 space-y-4 mt-32">
                             <div className="h-4 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full" />
                             <div className="h-4 w-full bg-slate-100 dark:bg-zinc-800 rounded-full" />
                             <div className="h-4 w-5/6 bg-slate-100 dark:bg-zinc-800 rounded-full" />
@@ -605,48 +599,51 @@ const LearnoraWaysToBeSeen = () => {
                     )}
 
                     {activeTab === 'display' && (
-                      <div className="w-full h-full flex flex-col pt-12 items-center relative">
-                        <div className="w-full h-8 bg-slate-100 dark:bg-zinc-800 rounded-lg mb-8 flex items-center px-3 relative z-10">
+                      <div className="w-full h-full flex flex-col pt-12 items-center relative px-6">
+                        {/* Search Bar Placeholder */}
+                        <div className="w-full h-10 bg-slate-100 dark:bg-zinc-800 rounded-xl mb-12 flex items-center px-4 relative z-10">
                             <div className="w-4 h-4 rounded bg-slate-200 dark:bg-zinc-700" />
                             <div className="w-24 h-3 bg-slate-200 dark:bg-zinc-700 rounded-full ml-3" />
                         </div>
                         
-                        <div className="w-[300px] sm:w-[500px] absolute top-[140px] left-1/2 -translate-x-1/2 flex flex-col sm:flex-row justify-center gap-4 z-30 pointer-events-auto">
+                        {/* Cards (Overlapping phone edges) */}
+                        <div className="w-[440px] sm:w-[480px] absolute top-[120px] left-1/2 -translate-x-1/2 flex flex-row justify-center gap-4 z-30 pointer-events-auto">
                             {/* Card 1 */}
-                            <div className="w-full sm:w-[240px] bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1">
-                              <div className="h-[140px] bg-gradient-to-br from-indigo-500 to-purple-600 relative flex items-center justify-center overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" alt="Students" />
-                                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                  <span className="text-[10px] text-white">i</span>
+                            <div className="w-[210px] sm:w-[230px] bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.6)] overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1 shrink-0 flex flex-col">
+                              <div className="h-[140px] relative flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-zinc-800">
+                                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Students" />
+                                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
+                                  <span className="text-[10px] text-slate-500 font-serif italic">i</span>
                                 </div>
                               </div>
-                              <div className="p-4 flex flex-col h-[100px] justify-between">
-                                  <div>
-                                    <h4 className="text-rose-500 font-medium text-sm mb-1">Masterclass Series</h4>
-                                    <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">Advanced algorithms & data structures cohort</p>
+                              <div className="p-4 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
+                                  <div className="mb-4">
+                                    <h4 className="text-[#FF3B5C] font-normal text-[15px]">Masterclass Series</h4>
                                   </div>
-                                  <div className="flex justify-end mt-2">
-                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700">
+                                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 pt-4 -mx-4 -mb-4 border-t border-slate-100 dark:border-zinc-800 px-4 pb-4">
+                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 pr-3 leading-relaxed">Advanced algorithms & data structures cohort</p>
+                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700 shrink-0 shadow-sm">
                                       <ChevronRight className="w-3 h-3 text-slate-400" />
                                     </div>
                                   </div>
                               </div>
                             </div>
-                            {/* Card 2 - Hidden on small to fit the mockup */}
-                            <div className="hidden sm:flex w-[240px] bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1 flex-col">
-                              <div className="h-[140px] bg-gradient-to-br from-emerald-500 to-teal-600 relative flex items-center justify-center overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" alt="Study" />
-                                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                  <span className="text-[10px] text-white">i</span>
+                            
+                            {/* Card 2 */}
+                            <div className="w-[210px] sm:w-[230px] bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.6)] overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1 flex flex-col shrink-0">
+                              <div className="h-[140px] relative flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-zinc-800">
+                                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Study" />
+                                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
+                                  <span className="text-[10px] text-slate-500 font-serif italic">i</span>
                                 </div>
                               </div>
-                              <div className="p-4 flex flex-col h-[100px] justify-between">
-                                  <div>
-                                    <h4 className="text-emerald-500 font-medium text-sm mb-1">System Design</h4>
-                                    <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">Build scalable distributed systems</p>
+                              <div className="p-4 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
+                                  <div className="mb-4">
+                                    <h4 className="text-[#0F9D58] font-normal text-[15px]">System Design</h4>
                                   </div>
-                                  <div className="flex justify-end mt-2">
-                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700">
+                                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 pt-4 -mx-4 -mb-4 border-t border-slate-100 dark:border-zinc-800 px-4 pb-4">
+                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 pr-3 leading-relaxed">Build scalable distributed systems with top experts</p>
+                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700 shrink-0 shadow-sm">
                                       <ChevronRight className="w-3 h-3 text-slate-400" />
                                     </div>
                                   </div>
@@ -654,14 +651,92 @@ const LearnoraWaysToBeSeen = () => {
                             </div>
                         </div>
 
-                        <div className="w-full space-y-4 mt-[300px] sm:mt-32">
-                            <div className="h-24 w-full bg-slate-100 dark:bg-zinc-800 rounded-xl" />
-                            <div className="h-24 w-full bg-slate-100 dark:bg-zinc-800 rounded-xl" />
+                        {/* Background Block behind cards */}
+                        <div className="w-full space-y-4 mt-[250px]">
+                            <div className="h-48 w-full bg-slate-100 dark:bg-zinc-800 rounded-xl" />
                         </div>
                       </div>
                     )}
 
-                    {activeTab !== 'search' && activeTab !== 'display' && (
+                    {activeTab === 'shopping' && (
+                      <div className="w-full h-full flex flex-col pt-16 items-center relative">
+                        {/* Fake Logo */}
+                        <h3 className="text-3xl font-sans font-black tracking-tight mb-8">
+                          <span className="text-[#0A2A66] dark:text-white">Learn</span>
+                          <span className="text-[#FF3B5C]">ora</span>
+                        </h3>
+                        
+                        {/* Search Bar */}
+                        <div className="w-full max-w-[260px] h-12 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-full shadow-sm flex items-center px-5 justify-between mb-16 relative z-10">
+                          <span className="text-[14px] text-slate-500 dark:text-zinc-400">Software engineering</span>
+                          <Search className="w-4 h-4 text-[#0A2A66] dark:text-slate-300" />
+                        </div>
+                        
+                        {/* Two side-by-side Shopping Cards (overlapping phone edge) */}
+                        <div className="w-[340px] sm:w-[380px] absolute top-[190px] left-1/2 -translate-x-1/2 z-30 flex items-start gap-3">
+                          {/* Card 1 */}
+                          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] border border-slate-100 dark:border-zinc-800 overflow-hidden transition-transform hover:-translate-y-1">
+                            <div className="h-[120px] w-full bg-slate-100 dark:bg-zinc-800 relative">
+                              <img 
+                                src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&h=300&fit=crop" 
+                                className="absolute inset-0 w-full h-full object-cover"
+                                alt="Full-Stack Course"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                            <div className="p-3">
+                              <h4 className="text-[13px] font-bold text-[#F4B400] leading-snug mb-1 line-clamp-2">
+                                Full-Stack Engineering Bootcamp
+                              </h4>
+                              <p className="text-[10px] text-slate-400 dark:text-zinc-500 mb-3">learnora.in</p>
+                              
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-[#1D1D1F] dark:text-white">$149</span>
+                                <div className="flex items-center gap-0.5">
+                                  <span className="text-[9px] text-[#F4B400]">★★★★★</span>
+                                  <span className="text-[8px] text-slate-400">(1.2k)</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Card 2 */}
+                          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] border border-slate-100 dark:border-zinc-800 overflow-hidden transition-transform hover:-translate-y-1">
+                            <div className="h-[120px] w-full bg-slate-100 dark:bg-zinc-800 relative">
+                              <img 
+                                src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=300&fit=crop" 
+                                className="absolute inset-0 w-full h-full object-cover"
+                                alt="System Design Course"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                            <div className="p-3">
+                              <h4 className="text-[13px] font-bold text-[#0F9D58] leading-snug mb-1 line-clamp-2">
+                                System Design Masterclass
+                              </h4>
+                              <p className="text-[10px] text-slate-400 dark:text-zinc-500 mb-3">learnora.in</p>
+                              
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-[#1D1D1F] dark:text-white">$99</span>
+                                <div className="flex items-center gap-0.5">
+                                  <span className="text-[9px] text-[#F4B400]">★★★★★</span>
+                                  <span className="text-[8px] text-slate-400">(856)</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Background wireframe lines */}
+                        <div className="w-full px-6 space-y-4 mt-[160px]">
+                            <div className="h-4 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full" />
+                            <div className="h-4 w-full bg-slate-100 dark:bg-zinc-800 rounded-full" />
+                            <div className="h-4 w-5/6 bg-slate-100 dark:bg-zinc-800 rounded-full" />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab !== 'search' && activeTab !== 'display' && activeTab !== 'shopping' && (
                       <div className="w-full h-full flex flex-col items-center justify-center opacity-60">
                         <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mb-6 shadow-inner">
                           <activeTabData.icon className="w-10 h-10 text-slate-400 dark:text-zinc-500" />
@@ -678,7 +753,7 @@ const LearnoraWaysToBeSeen = () => {
           </div>
 
           {/* Right Text Description */}
-          <div className="lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 max-w-sm z-20 text-center lg:text-left mt-8 lg:mt-0">
+          <div className="lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 w-full max-w-sm lg:max-w-[320px] xl:max-w-sm z-20 text-center lg:text-left mt-8 lg:mt-0">
             <h3 className="text-3xl font-sans font-medium text-[#1D1D1F] dark:text-white mb-4 tracking-tight">
               {activeTabData.title}
             </h3>
@@ -1223,30 +1298,6 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-[#1D1D1F] dark:text-zinc-50 transition-colors duration-300 flex flex-col justify-between relative overflow-hidden font-sans z-0 selection:bg-red-500/10 selection:text-red-900">
       
-      {/* High-Fidelity Editorial Visual Background Grid and Glowing Nodes */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden">
-        {/* Soft elegant neon glowing radial nodes */}
-        <div className="absolute top-[10%] left-[20%] w-[450px] h-[450px] rounded-full bg-indigo-400/5 blur-[120px]" />
-        <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] rounded-full bg-red-400/5 blur-[130px]" />
-        <div className="absolute top-[40%] right-[30%] w-[350px] h-[350px] rounded-full bg-fuchsia-400/3 blur-[100px]" />
-
-        {/* Minimalist architectural layout grids */}
-        <div className="absolute inset-0 opacity-[0.06]" 
-             style={{ backgroundImage: 'radial-gradient(circle, #8F9BB3 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-
-        {/* Horizontal linear accents mimicking premium SaaS frameworks */}
-        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-300/30 to-transparent" />
-        <div className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-300/30 to-transparent" />
-        
-        {/* Abstract structural vector guides */}
-        <svg className="absolute top-12 right-12 w-[50%] h-[700px] opacity-[0.04] text-slate-900" fill="none" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="300" cy="300" r="250" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" />
-          <circle cx="300" cy="300" r="150" stroke="currentColor" strokeWidth="0.5" />
-          <line x1="50" y1="300" x2="550" y2="300" stroke="currentColor" strokeWidth="0.5" />
-          <line x1="300" y1="50" x2="300" y2="550" stroke="currentColor" strokeWidth="0.5" />
-        </svg>
-      </div>
-
       {/* Nav Header */}
       <header className="w-full border-b border-black/5 bg-white/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
         <div className="w-full max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -1304,17 +1355,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
       </header>
 
       {/* Premium Minimalist Bento Grid Hero Section */}
-      <main className="flex-1 w-full relative z-10 flex flex-col items-center justify-center pt-20 md:pt-32 pb-16 px-6">
-        {/* Radial gradient background to give a "glow" effect behind the hero text */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-
+      <main className="flex-1 w-full relative z-10 flex flex-col items-center justify-center pt-16 md:pt-24 pb-16 px-6">
         {/* Typography */}
-        <h1 className="text-5xl md:text-7xl font-black text-center text-[#1D1D1F] dark:text-white max-w-4xl tracking-tight leading-[1.1]">
-          Master skills. Build careers. <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-            Track progress seamlessly.
-          </span>
-        </h1>
+        <HeroAnimation />
 
         <p className="mt-6 text-lg text-slate-600 dark:text-zinc-400 text-center max-w-2xl font-medium leading-relaxed">
           An intuitive, full-stack Academic Operations & Coaching platform. Make it easier for potential students to find high-paying jobs, master concepts, and excel in proctored examinations.
