@@ -80,6 +80,55 @@ const areasOfInterest: AreaOfInterest[] = [
   { id: 'finance', name: 'Finance and Technology', defaultCount: 5 },
 ];
 
+export interface RotatingHeroPhase {
+  phrase: string;
+  textBgClass: string;
+  bgColorClass: string;
+  badgeClass: string;
+  badgeText: string;
+  badgeIcon: 'play' | 'search' | 'check' | 'activity';
+  mockupType: 'live' | 'career' | 'exam' | 'progress';
+}
+
+export const heroPhases: RotatingHeroPhase[] = [
+  {
+    phrase: "Master skills",
+    textBgClass: "from-rose-500 to-red-600",
+    bgColorClass: "bg-rose-500/10",
+    badgeClass: "bg-rose-600 text-white",
+    badgeText: "Video / Live Class",
+    badgeIcon: "play",
+    mockupType: "live"
+  },
+  {
+    phrase: "Build careers",
+    textBgClass: "from-amber-500 to-orange-500",
+    bgColorClass: "bg-amber-500/10",
+    badgeClass: "bg-amber-500 text-slate-900",
+    badgeText: "Be found / Search",
+    badgeIcon: "search",
+    mockupType: "career"
+  },
+  {
+    phrase: "Clear exams",
+    textBgClass: "from-emerald-500 to-green-600",
+    bgColorClass: "bg-emerald-500/10",
+    badgeClass: "bg-emerald-600 text-white",
+    badgeText: "Display / Exam Verified",
+    badgeIcon: "check",
+    mockupType: "exam"
+  },
+  {
+    phrase: "Track progress",
+    textBgClass: "from-blue-500 to-indigo-600",
+    bgColorClass: "bg-blue-500/10",
+    badgeClass: "bg-blue-600 text-white",
+    badgeText: "Shopping / Progress",
+    badgeIcon: "activity",
+    mockupType: "progress"
+  }
+];
+
 const PMIcon = () => (
   <div className="relative w-10 h-10 flex items-center justify-center shrink-0 select-none bg-indigo-50 dark:bg-indigo-950/40 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
     <div className="grid grid-cols-2 gap-0.5 w-6 h-6">
@@ -503,6 +552,15 @@ interface HomePageProps {
 }
 
 export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePageProps) {
+  const [activePhaseIdx, setActivePhaseIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActivePhaseIdx(prev => (prev + 1) % heroPhases.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
   const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
@@ -1112,238 +1170,247 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         </div>
       </header>
 
-      {/* Premium Hero and Live Interactive Console Panel Grid */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center relative z-10">
+      {/* Premium Google Ads Inspired Rotating Hero Section */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center relative z-10">
         
-        {/* Left Column: Premium Interactive Typography */}
+        {/* Left Column: Rotating Interactive Typography */}
         <div className="lg:col-span-6 flex flex-col items-start gap-6 text-left">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/60 shadow-2xs">
             <span className="bg-red-600 text-white text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full leading-none">LIVE</span>
             <span className="text-[11px] text-slate-600 font-bold uppercase tracking-wider pr-1.5">Admission Portal 2026 Active</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] leading-[1.05] tracking-tight">
-            Digitized Cohorts.<br />
-            Continuous <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-amber-500 to-red-600 bg-300% animate-[gradient_8s_ease_infinite]">Evolution.</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] dark:text-white leading-[1.1] tracking-tight">
+            <div className="h-[1.25em] relative overflow-hidden block">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={activePhaseIdx}
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -50, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className={`block text-transparent bg-clip-text bg-gradient-to-r ${heroPhases[activePhaseIdx].textBgClass}`}
+                >
+                  {heroPhases[activePhaseIdx].phrase}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            <span>with Learnora.</span>
           </h1>
 
-          <p className="text-md sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl">
-            A premium cooperative workspace for technical academics. Master schedules, build fully automated and proctored assignments, receive evaluation charts, and thrive within elite peer-to-peer pipelines.
+          <p className="text-md sm:text-lg text-slate-600 dark:text-zinc-300 font-medium leading-relaxed max-w-xl">
+            For whatever matters most, make it easier for potential students to find high-paying jobs, master concepts, and excel in proctored examinations with Learnora.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-3">
             <button 
               onClick={() => onEnterPortal('fastReg')}
-              className="w-full sm:w-auto px-7 py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10 active:scale-97 text-sm cursor-pointer"
+              className="w-full sm:w-auto px-7 py-4 bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-950 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10 active:scale-97 text-sm cursor-pointer"
             >
               Start Application <ArrowRight className="w-4 h-4" />
             </button>
             <button 
               onClick={() => onEnterPortal('authLogin')}
-              className="w-full sm:w-auto px-7 py-4 bg-white hover:bg-slate-50 text-[#1D1D1F] border border-slate-200 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-97 text-sm"
+              className="w-full sm:w-auto px-7 py-4 bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 dark:text-zinc-200 dark:border-white/10 text-[#1D1D1F] border border-slate-200 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-97 text-sm"
             >
               Student Portal <ArrowUpRight className="w-4 h-4 text-slate-500" />
             </button>
           </div>
-
-
         </div>
 
-        {/* Right Column: Premium Student & Coaching Dashboard Preview */}
-        <div className="lg:col-span-6 flex items-center justify-center relative w-full">
-          <div className="absolute inset-0 border border-slate-200 rounded-3xl transform rotate-1 -z-10 bg-indigo-500/5 blur-xl scale-98" />
-          
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-2xl w-full max-w-lg overflow-hidden">
-            {/* Header / Tab Selector */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] bg-slate-100 text-slate-600 font-black px-2 py-0.5 rounded uppercase tracking-wider">Workspace</span>
-                <span className="text-xs text-slate-300 font-semibold font-sans">/</span>
-                <span className="text-xs text-slate-800 font-bold font-sans">Student Planner</span>
-              </div>
-              
-              {/* Active info indicator without noisy dots */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  Sync Active
-                </span>
-              </div>
-            </div>
+        {/* Right Column: Google Ads Style Rotating Interactive Circle Graphics */}
+        <div className="lg:col-span-6 flex items-center justify-center relative w-full h-[400px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activePhaseIdx}
+              initial={{ scale: 0.85, opacity: 0, rotate: -5 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 0.85, opacity: 0, rotate: 5 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-sm aspect-square flex items-center justify-center"
+            >
+              {/* Central Circle with Gradient Ring & Soft Backglow */}
+              <div className={`absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full transition-all duration-700 ${heroPhases[activePhaseIdx].bgColorClass} flex items-center justify-center border border-slate-200/40 relative`}>
+                
+                {/* Floating pill badge on the circle */}
+                <div className={`absolute -top-4 px-4 py-1.5 rounded-full font-black text-xs shadow-md tracking-wider uppercase flex items-center gap-1.5 transition-all duration-700 ${heroPhases[activePhaseIdx].badgeClass}`}>
+                  {heroPhases[activePhaseIdx].badgeIcon === 'play' && <Play className="w-3.5 h-3.5 fill-current" />}
+                  {heroPhases[activePhaseIdx].badgeIcon === 'search' && <Search className="w-3.5 h-3.5" />}
+                  {heroPhases[activePhaseIdx].badgeIcon === 'check' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                  {heroPhases[activePhaseIdx].badgeIcon === 'activity' && <Activity className="w-3.5 h-3.5" />}
+                  <span>{heroPhases[activePhaseIdx].badgeText}</span>
+                </div>
 
-            {/* Interactive Tab Controls */}
-            <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
-              <button 
-                onClick={() => setActiveConsoleTab('status')}
-                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
-                  activeConsoleTab === 'status' 
-                    ? 'bg-white text-slate-900 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                Weekly Schedule
-              </button>
-              <button 
-                onClick={() => setActiveConsoleTab('metrics')}
-                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
-                  activeConsoleTab === 'metrics' 
-                    ? 'bg-white text-slate-900 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                Academic Progress
-              </button>
-              <button 
-                onClick={() => setActiveConsoleTab('proctor')}
-                className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
-                  activeConsoleTab === 'proctor' 
-                    ? 'bg-white text-slate-900 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                Mentor Support
-              </button>
-            </div>
-
-            {/* Tab content screens */}
-            <div className="h-[250px] flex flex-col justify-between relative">
-              <AnimatePresence mode="wait">
-                {activeConsoleTab === 'status' && (
-                  <motion.div 
-                    key="status-tab"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-3 flex flex-col justify-between h-full text-left"
-                  >
-                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 shadow-2xs space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider">Next Live Session</span>
-                          <h4 className="font-bold text-sm text-[#1D1D1F] mt-0.5">Advanced System Design & Scalability</h4>
-                        </div>
-                        <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold">
-                          SYS-301
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-6 pt-1">
-                        <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Starts in {countdownMinutes}:{countdownSeconds < 10 ? `0${countdownSeconds}` : countdownSeconds}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
-                          <span>42 Registered</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                          <span className="font-semibold text-slate-700">Assignment: Promise Pool Optimizer</span>
-                        </div>
-                        <span className="text-emerald-600 text-[10.5px] font-bold">Submitted</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-indigo-500" />
-                          <span className="font-semibold text-slate-700">Milestone Assessment Evolution</span>
-                        </div>
-                        <span className="text-slate-500 text-[10.5px] font-bold">Fri, 8 PM</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeConsoleTab === 'metrics' && (
-                  <motion.div 
-                    key="metrics-tab"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-3 flex flex-col justify-between h-full text-left"
-                  >
-                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 shadow-2xs space-y-3">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Evolution Promotion Criteria</h4>
-                        <span className="text-[10.5px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">Current Score: 88.5%</span>
+                {/* Overlapping Mockup Card */}
+                <div className="absolute inset-x-4 sm:inset-x-0 mx-auto w-full max-w-[280px] bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4.5 shadow-2xl space-y-3.5 text-left transform translate-y-2">
+                  {heroPhases[activePhaseIdx].mockupType === 'live' && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-[10px] bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Interactive Sandbox</span>
+                        <span className="text-[10px] text-slate-400 font-medium font-mono">LIVE STREAM</span>
                       </div>
                       
-                      {/* Elegant Progress tracker */}
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex justify-between text-[11px] text-slate-500 font-bold">
-                          <span>Syllabus Covered</span>
-                          <span>78% Complete</span>
-                        </div>
-                        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                          <div className="bg-red-500 h-full rounded-full" style={{ width: '78%' }} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-2xs text-left">
-                        <span className="text-[9.5px] text-slate-500 font-bold uppercase block">Minimum Promotion Req.</span>
-                        <span className="text-sm font-bold text-[#1D1D1F] mt-0.5 block">80.0% Grade</span>
-                      </div>
-                      <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-2xs text-left">
-                        <span className="text-[9.5px] text-slate-500 font-bold uppercase block">Earned Badges</span>
-                        <span className="text-sm font-bold text-rose-600 mt-0.5 block flex items-center gap-1">
-                          <Award className="w-4 h-4 text-rose-500" /> 12 Credentials
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeConsoleTab === 'proctor' && (
-                  <motion.div 
-                    key="proctor-tab"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-3 flex flex-col justify-between h-full text-left"
-                  >
-                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/60 shadow-2xs overflow-hidden flex-1 flex flex-col justify-end">
-                      <div className="space-y-2.5">
-                        {/* Message 1 (Mentor) */}
-                        <div className="flex gap-2 items-start">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-[10px] font-black text-slate-600">
-                            M
+                      {/* Premium Interactive Live Stream Interface */}
+                      <div className="relative aspect-[16/10] bg-slate-950 dark:bg-black rounded-xl overflow-hidden border border-slate-800 flex flex-col justify-between p-3 shadow-md">
+                        {/* Background subtle stream mesh gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-slate-900 to-emerald-950/70 -z-10" />
+                        
+                        {/* Live Overlay Header */}
+                        <div className="flex justify-between items-center z-10 w-full">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                            <span className="text-[8px] font-black tracking-wider text-white bg-red-600 px-1.5 py-0.5 rounded">LIVE</span>
                           </div>
-                          <div className="bg-white border border-slate-150 p-2.5 rounded-2xl rounded-tl-none shadow-3xs max-w-[85%]">
-                            <p className="text-[10px] font-bold text-slate-900 leading-none">Amit K. <span className="text-[8.5px] text-slate-400 font-normal">SDE Mentor</span></p>
-                            <p className="text-[11px] text-slate-600 mt-1 leading-normal">Your code optimization for the API gateway looks great. Let's schedule your mockup review.</p>
+                          <span className="text-[8px] bg-black/40 text-slate-300 font-mono font-medium px-1.5 py-0.5 rounded backdrop-blur-xs">
+                            System Design Class
+                          </span>
+                        </div>
+
+                        {/* Interactive Board Flow Representation */}
+                        <div className="flex items-center justify-center gap-3 py-1 z-10">
+                          {/* Load Balancer Card */}
+                          <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
+                            <div className="w-4 h-4 rounded bg-indigo-500 flex items-center justify-center text-white font-mono text-[8px] font-black">LB</div>
+                            <span className="text-[7.5px] text-slate-300 font-semibold leading-none">Gateway</span>
+                          </div>
+                          
+                          {/* Animated flow indicator */}
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="flex gap-0.5">
+                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-100" />
+                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-200" />
+                            </div>
+                            <span className="text-[6.5px] text-slate-400 font-mono">15ms</span>
+                          </div>
+
+                          {/* Target SDE Clusters */}
+                          <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
+                            <div className="flex gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse delay-150" />
+                            </div>
+                            <span className="text-[7.5px] text-slate-300 font-semibold leading-none">SDE Cluster</span>
                           </div>
                         </div>
 
-                        {/* Message 2 (Student) */}
-                        <div className="flex gap-2 items-start justify-end">
-                          <div className="bg-red-50 text-red-950 border border-red-100 p-2.5 rounded-2xl rounded-tr-none shadow-3xs max-w-[85%] text-right">
-                            <p className="text-[10px] font-bold text-red-900 leading-none">You <span className="text-[8.5px] text-red-600/60 font-normal">Student</span></p>
-                            <p className="text-[11px] text-slate-800 mt-1 leading-normal">Awesome! I have updated the repository with the changes.</p>
+                        {/* Active Speaker with speech visualizer */}
+                        <div className="flex justify-between items-end w-full z-10">
+                          <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                            {/* Speech analyzer waveform simulator */}
+                            <div className="flex items-end gap-0.5 h-3 px-0.5">
+                              <span className="w-0.5 h-1 bg-indigo-400 rounded-full animate-bounce" />
+                              <span className="w-0.5 h-2.5 bg-indigo-400 rounded-full animate-bounce delay-100" />
+                              <span className="w-0.5 h-2 bg-indigo-500 rounded-full animate-bounce delay-200" />
+                              <span className="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-300" />
+                            </div>
+                            <div>
+                              <p className="text-[8px] font-black text-white leading-none">Amit Kumar</p>
+                              <p className="text-[6.5px] text-slate-400 leading-none mt-0.5">SDE Lead Mentor</p>
+                            </div>
+                          </div>
+
+                          {/* Verification metrics */}
+                          <div className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[7.5px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-1 backdrop-blur-xs">
+                            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                            PROCTORED
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between text-xs bg-white px-3 py-2.5 rounded-xl border border-slate-200/50 shadow-2xs">
-                      <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                        <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Direct Mentor Channel</span>
+                      {/* Video info caption */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center shrink-0">
+                          <Play className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 fill-current" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-none">System Design Masterclass</p>
+                          <p className="text-[9.5px] text-slate-500 dark:text-zinc-400 mt-0.5">Continuous speech analyzer feedback</p>
+                        </div>
                       </div>
-                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">Active</span>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+                  )}
+
+                  {heroPhases[activePhaseIdx].mockupType === 'career' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg border border-slate-150 dark:border-white/5">
+                        <div className="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[8px] font-black shrink-0">S</div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 truncate">Ad • learnora-grad.com</div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <h4 className="font-extrabold text-sm text-[#1D1D1F] dark:text-white leading-tight">Software Development Engineer</h4>
+                        <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                          Top 1% technical cohort. Master DSA, automate web assessments, and secure high-salary profiles at Elite firms.
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                        <span className="font-semibold text-amber-600 dark:text-amber-400">Average Salary: 18 LPA</span>
+                        <span className="bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[9.5px] font-bold">100% Placement</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {heroPhases[activePhaseIdx].mockupType === 'exam' && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-extrabold px-2.5 py-0.5 rounded-full tracking-wide border border-emerald-200/50">PASSED</span>
+                        <span className="text-[9.5px] text-slate-400 font-mono">PLACEMENT EXAM</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-3 border border-emerald-500/15 rounded-xl">
+                        <div className="text-center flex-1">
+                          <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">FINAL GRADE</span>
+                          <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">94%</span>
+                        </div>
+                        <div className="w-px h-10 bg-slate-200 dark:bg-white/10" />
+                        <div className="text-center flex-1">
+                          <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">ATTEMPTS</span>
+                          <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">1/3</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-[10.5px] text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-850 px-2.5 py-2 rounded-lg">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span>Language placement satisfied. Account active.</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {heroPhases[activePhaseIdx].mockupType === 'progress' && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-[10px] bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Academic Progress</span>
+                        <span className="text-[10.5px] text-slate-800 dark:text-zinc-200 font-bold">Excellent</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                            <span>Syllabus Covered</span>
+                            <span className="font-semibold text-slate-700 dark:text-zinc-300">88%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '88%' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                            <span>DSA Mastered</span>
+                            <span className="font-semibold text-slate-700 dark:text-zinc-300">42 / 50 Problems</span>
+                          </div>
+                          <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-[10.5px] text-slate-500 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg">
+                        <span className="font-bold text-blue-600 dark:text-blue-400">Streak: 12 Days</span>
+                        <span className="text-[9.5px] text-slate-400">Updated Real-Time</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
       </main>
