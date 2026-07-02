@@ -501,21 +501,31 @@ async function startServer() {
           });
 
           if (resendResult.error && !fallbackAttempted) {
-             console.warn(`Unverified custom sender domain error: ${resendResult.error.message}. Retrying sending OTP...`);
-             finalFrom = 'admissions@learnora.in';
-             fallbackAttempted = true;
+             const errType = resendResult.error.name?.toLowerCase() || "";
+             const errText = resendResult.error.message?.toLowerCase() || "";
+             const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain");
              
-             resendResult = await resend.emails.send({
-               from: finalFrom,
-               to: [email],
-               subject: 'Learnora Admissions OTP Verification',
-               html: `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;"><h2>Learnora Admissions</h2><p>Your one-time verification code is:</p><h1 style="font-size: 32px; letter-spacing: 4px; color: #333;">${code}</h1></div>`
-             });
+             if (isSenderError && !errText.includes("quota") && !errText.includes("limit")) {
+               console.log(`Sender domain error: ${resendResult.error.message}. Retrying with fallback...`);
+               finalFrom = 'admissions@learnora.in';
+               fallbackAttempted = true;
+               
+               resendResult = await resend.emails.send({
+                 from: finalFrom,
+                 to: [email],
+                 subject: 'Learnora Admissions OTP Verification',
+                 html: `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;"><h2>Learnora Admissions</h2><p>Your one-time verification code is:</p><h1 style="font-size: 32px; letter-spacing: 4px; color: #333;">${code}</h1></div>`
+               });
+             }
           }
 
           if (resendResult.error) {
-            console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
             const friendlyMessage = getFriendlyResendError(resendResult.error, email);
+            if (friendlyMessage.includes("Quota") || friendlyMessage.includes("Sandbox")) {
+              console.log(`Resend API info: ${resendResult.error.message}. Using developer sandbox bypass.`);
+            } else {
+              console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
+            }
             return res.status(500).json({ error: friendlyMessage, developerSandboxOtp: code });
           }
 
@@ -780,10 +790,10 @@ async function startServer() {
       if (resendResult.error && !fallbackAttempted) {
         const errType = resendResult.error.name?.toLowerCase() || "";
         const errText = resendResult.error.message?.toLowerCase() || "";
-        const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain") || errText.includes("unauthorized");
+        const isSenderError = errType.includes("validation") || errText.includes("sender") || errText.includes("from") || errText.includes("verify") || errText.includes("domain");
 
-        if (isSenderError) {
-          console.warn(`Unverified custom sender domain error in send-email: ${resendResult.error.message}. Retrying with admissions@learnora.in fallback...`);
+        if (isSenderError && !errText.includes("quota") && !errText.includes("limit")) {
+          console.log(`Sender domain error in send-email: ${resendResult.error.message}. Retrying with fallback...`);
           finalFrom = 'admissions@learnora.in';
           fallbackAttempted = true;
 
@@ -798,8 +808,12 @@ async function startServer() {
       }
 
       if (resendResult.error) {
-         console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
          const friendlyMessage = getFriendlyResendError(resendResult.error, email);
+         if (friendlyMessage.includes("Quota") || friendlyMessage.includes("Sandbox")) {
+           console.log(`Resend API info: ${resendResult.error.message}.`);
+         } else {
+           console.error("Resend API Error details:", JSON.stringify(resendResult.error, null, 2));
+         }
          return res.status(500).json({ error: friendlyMessage });
       }
 

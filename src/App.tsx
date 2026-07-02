@@ -3132,7 +3132,7 @@ function AppContent() {
                                   <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
                                       <div className="relative flex-1">
-                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                           <Mail className="h-4 w-4 text-slate-400 dark:text-gray-500" />
                                         </div>
                                         <input
@@ -3148,7 +3148,7 @@ function AppContent() {
                                               fetchChallenge();
                                             }
                                           }}
-                                          className={`w-full pl-10 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastEmailError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans disabled:opacity-75 disabled:cursor-not-allowed`}
+                                          className={`w-full pl-9 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastEmailError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans disabled:opacity-75 disabled:cursor-not-allowed`}
                                         />
                                       </div>
                                       {!emailVerified && (
@@ -3171,10 +3171,10 @@ function AppContent() {
                                     
                                     {/* Advanced Human Cryptographic Verification Check */}
                                     {showChallenge && !emailVerified && (
-                                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl space-y-2 mt-1 transition-all animate-fadeIn">
+                                      <div className="bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-3 rounded-xl space-y-2.5 mt-1 transition-all animate-fadeIn">
                                         <div className="flex justify-between items-center">
                                           <label className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 flex items-center gap-1">
-                                            <Shield className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Human Verification Required
+                                            <Shield className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Human Verification Required
                                           </label>
                                           <button 
                                             type="button" 
@@ -3186,7 +3186,7 @@ function AppContent() {
                                           </button>
                                         </div>
                                         <div className="flex gap-2 items-center">
-                                          <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/5 select-none tracking-wide">
+                                          <div className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-100 bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 rounded-lg border border-slate-200/50 dark:border-white/5 select-none whitespace-nowrap tracking-wide">
                                             {challengeText} =
                                           </div>
                                           <input
@@ -3196,10 +3196,10 @@ function AppContent() {
                                             placeholder="?"
                                             value={challengeInput}
                                             onChange={e => setChallengeInput(e.target.value.replace(/\D/g, ''))}
-                                            className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-lg border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-850 dark:text-gray-100 placeholder-slate-400 font-bold text-center"
+                                            className="w-16 px-2.5 py-1.5 text-xs bg-white dark:bg-[#070708] rounded-lg border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-800 dark:text-gray-100 font-bold text-center"
                                           />
                                         </div>
-                                        <p className="text-[10px] text-slate-400 leading-normal">
+                                        <p className="text-[10px] text-slate-400 dark:text-gray-500 leading-normal">
                                           Please solve the simple math puzzle above before requesting or resending an OTP code.
                                         </p>
                                       </div>
@@ -3224,32 +3224,32 @@ function AppContent() {
                                             Verify
                                           </button>
                                         </div>
-                                        <p className="text-sm text-amber-500 font-medium px-1">
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium px-1">
                                           An OTP has been sent to your email.
                                         </p>
                                         {sandboxOtp && (
-                                          <div className="mt-1 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs font-medium text-amber-700 dark:text-amber-300">
-                                            <p className="font-bold flex items-center gap-1">
+                                          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 rounded-xl p-3 text-[11px] font-medium text-slate-600 dark:text-gray-400 mt-1">
+                                            <p className="font-bold flex items-center gap-1 text-slate-700 dark:text-gray-300">
                                               <Shield className="w-3.5 h-3.5" /> Developer Sandbox Bypass OTP
                                             </p>
                                             <p className="mt-1">
-                                              Because of email quota limits, please enter this code to complete verification: <span className="font-mono bg-amber-500/20 px-2 py-0.5 rounded text-sm font-bold text-slate-900 dark:text-white select-all">{sandboxOtp}</span>
+                                              Because of email quota limits, please enter this code to complete verification: <span className="font-mono bg-slate-200 dark:bg-white/10 px-2 py-0.5 rounded text-xs font-bold text-slate-800 dark:text-white select-all whitespace-nowrap">{sandboxOtp}</span>
                                             </p>
                                           </div>
                                         )}
                                       </div>
                                     )}
                                     {emailVerified && (
-                                      <p className="text-sm text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
+                                      <p className="text-xs text-emerald-500 mt-1 font-bold flex items-center gap-1.5 animate-fadeIn">
                                         <Check className="w-3.5 h-3.5" /> Email successfully verified.
                                       </p>
                                     )}
                                     {fastEmailError && (
-                                      <p className="text-sm text-rose-500 mt-1.5 font-medium px-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fastEmailError}</p>
+                                      <p className="text-xs text-rose-500 mt-1.5 font-medium px-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fastEmailError}</p>
                                     )}
                                   </div>
                                   {fastEmailSuccess && (
-                                    <p className="text-sm text-amber-500 mt-1.5 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-normal">{fastEmailSuccess}</p>
+                                    <p className="text-xs text-amber-500 mt-1.5 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-normal">{fastEmailSuccess}</p>
                                   )}
                                 </div>
 
