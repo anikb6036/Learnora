@@ -1176,11 +1176,11 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         {/* Left Column: Rotating Interactive Typography */}
         <div className="lg:col-span-6 flex flex-col items-start gap-6 text-left">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/60 shadow-2xs">
-            <span className="bg-red-600 text-white text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full leading-none">LIVE</span>
+            <span className="bg-red-600 text-white text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full leading-none animate-pulse">LIVE</span>
             <span className="text-[11px] text-slate-600 font-bold uppercase tracking-wider pr-1.5">Admission Portal 2026 Active</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] dark:text-white leading-[1.1] tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black text-[#1D1D1F] dark:text-white leading-[1.15] tracking-tight">
             <div className="h-[1.25em] relative overflow-hidden block">
               <AnimatePresence mode="wait">
                 <motion.span
@@ -1195,12 +1195,47 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                 </motion.span>
               </AnimatePresence>
             </div>
-            <span>with Learnora.</span>
+            <span className="text-[#202124] dark:text-zinc-100">with Learnora.</span>
           </h1>
 
           <p className="text-md sm:text-lg text-slate-600 dark:text-zinc-300 font-medium leading-relaxed max-w-xl">
             For whatever matters most, make it easier for potential students to find high-paying jobs, master concepts, and excel in proctored examinations with Learnora.
           </p>
+
+          {/* Clean, Premium Interactive Pills Selection - Google Ads Style */}
+          <div className="w-full pt-2">
+            <div className="text-[11px] uppercase font-bold tracking-widest text-slate-400 dark:text-zinc-500 mb-3">
+              Explore Our Core Features
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {heroPhases.map((phase, idx) => {
+                const isActive = activePhaseIdx === idx;
+                const activeBorderAndBg = 
+                  idx === 0 ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-300/80 dark:border-rose-800/50 shadow-xs' :
+                  idx === 1 ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-300/80 dark:border-amber-800/50 shadow-xs' :
+                  idx === 2 ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-300/80 dark:border-emerald-800/50 shadow-xs' :
+                  'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-300/80 dark:border-blue-800/50 shadow-xs';
+
+                return (
+                  <button
+                    key={phase.mockupType}
+                    onClick={() => setActivePhaseIdx(idx)}
+                    className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-300 border flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? `${activeBorderAndBg} ring-1 ring-opacity-20`
+                        : 'bg-white dark:bg-zinc-900 text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    {phase.badgeIcon === 'play' && <Play className="w-3 h-3 fill-current" />}
+                    {phase.badgeIcon === 'search' && <Search className="w-3 h-3" />}
+                    {phase.badgeIcon === 'check' && <CheckCircle2 className="w-3 h-3" />}
+                    {phase.badgeIcon === 'activity' && <Activity className="w-3 h-3" />}
+                    <span>{phase.phrase}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-3">
             <button 
@@ -1219,7 +1254,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
         </div>
 
         {/* Right Column: Google Ads Style Rotating Interactive Circle Graphics */}
-        <div className="lg:col-span-6 flex items-center justify-center relative w-full h-[400px]">
+        <div className="lg:col-span-6 flex items-center justify-center relative w-full h-[450px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activePhaseIdx}
@@ -1229,11 +1264,11 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full max-w-sm aspect-square flex items-center justify-center"
             >
-              {/* Central Circle with Gradient Ring & Soft Backglow */}
-              <div className={`absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full transition-all duration-700 ${heroPhases[activePhaseIdx].bgColorClass} flex items-center justify-center border border-slate-200/40 relative`}>
+              {/* Central Circle with Soft Ambient Colored Backglow */}
+              <div className={`absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full transition-all duration-700 ${heroPhases[activePhaseIdx].bgColorClass} flex items-center justify-center border border-slate-200/40 dark:border-white/5 relative shadow-inner`}>
                 
                 {/* Floating pill badge on the circle */}
-                <div className={`absolute -top-4 px-4 py-1.5 rounded-full font-black text-xs shadow-md tracking-wider uppercase flex items-center gap-1.5 transition-all duration-700 ${heroPhases[activePhaseIdx].badgeClass}`}>
+                <div className={`absolute -top-4 px-4 py-1.5 rounded-full font-black text-[11px] shadow-lg tracking-wider uppercase flex items-center gap-1.5 transition-all duration-700 z-30 ${heroPhases[activePhaseIdx].badgeClass}`}>
                   {heroPhases[activePhaseIdx].badgeIcon === 'play' && <Play className="w-3.5 h-3.5 fill-current" />}
                   {heroPhases[activePhaseIdx].badgeIcon === 'search' && <Search className="w-3.5 h-3.5" />}
                   {heroPhases[activePhaseIdx].badgeIcon === 'check' && <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -1241,171 +1276,256 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   <span>{heroPhases[activePhaseIdx].badgeText}</span>
                 </div>
 
-                {/* Overlapping Mockup Card */}
-                <div className="absolute inset-x-4 sm:inset-x-0 mx-auto w-full max-w-[280px] bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4.5 shadow-2xl space-y-3.5 text-left transform translate-y-2">
+                {/* Overlapping Mockup Card Stack (Creates Depth like Google Ads graphics) */}
+                <div className="absolute inset-x-4 sm:inset-x-0 mx-auto w-full max-w-[310px] transform translate-y-3 relative z-20">
+                  
+                  {/* Phase 1: Interactive Sandbox Live stream mockup */}
                   {heroPhases[activePhaseIdx].mockupType === 'live' && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
-                        <span className="text-[10px] bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Interactive Sandbox</span>
-                        <span className="text-[10px] text-slate-400 font-medium font-mono">LIVE STREAM</span>
-                      </div>
-                      
-                      {/* Premium Interactive Live Stream Interface */}
-                      <div className="relative aspect-[16/10] bg-slate-950 dark:bg-black rounded-xl overflow-hidden border border-slate-800 flex flex-col justify-between p-3 shadow-md">
-                        {/* Background subtle stream mesh gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-slate-900 to-emerald-950/70 -z-10" />
+                    <div className="space-y-3.5">
+                      {/* Main Virtual Classroom Board */}
+                      <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 shadow-2xl space-y-3 text-left">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
+                          <span className="text-[10px] bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Interactive Sandbox</span>
+                          <span className="text-[10px] text-slate-400 font-medium font-mono">LIVE STREAM</span>
+                        </div>
                         
-                        {/* Live Overlay Header */}
-                        <div className="flex justify-between items-center z-10 w-full">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                            <span className="text-[8px] font-black tracking-wider text-white bg-red-600 px-1.5 py-0.5 rounded">LIVE</span>
-                          </div>
-                          <span className="text-[8px] bg-black/40 text-slate-300 font-mono font-medium px-1.5 py-0.5 rounded backdrop-blur-xs">
-                            System Design Class
-                          </span>
-                        </div>
-
-                        {/* Interactive Board Flow Representation */}
-                        <div className="flex items-center justify-center gap-3 py-1 z-10">
-                          {/* Load Balancer Card */}
-                          <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
-                            <div className="w-4 h-4 rounded bg-indigo-500 flex items-center justify-center text-white font-mono text-[8px] font-black">LB</div>
-                            <span className="text-[7.5px] text-slate-300 font-semibold leading-none">Gateway</span>
-                          </div>
+                        {/* Premium Interactive Live Stream Interface */}
+                        <div className="relative aspect-[16/10] bg-slate-950 dark:bg-black rounded-xl overflow-hidden border border-slate-800 flex flex-col justify-between p-3 shadow-md">
+                          {/* Background subtle stream mesh gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-slate-900 to-emerald-950/70 -z-10" />
                           
-                          {/* Animated flow indicator */}
-                          <div className="flex flex-col items-center gap-0.5">
-                            <div className="flex gap-0.5">
+                          {/* Live Overlay Header */}
+                          <div className="flex justify-between items-center z-10 w-full">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                              <span className="text-[7.5px] font-black tracking-wider text-white bg-red-600 px-1.5 py-0.5 rounded">LIVE</span>
+                            </div>
+                            <span className="text-[7.5px] bg-black/45 text-slate-300 font-mono font-medium px-1.5 py-0.5 rounded backdrop-blur-xs">
+                              System Design Class
+                            </span>
+                          </div>
+
+                          {/* Interactive Board Flow Representation */}
+                          <div className="flex items-center justify-center gap-3 py-1 z-10">
+                            {/* Load Balancer Card */}
+                            <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
+                              <div className="w-4 h-4 rounded bg-indigo-500 flex items-center justify-center text-white font-mono text-[8px] font-black">LB</div>
+                              <span className="text-[7.5px] text-slate-300 font-semibold leading-none">Gateway</span>
+                            </div>
+                            
+                            {/* Animated flow indicator */}
+                            <div className="flex flex-col items-center gap-0.5">
+                              <div className="flex gap-0.5">
+                                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-100" />
+                                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-200" />
+                              </div>
+                              <span className="text-[6px] text-slate-400 font-mono">15ms</span>
+                            </div>
+
+                            {/* Target SDE Clusters */}
+                            <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
+                              <div className="flex gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse delay-150" />
+                              </div>
+                              <span className="text-[7.5px] text-slate-300 font-semibold leading-none">SDE Cluster</span>
+                            </div>
+                          </div>
+
+                          {/* Active Speaker with speech visualizer */}
+                          <div className="flex justify-between items-end w-full z-10">
+                            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                              {/* Speech analyzer waveform simulator */}
+                              <div className="flex items-end gap-0.5 h-3 px-0.5">
+                                <span className="w-0.5 h-1 bg-indigo-400 rounded-full animate-bounce" />
+                                <span className="w-0.5 h-2.5 bg-indigo-400 rounded-full animate-bounce delay-100" />
+                                <span className="w-0.5 h-2 bg-indigo-500 rounded-full animate-bounce delay-200" />
+                                <span className="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-300" />
+                              </div>
+                              <div>
+                                <p className="text-[8px] font-black text-white leading-none">Amit Kumar</p>
+                                <p className="text-[6px] text-slate-400 leading-none mt-0.5">SDE Lead Mentor</p>
+                              </div>
+                            </div>
+
+                            {/* Verification metrics */}
+                            <div className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-1 backdrop-blur-xs">
                               <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-100" />
-                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse delay-200" />
+                              PROCTORED
                             </div>
-                            <span className="text-[6.5px] text-slate-400 font-mono">15ms</span>
-                          </div>
-
-                          {/* Target SDE Clusters */}
-                          <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg flex flex-col items-center gap-0.5 backdrop-blur-xs">
-                            <div className="flex gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse delay-150" />
-                            </div>
-                            <span className="text-[7.5px] text-slate-300 font-semibold leading-none">SDE Cluster</span>
                           </div>
                         </div>
 
-                        {/* Active Speaker with speech visualizer */}
-                        <div className="flex justify-between items-end w-full z-10">
-                          <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-1 rounded-lg border border-white/10">
-                            {/* Speech analyzer waveform simulator */}
-                            <div className="flex items-end gap-0.5 h-3 px-0.5">
-                              <span className="w-0.5 h-1 bg-indigo-400 rounded-full animate-bounce" />
-                              <span className="w-0.5 h-2.5 bg-indigo-400 rounded-full animate-bounce delay-100" />
-                              <span className="w-0.5 h-2 bg-indigo-500 rounded-full animate-bounce delay-200" />
-                              <span className="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-300" />
-                            </div>
-                            <div>
-                              <p className="text-[8px] font-black text-white leading-none">Amit Kumar</p>
-                              <p className="text-[6.5px] text-slate-400 leading-none mt-0.5">SDE Lead Mentor</p>
-                            </div>
+                        {/* Caption Info bar */}
+                        <div className="flex items-center gap-2 pt-1 border-t border-slate-50 dark:border-white/5">
+                          <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center shrink-0">
+                            <Play className="w-3 h-3 text-indigo-600 dark:text-indigo-400 fill-current animate-pulse" />
                           </div>
-
-                          {/* Verification metrics */}
-                          <div className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[7.5px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-1 backdrop-blur-xs">
-                            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                            PROCTORED
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-none">System Design Masterclass</p>
+                            <p className="text-[9px] text-slate-500 dark:text-zinc-400 mt-0.5">Continuous speech feedback loop</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Video info caption */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center shrink-0">
-                          <Play className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 fill-current" />
+                      {/* Stacked Interactive Poll Card - Overlay for Depth */}
+                      <motion.div 
+                        initial={{ x: 20, y: 10, opacity: 0 }}
+                        animate={{ x: 0, y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="absolute -right-6 bottom-16 bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white border border-slate-800 rounded-xl p-2.5 shadow-xl w-36 text-left"
+                      >
+                        <p className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wide">STUDENT POLL</p>
+                        <p className="text-[9.5px] font-extrabold text-white mt-1 leading-snug">Optimal Sharding?</p>
+                        <div className="space-y-1 mt-1.5">
+                          <div>
+                            <div className="flex justify-between text-[7.5px] text-emerald-400 font-bold">
+                              <span>Range Key</span>
+                              <span>76%</span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                              <div className="bg-emerald-500 h-full rounded-full" style={{ width: '76%' }} />
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-none">System Design Masterclass</p>
-                          <p className="text-[9.5px] text-slate-500 dark:text-zinc-400 mt-0.5">Continuous speech analyzer feedback</p>
-                        </div>
-                      </div>
+                      </motion.div>
                     </div>
                   )}
 
+                  {/* Phase 2: Elite placement result / Google Ad mockup style */}
                   {heroPhases[activePhaseIdx].mockupType === 'career' && (
                     <div className="space-y-3">
-                      <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg border border-slate-150 dark:border-white/5">
-                        <div className="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[8px] font-black shrink-0">S</div>
-                        <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 truncate">Ad • learnora-grad.com</div>
+                      {/* Main Search Result Card */}
+                      <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4.5 shadow-2xl space-y-3 text-left">
+                        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg border border-slate-150 dark:border-white/5">
+                          <div className="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-white text-[8px] font-black shrink-0">S</div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 truncate font-semibold">Ad • learnora-grad.com</div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <h4 className="font-extrabold text-sm text-[#1D1D1F] dark:text-white leading-tight">Software Development Engineer</h4>
+                          <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                            Top 1% technical cohort. Master DSA, automate web assessments, and secure high-salary profiles at Elite firms.
+                          </p>
+                        </div>
+                        <div className="pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                          <span className="font-bold text-amber-600 dark:text-amber-400">Average Salary: 18 LPA</span>
+                          <span className="bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[9.5px] font-bold">100% Placement</span>
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <h4 className="font-extrabold text-sm text-[#1D1D1F] dark:text-white leading-tight">Software Development Engineer</h4>
-                        <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
-                          Top 1% technical cohort. Master DSA, automate web assessments, and secure high-salary profiles at Elite firms.
-                        </p>
-                      </div>
-                      <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                        <span className="font-semibold text-amber-600 dark:text-amber-400">Average Salary: 18 LPA</span>
-                        <span className="bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[9.5px] font-bold">100% Placement</span>
-                      </div>
+
+                      {/* Stacked Candidate Badge - Creates Depth */}
+                      <motion.div 
+                        initial={{ x: -20, y: 15, opacity: 0 }}
+                        animate={{ x: 0, y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="absolute -left-6 bottom-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-2.5 shadow-xl w-44 text-left flex items-center gap-2"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 font-extrabold text-xs">
+                          VR
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 truncate">Vikram Roy</p>
+                          <p className="text-[8.5px] text-slate-400 font-semibold">Placed @ Razorpay</p>
+                          <p className="text-[8.5px] text-emerald-600 font-bold">99.8th% DSA</p>
+                        </div>
+                      </motion.div>
                     </div>
                   )}
 
+                  {/* Phase 3: Certified Secure Exam Verification */}
                   {heroPhases[activePhaseIdx].mockupType === 'exam' && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-extrabold px-2.5 py-0.5 rounded-full tracking-wide border border-emerald-200/50">PASSED</span>
-                        <span className="text-[9.5px] text-slate-400 font-mono">PLACEMENT EXAM</span>
-                      </div>
-                      <div className="flex items-center justify-between bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-3 border border-emerald-500/15 rounded-xl">
-                        <div className="text-center flex-1">
-                          <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">FINAL GRADE</span>
-                          <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">94%</span>
+                    <div className="space-y-3.5">
+                      {/* Main Exam card */}
+                      <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4.5 shadow-2xl space-y-3.5 text-left">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-extrabold px-2.5 py-0.5 rounded-full tracking-wide border border-emerald-200/50">PASSED</span>
+                          <span className="text-[9.5px] text-slate-400 font-mono">PLACEMENT EXAM</span>
                         </div>
-                        <div className="w-px h-10 bg-slate-200 dark:bg-white/10" />
-                        <div className="text-center flex-1">
-                          <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">ATTEMPTS</span>
-                          <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">1/3</span>
+                        
+                        <div className="flex items-center justify-between bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-3 border border-emerald-500/15 rounded-xl">
+                          <div className="text-center flex-1">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">FINAL GRADE</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">94.8%</span>
+                          </div>
+                          <div className="w-px h-10 bg-slate-200 dark:bg-white/10" />
+                          <div className="text-center flex-1">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">ATTEMPTS</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white block mt-0.5">1/3</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-[10.5px] text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-850 px-2.5 py-2 rounded-lg">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <span className="leading-tight">Language placement satisfied. Verified certificate issued.</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-[10.5px] text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-850 px-2.5 py-2 rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                        <span>Language placement satisfied. Account active.</span>
-                      </div>
+
+                      {/* Stacked Secure Stamp Overlay */}
+                      <motion.div 
+                        initial={{ scale: 0.8, opacity: 0, rotate: -15 }}
+                        animate={{ scale: 1, opacity: 1, rotate: -5 }}
+                        transition={{ delay: 0.3 }}
+                        className="absolute -right-6 -bottom-2 bg-[#E1FBF2] text-[#047857] border-2 border-dashed border-[#10B981] rounded-full px-3.5 py-1.5 shadow-lg flex items-center gap-1.5 transform rotate-[-5deg]"
+                      >
+                        <Shield className="w-4 h-4 text-[#10B981]" />
+                        <span className="text-[9.5px] font-black tracking-widest uppercase">PROCTOR SECURE</span>
+                      </motion.div>
                     </div>
                   )}
 
+                  {/* Phase 4: Premium Progress Calendar & Tracker */}
                   {heroPhases[activePhaseIdx].mockupType === 'progress' && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
-                        <span className="text-[10px] bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Academic Progress</span>
-                        <span className="text-[10.5px] text-slate-800 dark:text-zinc-200 font-bold">Excellent</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div>
-                          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-                            <span>Syllabus Covered</span>
-                            <span className="font-semibold text-slate-700 dark:text-zinc-300">88%</span>
+                    <div className="space-y-3.5">
+                      {/* Main progress card */}
+                      <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4.5 shadow-2xl space-y-3 text-left">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2">
+                          <span className="text-[10px] bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">Academic Progress</span>
+                          <span className="text-[10.5px] text-slate-800 dark:text-zinc-200 font-bold">Excellent</span>
+                        </div>
+                        <div className="space-y-2.5">
+                          <div>
+                            <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                              <span>Syllabus Covered</span>
+                              <span className="font-semibold text-slate-700 dark:text-zinc-300">88%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '88%' }} />
+                            </div>
                           </div>
-                          <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '88%' }} />
+                          <div>
+                            <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                              <span>DSA Mastered</span>
+                              <span className="font-semibold text-slate-700 dark:text-zinc-300">42 / 50 Problems</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-                            <span>DSA Mastered</span>
-                            <span className="font-semibold text-slate-700 dark:text-zinc-300">42 / 50 Problems</span>
-                          </div>
-                          <div className="w-full bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
-                          </div>
+                        <div className="flex items-center justify-between text-[10.5px] text-slate-500 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg">
+                          <span className="font-bold text-blue-600 dark:text-blue-400">Streak: 12 Days</span>
+                          <span className="text-[9.5px] text-slate-400">Updated Real-Time</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-[10.5px] text-slate-500 bg-slate-50 dark:bg-zinc-850 p-2 rounded-lg">
-                        <span className="font-bold text-blue-600 dark:text-blue-400">Streak: 12 Days</span>
-                        <span className="text-[9.5px] text-slate-400">Updated Real-Time</span>
-                      </div>
+
+                      {/* Stacked Streak Indicator Badge */}
+                      <motion.div 
+                        initial={{ x: 15, y: -15, opacity: 0 }}
+                        animate={{ x: 0, y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="absolute -right-6 bottom-8 bg-[#EFF6FF] dark:bg-zinc-850 border border-blue-200 dark:border-blue-900 rounded-xl p-2.5 shadow-xl w-32 text-left"
+                      >
+                        <p className="text-[8.5px] font-bold text-blue-500 uppercase tracking-wide">DAILY METRIC</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-sm font-black text-slate-800 dark:text-white">Active Class</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        </div>
+                        <p className="text-[8.5px] text-slate-400 mt-0.5 font-mono">Today, 2.5 Hrs spent</p>
+                      </motion.div>
                     </div>
                   )}
+
                 </div>
 
               </div>

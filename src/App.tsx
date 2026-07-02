@@ -503,6 +503,27 @@ function AppContent() {
   const [otpHash, setOtpHash] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
+  // Human verification states to prevent automated bot / attacker spam
+  const [challengeText, setChallengeText] = useState('');
+  const [challengeToken, setChallengeToken] = useState('');
+  const [challengeInput, setChallengeInput] = useState('');
+  const [showChallenge, setShowChallenge] = useState(false);
+
+  const fetchChallenge = async () => {
+    try {
+      const res = await fetch('/api/get-challenge');
+      if (res.ok) {
+        const data = await res.json();
+        setChallengeText(data.challengeText);
+        setChallengeToken(data.challengeToken);
+        setChallengeInput('');
+        setShowChallenge(true);
+      }
+    } catch (err) {
+      console.error("Failed to fetch math challenge:", err);
+    }
+  };
+
   useEffect(() => {
     let timer: any;
     if (emailOtpCooldown > 0) {
@@ -514,6 +535,17 @@ function AppContent() {
   const handleSendEmailOtp = async () => {
     if (!fastEmail || !/\S+@\S+\.\S+/.test(fastEmail)) {
       setFastEmailError("Enter a valid email first");
+      return;
+    }
+
+    if (!showChallenge) {
+      await fetchChallenge();
+      setFastEmailError("Please solve the human verification check below.");
+      return;
+    }
+
+    if (!challengeInput) {
+      setFastEmailError("Please solve the human verification check below.");
       return;
     }
 
@@ -537,11 +569,18 @@ function AppContent() {
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: fastEmail })
+        body: JSON.stringify({ 
+          email: fastEmail,
+          challengeToken: challengeToken,
+          challengeAnswer: challengeInput
+        })
       });
       const data = await res.json();
       
       if (!res.ok) {
+        // Refresh challenge immediately so they can solve a new one if it failed
+        fetchChallenge();
+        
         if (data.developerSandboxOtp) {
           setSandboxOtp(data.developerSandboxOtp);
           setEmailVerState('sent');
@@ -3105,6 +3144,9 @@ function AppContent() {
                                           onChange={e => {
                                             setFastEmail(e.target.value);
                                             if (e.target.value.trim()) setFastEmailError('');
+                                            if (/\S+@\S+\.\S+/.test(e.target.value) && !showChallenge) {
+                                              fetchChallenge();
+                                            }
                                           }}
                                           className={`w-full pl-10 pr-3 py-3 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border ${fastEmailError ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200 dark:border-white/5'} focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-600 transition-all font-sans disabled:opacity-75 disabled:cursor-not-allowed`}
                                         />
@@ -3126,6 +3168,42 @@ function AppContent() {
                                         </button>
                                       )}
                                     </div>
+                                    
+                                    {/* Advanced Human Cryptographic Verification Check */}
+                                    {showChallenge && !emailVerified && (
+                                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl space-y-2 mt-1 transition-all animate-fadeIn">
+                                        <div className="flex justify-between items-center">
+                                          <label className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 flex items-center gap-1">
+                                            <Shield className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Human Verification Required
+                                          </label>
+                                          <button 
+                                            type="button" 
+                                            onClick={fetchChallenge} 
+                                            className="text-[10px] text-amber-500 hover:underline font-medium"
+                                            title="Get a new question"
+                                          >
+                                            Refresh Challenge
+                                          </button>
+                                        </div>
+                                        <div className="flex gap-2 items-center">
+                                          <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/5 select-none tracking-wide">
+                                            {challengeText} =
+                                          </div>
+                                          <input
+                                            type="text"
+                                            required
+                                            maxLength={3}
+                                            placeholder="?"
+                                            value={challengeInput}
+                                            onChange={e => setChallengeInput(e.target.value.replace(/\D/g, ''))}
+                                            className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-lg border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-850 dark:text-gray-100 placeholder-slate-400 font-bold text-center"
+                                          />
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 leading-normal">
+                                          Please solve the simple math puzzle above before requesting or resending an OTP code.
+                                        </p>
+                                      </div>
+                                    )}
                                     {emailVerState === 'sent' && !emailVerified && (
                                       <div className="flex flex-col gap-2 animate-fadeIn">
                                         <div className="flex gap-2">
@@ -3149,6 +3227,16 @@ function AppContent() {
                                         <p className="text-sm text-amber-500 font-medium px-1">
                                           An OTP has been sent to your email.
                                         </p>
+                                        {sandboxOtp && (
+                                          <div className="mt-1 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs font-medium text-amber-700 dark:text-amber-300">
+                                            <p className="font-bold flex items-center gap-1">
+                                              <Shield className="w-3.5 h-3.5" /> Developer Sandbox Bypass OTP
+                                            </p>
+                                            <p className="mt-1">
+                                              Because of email quota limits, please enter this code to complete verification: <span className="font-mono bg-amber-500/20 px-2 py-0.5 rounded text-sm font-bold text-slate-900 dark:text-white select-all">{sandboxOtp}</span>
+                                            </p>
+                                          </div>
+                                        )}
                                       </div>
                                     )}
                                     {emailVerified && (
