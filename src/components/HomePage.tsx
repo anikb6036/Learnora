@@ -523,7 +523,10 @@ const LearnoraWaysToBeSeen = () => {
   return (
     <section className="w-full py-16 bg-white dark:bg-zinc-950 relative z-10 overflow-hidden border-t border-slate-100 dark:border-zinc-800">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-sans font-medium text-[#1D1D1F] dark:text-white text-center mb-16 tracking-tight">
+        <h2 
+          className="text-3xl md:text-4xl font-sans font-medium text-[#1D1D1F] dark:text-white text-center mb-16"
+          style={{ letterSpacing: '0.015em', wordSpacing: '0.12em' }}
+        >
           Learnora gives you many ways to be seen
         </h2>
         
@@ -535,10 +538,10 @@ const LearnoraWaysToBeSeen = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-5 py-3 rounded-full border transition-all duration-300 w-auto lg:w-44 ${
+                className={`flex items-center gap-3 px-5 py-3 rounded-full border transition-all duration-300 w-auto lg:w-44 cursor-pointer select-none ${
                   activeTab === tab.id 
                     ? 'bg-[#202124] dark:bg-white border-[#202124] dark:border-white text-white dark:text-[#202124] shadow-md' 
-                    : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                    : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800'
                 }`}
               >
                 <tab.icon className={`w-4 h-4 shrink-0 ${activeTab === tab.id ? 'text-white dark:text-[#202124]' : 'text-slate-500 dark:text-zinc-400'}`} />
@@ -589,7 +592,6 @@ const LearnoraWaysToBeSeen = () => {
                           </p>
                         </div>
                         
-                        {/* Background wireframe lines */}
                         <div className="w-full px-6 space-y-4 mt-32">
                             <div className="h-4 w-3/4 bg-slate-100 dark:bg-zinc-800 rounded-full" />
                             <div className="h-4 w-full bg-slate-100 dark:bg-zinc-800 rounded-full" />
@@ -701,7 +703,7 @@ const LearnoraWaysToBeSeen = () => {
                           </div>
                           
                           {/* Card 2 */}
-                          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] border border-slate-100 dark:border-zinc-800 overflow-hidden transition-transform hover:-translate-y-1">
+                          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] border border-slate-100 dark:border-zinc-800 overflow-hidden transition-transform hover:-translate-y-1 flex flex-col">
                             <div className="h-[120px] w-full bg-slate-100 dark:bg-zinc-800 relative">
                               <img 
                                 src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=300&fit=crop" 
