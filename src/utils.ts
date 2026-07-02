@@ -147,6 +147,7 @@ export const INITIAL_MASTER_COURSES: MasterCourse[] = [
     name: 'Java Masterclass',
     durationMonths: 3,
     description: 'OOPs Foundations, Core Java, Collections, Multi-threading, and DSA with Java',
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80',
     roadmap: [
       { month: 1, title: 'OOPs Foundations & Core Syntax', description: 'Classes, Objects, Inheritance, Polymorphism, Encapsulation, JVM memory limits.' },
       { month: 2, title: 'Collections, Threads & Exceptions', description: 'Java Collection Framework, exception hierarchy, multi-threading basics.' },
@@ -159,6 +160,7 @@ export const INITIAL_MASTER_COURSES: MasterCourse[] = [
     name: 'Full-Stack JavaScript Development',
     durationMonths: 3,
     description: 'Advanced ES6+, Async Programming, Node.js, Express, React, and MongoDB',
+    imageUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600&auto=format&fit=crop&q=80',
     roadmap: [
       { month: 1, title: 'Advanced JavaScript & Async Loops', description: 'Scope, closures, event loop, Promise chain, asynchronous event loops.' },
       { month: 2, title: 'Backend APIs & Databases', description: 'NodeJS runtime, Express routing, MongoDB ODM, REST protocols.' },
@@ -169,12 +171,12 @@ export const INITIAL_MASTER_COURSES: MasterCourse[] = [
 ];
 
 export const INITIAL_COURSES: Course[] = [
-  { id: 'course-1', name: 'Java Masterclass', code: 'JAVA', batchNumber: 'stb_001', description: 'Deep-dive OOPs foundations and advanced software engineering with Java.', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18', fee: 14999 },
-  { id: 'course-2', name: 'Full-Stack JavaScript Development', code: 'JS', batchNumber: 'stb_002', description: 'Modern full-stack web engineering using JavaScript and TypeScript.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', publishDate: '2026-06-01', fee: 11999 },
-  { id: 'course-3', name: 'Python AI & Data Science', code: 'PY', batchNumber: 'stb_003', description: 'Advanced Python, Machine Learning libraries, and Neural Networks.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', fee: 12999 },
-  { id: 'course-4', name: 'SDET Specialization (QA Automation)', code: 'SDET', batchNumber: 'stb_004', description: 'Professional Selenium WebDriver, manual testing basics, API automation pipelines.', durationWeeks: '12', createdDate: '2024-05-20', status: 'upcoming', fee: 9999 },
-  { id: 'course-5', name: 'UI/UX Design Academy', code: 'UIUX', batchNumber: 'stb_005', description: 'User interfaces design, user research, wireframing, high-fi Figma mockups.', durationWeeks: '12', createdDate: '2024-05-21', status: 'ongoing', fee: 8999 },
-  { id: 'course-6', name: 'Cybersecurity Professional', code: 'CYBER', batchNumber: 'stb_006', description: 'Linux architectures, network security protocols, vulnerability analysis.', durationWeeks: '12', createdDate: '2024-05-22', status: 'ongoing', fee: 15999 }
+  { id: 'course-1', name: 'Java Masterclass', code: 'JAVA', batchNumber: 'stb_001', description: 'Deep-dive OOPs foundations and advanced software engineering with Java.', durationWeeks: '12', createdDate: '2024-05-18', status: 'ongoing', publishDate: '2024-05-18', fee: 14999, imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80' },
+  { id: 'course-2', name: 'Full-Stack JavaScript Development', code: 'JS', batchNumber: 'stb_002', description: 'Modern full-stack web engineering using JavaScript and TypeScript.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', publishDate: '2026-06-01', fee: 11999, imageUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600&auto=format&fit=crop&q=80' },
+  { id: 'course-3', name: 'Python AI & Data Science', code: 'PY', batchNumber: 'stb_003', description: 'Advanced Python, Machine Learning libraries, and Neural Networks.', durationWeeks: '12', createdDate: '2024-05-19', status: 'ongoing', fee: 12999, imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80' },
+  { id: 'course-4', name: 'SDET Specialization (QA Automation)', code: 'SDET', batchNumber: 'stb_004', description: 'Professional Selenium WebDriver, manual testing basics, API automation pipelines.', durationWeeks: '12', createdDate: '2024-05-20', status: 'upcoming', fee: 9999, imageUrl: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=600&auto=format&fit=crop&q=80' },
+  { id: 'course-5', name: 'UI/UX Design Academy', code: 'UIUX', batchNumber: 'stb_005', description: 'User interfaces design, user research, wireframing, high-fi Figma mockups.', durationWeeks: '12', createdDate: '2024-05-21', status: 'ongoing', fee: 8999, imageUrl: 'https://images.unsplash.com/photo-1561070791-26c113006238?w=600&auto=format&fit=crop&q=80' },
+  { id: 'course-6', name: 'Cybersecurity Professional', code: 'CYBER', batchNumber: 'stb_006', description: 'Linux architectures, network security protocols, vulnerability analysis.', durationWeeks: '12', createdDate: '2024-05-22', status: 'ongoing', fee: 15999, imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&auto=format&fit=crop&q=80' }
 ];
 
 export const INITIAL_ASSIGNMENTS: StudentAssignment[] = [

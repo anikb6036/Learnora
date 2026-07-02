@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { UserAccount, ClassSchedule, StudentBatch, Course, MasterCourse, ProgressRecord } from '../types';
-import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, Ban, Filter, Search, User, Trash2, GraduationCap, Sparkles, Pencil, Download, BookOpen, GitBranch, GitCommit, X, Image as ImageIcon, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ScheduleManagerProps {
@@ -54,6 +54,55 @@ const getSubjectIconObj = (subject?: string) => {
     return { icon: Users, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10 dark:bg-rose-500/20' };
   }
   return { icon: Calendar, color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-500/10 dark:bg-slate-500/20' };
+};
+
+const PRESET_COURSE_IMAGES = [
+  { name: 'Java Setup', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80' },
+  { name: 'JS Setup', url: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600&auto=format&fit=crop&q=80' },
+  { name: 'AI/Python', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80' },
+  { name: 'Testing/QA', url: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=600&auto=format&fit=crop&q=80' },
+  { name: 'Design Studio', url: 'https://images.unsplash.com/photo-1561070791-26c113006238?w=600&auto=format&fit=crop&q=80' },
+  { name: 'Cybersecurity', url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&auto=format&fit=crop&q=80' }
+];
+
+const resizeAndProcessImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        const max_size = 600;
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
 };
 
 export default function ScheduleManager({
@@ -160,6 +209,7 @@ export default function ScheduleManager({
   const [newCourseAdmissionLastDate, setNewCourseAdmissionLastDate] = useState('2026-06-14');
   const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
   const [newCourseFee, setNewCourseFee] = useState('14999');
+  const [newCourseImageUrl, setNewCourseImageUrl] = useState('');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
@@ -192,6 +242,21 @@ export default function ScheduleManager({
     return d.toISOString().split('T')[0];
   });
   const [publishStatus, setPublishStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
+  const [publishImageUrl, setPublishImageUrl] = useState('');
+
+  // Auto-sync cover image from master curriculum when selected
+  React.useEffect(() => {
+    if (selectedMasterId) {
+      const matched = masterCourses.find(m => m.id === selectedMasterId);
+      if (matched && matched.imageUrl) {
+        setPublishImageUrl(matched.imageUrl);
+      } else {
+        setPublishImageUrl('');
+      }
+    } else {
+      setPublishImageUrl('');
+    }
+  }, [selectedMasterId, masterCourses]);
 
   const [courseDashboardSubTab, setCourseDashboardSubTab] = useState<'publish' | 'master'>('publish');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
@@ -520,7 +585,8 @@ export default function ScheduleManager({
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails,
-          fee: finalFee
+          fee: finalFee,
+          imageUrl: newCourseImageUrl || undefined
         });
       }
       setEditingCourse(null);
@@ -537,7 +603,8 @@ export default function ScheduleManager({
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails,
-          fee: finalFee
+          fee: finalFee,
+          imageUrl: newCourseImageUrl || undefined
         });
       }
     }
@@ -550,6 +617,7 @@ export default function ScheduleManager({
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
     setRoadmapDetails([]);
+    setNewCourseImageUrl('');
   };
 
   const startEditCourse = (course: Course) => {
@@ -563,6 +631,7 @@ export default function ScheduleManager({
     setNewCourseAdmissionLastDate(course.admissionLastDate || '2026-06-14');
     setRoadmapDetails(course.roadmap || []);
     setNewCourseFee(course.fee ? String(course.fee) : '14999');
+    setNewCourseImageUrl(course.imageUrl || '');
   };
 
   React.useEffect(() => {
@@ -582,6 +651,7 @@ export default function ScheduleManager({
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
     setRoadmapDetails([]);
+    setNewCourseImageUrl('');
     setAiError(null);
     setAiInfo(null);
     setSelectedRoadmapMonth(1);
@@ -670,7 +740,8 @@ export default function ScheduleManager({
         publishDate: publishBatchDate,
         admissionLastDate: publishAdmissionLastDate,
         roadmap: matchedMaster.roadmap,
-        fee: finalPublishFee
+        fee: finalPublishFee,
+        imageUrl: publishImageUrl || matchedMaster.imageUrl
       });
     }
 
@@ -678,6 +749,7 @@ export default function ScheduleManager({
     setCustomBatchName('');
     setPublishStatus('upcoming');
     setPublishFee('14999');
+    setPublishImageUrl('');
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
     setPublishAdmissionLastDate(futureDate.toISOString().split('T')[0]);
@@ -751,9 +823,9 @@ export default function ScheduleManager({
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-xl bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-lg shadow-xl overflow-hidden font-sans"
+              className="w-full max-w-xl bg-white dark:bg-[#09090B] border border-zinc-200 dark:border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto font-sans"
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-150 dark:border-white/10 bg-slate-50 dark:bg-zinc-950">
+              <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-zinc-150 dark:border-white/10 bg-slate-50 dark:bg-zinc-950">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-150 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-amber-500" />
                   <span>Configure Course: {editingCourse.name}</span>
@@ -858,6 +930,102 @@ export default function ScheduleManager({
                     onChange={e => setNewCourseDesc(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 resize-none"
                   />
+                </div>
+
+                {/* Cover Image Upload & Selection */}
+                <div className="space-y-2.5 bg-slate-50 dark:bg-zinc-900/40 p-4 rounded-xl border border-slate-150 dark:border-white/5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-amber-500" /> Course Cover Image Showcase
+                  </label>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                    <div className="md:col-span-2 space-y-3">
+                      {/* Drag & drop style input */}
+                      <div className="border border-dashed border-slate-300 dark:border-white/15 rounded-xl p-3 bg-white dark:bg-[#050507] text-center hover:bg-slate-50 dark:hover:bg-white/5 transition relative group">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const resizedBase64 = await resizeAndProcessImage(file);
+                                setNewCourseImageUrl(resizedBase64);
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }
+                          }}
+                          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                        />
+                        <Upload className="w-5 h-5 text-slate-400 dark:text-zinc-500 mx-auto mb-1 group-hover:scale-110 transition-transform" />
+                        <span className="text-[11px] text-slate-600 dark:text-zinc-400 font-medium block">
+                          Click to Upload Local Cover Image
+                        </span>
+                        <span className="text-[9px] text-slate-400 dark:text-zinc-500 block">
+                          Compressed for ultra-fast load speed
+                        </span>
+                      </div>
+
+                      {/* Paste image URL */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400">Or Paste Image URL / Base64 string</span>
+                        <input 
+                          type="text"
+                          placeholder="https://images.unsplash.com/... or base64"
+                          value={newCourseImageUrl}
+                          onChange={(e) => setNewCourseImageUrl(e.target.value)}
+                          className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Image Preview */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block">Cover Preview</span>
+                      <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-zinc-950 flex items-center justify-center">
+                        {newCourseImageUrl ? (
+                          <>
+                            <img src={newCourseImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setNewCourseImageUrl('')}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition shadow-md cursor-pointer z-20"
+                              title="Remove Cover Image"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="text-center p-2">
+                            <BookOpen className="w-5 h-5 text-slate-300 dark:text-zinc-800 mx-auto mb-1" />
+                            <span className="text-[9px] text-slate-400 dark:text-zinc-600 block leading-snug">No Image. Defaults to generic preset.</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preset cover picker */}
+                  <div className="space-y-1 pt-1.5 border-t border-slate-200/50 dark:border-white/5">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block">Select a Premium Preset Cover:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {PRESET_COURSE_IMAGES.map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => setNewCourseImageUrl(preset.url)}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition cursor-pointer ${
+                            newCourseImageUrl === preset.url
+                              ? 'bg-amber-50 border-amber-300 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400'
+                              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-350 dark:bg-[#0b0b0e] dark:border-white/5 dark:text-zinc-400'
+                          }`}
+                        >
+                          {preset.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-150 dark:border-white/10">
@@ -1224,7 +1392,7 @@ export default function ScheduleManager({
                             />
                           </div>
 
-                          <div className="space-y-1">
+                          <div className="space-y-1 col-span-1">
                             <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Batch Status</label>
                             <select
                               value={publishStatus}
@@ -1235,6 +1403,102 @@ export default function ScheduleManager({
                               <option value="ongoing">Ongoing (Current Active Class)</option>
                               <option value="completed">Completed (Archived Batch)</option>
                             </select>
+                          </div>
+
+                          {/* Cover Image Upload & Selection for New Published Batch */}
+                          <div className="space-y-2.5 col-span-1 md:col-span-2 bg-slate-100/50 dark:bg-white/5 p-4 rounded-xl border border-slate-200/60 dark:border-white/5 mt-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                              <ImageIcon className="w-4 h-4 text-emerald-500" /> Course Cover Image Showcase
+                            </label>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+                              <div className="md:col-span-2 space-y-2.5">
+                                {/* Local file selector */}
+                                <div className="border border-dashed border-slate-300 dark:border-white/15 rounded-xl p-2.5 bg-white dark:bg-[#050507] text-center hover:bg-slate-50 dark:hover:bg-white/5 transition relative group">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        try {
+                                          const resizedBase64 = await resizeAndProcessImage(file);
+                                          setPublishImageUrl(resizedBase64);
+                                        } catch (err) {
+                                          console.error(err);
+                                        }
+                                      }
+                                    }}
+                                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                                  />
+                                  <Upload className="w-4 h-4 text-slate-400 dark:text-zinc-500 mx-auto mb-1 group-hover:scale-110 transition-transform" />
+                                  <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-medium block">
+                                    Click to Upload Local Cover Image
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 dark:text-zinc-500 block leading-none">
+                                    Compressed for fast Firestore sync
+                                  </span>
+                                </div>
+
+                                {/* Paste Cover URL */}
+                                <div className="space-y-0.5">
+                                  <span className="text-[9px] font-semibold text-slate-500 dark:text-zinc-400">Or Paste Image URL</span>
+                                  <input 
+                                    type="text"
+                                    placeholder="https://images.unsplash.com/... or base64"
+                                    value={publishImageUrl}
+                                    onChange={(e) => setPublishImageUrl(e.target.value)}
+                                    className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-white/10 rounded bg-white dark:bg-[#050507] text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Realtime Image preview */}
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-semibold text-slate-500 dark:text-zinc-400 block">Cover Preview</span>
+                                <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-950 flex items-center justify-center">
+                                  {publishImageUrl ? (
+                                    <>
+                                      <img src={publishImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                                      <button
+                                        type="button"
+                                        onClick={() => setPublishImageUrl('')}
+                                        className="absolute top-1 right-1 p-0.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition cursor-pointer z-20 shadow"
+                                        title="Remove Cover Image"
+                                      >
+                                        <X className="w-2.5 h-2.5" />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <div className="text-center p-1.5">
+                                      <BookOpen className="w-4 h-4 text-slate-300 dark:text-zinc-800 mx-auto mb-1" />
+                                      <span className="text-[8px] text-slate-400 dark:text-zinc-600 block leading-tight">No Cover Selected. Uses category template default.</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Preset covers selector */}
+                            <div className="space-y-1 pt-1.5 border-t border-slate-200/40 dark:border-white/5">
+                              <span className="text-[9px] font-semibold text-slate-500 dark:text-zinc-400 block">Choose a Premium Preset Cover:</span>
+                              <div className="flex flex-wrap gap-1">
+                                {PRESET_COURSE_IMAGES.map((preset) => (
+                                  <button
+                                    key={preset.name}
+                                    type="button"
+                                    onClick={() => setPublishImageUrl(preset.url)}
+                                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border transition cursor-pointer ${
+                                      publishImageUrl === preset.url
+                                        ? 'bg-amber-50 border-amber-300 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400'
+                                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-350 dark:bg-[#0b0b0e] dark:border-white/5 dark:text-zinc-400'
+                                    }`}
+                                  >
+                                    {preset.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -1430,74 +1430,88 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   {courses.filter(c => c.status === 'upcoming').map((course) => {
                     const isSelected = selectedCourseId === course.id;
                     const category = getCourseCategory(course.name);
+                    // Use a fallback Unsplash image if no imageUrl exists
+                    const coverSrc = course.imageUrl || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600&auto=format&fit=crop&q=80';
                     
                     return (
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseId(course.id)}
-                        className={`p-6 rounded-[20px] transition-all duration-300 cursor-pointer select-none border text-left flex flex-col justify-between min-h-[220px] bg-white dark:bg-zinc-950 ${
+                        className={`group rounded-3xl transition-all duration-300 cursor-pointer select-none border text-left flex flex-col overflow-hidden bg-white dark:bg-[#09090B] ${
                           isSelected
-                            ? 'border-slate-800 dark:border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.04)] ring-1 ring-slate-800 dark:ring-slate-300'
-                            : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-[0_8px_20px_rgb(0,0,0,0.04)] dark:hover:shadow-none hover:-translate-y-0.5'
+                            ? 'border-slate-800 dark:border-slate-300 shadow-[0_12px_40px_rgb(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgb(255,255,255,0.05)] ring-1 ring-slate-800 dark:ring-slate-300'
+                            : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-[0_10px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-none hover:-translate-y-1'
                         }`}
                       >
-                        <div>
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="shrink-0 bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-2xl border border-slate-100 dark:border-zinc-800/80 shadow-sm">
-                              {category === 'Product Management with AI' && <PMIcon />}
-                              {category === 'Analytics and AI' && <AnalyticsIcon />}
-                              {category === 'Data Science and AI-ML' && <DataScienceIcon />}
-                              {category === 'Software Development Engineering' && <SDEIcon />}
-                              {category === 'Marketing and Analytics' && <MarketingIcon />}
-                              {category === 'Finance and Technology' && <FinanceIcon />}
-                            </div>
-                            
-                            {course.batchNumber && (
-                              <span className="text-[10px] bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                Batch {course.batchNumber}
-                              </span>
-                            )}
-                          </div>
+                        {/* Course Cover Image Header */}
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 border-b border-slate-150/50 dark:border-white/5">
+                          <img 
+                            src={coverSrc} 
+                            alt={course.name} 
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                          />
+                          
+                          {/* Batch Overlay Tag */}
+                          {course.batchNumber && (
+                            <span className="absolute top-3.5 left-3.5 text-[9.5px] bg-white/95 dark:bg-zinc-900/95 text-slate-800 dark:text-zinc-200 font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 backdrop-blur-xs">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                              Batch {course.batchNumber}
+                            </span>
+                          )}
 
-                          <div className="flex justify-between items-end mt-5">
-                            <div className="min-w-0 pr-2">
-                              <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-snug tracking-tight">
-                                {course.name}
-                              </h3>
-
-                              <div className="mt-3.5 flex items-baseline gap-2">
-                                <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Fee</span>
-                                <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                                  ₹{(course.fee || 14999).toLocaleString('en-IN')}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="shrink-0 pb-1">
-                              <div className="bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-2xl px-3.5 py-2.5 flex flex-col items-center justify-center shadow-sm">
-                                <span className="text-[9px] uppercase font-bold text-indigo-500 dark:text-indigo-400 tracking-wider">Duration</span>
-                                <span className="text-xs font-black text-indigo-900 dark:text-indigo-300 mt-0.5">
-                                  {course.durationWeeks ? `${course.durationWeeks} Weeks` : '24 Weeks'}
-                                </span>
-                              </div>
-                            </div>
+                          {/* Category Icon Badge */}
+                          <div className="absolute top-3.5 right-3.5 shrink-0 bg-white/90 dark:bg-zinc-900/90 p-1.5 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm backdrop-blur-xs z-10">
+                            {category === 'Product Management with AI' && <PMIcon />}
+                            {category === 'Analytics and AI' && <AnalyticsIcon />}
+                            {category === 'Data Science and AI-ML' && <DataScienceIcon />}
+                            {category === 'Software Development Engineering' && <SDEIcon />}
+                            {category === 'Marketing and Analytics' && <MarketingIcon />}
+                            {category === 'Finance and Technology' && <FinanceIcon />}
                           </div>
                         </div>
 
-                        {/* Card Footer info */}
-                        <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-6 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 font-medium">
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
-                            {course.durationWeeks ? `${course.durationWeeks} Weeks` : '24 Weeks'} • {course.code || course.batchNumber || 'COHORT'}
-                          </span>
-                          <span className={`font-semibold transition-colors flex items-center gap-1 ${
-                            isSelected 
-                              ? 'text-slate-800 dark:text-slate-200' 
-                              : 'text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300'
-                          }`}>
-                            View Syllabus <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
+                        {/* Card Content & Details */}
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
+                              {course.name}
+                            </h3>
+
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 line-clamp-2 leading-relaxed">
+                              {course.description || "Deep dive career pathway designed with comprehensive roadmap and 1-on-1 cohort sessions."}
+                            </p>
+
+                            {/* Duration & Fee breakdown */}
+                            <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-3.5">
+                              <div className="flex flex-col">
+                                <span className="text-[9.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Tuition Fee</span>
+                                <span className="text-base font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+                                  ₹{(course.fee || 14999).toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                              <div className="bg-amber-500/10 dark:bg-amber-500/20 px-2.5 py-1 rounded-xl border border-amber-500/10 dark:border-amber-500/10 text-center">
+                                <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider block">Duration</span>
+                                <span className="text-xs font-black text-slate-800 dark:text-zinc-200 mt-0.5 block">
+                                  {course.durationWeeks ? `${course.durationWeeks} Weeks` : '12 Weeks'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Navigation */}
+                          <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-3.5 mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-zinc-500 font-mono">
+                              ID: {course.code || course.batchNumber || 'COHORT'}
+                            </span>
+                            <span className={`text-[11px] font-bold transition-colors flex items-center gap-1.5 ${
+                              isSelected 
+                                ? 'text-amber-500 dark:text-amber-400' 
+                                : 'text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300'
+                            }`}>
+                              Interactive Syllabus <ChevronRight className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
