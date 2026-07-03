@@ -84,28 +84,22 @@ export default function AdmissionsExamModal({
       // Speaking is evaluated as 0 or evaluated on the spot
       let speakResult = 0;
       if (hasMicrophone) {
-        if (vocalTicks < 8) {
-          if (recordingSeconds >= 3) {
-            const targetDuration = 8;
-            const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-            speakResult = Math.max(38, Math.floor(progressRatio * 40) + Math.floor(Math.random() * 5) + 5);
-          } else {
-            speakResult = 0;
-          }
-        } else {
+        if (vocalTicks >= 8) {
           const targetVocalTicks = 154;
           const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
-          speakResult = Math.max(38, Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 5);
+          speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
+        } else {
+          speakResult = 0;
         }
         if (speakResult > 50) speakResult = 50;
       } else {
-        if (recordingSeconds < 2) {
-          speakResult = 0;
-        } else {
+        if (recordingSeconds >= 2) {
           const targetDuration = 8;
           const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-          speakResult = Math.max(38, Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2);
+          speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
           if (speakResult > 50) speakResult = 50;
+        } else {
+          speakResult = 0;
         }
       }
       
@@ -219,7 +213,7 @@ export default function AdmissionsExamModal({
             }
             const avgVol = sumVal / array.length;
             setTotalTicks(prev => prev + 1);
-            if (avgVol > 0.5) { // Extremely sensitive threshold to easily capture vocal participation and prevent voice recognition failure
+            if (avgVol > 2.5) { // Balanced threshold to reliably capture spoken voice above ambient silence without false triggers from background noise
               setVocalTicks(prev => prev + 1);
             }
 
@@ -338,34 +332,27 @@ export default function AdmissionsExamModal({
 
     if (hasMicrophone) {
       // Evaluate speaking score strictly based on actual voice activity
-      if (vocalTicks < 8) {
-        if (recordingSeconds >= 3) {
-          // Robust fallback: if they recorded for >= 3 seconds, grant passing score
-          const targetDuration = 8;
-          const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-          speakResult = Math.max(38, Math.floor(progressRatio * 40) + Math.floor(Math.random() * 5) + 5);
-        } else {
-          speakResult = 0;
-        }
-      } else {
+      if (vocalTicks >= 8) {
         // Spoke. A typical fast reading of the 32-word sentence takes about 6-8 seconds of active audio.
         // Firing 22 times per second, 7 seconds of active reading translates to ~154 vocal ticks.
         const targetVocalTicks = 154;
         const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
         
         // Base score up to 45 proportional to completion ratio, plus a small random pronunciation factor of 1-5
-        speakResult = Math.max(38, Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 5);
+        speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
+      } else {
+        speakResult = 0;
       }
       if (speakResult > 50) speakResult = 50;
     } else {
       // If mic was unavailable/blocked (fallback mode), evaluate speaking score based on recording duration.
-      if (recordingSeconds < 2) {
-        speakResult = 0;
-      } else {
+      if (recordingSeconds >= 2) {
         const targetDuration = 8; // target 8 seconds
         const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-        speakResult = Math.max(38, Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2);
+        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
         if (speakResult > 50) speakResult = 50;
+      } else {
+        speakResult = 0;
       }
     }
 
