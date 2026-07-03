@@ -604,7 +604,7 @@ export default function ProfileSettings({
                         className="bg-slate-50/70 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-transparent dark:border-white/5 rounded-xl px-2 py-2 text-[13px] text-slate-800 dark:text-white transition-all focus:outline-none select-none cursor-pointer"
                       >
                         {COUNTRY_PHONE_CONFIGS.map(cfg => (
-                          <option key={cfg.code} value={cfg.code} className="text-slate-800 dark:text-black">
+                          <option key={`${cfg.name}-${cfg.code}`} value={cfg.code} className="text-slate-800 dark:text-black">
                             {cfg.flag} {cfg.code}
                           </option>
                         ))}
@@ -780,7 +780,6 @@ export default function ProfileSettings({
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-slate-400 font-medium select-none">Auth status</span>
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                     Verified Secure
                   </span>
                 </div>
