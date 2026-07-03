@@ -4424,7 +4424,7 @@ function AppContent() {
                                     <div>
                                       <h3 className="font-bold text-blue-800 dark:text-blue-300 text-sm">You are enrolled in an Upcoming Program!</h3>
                                       <p className="text-xs text-blue-700 dark:text-blue-400/80 mt-0.5">
-                                        <strong className="font-semibold">{enrolledCourseConfig.name}</strong> will commence on <span className="font-bold underline decoration-blue-500/30 underline-offset-2">{new Date(enrolledCourseConfig.publishDate || enrolledCourseConfig.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>.
+                                        <strong className="font-semibold">{enrolledCourseConfig.name}</strong> will Start on <span className="font-bold underline decoration-blue-500/30 underline-offset-2">{new Date(enrolledCourseConfig.publishDate || enrolledCourseConfig.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>.
                                       </p>
                                     </div>
                                   </div>
