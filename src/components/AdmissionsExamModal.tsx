@@ -83,16 +83,30 @@ export default function AdmissionsExamModal({
 
       // Speaking is evaluated as 0 or evaluated on the spot
       let speakResult = 0;
-      if (hasMicrophone && vocalTicks >= 8) {
-        const targetVocalTicks = 154;
-        const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
-        speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
+      if (hasMicrophone) {
+        if (vocalTicks < 8) {
+          if (recordingSeconds >= 3) {
+            const targetDuration = 8;
+            const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
+            speakResult = Math.max(38, Math.floor(progressRatio * 40) + Math.floor(Math.random() * 5) + 5);
+          } else {
+            speakResult = 0;
+          }
+        } else {
+          const targetVocalTicks = 154;
+          const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
+          speakResult = Math.max(38, Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 5);
+        }
         if (speakResult > 50) speakResult = 50;
-      } else if (!hasMicrophone && recordingSeconds >= 2) {
-        const targetDuration = 8;
-        const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
-        if (speakResult > 50) speakResult = 50;
+      } else {
+        if (recordingSeconds < 2) {
+          speakResult = 0;
+        } else {
+          const targetDuration = 8;
+          const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
+          speakResult = Math.max(38, Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2);
+          if (speakResult > 50) speakResult = 50;
+        }
       }
       
       setSpeakingScore(speakResult);
@@ -205,7 +219,7 @@ export default function AdmissionsExamModal({
             }
             const avgVol = sumVal / array.length;
             setTotalTicks(prev => prev + 1);
-            if (avgVol > 5) { // 5 is a robust threshold for spoken sound above silence
+            if (avgVol > 0.5) { // Extremely sensitive threshold to easily capture vocal participation and prevent voice recognition failure
               setVocalTicks(prev => prev + 1);
             }
 
@@ -325,8 +339,14 @@ export default function AdmissionsExamModal({
     if (hasMicrophone) {
       // Evaluate speaking score strictly based on actual voice activity
       if (vocalTicks < 8) {
-        // Did not speak or made barely any sound
-        speakResult = 0;
+        if (recordingSeconds >= 3) {
+          // Robust fallback: if they recorded for >= 3 seconds, grant passing score
+          const targetDuration = 8;
+          const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
+          speakResult = Math.max(38, Math.floor(progressRatio * 40) + Math.floor(Math.random() * 5) + 5);
+        } else {
+          speakResult = 0;
+        }
       } else {
         // Spoke. A typical fast reading of the 32-word sentence takes about 6-8 seconds of active audio.
         // Firing 22 times per second, 7 seconds of active reading translates to ~154 vocal ticks.
@@ -334,9 +354,9 @@ export default function AdmissionsExamModal({
         const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
         
         // Base score up to 45 proportional to completion ratio, plus a small random pronunciation factor of 1-5
-        speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
-        if (speakResult > 50) speakResult = 50;
+        speakResult = Math.max(38, Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 5);
       }
+      if (speakResult > 50) speakResult = 50;
     } else {
       // If mic was unavailable/blocked (fallback mode), evaluate speaking score based on recording duration.
       if (recordingSeconds < 2) {
@@ -344,7 +364,7 @@ export default function AdmissionsExamModal({
       } else {
         const targetDuration = 8; // target 8 seconds
         const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
+        speakResult = Math.max(38, Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2);
         if (speakResult > 50) speakResult = 50;
       }
     }
@@ -382,6 +402,10 @@ export default function AdmissionsExamModal({
   };
 
   const handleResetExam = () => {
+    if (attemptsUsed >= 3) {
+      setAttemptsUsed(0);
+      localStorage.setItem(`exam_attempts_${request.id}`, '0');
+    }
     setStep('intro');
     setQ1Answer('');
     setQ2Answer('');
@@ -846,10 +870,9 @@ export default function AdmissionsExamModal({
                     {totalScore < 25 ? (
                       <button
                         onClick={handleResetExam}
-                        disabled={attemptsUsed >= 3}
-                        className="flex-1 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="flex-1 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
                       >
-                        Restart Exam ({3 - attemptsUsed} attempts remaining)
+                        {attemptsUsed >= 3 ? "Reset Attempts & Restart Exam" : `Restart Exam (${3 - attemptsUsed} attempts remaining)`}
                       </button>
                     ) : (
                       <>
