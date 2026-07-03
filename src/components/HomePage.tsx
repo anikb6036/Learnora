@@ -508,7 +508,7 @@ interface HomePageProps {
 }
 
 const LearnoraWaysToBeSeen = () => {
-  const [activeTab, setActiveTab] = useState('search');
+  const [activeTab, setActiveTab] = useState('display');
   
   const tabs = [
     { id: 'search', label: 'Search', icon: Search, title: 'Start with search', desc: 'Help drive your career forward by getting your profile in front of people actively searching for top tech talent.' },
@@ -598,64 +598,84 @@ const LearnoraWaysToBeSeen = () => {
                             <div className="h-4 w-5/6 bg-slate-100 dark:bg-zinc-800 rounded-full" />
                         </div>
                       </div>
-                    )}
-
-                    {activeTab === 'display' && (
-                      <div className="w-full h-full flex flex-col pt-12 items-center relative px-6">
-                        {/* Search Bar Placeholder */}
-                        <div className="w-full h-10 bg-slate-100 dark:bg-zinc-800 rounded-xl mb-12 flex items-center px-4 relative z-10">
-                            <div className="w-4 h-4 rounded bg-slate-200 dark:bg-zinc-700" />
-                            <div className="w-24 h-3 bg-slate-200 dark:bg-zinc-700 rounded-full ml-3" />
+                    )}                    {activeTab === 'display' && (
+                      <div className="w-full h-full flex flex-col items-center relative">
+                        {/* High Fidelity Phone Header inside display tab */}
+                        <div className="w-full flex items-center gap-3 px-5 py-3.5 border-b border-slate-100/75 dark:border-zinc-800/80 mb-6 shrink-0 relative z-10">
+                          {/* Hamburger Icon */}
+                          <div className="flex flex-col gap-[3.5px] shrink-0 cursor-pointer">
+                            <div className="w-4.5 h-[1.5px] bg-slate-400 dark:bg-zinc-600 rounded-full" />
+                            <div className="w-4.5 h-[1.5px] bg-slate-400 dark:bg-zinc-600 rounded-full" />
+                            <div className="w-4.5 h-[1.5px] bg-slate-400 dark:bg-zinc-600 rounded-full" />
+                          </div>
+                          {/* Rounded address/search bar input placeholder */}
+                          <div className="flex-1 h-6 bg-slate-100 dark:bg-zinc-850 rounded-full" />
                         </div>
                         
                         {/* Cards (Overlapping phone edges) */}
-                        <div className="w-[440px] sm:w-[480px] absolute top-[120px] left-1/2 -translate-x-1/2 flex flex-row justify-center gap-4 z-30 pointer-events-auto">
+                        <div className="w-[440px] sm:w-[480px] absolute top-[120px] left-1/2 -translate-x-1/2 flex flex-row justify-center gap-4.5 z-30 pointer-events-auto">
                             {/* Card 1 */}
-                            <div className="w-[210px] sm:w-[230px] bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.6)] overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1 shrink-0 flex flex-col">
-                              <div className="h-[140px] relative flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-zinc-800">
-                                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Students" />
-                                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                                  <span className="text-[10px] text-slate-500 font-serif italic">i</span>
+                            <div className="w-[195px] sm:w-[215px] bg-white dark:bg-zinc-900 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.12)] overflow-hidden border border-slate-100 dark:border-zinc-800/60 transition-transform duration-300 hover:-translate-y-2 flex flex-col shrink-0 relative">
+                              <div className="h-[125px] sm:h-[135px] relative flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-zinc-850">
+                                <img 
+                                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=250&fit=crop" 
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                                  alt="Students" 
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white/95 backdrop-blur-xs flex items-center justify-center shadow-xs select-none pointer-events-none">
+                                  <span className="text-[10px] text-slate-500 font-serif italic font-semibold">i</span>
                                 </div>
                               </div>
-                              <div className="p-4 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
-                                  <div className="mb-4">
-                                    <h4 className="text-[#FF3B5C] font-normal text-[15px]">Masterclass Series</h4>
+                              <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
+                                  <div className="mb-2">
+                                    <h4 className="text-[#FF3B5C] font-semibold text-[15px] sm:text-[16px] tracking-tight">Masterclass Series</h4>
                                   </div>
-                                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 pt-4 -mx-4 -mb-4 border-t border-slate-100 dark:border-zinc-800 px-4 pb-4">
-                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 pr-3 leading-relaxed">Advanced algorithms & data structures cohort</p>
-                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700 shrink-0 shadow-sm">
-                                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                                  <div className="flex items-center justify-between gap-1.5 mt-2">
+                                    <p className="text-[11px] sm:text-[11.5px] text-slate-500 dark:text-zinc-400 leading-snug line-clamp-2 flex-1 pr-1">
+                                      Advanced algorithms & data structures cohort
+                                    </p>
+                                    <div className="w-6.5 h-6.5 rounded-full bg-slate-50 dark:bg-zinc-800/50 flex items-center justify-center border border-slate-100 dark:border-zinc-700/50 shrink-0 shadow-2xs">
+                                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
                                     </div>
                                   </div>
                               </div>
                             </div>
                             
                             {/* Card 2 */}
-                            <div className="w-[210px] sm:w-[230px] bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.6)] overflow-hidden border border-slate-100 dark:border-zinc-800 transition-transform hover:-translate-y-1 flex flex-col shrink-0">
-                              <div className="h-[140px] relative flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-zinc-800">
-                                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=250&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Study" />
-                                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                                  <span className="text-[10px] text-slate-500 font-serif italic">i</span>
+                            <div className="w-[195px] sm:w-[215px] bg-white dark:bg-zinc-900 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.12)] overflow-hidden border border-slate-100 dark:border-zinc-800/60 transition-transform duration-300 hover:-translate-y-2 flex flex-col shrink-0 relative">
+                              <div className="h-[125px] sm:h-[135px] relative flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-zinc-850">
+                                <img 
+                                  src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=250&fit=crop" 
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                                  alt="Study" 
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white/95 backdrop-blur-xs flex items-center justify-center shadow-xs select-none pointer-events-none">
+                                  <span className="text-[10px] text-slate-500 font-serif italic font-semibold">i</span>
                                 </div>
                               </div>
-                              <div className="p-4 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
-                                  <div className="mb-4">
-                                    <h4 className="text-[#0F9D58] font-normal text-[15px]">System Design</h4>
+                              <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
+                                  <div className="mb-2">
+                                    <h4 className="text-[#0F9D58] font-semibold text-[15px] sm:text-[16px] tracking-tight">System Design</h4>
                                   </div>
-                                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 pt-4 -mx-4 -mb-4 border-t border-slate-100 dark:border-zinc-800 px-4 pb-4">
-                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 pr-3 leading-relaxed">Build scalable distributed systems with top experts</p>
-                                    <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700 shrink-0 shadow-sm">
-                                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                                  <div className="flex items-center justify-between gap-1.5 mt-2">
+                                    <p className="text-[11px] sm:text-[11.5px] text-slate-500 dark:text-zinc-400 leading-snug line-clamp-2 flex-1 pr-1">
+                                      Build scalable distributed systems with top experts
+                                    </p>
+                                    <div className="w-6.5 h-6.5 rounded-full bg-slate-50 dark:bg-zinc-800/50 flex items-center justify-center border border-slate-100 dark:border-zinc-700/50 shrink-0 shadow-2xs">
+                                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
                                     </div>
                                   </div>
                               </div>
                             </div>
                         </div>
 
-                        {/* Background Block behind cards */}
-                        <div className="w-full space-y-4 mt-[250px]">
-                            <div className="h-48 w-full bg-slate-100 dark:bg-zinc-800 rounded-xl" />
+                        {/* Background skeletal content block */}
+                        <div className="w-full flex-1 flex flex-col px-5 pt-36 space-y-3 pointer-events-none select-none opacity-40">
+                          <div className="w-full h-36 bg-slate-100 dark:bg-zinc-800/80 rounded-2xl" />
+                          <div className="h-3 w-3/4 bg-slate-100 dark:bg-zinc-800/80 rounded-full" />
+                          <div className="h-3 w-1/2 bg-slate-100 dark:bg-zinc-800/80 rounded-full" />
                         </div>
                       </div>
                     )}
