@@ -51,7 +51,14 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { email, challengeToken, challengeAnswer } = req.body;
+  const { email, challengeToken, challengeAnswer, secondaryEmail } = req.body;
+  
+  // Honeypot check to block bots/automated script spam
+  if (secondaryEmail) {
+    console.warn(`[Honeypot Triggered] Blocked bot attempt from IP / user filling secondaryEmail.`);
+    return res.status(400).json({ error: "Access denied. Automated submission detected." });
+  }
+
   if (!email || typeof email !== 'string') {
     return res.status(400).json({ error: "Valid email is required" });
   }
@@ -75,7 +82,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const SECRET = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || 'learnora_secure_challenge_salt';
-    const expectedSignature = crypto.createHash('sha256').update(challengeAnswer.trim() + expiresAtStr + salt + SECRET).digest('hex');
+    const expectedSignature = crypto.createHash('sha256').update(challengeAnswer.trim().toLowerCase() + expiresAtStr + salt + SECRET).digest('hex');
 
     if (expectedSignature !== signature) {
       return res.status(400).json({ error: "Incorrect human verification answer. Please try again." });

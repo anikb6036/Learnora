@@ -25,7 +25,12 @@ import { ThemeProvider, useTheme } from './components/ThemeContext';
 import { AssignmentPipeline } from './components/AssignmentPipeline';
 import { compressImage } from './imageUtils';
 
+let globalSendEmailInterceptor: ((to: string, subject: string, text: string, html?: string) => Promise<{ success: boolean; error?: string }>) | null = null;
+
 const sendSystemEmail = async (to: string, subject: string, text: string, html?: string): Promise<{ success: boolean; error?: string }> => {
+  if (globalSendEmailInterceptor) {
+    return globalSendEmailInterceptor(to, subject, text, html);
+  }
   try {
     const res = await fetch('/api/send-email', {
       method: 'POST',
@@ -503,11 +508,141 @@ function AppContent() {
   const [otpHash, setOtpHash] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
+  // Queued email verification state for CAPTCHA interception
+  const [emailChallengeQueue, setEmailChallengeQueue] = useState<{
+    to: string;
+    subject: string;
+    text: string;
+    html?: string;
+    resolve: (value: { success: boolean; error?: string }) => void;
+    reject: (reason?: any) => void;
+  } | null>(null);
+
+  useEffect(() => {
+    globalSendEmailInterceptor = (to: string, subject: string, text: string, html?: string) => {
+      return new Promise<{ success: boolean; error?: string }>((resolve, reject) => {
+        setEmailChallengeQueue({ to, subject, text, html, resolve, reject });
+      });
+    };
+    return () => {
+      globalSendEmailInterceptor = null;
+    };
+  }, []);
+
+  const [emailChallengeInput, setEmailChallengeInput] = useState('');
+  const [emailChallengeText, setEmailChallengeText] = useState('');
+  const [emailChallengeToken, setEmailChallengeToken] = useState('');
+  const [emailChallengeError, setEmailChallengeError] = useState('');
+  const [emailChallengeHoneypot, setEmailChallengeHoneypot] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  useEffect(() => {
+    if (emailChallengeQueue) {
+      setEmailChallengeInput('');
+      setEmailChallengeError('');
+      setEmailChallengeHoneypot('');
+      setIsSendingEmail(false);
+      
+      const fetchNewChallenge = async () => {
+        try {
+          const res = await fetch('/api/get-challenge');
+          if (res.ok) {
+            const data = await res.json();
+            setEmailChallengeText(data.challengeText);
+            setEmailChallengeToken(data.challengeToken);
+          } else {
+            setEmailChallengeError("Could not load security check system. Please retry.");
+          }
+        } catch (err) {
+          setEmailChallengeError("Network error initializing security check. Please check connection.");
+        }
+      };
+      
+      fetchNewChallenge();
+    }
+  }, [emailChallengeQueue]);
+
+  const handleVerifyAndSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailChallengeQueue) return;
+    
+    if (emailChallengeHoneypot) {
+      console.warn("Honeypot triggered inside email challenge.");
+      emailChallengeQueue.resolve({ success: false, error: "Automated submission blocked." });
+      setEmailChallengeQueue(null);
+      return;
+    }
+
+    if (!emailChallengeInput) {
+      setEmailChallengeError("Please solve the security challenge first.");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailChallengeError('');
+
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailChallengeQueue.to,
+          subject: emailChallengeQueue.subject,
+          text: emailChallengeQueue.text,
+          html: emailChallengeQueue.html,
+          challengeToken: emailChallengeToken,
+          challengeAnswer: emailChallengeInput,
+          secondaryEmail: emailChallengeHoneypot
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setEmailChallengeError(data.error || "Incorrect answer or dispatch rate limit exceeded. Please try again.");
+        setIsSendingEmail(false);
+        const chalRes = await fetch('/api/get-challenge');
+        if (chalRes.ok) {
+          const chalData = await chalRes.json();
+          setEmailChallengeText(chalData.challengeText);
+          setEmailChallengeToken(chalData.challengeToken);
+          setEmailChallengeInput('');
+        }
+      } else {
+        setIsSendingEmail(false);
+        emailChallengeQueue.resolve({ success: true });
+        setEmailChallengeQueue(null);
+        
+        const toastNotif: AppNotification = {
+          id: 'email-sent-toast-' + Date.now(),
+          title: 'Secure Email Dispatched',
+          message: `Your message to ${emailChallengeQueue.to} has been cryptographically verified and sent.`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        };
+        triggerToast(toastNotif);
+      }
+    } catch (err: any) {
+      setEmailChallengeError(err.message || "Failed to communicate with the verification server.");
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleCancelEmailDispatch = () => {
+    if (emailChallengeQueue) {
+      emailChallengeQueue.resolve({ success: false, error: "Human verification challenge was not solved." });
+      setEmailChallengeQueue(null);
+    }
+  };
+
   // Human verification states to prevent automated bot / attacker spam
   const [challengeText, setChallengeText] = useState('');
   const [challengeToken, setChallengeToken] = useState('');
   const [challengeInput, setChallengeInput] = useState('');
   const [showChallenge, setShowChallenge] = useState(false);
+  const [secondaryEmail, setSecondaryEmail] = useState('');
 
   const fetchChallenge = async () => {
     try {
@@ -572,7 +707,8 @@ function AppContent() {
         body: JSON.stringify({ 
           email: fastEmail,
           challengeToken: challengeToken,
-          challengeAnswer: challengeInput
+          challengeAnswer: challengeInput,
+          secondaryEmail: secondaryEmail
         })
       });
       const data = await res.json();
@@ -3130,6 +3266,19 @@ function AppContent() {
                                 <div className="space-y-1.5">
                                   <label className="text-xs font-semibold text-slate-550 dark:text-gray-400 block mb-1">Email Address *</label>
                                   <div className="flex flex-col gap-2">
+                                    {/* Honeypot field - hidden from humans */}
+                                    <div className="absolute overflow-hidden -top-96 -left-96 w-0 h-0 opacity-0 pointer-events-none select-none" aria-hidden="true">
+                                      <label htmlFor="secondaryEmail">Secondary Email (Leave Blank)</label>
+                                      <input 
+                                        id="secondaryEmail"
+                                        type="email"
+                                        name="secondaryEmail"
+                                        tabIndex={-1}
+                                        autoComplete="off"
+                                        value={secondaryEmail}
+                                        onChange={e => setSecondaryEmail(e.target.value)}
+                                      />
+                                    </div>
                                     <div className="flex gap-2">
                                       <div className="relative flex-1">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -5336,6 +5485,122 @@ function AppContent() {
           }}
         />
       )}
+
+       {emailChallengeQueue && (
+         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[9999] flex items-center justify-center p-4">
+           <div className="bg-white dark:bg-[#070708] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-2xl max-w-md w-full p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+             <div className="flex items-center gap-3 mb-4">
+               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
+                 <ShieldAlert className="w-6 h-6" />
+               </div>
+               <div>
+                 <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                   Security Check Required
+                 </h3>
+                 <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                   Verifying transaction authenticity to prevent resource abuse.
+                 </p>
+               </div>
+             </div>
+
+             <div className="bg-slate-50 dark:bg-[#111113] border dark:border-white/5 rounded-2xl p-4 mb-4">
+               <span className="text-[10px] uppercase text-amber-500 font-bold tracking-widest block mb-2">
+                 🔒 Cryptographic Proof-of-Work
+               </span>
+               <p className="text-xs text-slate-600 dark:text-gray-300 mb-3 leading-relaxed">
+                 To dispatch this email securely to <strong className="font-semibold text-slate-800 dark:text-gray-100">{emailChallengeQueue.to}</strong>, please solve this math puzzle:
+               </p>
+
+               <div className="flex items-center justify-between gap-4 bg-white dark:bg-[#0A0A0B] border dark:border-white/5 px-4 py-3 rounded-xl shadow-xs">
+                 {emailChallengeText ? (
+                   <span className="text-sm font-mono font-bold tracking-wider text-slate-800 dark:text-slate-200">
+                     {emailChallengeText} = ?
+                   </span>
+                 ) : (
+                   <span className="text-xs text-slate-400 animate-pulse">
+                     Generating security challenge...
+                   </span>
+                 )}
+                 
+                 <button
+                   type="button"
+                   onClick={async () => {
+                     setEmailChallengeText('');
+                     const res = await fetch('/api/get-challenge');
+                     if (res.ok) {
+                       const data = await res.json();
+                       setEmailChallengeText(data.challengeText);
+                       setEmailChallengeToken(data.challengeToken);
+                     }
+                   }}
+                   className="text-[10px] text-blue-500 hover:underline font-bold"
+                   disabled={!emailChallengeText}
+                 >
+                   Reload Puzzle
+                 </button>
+               </div>
+             </div>
+
+             <form onSubmit={handleVerifyAndSendEmail} className="space-y-4">
+               <input
+                 type="email"
+                 value={emailChallengeHoneypot}
+                 onChange={(e) => setEmailChallengeHoneypot(e.target.value)}
+                 className="hidden"
+                 placeholder="Secondary verification email"
+               />
+
+               <div>
+                 <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                   Your Solution
+                 </label>
+                 <input
+                   type="text"
+                   required
+                   value={emailChallengeInput}
+                   onChange={(e) => setEmailChallengeInput(e.target.value)}
+                   className="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-[#0C0C0D] border border-slate-200/80 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition font-mono"
+                   placeholder="Enter evaluation result"
+                   disabled={isSendingEmail || !emailChallengeText}
+                   autoFocus
+                 />
+               </div>
+
+               {emailChallengeError && (
+                 <div className="p-3 bg-red-500/5 border border-red-500/10 text-red-500 rounded-xl text-xs flex items-start gap-2">
+                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                   <span>{emailChallengeError}</span>
+                 </div>
+               )}
+
+               <div className="flex gap-2.5 pt-2">
+                 <button
+                   type="button"
+                   onClick={handleCancelEmailDispatch}
+                   className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#161618] dark:hover:bg-[#1e1e21] text-slate-700 dark:text-gray-300 font-semibold rounded-xl text-xs transition cursor-pointer"
+                 >
+                   Cancel
+                 </button>
+                 <button
+                   type="submit"
+                   disabled={isSendingEmail || !emailChallengeText}
+                   className="flex-1 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-amber-950 font-bold rounded-xl text-xs transition cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+                 >
+                   {isSendingEmail ? (
+                     <>
+                       <Clock className="w-3.5 h-3.5 animate-spin" /> Verifying...
+                     </>
+                   ) : (
+                     <>
+                       <Check className="w-3.5 h-3.5" /> Verify & Dispatch
+                     </>
+                   )}
+                 </button>
+               </div>
+             </form>
+           </div>
+         </div>
+       )}
     </div>
   );
 }

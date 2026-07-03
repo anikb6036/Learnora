@@ -104,6 +104,84 @@ const checkAndRegisterOtpRequest = (ip: string, email: string): { allowed: boole
   return { allowed: true };
 };
 
+// Comprehensive rate limiting for general email dispatch API to prevent botnet quota attacks
+const globalEmailTracker = {
+  dayStr: new Date().toISOString().slice(0, 10),
+  sentToday: 0,
+  sentThisHour: 0,
+  hourStr: new Date().toISOString().slice(0, 13)
+};
+
+const ipEmailTracker: Record<string, { count: number; expiresAt: number }> = {};
+const recipientEmailTracker: Record<string, { count: number; expiresAt: number }> = {};
+
+const checkAndRegisterEmailDispatch = (ip: string, email: string): { allowed: boolean; reason?: string } => {
+  const now = Date.now();
+  const currentDay = new Date().toISOString().slice(0, 10);
+  const currentHour = new Date().toISOString().slice(0, 13);
+  
+  // 1. Reset/check Global day limit
+  if (globalEmailTracker.dayStr !== currentDay) {
+    globalEmailTracker.dayStr = currentDay;
+    globalEmailTracker.sentToday = 0;
+  }
+  // Reset/check Global hour limit
+  if (globalEmailTracker.hourStr !== currentHour) {
+    globalEmailTracker.hourStr = currentHour;
+    globalEmailTracker.sentThisHour = 0;
+  }
+  
+  // 2. Global Safety Thresholds (Generous for real users, strict to stop script attacks)
+  const GLOBAL_HOURLY_LIMIT = 20;
+  const GLOBAL_DAILY_LIMIT = 80; // Keep it safely below standard 100 free limit
+  
+  if (globalEmailTracker.sentThisHour >= GLOBAL_HOURLY_LIMIT) {
+    return { allowed: false, reason: "The email dispatch system is experiencing high traffic. Please try again in an hour." };
+  }
+  if (globalEmailTracker.sentToday >= GLOBAL_DAILY_LIMIT) {
+    return { allowed: false, reason: "Daily institutional email sending quota reached. Please retry tomorrow." };
+  }
+  
+  // 3. Check IP Limit (max 10 per 24 hours for email dispatches)
+  if (ipEmailTracker[ip]) {
+    if (now > ipEmailTracker[ip].expiresAt) {
+      delete ipEmailTracker[ip];
+    } else if (ipEmailTracker[ip].count >= 10) {
+      const hoursLeft = Math.ceil((ipEmailTracker[ip].expiresAt - now) / (1000 * 60 * 60));
+      return { allowed: false, reason: `Security restriction: Too many email dispatches from your connection. Please retry in ${hoursLeft} hours.` };
+    }
+  }
+  
+  // 4. Check Recipient Limit (max 5 per 24 hours per recipient email)
+  const emailLower = email.toLowerCase().trim();
+  if (recipientEmailTracker[emailLower]) {
+    if (now > recipientEmailTracker[emailLower].expiresAt) {
+      delete recipientEmailTracker[emailLower];
+    } else if (recipientEmailTracker[emailLower].count >= 5) {
+      const hoursLeft = Math.ceil((recipientEmailTracker[emailLower].expiresAt - now) / (1000 * 60 * 60));
+      return { allowed: false, reason: `Rate limit: Too many emails dispatched to '${emailLower}'. Please retry in ${hoursLeft} hours.` };
+    }
+  }
+  
+  // If allowed, increment trackers
+  globalEmailTracker.sentToday++;
+  globalEmailTracker.sentThisHour++;
+  
+  if (!ipEmailTracker[ip]) {
+    ipEmailTracker[ip] = { count: 1, expiresAt: now + 24 * 60 * 60 * 1000 };
+  } else {
+    ipEmailTracker[ip].count++;
+  }
+  
+  if (!recipientEmailTracker[emailLower]) {
+    recipientEmailTracker[emailLower] = { count: 1, expiresAt: now + 24 * 60 * 60 * 1000 };
+  } else {
+    recipientEmailTracker[emailLower].count++;
+  }
+  
+  return { allowed: true };
+};
+
 const cleanEnv = (val: string | undefined): string => {
   if (!val) return "";
   return val.trim().replace(/^['"]|['"]$/g, "").trim();
@@ -357,25 +435,62 @@ async function startServer() {
   app.use(express.json({ limit: '100kb' }));
 
   // API Routes
-  app.get("/api/get-challenge", (req, res) => {
-    // Generate a random simple math question
-    const num1 = Math.floor(Math.random() * 12) + 5; // 5 to 16
-    const num2 = Math.floor(Math.random() * 10) + 2; // 2 to 11
-    const isPlus = Math.random() > 0.4; // 60% addition, 40% subtraction
-
-    let text = "";
-    let answer = 0;
-    if (isPlus) {
-      text = `${num1} + ${num2}`;
-      answer = num1 + num2;
+  // Helper to generate dynamic, non-obvious human puzzles
+  const generateServerChallenge = () => {
+    const choice = Math.floor(Math.random() * 4);
+    
+    if (choice === 0) {
+      // Word-based addition
+      const words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+      const n1 = Math.floor(Math.random() * 8) + 1; // 1 to 8
+      const n2 = Math.floor(Math.random() * 8) + 1; // 1 to 8
+      return {
+        text: `What is ${words[n1]} plus ${words[n2]}?`,
+        answer: (n1 + n2).toString()
+      };
+    } else if (choice === 1) {
+      // Word-based subtraction
+      const words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"];
+      const n1 = Math.floor(Math.random() * 6) + 10; // 10 to 15
+      const n2 = Math.floor(Math.random() * 8) + 1;  // 1 to 8
+      return {
+        text: `What is ${words[n1]} minus ${words[n2]}?`,
+        answer: (n1 - n2).toString()
+      };
+    } else if (choice === 2) {
+      // Word length questions
+      const pool = ["apple", "banana", "grape", "cherry", "melon", "lemon", "peach", "mango", "berry", "orange"];
+      const word = pool[Math.floor(Math.random() * pool.length)];
+      return {
+        text: `How many letters are in the word '${word}'?`,
+        answer: word.length.toString()
+      };
     } else {
-      const max = Math.max(num1, num2);
-      const min = Math.min(num1, num2);
-      text = `${max} - ${min}`;
-      answer = max - min;
+      // Text logic/trivia pool
+      const trivia = [
+        { q: "How many legs does a spider have?", a: "8" },
+        { q: "How many wheels does a standard bicycle have?", a: "2" },
+        { q: "How many months are in a year?", a: "12" },
+        { q: "How many days are in a week?", a: "7" },
+        { q: "How many corners does a standard triangle have?", a: "3" },
+        { q: "How many corners does a standard rectangle have?", a: "4" },
+        { q: "If you have three apples and eat one, how many are left?", a: "2" },
+        { q: "What is the double of eight?", a: "16" },
+        { q: "What is the double of five?", a: "10" }
+      ];
+      const picked = trivia[Math.floor(Math.random() * trivia.length)];
+      return {
+        text: picked.q,
+        answer: picked.a
+      };
     }
+  };
 
-    const answerStr = answer.toString();
+  app.get("/api/get-challenge", (req, res) => {
+    const challenge = generateServerChallenge();
+    const text = challenge.text;
+    const answerStr = challenge.answer;
+
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes validity
     const salt = Math.random().toString(36).substring(2, 10);
 
@@ -396,8 +511,14 @@ async function startServer() {
   });
 
   app.post("/api/send-otp", otpLimiter, async (req, res) => {
-    const { email, challengeToken, challengeAnswer } = req.body;
+    const { email, challengeToken, challengeAnswer, secondaryEmail } = req.body;
     
+    // Honeypot check to block automated script spam
+    if (secondaryEmail) {
+      console.warn(`[Honeypot Triggered] Blocked bot attempt filling secondaryEmail.`);
+      return res.status(400).json({ error: "Access denied. Automated submission detected." });
+    }
+
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: "Valid email is required" });
     }
@@ -422,7 +543,7 @@ async function startServer() {
 
       const SECRET = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || 'learnora_secure_challenge_salt';
       const crypto = await import('crypto');
-      const expectedSignature = crypto.createHash('sha256').update(challengeAnswer.trim() + expiresAtStr + salt + SECRET).digest('hex');
+      const expectedSignature = crypto.createHash('sha256').update(challengeAnswer.trim().toLowerCase() + expiresAtStr + salt + SECRET).digest('hex');
 
       if (expectedSignature !== signature) {
         return res.status(400).json({ error: "Incorrect human verification answer. Please try again." });
@@ -759,13 +880,62 @@ async function startServer() {
   });
 
   app.post("/api/send-email", emailLimiter, async (req, res) => {
-    const { to, subject, text, html } = req.body;
+    const { to, subject, text, html, challengeToken, challengeAnswer, secondaryEmail } = req.body;
     
+    // 1. Honeypot check to block automated script spam
+    if (secondaryEmail) {
+      console.warn(`[Honeypot Triggered] Blocked bot email dispatch attempt from IP filling secondaryEmail.`);
+      return res.status(400).json({ error: "Access denied. Automated submission detected." });
+    }
+
     if (!to || !subject || (!text && !html)) {
       return res.status(400).json({ error: "missing recipient(to), subject, and body (text or html)." });
     }
 
     const email = to; // for backwards compat in logging
+
+    // 2. Enforce Human Verification Challenge
+    if (!challengeToken || !challengeAnswer) {
+      return res.status(400).json({ error: "Human verification challenge response is missing. Please solve the puzzle." });
+    }
+
+    try {
+      const parts = challengeToken.split('_');
+      if (parts.length !== 3) {
+        return res.status(400).json({ error: "Invalid verification token." });
+      }
+
+      const [expiresAtStr, salt, signature] = parts;
+      const expiresAt = parseInt(expiresAtStr, 10);
+
+      if (isNaN(expiresAt) || Date.now() > expiresAt) {
+        return res.status(400).json({ error: "Verification challenge expired. Please retry." });
+      }
+
+      const SECRET = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY || 'learnora_secure_challenge_salt';
+      const crypto = await import('crypto');
+      const expectedSignature = crypto.createHash('sha256').update(challengeAnswer.trim().toLowerCase() + expiresAtStr + salt + SECRET).digest('hex');
+
+      if (expectedSignature !== signature) {
+        return res.status(400).json({ error: "Incorrect human verification answer. Please try again." });
+      }
+    } catch (err) {
+      console.error("Challenge verification error in send-email:", err);
+      return res.status(500).json({ error: "Human verification failed. Security verification system error." });
+    }
+
+    // 3. Multi-tier sliding window rate limits (IP limit, recipient limit, and global caps)
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = typeof forwarded === 'string' 
+      ? forwarded.split(',')[0].trim() 
+      : req.socket.remoteAddress || req.ip;
+
+    // We can extract a single recipient for tracking purposes
+    const trackingEmail = Array.isArray(email) ? email[0] : email;
+    const rateLimitCheck = checkAndRegisterEmailDispatch(ip, trackingEmail);
+    if (!rateLimitCheck.allowed) {
+      return res.status(429).json({ error: rateLimitCheck.reason });
+    }
 
     const API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
     if (!API_KEY) {
