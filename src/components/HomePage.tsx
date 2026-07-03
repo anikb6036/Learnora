@@ -3390,7 +3390,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 rounded-full bg-rose-500" />
-                      <span className="w-3 h-3 rounded-full bg-amber-500" />
+                      <span className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
                       <span className="w-3 h-3 rounded-full bg-emerald-500" />
                     </div>
                     <span className="text-slate-500 font-mono text-xs ml-2 select-none border-l border-slate-150 pl-3">
