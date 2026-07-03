@@ -8,6 +8,14 @@ import { RegistrationRequest } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Mic, Volume2, Award, Activity, FileCheck, AlertCircle, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
 
+const SPEAKING_PARAGRAPHS = [
+  "In an increasingly interconnected global economy, the mastery of articulate communication serves as the fundamental bridge between disparate perspectives. By cultivating both rigorous analytical reasoning and empathetic active listening, we empower ourselves to formulate solutions for our world's most critical academic and social challenges.",
+  "Pursuing higher education at this institution represents a conscious commitment to intellectual curiosity and professional excellence. Through comprehensive collaborative research, structured critical discourse, and the relentless pursuit of innovative insights, we prepare to lead the future with confidence and integrity.",
+  "Leadership in the contemporary era demands more than just technical expertise; it requires an unwavering dedication to sustainable progress and ethical decision-making. By embracing diversity of thought and fostering inclusive academic communities, we lay the groundwork for transformative progress on a global scale.",
+  "The acquisition of knowledge is a lifelong journey of self-discovery that extends far beyond the traditional boundaries of the classroom. When we challenge our pre-existing assumptions, analyze complex datasets, and articulate clear, evidence-based conclusions, we contribute meaningfully to the advancement of human understanding.",
+  "Effective professional communication is characterized by clarity of purpose, precision of language, and a deep respect for the audience's intellect. Mastering these skills enables scholars to articulate groundbreaking theories, publish impactful studies, and inspire the next generation of global citizens."
+];
+
 interface AdmissionsExamModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,10 +32,13 @@ export default function AdmissionsExamModal({
   onExamPassBg
 }: AdmissionsExamModalProps) {
   const [step, setStep] = useState<'intro' | 'reading' | 'speaking' | 'analyzing' | 'result'>('intro');
+  const [selectedParagraph, setSelectedParagraph] = useState<string>(SPEAKING_PARAGRAPHS[0]);
 
   // Reading MCQ choices
   const [q1Answer, setQ1Answer] = useState<string>('');
   const [q2Answer, setQ2Answer] = useState<string>('');
+  const [q3Answer, setQ3Answer] = useState<string>('');
+  const [q4Answer, setQ4Answer] = useState<string>('');
 
   // Speaking module states
   const [isRecording, setIsRecording] = useState(false);
@@ -58,6 +69,8 @@ export default function AdmissionsExamModal({
   // Reading MCQs definitions
   const q1Correct = 'B';
   const q2Correct = 'C';
+  const q3Correct = 'B';
+  const q4Correct = 'B';
 
   // Time & attempt limits
   const [timeLeft, setTimeLeft] = useState<number>(1200); // 20 minutes = 1200 seconds
@@ -77,14 +90,16 @@ export default function AdmissionsExamModal({
       
       // Grade reading portion immediately
       let score = 0;
-      if (q1Answer === q1Correct) score += 25;
-      if (q2Answer === q2Correct) score += 25;
+      if (q1Answer === q1Correct) score += 12.5;
+      if (q2Answer === q2Correct) score += 12.5;
+      if (q3Answer === q3Correct) score += 12.5;
+      if (q4Answer === q4Correct) score += 12.5;
       setReadingScore(score);
 
-      // Speaking is evaluated as 0 or evaluated on the spot
+      // Speaking is evaluated strictly based on actual student vocalic performance
       let speakResult = 0;
       if (hasMicrophone) {
-        if (vocalTicks >= 8) {
+        if (vocalTicks >= 20) { // Require at least 20 vocal ticks to prove active vocalization
           const targetVocalTicks = 154;
           const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
           speakResult = Math.floor(progressRatio * 45) + Math.floor(Math.random() * 5) + 1;
@@ -93,14 +108,8 @@ export default function AdmissionsExamModal({
         }
         if (speakResult > 50) speakResult = 50;
       } else {
-        if (recordingSeconds >= 2) {
-          const targetDuration = 8;
-          const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-          speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
-          if (speakResult > 50) speakResult = 50;
-        } else {
-          speakResult = 0;
-        }
+        // Without a working microphone signal, student receives a 0 for the speaking component
+        speakResult = 0;
       }
       
       setSpeakingScore(speakResult);
@@ -118,7 +127,7 @@ export default function AdmissionsExamModal({
 
       setStep('result');
     };
-  }, [q1Answer, q2Answer, hasMicrophone, vocalTicks, recordingSeconds, monitoringStream, onExamPassBg]);
+  }, [q1Answer, q2Answer, q3Answer, q4Answer, hasMicrophone, vocalTicks, recordingSeconds, monitoringStream, onExamPassBg]);
 
   // Overall 20 minutes countdown timer effect
   useEffect(() => {
@@ -149,6 +158,14 @@ export default function AdmissionsExamModal({
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Select a new paragraph when the modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      const nextParagraph = SPEAKING_PARAGRAPHS[Math.floor(Math.random() * SPEAKING_PARAGRAPHS.length)];
+      setSelectedParagraph(nextParagraph);
+    }
+  }, [isOpen]);
 
   // Clear timer and stream on unmount
   useEffect(() => {
@@ -213,7 +230,7 @@ export default function AdmissionsExamModal({
             }
             const avgVol = sumVal / array.length;
             setTotalTicks(prev => prev + 1);
-            if (avgVol > 2.5) { // Balanced threshold to reliably capture spoken voice above ambient silence without false triggers from background noise
+            if (avgVol > 12.0) { // Robust threshold to strictly capture real human speaking above room hum and fan noise
               setVocalTicks(prev => prev + 1);
             }
 
@@ -282,10 +299,12 @@ export default function AdmissionsExamModal({
   };
 
   const handleProceedToSpeaking = () => {
-    // Grade Reading portion (50 points total: 25 each)
+    // Grade Reading portion (50 points total: 12.5 each)
     let score = 0;
-    if (q1Answer === q1Correct) score += 25;
-    if (q2Answer === q2Correct) score += 25;
+    if (q1Answer === q1Correct) score += 12.5;
+    if (q2Answer === q2Correct) score += 12.5;
+    if (q3Answer === q3Correct) score += 12.5;
+    if (q4Answer === q4Correct) score += 12.5;
     setReadingScore(score);
     setStep('speaking');
   };
@@ -332,8 +351,8 @@ export default function AdmissionsExamModal({
 
     if (hasMicrophone) {
       // Evaluate speaking score strictly based on actual voice activity
-      if (vocalTicks >= 8) {
-        // Spoke. A typical fast reading of the 32-word sentence takes about 6-8 seconds of active audio.
+      if (vocalTicks >= 20) { // Require at least 20 vocal ticks to prove active vocalization
+        // Spoke. A typical fast reading of a standard paragraph takes about 6-8 seconds of active audio.
         // Firing 22 times per second, 7 seconds of active reading translates to ~154 vocal ticks.
         const targetVocalTicks = 154;
         const progressRatio = Math.min(1.0, vocalTicks / targetVocalTicks);
@@ -345,15 +364,8 @@ export default function AdmissionsExamModal({
       }
       if (speakResult > 50) speakResult = 50;
     } else {
-      // If mic was unavailable/blocked (fallback mode), evaluate speaking score based on recording duration.
-      if (recordingSeconds >= 2) {
-        const targetDuration = 8; // target 8 seconds
-        const progressRatio = Math.min(1.0, recordingSeconds / targetDuration);
-        speakResult = Math.floor(progressRatio * 42) + Math.floor(Math.random() * 6) + 2;
-        if (speakResult > 50) speakResult = 50;
-      } else {
-        speakResult = 0;
-      }
+      // Without a working microphone signal, student receives a 0 for the speaking component
+      speakResult = 0;
     }
 
     setSpeakingScore(speakResult);
@@ -393,9 +405,18 @@ export default function AdmissionsExamModal({
       setAttemptsUsed(0);
       localStorage.setItem(`exam_attempts_${request.id}`, '0');
     }
+    // Select a new different random professional paragraph
+    let nextParagraph = SPEAKING_PARAGRAPHS[Math.floor(Math.random() * SPEAKING_PARAGRAPHS.length)];
+    while (nextParagraph === selectedParagraph && SPEAKING_PARAGRAPHS.length > 1) {
+      nextParagraph = SPEAKING_PARAGRAPHS[Math.floor(Math.random() * SPEAKING_PARAGRAPHS.length)];
+    }
+    setSelectedParagraph(nextParagraph);
+
     setStep('intro');
     setQ1Answer('');
     setQ2Answer('');
+    setQ3Answer('');
+    setQ4Answer('');
     setRecordingSeconds(0);
     setIsRecording(false);
     setReadingScore(0);
@@ -506,7 +527,7 @@ export default function AdmissionsExamModal({
                         <span className="text-xs font-semibold">1. Reading Comprehension</span>
                       </div>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        Analyze a short literary or ecological excerpt and answer two multiple-choice questions. This counts for 50% of the total score.
+                        Analyze a short literary or ecological excerpt and answer four multiple-choice questions. This counts for 50% of the total score.
                       </p>
                     </div>
 
@@ -627,15 +648,69 @@ export default function AdmissionsExamModal({
                         ))}
                       </div>
                     </div>
+
+                    {/* Q3 */}
+                    <div className="space-y-2.5 pt-2">
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                        Q3. What is the Amazon Rainforest often called?
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {[
+                          { key: 'A', text: 'The heart of the world' },
+                          { key: 'B', text: 'The lungs of the Earth' },
+                          { key: 'C', text: 'The brain of the planet' },
+                          { key: 'D', text: 'The crown of nature' }
+                        ].map(opt => (
+                          <button
+                            key={opt.key}
+                            onClick={() => setQ3Answer(opt.key)}
+                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                              q3Answer === opt.key 
+                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
+                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <span className={`font-mono uppercase font-bold mr-2 ${q3Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Q4 */}
+                    <div className="space-y-2.5 pt-2">
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                        Q4. Why do we need to learn about these forests?
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {[
+                          { key: 'A', text: 'To find hidden treasures' },
+                          { key: 'B', text: 'To understand why we need to protect our planet\'s wildlife' },
+                          { key: 'C', text: 'To build new houses' },
+                          { key: 'D', text: 'To catch wild animals for zoos' }
+                        ].map(opt => (
+                          <button
+                            key={opt.key}
+                            onClick={() => setQ4Answer(opt.key)}
+                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                              q4Answer === opt.key 
+                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
+                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <span className={`font-mono uppercase font-bold mr-2 ${q4Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex justify-end gap-3">
                   <button
-                    disabled={!q1Answer || !q2Answer}
+                    disabled={!q1Answer || !q2Answer || !q3Answer || !q4Answer}
                     onClick={handleProceedToSpeaking}
                     className={`py-2.5 px-6 font-medium rounded-lg text-xs flex items-center gap-1.5 transition duration-200 cursor-pointer ${
-                      q1Answer && q2Answer 
+                      q1Answer && q2Answer && q3Answer && q4Answer 
                         ? 'bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white shadow-sm active:scale-[0.98]' 
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600 cursor-not-allowed border dark:border-white/5'
                     }`}
@@ -662,10 +737,10 @@ export default function AdmissionsExamModal({
 
                   <div className="space-y-3 text-center md:px-6">
                     <p className="text-xs font-semibold text-zinc-650 dark:text-zinc-350">
-                      Sentence to read aloud:
+                      Paragraph to read aloud:
                     </p>
-                    <div className="p-7 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-sm font-semibold leading-relaxed text-zinc-800 dark:text-zinc-100 text-center select-none shadow-xs font-sans max-w-2xl mx-auto">
-                      "I am very excited to join Learnora! Learning new things is fun, and I want to read, write, and speak better every day. I promise to do my best in all my classes."
+                    <div className="p-7 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-xs sm:text-sm font-semibold leading-relaxed text-zinc-800 dark:text-zinc-100 text-center select-none shadow-xs font-sans max-w-2xl mx-auto">
+                      "{selectedParagraph}"
                     </div>
                   </div>
 
