@@ -3738,14 +3738,20 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
 
           <div className="flex flex-col md:flex-row justify-between items-start flex-1 gap-12 relative">
             {/* Left Content */}
-            <div className="w-full md:w-1/2 pr-0 md:pr-8 flex flex-col justify-between h-full z-10">
+            <div className="w-full md:w-3/5 lg:w-2/3 pr-0 md:pr-12 flex flex-col justify-between h-full z-10">
               <div>
                  <h2 className="text-5xl md:text-6xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.05] mb-16 text-white max-w-lg">
                    Empowering Minds, Shaping Futures
                  </h2>
-                 <div className="flex flex-wrap gap-16 md:gap-32 mb-16">
+                 <div className="flex flex-wrap gap-12 sm:gap-16 lg:gap-20 mb-16">
+                    <div className="max-w-xs min-w-[220px]">
+                       <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-6">About learnora.in</h4>
+                       <p className="text-xs text-slate-400 font-normal leading-relaxed">
+                         Learnora is a premier forward-looking academy providing rigorous cohort pathways, practical masterclasses, and certified programs across software development, clinical sciences, and executive design. We combine state-of-the-art interactive systems with direct faculty mentorship to unlock true professional potential.
+                       </p>
+                    </div>
                     <div>
-                       <h4 className="font-bold text-white mb-6 tracking-wide">Programs</h4>
+                       <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-6">Programs</h4>
                        <ul className="space-y-3 text-sm text-slate-400 font-medium">
                           <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Engineering App</button></li>
                           <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Medicine</button></li>
@@ -3754,13 +3760,23 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                           <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Web Design</button></li>
                        </ul>
                     </div>
-                    <div>
-                       <h4 className="font-bold text-white mb-6 tracking-wide">Resources</h4>
-                       <ul className="space-y-3 text-sm text-slate-400 font-medium">
-                          <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Student Portal</button></li>
-                          <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Behance Labs</button></li>
-                          <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Dribbble Works</button></li>
-                          <li><button className="hover:text-white transition-colors hover:underline underline-offset-4">Github Repos</button></li>
+
+                    <div className="min-w-[180px] max-w-xs">
+                       <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-6">Academic Office</h4>
+                       <ul className="space-y-4 text-xs text-slate-400 font-medium">
+                          <li className="leading-relaxed">
+                            <span className="block text-white text-sm font-semibold">Learnora Institute</span>
+                            <span className="text-slate-500 text-[11px] block mt-0.5">Distributed Sandbox Academic Registry</span>
+                          </li>
+                          <li className="space-y-1">
+                             <span className="block text-slate-500 uppercase tracking-widest text-[9px] font-bold">Administration</span>
+                             <span className="text-slate-300">Anik Baidya</span>
+                             <span className="block text-[10px] text-slate-500">Head Administrator</span>
+                          </li>
+                          <li className="space-y-1">
+                             <span className="block text-slate-500 uppercase tracking-widest text-[9px] font-bold">Official Email</span>
+                             <a href="mailto:admin@learnora.in" className="text-amber-400 hover:text-amber-300 transition-colors underline decoration-amber-400/30 font-semibold">admin@learnora.in</a>
+                          </li>
                        </ul>
                     </div>
                  </div>

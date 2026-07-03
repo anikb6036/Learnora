@@ -3213,7 +3213,7 @@ function AppContent() {
                                             placeholder="Enter 6-digit OTP"
                                             value={otpCode}
                                             onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                                            className="flex-1 px-3 py-3 text-xs font-mono tracking-widest bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-855 dark:text-gray-100 transition-all text-center"
+                                            className="flex-1 px-3 py-3 text-sm bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800 dark:text-gray-100 transition-all text-center"
                                           />
                                           <button
                                             type="button"
