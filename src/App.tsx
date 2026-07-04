@@ -436,6 +436,11 @@ function AppContent() {
   const [isSidebarHovered, setIsSidebarHovered] = useState<boolean>(false);
   const [ignoreHover, setIgnoreHover] = useState<boolean>(false);
 
+  // Collapsible sidebar sub-menu states
+  const [isStudentAcademicExpanded, setIsStudentAcademicExpanded] = useState<boolean>(true);
+  const [isStaffAcademicExpanded, setIsStaffAcademicExpanded] = useState<boolean>(true);
+  const [isSystemCategoriesExpanded, setIsSystemCategoriesExpanded] = useState<boolean>(true);
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
@@ -3877,7 +3882,31 @@ function AppContent() {
         <div className="h-screen flex flex-col md:flex-row relative z-0 overflow-hidden font-sans bg-white dark:bg-[#070708]">
 
           
-          {/* Responsive Navigation Rail */}
+          {/* Mobile Top Bar */}
+          <div className="md:hidden w-full h-16 px-5 border-b border-slate-200 dark:border-white/5 bg-[#fafafa] dark:bg-[#080809] flex items-center justify-between z-20 shrink-0">
+            <div className="scale-[0.55] origin-left">
+              <Logo size="sm" withStrapline={false} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-3 -mr-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-550 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition"
+              aria-label="Open Navigation Menu"
+              aria-expanded={!isSidebarCollapsed}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Backdrop on Mobile */}
+          {!isSidebarCollapsed && (
+            <div 
+              className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300"
+              onClick={() => setIsSidebarCollapsed(true)}
+            />
+          )}
+
+          {/* Responsive Navigation Rail / Drawer */}
           <aside 
             onMouseEnter={() => {
               if (!ignoreHover) {
@@ -3888,12 +3917,18 @@ function AppContent() {
               setIsSidebarHovered(false);
               setIgnoreHover(false);
             }}
-            className={`w-full ${isActuallyCollapsed ? 'md:w-20 px-3' : 'md:w-64 px-5'} py-5 relative z-10 bg-[#fafafa] dark:bg-[#080809] border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 flex flex-col justify-between mr-0 transition-all duration-300 ease-in-out select-none overflow-y-auto`}
+            className={`
+              fixed inset-y-0 left-0 z-50 w-72 md:relative md:inset-auto md:z-auto md:flex-shrink-0
+              ${isActuallyCollapsed ? 'md:w-20 px-3' : 'md:w-64 px-5'} 
+              ${isSidebarCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
+              py-5 bg-[#fafafa] dark:bg-[#080809] border-r border-slate-200 dark:border-white/5 
+              flex flex-col justify-between transition-all duration-300 ease-in-out select-none overflow-y-auto h-full md:h-auto
+            `}
           >
             <div className="space-y-6">
               {/* Header Branding */}
-              <div className={`flex items-center justify-between md:justify-center select-none`}>
-                <div className={`flex items-center gap-2`}>
+              <div className="flex items-center justify-between md:justify-center select-none">
+                <div className="flex items-center gap-2">
                   {!isActuallyCollapsed ? (
                     <div className="leading-none animate-fadeIn">
                       <div className="origin-left scale-[0.65] -mb-1 relative -left-1">
@@ -3908,18 +3943,19 @@ function AppContent() {
                   )}
                 </div>
                 
-                {/* Mobile Menu Toggle */}
+                {/* Mobile Menu Close Toggle inside Drawer */}
                 <button
                   type="button"
-                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                  className="md:hidden p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition"
+                  onClick={() => setIsSidebarCollapsed(true)}
+                  className="md:hidden p-3 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition"
+                  aria-label="Close Navigation Menu"
                 >
-                  <Menu className="w-5 h-5" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Collapsed items wrapped in responsive block. On mobile, we hide menus when collapsed. */}
-              <div className={`md:flex md:flex-col md:gap-6 ${isSidebarCollapsed ? 'hidden md:block' : 'block animate-fadeIn'}`}>
+              {/* Navigation Items Container */}
+              <div className="flex flex-col gap-6 md:gap-6">
                 {/* Logged profile banner */}
                 <div 
                   onClick={() => setActiveTab('profile')}
@@ -4009,81 +4045,93 @@ function AppContent() {
                     </button>
                   ) : (
                     <>
-                      {/* Top Level Items */}
+                      {/* Student Academic Sub-Menu */}
                       {currentUser && currentUser.role === 'student' ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveTab('dashboard');
-                              setStudentScheduleTab('schedule');
-                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                            }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                              activeTab === 'dashboard' && studentScheduleTab === 'schedule'
-                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                            }`}
-                            title={isActuallyCollapsed ? "My Schedule" : undefined}
-                          >
-                            <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">My Schedule</span>}
-                          </button>
+                        <div className="space-y-1">
+                          {!isActuallyCollapsed && (
+                            <button
+                              type="button"
+                              onClick={() => setIsStudentAcademicExpanded(!isStudentAcademicExpanded)}
+                              className="w-full flex items-center justify-between pt-2 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                            >
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Academic Portal</p>
+                              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-amber-500 transition-transform duration-200 ${isStudentAcademicExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                            </button>
+                          )}
+                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStudentAcademicExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('schedule');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'schedule'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "My Schedule" : undefined}
+                            >
+                              <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">My Schedule</span>}
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveTab('dashboard');
-                              setStudentScheduleTab('tasks');
-                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                            }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                              activeTab === 'dashboard' && studentScheduleTab === 'tasks'
-                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                            }`}
-                            title={isActuallyCollapsed ? "Pending Tasks" : undefined}
-                          >
-                            <Clock className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Pending Tasks</span>}
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('tasks');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'tasks'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Pending Tasks" : undefined}
+                            >
+                              <Clock className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Pending Tasks</span>}
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveTab('dashboard');
-                              setStudentScheduleTab('completed');
-                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                            }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                              activeTab === 'dashboard' && studentScheduleTab === 'completed'
-                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                            }`}
-                            title={isActuallyCollapsed ? "Completed Classes" : undefined}
-                          >
-                            <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn font-sans">Completed Classes</span>}
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('completed');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'completed'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Completed Classes" : undefined}
+                            >
+                              <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn font-sans">Completed Classes</span>}
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveTab('dashboard');
-                              setStudentScheduleTab('assignments');
-                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                            }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                              activeTab === 'dashboard' && studentScheduleTab === 'assignments'
-                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                            }`}
-                            title={isActuallyCollapsed ? "Assignments & Homework" : undefined}
-                          >
-                            <ClipboardList className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignments & Homework</span>}
-                          </button>
-                        </>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('assignments');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'assignments'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Assignments & Homework" : undefined}
+                            >
+                              <ClipboardList className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignments & Homework</span>}
+                            </button>
+                          </div>
+                        </div>
                       ) : (
                         <button
                           type="button"
@@ -4103,266 +4151,281 @@ function AppContent() {
                         </button>
                       )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('profile');
-                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                    }}
-                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                      activeTab === 'profile'
-                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                    }`}
-                    title={isActuallyCollapsed ? (currentUser.role === 'student' ? 'My Profile' : "Profile & Password Settings") : undefined}
-                  >
-                    <User className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                    {!isActuallyCollapsed && (
-                      <span className="truncate animate-fadeIn">
-                        {currentUser.role === 'student' ? 'My Profile' : 'Profile Settings'}
-                      </span>
-                    )}
-                  </button>
-
-                  {currentUser.role !== 'student' && (
-                    <>
-                      {!isActuallyCollapsed && (
-                        <div className="pt-4 pb-1 pl-3.5 pr-2">
-                          <p className="text-sm font-sans text-slate-500 dark:text-slate-400 mb-0.5">Academic shortcuts</p>
-                        </div>
-                      )}
-
                       <button
                         type="button"
                         onClick={() => {
-                          setActiveTab('enrollments');
+                          setActiveTab('profile');
                           if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                         }}
                         className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'enrollments'
+                          activeTab === 'profile'
                             ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
                             : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
                         }`}
-                        title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : '') : undefined}
+                        title={isActuallyCollapsed ? (currentUser.role === 'student' ? 'My Profile' : "Profile & Password Settings") : undefined}
                       >
-                        <Users className="w-4 h-4 flex-shrink-0" />
+                        <User className="w-4 h-4 flex-shrink-0 text-amber-500" />
                         {!isActuallyCollapsed && (
                           <span className="truncate animate-fadeIn">
-                            {currentUser.role === 'admin' 
-                              ? 'Accounts & Enrollments' 
-                              : currentUser.role === 'sub-admin' 
-                                ? 'Enrollments & Faculty' 
-                                : 'Student Profiles Registry'}
+                            {currentUser.role === 'student' ? 'My Profile' : 'Profile Settings'}
                           </span>
                         )}
                       </button>
-                    </>
-                  )}
 
-                  {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
-                    <>
-                      {/* First-level: Schedule New Live Class */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (activeTab === 'schedule' && scheduleShowAddForm) {
-                            setScheduleShowAddForm(false);
-                          } else {
-                            setActiveTab('schedule');
-                            setScheduleShowAddForm(true);
-                            setScheduleShowCourseDashboard(false);
-                            setScheduleShowBatchManager(false);
-                          }
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'schedule' && scheduleShowAddForm
-                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                        }`}
-                        title={isActuallyCollapsed ? "Schedule New Live Class" : undefined}
-                      >
-                        <Plus className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Schedule New Live Class</span>}
-                      </button>
+                      {currentUser.role !== 'student' && (
+                        <div className="space-y-1">
+                          {!isActuallyCollapsed && (
+                            <button
+                              type="button"
+                              onClick={() => setIsStaffAcademicExpanded(!isStaffAcademicExpanded)}
+                              className="w-full flex items-center justify-between pt-4 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                            >
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Academic shortcuts</p>
+                              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-amber-500 transition-transform duration-200 ${isStaffAcademicExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                            </button>
+                          )}
+                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStaffAcademicExpanded || isActuallyCollapsed ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('enrollments');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'enrollments'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : '') : undefined}
+                            >
+                              <Users className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && (
+                                <span className="truncate animate-fadeIn">
+                                  {currentUser.role === 'admin' 
+                                    ? 'Accounts & Enrollments' 
+                                    : currentUser.role === 'sub-admin' 
+                                      ? 'Enrollments & Faculty' 
+                                      : 'Student Profiles Registry'}
+                                </span>
+                              )}
+                            </button>
 
-                      {/* First-level: Courses Publish Dashboard */}
-                      {['admin', 'sub-admin'].includes(currentUser.role) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (activeTab === 'schedule' && scheduleShowCourseDashboard) {
-                              setScheduleShowCourseDashboard(false);
-                            } else {
-                              setActiveTab('schedule');
-                              setScheduleShowCourseDashboard(true);
-                              setScheduleShowAddForm(false);
-                              setScheduleShowBatchManager(false);
-                            }
-                            if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                          }}
-                          className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                            activeTab === 'schedule' && scheduleShowCourseDashboard
-                              ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                              : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                          }`}
-                          title={isActuallyCollapsed ? "Courses Publish Dashboard" : undefined}
-                        >
-                          <GraduationCap className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                          {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Courses Publish Dashboard</span>}
-                        </button>
+                            {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+                              <>
+                                {/* First-level: Schedule New Live Class */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (activeTab === 'schedule' && scheduleShowAddForm) {
+                                      setScheduleShowAddForm(false);
+                                    } else {
+                                      setActiveTab('schedule');
+                                      setScheduleShowAddForm(true);
+                                      setScheduleShowCourseDashboard(false);
+                                      setScheduleShowBatchManager(false);
+                                    }
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                    activeTab === 'schedule' && scheduleShowAddForm
+                                      ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                      : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Schedule New Live Class" : undefined}
+                                >
+                                  <Plus className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Schedule New Live Class</span>}
+                                </button>
+
+                                {/* First-level: Courses Publish Dashboard */}
+                                {['admin', 'sub-admin'].includes(currentUser.role) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (activeTab === 'schedule' && scheduleShowCourseDashboard) {
+                                        setScheduleShowCourseDashboard(false);
+                                      } else {
+                                        setActiveTab('schedule');
+                                        setScheduleShowCourseDashboard(true);
+                                        setScheduleShowAddForm(false);
+                                        setScheduleShowBatchManager(false);
+                                      }
+                                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                    }}
+                                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                      activeTab === 'schedule' && scheduleShowCourseDashboard
+                                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                                    }`}
+                                    title={isActuallyCollapsed ? "Courses Publish Dashboard" : undefined}
+                                  >
+                                    <GraduationCap className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Courses Publish Dashboard</span>}
+                                  </button>
+                                )}
+
+                                {/* First-level: Scheduled Lectures */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('lectures');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                    activeTab === 'lectures'
+                                      ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                      : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Scheduled Lectures" : undefined}
+                                >
+                                  <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
+                                </button>
+
+                                {/* Consolidated Academic & Evolution Pipeline */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('assignment-pipeline');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                    activeTab === 'assignment-pipeline'
+                                      ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                      : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Academic & Evolution Pipeline" : undefined}
+                                >
+                                  <Layers className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic & Evolution Pipeline</span>}
+                                </button>
+
+                                {/* First-level: Assignment Submission Tracker */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('assignment-tracker');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                    activeTab === 'assignment-tracker'
+                                      ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                      : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Assignment Status Tracker" : undefined}
+                                >
+                                  <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       )}
 
-                      {/* First-level: Scheduled Lectures */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('lectures');
-                          setScheduleShowAddForm(false);
-                          setScheduleShowCourseDashboard(false);
-                          setScheduleShowBatchManager(false);
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'lectures'
-                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                        }`}
-                        title={isActuallyCollapsed ? "Scheduled Lectures" : undefined}
-                      >
-                        <Calendar className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
-                      </button>
+                      {/* System Categories Sub-Menu */}
+                      <div className="space-y-1">
+                        {!isActuallyCollapsed && (
+                          <button
+                            type="button"
+                            onClick={() => setIsSystemCategoriesExpanded(!isSystemCategoriesExpanded)}
+                            className="w-full flex items-center justify-between pt-4 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                          >
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">System Categories</p>
+                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-amber-500 transition-transform duration-200 ${isSystemCategoriesExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                          </button>
+                        )}
+                        <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isSystemCategoriesExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                          {['admin', 'sub-admin'].includes(currentUser.role) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('courses-directory');
+                                setScheduleShowAddForm(false);
+                                setScheduleShowCourseDashboard(false);
+                                setScheduleShowBatchManager(false);
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'courses-directory'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
+                            >
+                              <BookOpen className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
+                            </button>
+                          )}
 
-                      {/* Consolidated Academic & Evolution Pipeline */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('assignment-pipeline');
-                          setScheduleShowAddForm(false);
-                          setScheduleShowCourseDashboard(false);
-                          setScheduleShowBatchManager(false);
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'assignment-pipeline'
-                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                        }`}
-                        title={isActuallyCollapsed ? "Academic & Evolution Pipeline" : undefined}
-                      >
-                        <Layers className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic & Evolution Pipeline</span>}
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('progress');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'progress'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Certificate Progress" : undefined}
+                          >
+                            <Award className="w-4 h-4 flex-shrink-0" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">{currentUser.role === 'student' ? 'Certificate Progress' : 'Grading Progress Books'}</span>}
+                          </button>
 
-                      {/* First-level: Assignment Submission Tracker */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('assignment-tracker');
-                          setScheduleShowAddForm(false);
-                          setScheduleShowCourseDashboard(false);
-                          setScheduleShowBatchManager(false);
-                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                        }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                          activeTab === 'assignment-tracker'
-                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                            : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                        }`}
-                        title={isActuallyCollapsed ? "Assignment Status Tracker" : undefined}
-                      >
-                        <CheckCircle className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
-                      </button>
-                    </>
-                  )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('inbox');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              activeTab === 'inbox'
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Secure Mailbox" : undefined}
+                          >
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Mailbox</span>}
+                            {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length > 0 && (
+                              <span className={`absolute ${isActuallyCollapsed ? 'top-1 right-1' : 'right-3.5 top-1/2 -translate-y-1/2'} min-w-[16px] h-4 leading-none text-sm font-mono font-bold bg-amber-500 text-amber-950 px-1 rounded-full flex items-center justify-center border border-white dark:border-[#161618] transition-all`}>
+                                {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length}
+                              </span>
+                            )}
+                          </button>
 
-                  {!isActuallyCollapsed && (
-                    <div className="pt-4 pb-1 pl-3.5 pr-2">
-                      <p className="text-sm font-sans text-slate-500 dark:text-slate-400 mb-0.5">System Categories</p>
-                    </div>
-                  )}
-
-                  {['admin', 'sub-admin'].includes(currentUser.role) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('courses-directory');
-                        setScheduleShowAddForm(false);
-                        setScheduleShowCourseDashboard(false);
-                        setScheduleShowBatchManager(false);
-                        if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                      }}
-                      className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                        activeTab === 'courses-directory'
-                          ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                          : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                      }`}
-                      title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
-                    >
-                      <BookOpen className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('progress');
-                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                    }}
-                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                      activeTab === 'progress'
-                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                    }`}
-                    title={isActuallyCollapsed ? "Certificate Progress" : undefined}
-                  >
-                    <Award className="w-4 h-4 flex-shrink-0" />
-                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">{currentUser.role === 'student' ? 'Certificate Progress' : 'Grading Progress Books'}</span>}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('inbox');
-                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                    }}
-                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                      activeTab === 'inbox'
-                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                        : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                    }`}
-                    title={isActuallyCollapsed ? "Secure Mailbox" : undefined}
-                  >
-                    <Mail className="w-4 h-4 flex-shrink-0" />
-                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Mailbox</span>}
-                    {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length > 0 && (
-                      <span className={`absolute ${isActuallyCollapsed ? 'top-1 right-1' : 'right-3.5 top-1/2 -translate-y-1/2'} min-w-[16px] h-4 leading-none text-sm font-mono font-bold bg-amber-500 text-amber-950 px-1 rounded-full flex items-center justify-center border border-white dark:border-[#161618] transition-all`}>
-                        {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length}
-                      </span>
-                    )}
-                  </button>
-
-                  {currentUser.role === 'admin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('backup');
-                        if (window.innerWidth < 768) setIsSidebarCollapsed(true);
-                      }}
-                      className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
-                        activeTab === 'backup'
-                          ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
-                          : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
-                      }`}
-                      title={isActuallyCollapsed ? "Secure Backups" : undefined}
-                    >
-                      <CloudLightning className="w-4 h-4 flex-shrink-0" />
-                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Backups</span>}
-                    </button>
-                  )}
+                          {currentUser.role === 'admin' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('backup');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                activeTab === 'backup'
+                                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold'
+                                  : 'text-slate-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-[#161618] border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Secure Backups" : undefined}
+                            >
+                              <CloudLightning className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Backups</span>}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </>
                   )}
                 </nav>
