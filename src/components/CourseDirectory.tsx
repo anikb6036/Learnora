@@ -470,7 +470,10 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
           {filteredCourses.map(c => {
             const hasRoadmap = c.roadmap && c.roadmap.length > 0;
             const viewMode = roadmapViewMode[c.id] || 'admissions';
-            const durationText = c.durationWeeks ? `${c.durationWeeks} Weeks` : '6 Months';
+            const isWeeks = c.durationUnit === 'weeks' || (!c.durationUnit && c.durationWeeks && !c.durationMonths);
+            const durationText = isWeeks
+              ? `${c.durationMonths || c.durationWeeks || 6} Weeks`
+              : `${c.durationMonths || 6} Months`;
             
             return (
               <div 
@@ -825,7 +828,9 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
 
                             <div className="relative pl-8 border-l-2 border-dashed border-amber-500/40 dark:border-amber-500/25 space-y-6">
                               {c.roadmap.map((step, idx) => {
-                                const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
+                                const isWeeks = c.durationUnit === 'weeks' || (!c.durationUnit && c.durationWeeks && !c.durationMonths);
+                                const unitLabel = isWeeks ? 'Week' : 'Month';
+                                const cleanTitle = (step.title || '').replace(/^(Month|Week)\s*\d+\s*[:\-]\s*/i, '').trim();
                                 return (
                                   <div key={step.month} className="relative group/timeline transition-all duration-200">
                                     
@@ -833,11 +838,11 @@ export const CourseDirectory: React.FC<CourseDirectoryProps> = ({
                                     <div className="absolute left-[-42px] top-1 w-7 h-7 rounded-full border-2 border-amber-500 bg-white dark:bg-black flex items-center justify-center font-sans text-[11px] font-black text-amber-600 dark:text-amber-400 select-none shadow-sm group-hover/timeline:scale-110 transition-transform">
                                       {step.month}
                                     </div>
-
+ 
                                     <div className="bg-white dark:bg-[#09090B] border border-slate-200/80 dark:border-white/5 rounded-xl p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/25 dark:hover:border-amber-500/20 transition-all font-sans">
                                       <div className="flex flex-wrap items-center gap-2 font-sans">
                                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                                          Month {step.month} Milestone
+                                          {unitLabel} {step.month} Milestone
                                         </span>
                                         <span className="text-slate-400 dark:text-zinc-500 font-sans text-[9px] font-extrabold uppercase bg-slate-50 dark:bg-white/5 py-0.5 px-2 rounded-full border border-slate-100 dark:border-white/5">
                                           Stage {idx + 1}

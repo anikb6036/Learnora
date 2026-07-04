@@ -1640,14 +1640,16 @@ export default function HomePage({ isDark, onEnterPortal, courses = [] }: HomePa
                         ? selectedCourse.roadmap
                         : getCourseRoadmap(selectedCourse?.name || '', selectedCourse?.code || '')
                       ).map((step, idx) => {
-                        const cleanTitle = (step.title || '').replace(/^Month\s*\d+\s*[:\-]\s*/i, '').trim();
+                        const isWeeks = selectedCourse?.durationUnit === 'weeks';
+                        const unitLabel = isWeeks ? 'Week' : 'Month';
+                        const cleanTitle = (step.title || '').replace(/^(Month|Week)\s*\d+\s*[:\-]\s*/i, '').trim();
                         return (
                           <div key={idx} className="relative flex items-start gap-4">
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-black text-xs z-10 shrink-0 shadow-md">
                               {step.month}
                             </div>
                             <div className="text-left bg-white p-3.5 rounded-xl border border-slate-200/60 w-full shadow-xs">
-                              <h4 className="font-bold text-xs text-[#1D1D1F]">Month {step.month}: {cleanTitle}</h4>
+                              <h4 className="font-bold text-xs text-[#1D1D1F]">{unitLabel} {step.month}: {cleanTitle}</h4>
                               <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{step.desc || (step as any).description}</p>
                             </div>
                           </div>

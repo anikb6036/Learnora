@@ -1467,6 +1467,10 @@ export default function ProgressTracker({
       URL.revokeObjectURL(url);
     };
 
+    const isWeeks = currentCourseInfo?.durationUnit === 'weeks';
+    const unitLabel = isWeeks ? 'Week' : 'Month';
+    const subUnitLabel = isWeeks ? 'Day' : 'Week';
+
     return (
       <div className="space-y-6 font-sans">
         {/* Toggle switch for student view */}
@@ -1491,7 +1495,7 @@ export default function ProgressTracker({
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            Monthly Evolution Track
+            {isWeeks ? 'Weekly' : 'Monthly'} Evolution Track
           </button>
         </div>
 
@@ -1504,7 +1508,7 @@ export default function ProgressTracker({
                   Certificate Progress
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-gray-400">
-                  Track your monthly evolution milestones to automatically unlock your completion certificate.
+                  Track your {isWeeks ? 'weekly' : 'monthly'} evolution milestones to automatically unlock your completion certificate.
                 </p>
               </div>
               {isComplete && (
@@ -1525,7 +1529,7 @@ export default function ProgressTracker({
                     Course Completion
                   </p>
                   <p className="text-xs text-slate-500 dark:text-zinc-400">
-                    {completedEvaluations} of {totalEvaluations} month evolutions cleared
+                    {completedEvaluations} of {totalEvaluations} {isWeeks ? 'week' : 'month'} evolutions cleared
                   </p>
                 </div>
                 <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
@@ -1565,7 +1569,7 @@ export default function ProgressTracker({
 
             <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-slate-400" />
-              Monthly Evolution Milestones
+              {isWeeks ? 'Weekly' : 'Monthly'} Evolution Milestones
             </h3>
             
             <div className="space-y-4">
@@ -1613,7 +1617,7 @@ export default function ProgressTracker({
                       </div>
                       <div>
                         <h4 className={`text-sm font-bold ${isLocked ? 'text-slate-400 dark:text-zinc-500' : 'text-slate-900 dark:text-white'}`}>
-                          Study Month {m} Evolution Tracker {isLocked && '(Locked)'}
+                          Study {unitLabel} {m} Evolution Tracker {isLocked && '(Locked)'}
                         </h4>
                         <p className="text-xs text-slate-500 mt-1">
                           {isCleared 
@@ -1621,8 +1625,8 @@ export default function ProgressTracker({
                             : isRedo 
                             ? `Grade average of ${evoRec?.overallScore}% is below the 80% benchmark. Redo required.` 
                             : isInProgress 
-                            ? `${scoresCount} of 4 weekly submissions graded.` 
-                            : `Prerequisite: Clear Month ${m - 1} first.`}
+                            ? `${scoresCount} of 4 ${isWeeks ? 'daily' : 'weekly'} submissions graded.` 
+                            : `Prerequisite: Clear ${unitLabel} ${m - 1} first.`}
                         </p>
                       </div>
                     </div>
@@ -1666,27 +1670,24 @@ export default function ProgressTracker({
               <div>
                 <h1 className="text-[26px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight flex items-center gap-2">
                   <TrendingUp className="w-7 h-7 text-indigo-500" />
-                  Monthly Evolution Tracker
+                  {unitLabel} Evolution Tracker
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-gray-400">
-                  Course syllabus divided into 4-week continuous evolutions with an overall passing average of <strong className="text-indigo-600 dark:text-indigo-400">80%</strong>.
+                  Course syllabus divided into 4-{subUnitLabel.toLowerCase()} continuous evolutions with an overall passing average of <strong className="text-indigo-600 dark:text-indigo-400">80%</strong>.
                 </p>
               </div>
 
               {/* Month selector */}
               <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-250/60 dark:border-white/10 p-1.5 rounded-xl">
-                <span className="text-xs font-bold text-slate-500 dark:text-gray-400 pl-2">Select Study Month:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-gray-400 pl-2">Select Study {unitLabel}:</span>
                 <select
                   value={studentSelectedMonth}
                   onChange={(e) => setStudentSelectedMonth(parseInt(e.target.value))}
                   className="bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-zinc-200 py-1.5 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value={1}>Month 1</option>
-                  <option value={2}>Month 2</option>
-                  <option value={3}>Month 3</option>
-                  <option value={4}>Month 4</option>
-                  <option value={5}>Month 5</option>
-                  <option value={6}>Month 6</option>
+                  {Array.from({ length: totalEvaluations }, (_, idx) => idx + 1).map(m => (
+                    <option key={m} value={m}>{unitLabel} {m}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1704,7 +1705,7 @@ export default function ProgressTracker({
                     {/* Month card */}
                     <div className="p-5 bg-gradient-to-br from-indigo-500/5 to-indigo-600/[0.02] border border-indigo-500/10 rounded-2xl">
                       <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Active Level</p>
-                      <h4 className="text-2xl font-black text-slate-900 dark:text-white mt-1">Month {studentSelectedMonth}</h4>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white mt-1">{unitLabel} {studentSelectedMonth}</h4>
                       <p className="text-xs text-slate-500 mt-1.5 font-mono">Registered Course: {currentUser.course || 'All-Inclusive Academic Track'}</p>
                     </div>
 
@@ -1744,10 +1745,10 @@ export default function ProgressTracker({
                       </div>
                       <p className="text-xs mt-1.5">
                         {isPromoted 
-                          ? `Automatically promoted on ${evoRec?.promotedDate || 'this month'}`
+                          ? `Automatically promoted on ${evoRec?.promotedDate || 'this ' + unitLabel.toLowerCase()}`
                           : scoresCount === 4 && !overallPass
-                          ? `Did not meet the 80% threshold. You must redo this month.`
-                          : `Passing mark: Average score >= 80% with all 4 weeks completed`
+                          ? `Did not meet the 80% threshold. You must redo this ${unitLabel.toLowerCase()}.`
+                          : `Passing mark: Average score >= 80% with all 4 ${subUnitLabel.toLowerCase()}s completed`
                         }
                       </p>
                       {scoresCount === 4 && !overallPass && (
@@ -1756,7 +1757,7 @@ export default function ProgressTracker({
                           className="mt-3 w-full py-2 px-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                         >
                           <RotateCcw className="w-3.5 h-3.5 animate-spin-reverse" />
-                          Reset & Restart Month {studentSelectedMonth}
+                          Reset & Restart {unitLabel} {studentSelectedMonth}
                         </button>
                       )}
                     </div>
@@ -1778,10 +1779,10 @@ export default function ProgressTracker({
                             📢 Official Continuous Assessment Schedule
                           </span>
                           <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 mt-0.5">
-                            Month {studentSelectedMonth} Summative Evolution Assessment
+                            {unitLabel} {studentSelectedMonth} Summative Evolution Assessment
                           </h4>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            All weekly submissions must be completed before the designated time limit.
+                            All {subUnitLabel.toLowerCase()} submissions must be completed before the designated time limit.
                           </p>
                         </div>
                       </div>
@@ -1813,10 +1814,10 @@ export default function ProgressTracker({
                   <div>
                     <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-200 mb-2 flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-slate-400" />
-                      Continuous Weekly Evaluations (Month {studentSelectedMonth})
+                      Continuous {isWeeks ? 'Daily' : 'Weekly'} Evaluations ({unitLabel} {studentSelectedMonth})
                     </h3>
                     <p className="text-[11px] text-slate-400 dark:text-gray-500 mb-4">
-                      Click on any weekly evolution card to open the interactive workspace, view problem statements, and submit your coding or text solution.
+                      Click on any {subUnitLabel.toLowerCase()} evolution card to open the interactive workspace, view problem statements, and submit your coding or text solution.
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -1826,7 +1827,7 @@ export default function ProgressTracker({
                             return {
                               type: evoRec?.week1Type || 'instruction',
                               title: evoRec?.title1 || 'Evolution 1',
-                              desc: evoRec?.desc1 || 'Weekly Milestone task',
+                              desc: evoRec?.desc1 || `${subUnitLabel} Milestone task`,
                               feedback: evoRec?.feedback1,
                               score: evoRec?.evolution1,
                               submission: evoRec?.week1Submission,
@@ -1958,7 +1959,7 @@ export default function ProgressTracker({
                           Evolution Milestone Passed & Academic Grade Level Escalated!
                         </h4>
                         <p className="text-xs text-emerald-750 dark:text-emerald-400 mt-1 leading-relaxed">
-                          By clearing all 4 weekly milestones in Study Month {studentSelectedMonth} with an aggregate average score of <strong>{evoRec?.overallScore}%</strong> (Passing Benchmark: 80%), you have triggered our immediate <strong>Automatic Promotion protocol</strong>. Your account registration is instantly updated to the subsequent month milestone on the server, and a credentialed dispatch and progress receipt has been transmitted to: <strong className="underline">{currentUser.email}</strong>.
+                          By clearing all 4 {subUnitLabel.toLowerCase()} milestones in Study {unitLabel} {studentSelectedMonth} with an aggregate average score of <strong>{evoRec?.overallScore}%</strong> (Passing Benchmark: 80%), you have triggered our immediate <strong>Automatic Promotion protocol</strong>. Your account registration is instantly updated to the subsequent {unitLabel.toLowerCase()} milestone on the server, and a credentialed dispatch and progress receipt has been transmitted to: <strong className="underline">{currentUser.email}</strong>.
                         </p>
                       </div>
                     </div>
@@ -1966,7 +1967,7 @@ export default function ProgressTracker({
                     <div className="p-4 bg-slate-50 dark:bg-white/[0.01] border border-slate-200 dark:border-white/5 rounded-2xl flex items-start gap-3">
                       <AlertCircle className="w-5 h-5 text-indigo-500 mt-0.5" />
                       <div className="text-xs text-slate-550 dark:text-gray-400 leading-relaxed">
-                        Learnora operates on a 4-week Continuous Evolution track. When all 4 milestones are graded by an instructor and calculate an overall average of <strong>80% or above</strong>, the system automatically activates program graduation and progresses your core courses directory parameters.
+                        Learnora operates on a 4-{subUnitLabel.toLowerCase()} Continuous Evolution track. When all 4 milestones are graded by an instructor and calculate an overall average of <strong>80% or above</strong>, the system automatically progresses your core courses directory parameters.
                       </div>
                     </div>
                   )}
@@ -2075,7 +2076,7 @@ export default function ProgressTracker({
                       </button>
                       <span className="text-zinc-700">/</span>
                       <span className="text-zinc-300 font-extrabold bg-[#2a2a34] px-2.5 py-0.5 rounded text-[11px] font-sans">
-                        Study Month {studentSelectedMonth} &bull; Week {weekNum} Milestone
+                        Study {unitLabel} {studentSelectedMonth} &bull; {subUnitLabel} {weekNum} Milestone
                       </span>
                     </div>
                   </div>
@@ -2310,7 +2311,7 @@ export default function ProgressTracker({
                           ) : (
                             <div className="p-8 text-center text-stone-500 text-xs">
                               <History className="w-8 h-8 mx-auto mb-2 opacity-35" />
-                              <p>No previous milestone submissions located for Month {studentSelectedMonth} Week {weekNum}.</p>
+                              <p>No previous milestone submissions located for {unitLabel} {studentSelectedMonth} {subUnitLabel} {weekNum}.</p>
                               <p className="text-[10px] mt-1 text-stone-600">Your live draft in the Workspace Draft Editor will be recorded.</p>
                             </div>
                           )}

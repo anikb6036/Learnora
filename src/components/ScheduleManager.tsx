@@ -212,6 +212,7 @@ export default function ScheduleManager({
   const [newCourseImageUrl, setNewCourseImageUrl] = useState('');
   const [newCourseTrialEnabled, setNewCourseTrialEnabled] = useState(false);
   const [newCourseTrialDays, setNewCourseTrialDays] = useState('7');
+  const [newCourseDurationUnit, setNewCourseDurationUnit] = useState<'months' | 'weeks'>('months');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
@@ -223,6 +224,7 @@ export default function ScheduleManager({
   // Master Course registration form state
   const [newMasterName, setNewMasterName] = useState('');
   const [newMasterDuration, setNewMasterDuration] = useState('6');
+  const [newMasterDurationUnit, setNewMasterDurationUnit] = useState<'months' | 'weeks'>('months');
   const [newMasterDesc, setNewMasterDesc] = useState('');
   const [newMasterFee, setNewMasterFee] = useState('14999');
   const [newMasterTrialEnabled, setNewMasterTrialEnabled] = useState(false);
@@ -291,12 +293,15 @@ export default function ScheduleManager({
           const existing = prev.find(p => p.month === monthNum);
           if (existing) return existing;
           
-          let defaultTitle = `Month ${monthNum} Milestone`;
-          let defaultDesc = `Objectives and syllabus for month ${monthNum}.`;
+          const unitLabel = newMasterDurationUnit === 'weeks' ? 'Week' : 'Month';
+          const unitLabelLower = newMasterDurationUnit === 'weeks' ? 'week' : 'month';
+          
+          let defaultTitle = `${unitLabel} ${monthNum} Milestone`;
+          let defaultDesc = `Objectives and syllabus for ${unitLabelLower} ${monthNum}.`;
           
           if (newMasterName.trim()) {
-            defaultTitle = `Month ${monthNum}: Core ${newMasterName.trim()} Concepts`;
-            defaultDesc = `Advanced modules and practical assignments regarding ${newMasterName.trim()} in month ${monthNum}.`;
+            defaultTitle = `${unitLabel} ${monthNum}: Core ${newMasterName.trim()} Concepts`;
+            defaultDesc = `Advanced modules and practical assignments regarding ${newMasterName.trim()} in ${unitLabelLower} ${monthNum}.`;
           }
           
           return {
@@ -311,7 +316,7 @@ export default function ScheduleManager({
       setMasterRoadmap([]);
       setSelectedMasterRoadmapMonth(1);
     }
-  }, [newMasterDuration, newMasterName, selectedMasterRoadmapMonth]);
+  }, [newMasterDuration, newMasterName, selectedMasterRoadmapMonth, newMasterDurationUnit]);
 
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -405,12 +410,15 @@ export default function ScheduleManager({
           const existing = prev.find(p => p.month === monthNum);
           if (existing) return existing;
           
-          let defaultTitle = `Month ${monthNum} Milestone`;
-          let defaultDesc = `Objectives and syllabus for month ${monthNum}.`;
+          const unitLabel = newCourseDurationUnit === 'weeks' ? 'Week' : 'Month';
+          const unitLabelLower = newCourseDurationUnit === 'weeks' ? 'week' : 'month';
+          
+          let defaultTitle = `${unitLabel} ${monthNum} Milestone`;
+          let defaultDesc = `Objectives and syllabus for ${unitLabelLower} ${monthNum}.`;
           
           if (newCourseName.trim()) {
-            defaultTitle = `Month ${monthNum}: Core ${newCourseName.trim()} Concepts`;
-            defaultDesc = `Advanced modules and practical assignments regarding ${newCourseName.trim()} in month ${monthNum}.`;
+            defaultTitle = `${unitLabel} ${monthNum}: Core ${newCourseName.trim()} Concepts`;
+            defaultDesc = `Advanced modules and practical assignments regarding ${newCourseName.trim()} in ${unitLabelLower} ${monthNum}.`;
           }
           
           return {
@@ -425,7 +433,7 @@ export default function ScheduleManager({
       setRoadmapDetails([]);
       setSelectedRoadmapMonth(1);
     }
-  }, [newCourseWeeks, newCourseName, selectedRoadmapMonth]);
+  }, [newCourseWeeks, newCourseName, selectedRoadmapMonth, newCourseDurationUnit]);
 
   // New Class Form State
   const [editingSchedule, setEditingSchedule] = useState<ClassSchedule | null>(null);
@@ -602,6 +610,7 @@ export default function ScheduleManager({
           publishDate: newCoursePublishDate,
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
+          durationUnit: newCourseDurationUnit,
           roadmap: roadmapDetails,
           fee: finalFee,
           imageUrl: newCourseImageUrl || undefined,
@@ -621,6 +630,7 @@ export default function ScheduleManager({
           publishDate: newCoursePublishDate,
           admissionLastDate: newCourseAdmissionLastDate,
           durationMonths: parsedDurationMonths,
+          durationUnit: newCourseDurationUnit,
           roadmap: roadmapDetails,
           fee: finalFee,
           imageUrl: newCourseImageUrl || undefined,
@@ -638,6 +648,7 @@ export default function ScheduleManager({
     setNewCourseAdmissionLastDate('2026-06-14');
     setNewCourseTrialEnabled(false);
     setNewCourseTrialDays('7');
+    setNewCourseDurationUnit('months');
     setRoadmapDetails([]);
     setNewCourseImageUrl('');
   };
@@ -646,11 +657,12 @@ export default function ScheduleManager({
     setEditingCourse(course);
     setNewCourseName(course.name);
     setNewCourseBatchNumber(course.batchNumber || '');
-    setNewCourseWeeks(course.durationWeeks || '');
+    setNewCourseWeeks(course.durationWeeks || (course.durationMonths ? String(course.durationMonths) : ''));
     setNewCourseDesc(course.description || '');
     setNewCourseStatus(course.status || 'upcoming');
     setNewCoursePublishDate(course.publishDate || course.createdDate || '2026-06-15');
     setNewCourseAdmissionLastDate(course.admissionLastDate || '2026-06-14');
+    setNewCourseDurationUnit(course.durationUnit || 'months');
     setRoadmapDetails(course.roadmap || []);
     setNewCourseFee(course.fee ? String(course.fee) : '14999');
     setNewCourseImageUrl(course.imageUrl || '');
@@ -676,6 +688,7 @@ export default function ScheduleManager({
     setNewCourseAdmissionLastDate('2026-06-14');
     setNewCourseTrialEnabled(false);
     setNewCourseTrialDays('7');
+    setNewCourseDurationUnit('months');
     setRoadmapDetails([]);
     setNewCourseImageUrl('');
     setAiError(null);
@@ -696,6 +709,7 @@ export default function ScheduleManager({
           ...editingMasterCourse,
           name: newMasterName.trim(),
           durationMonths: parseInt(newMasterDuration) || undefined,
+          durationUnit: newMasterDurationUnit,
           description: newMasterDesc.trim() || undefined,
           roadmap: masterRoadmap,
           fee: finalMasterFee,
@@ -708,6 +722,7 @@ export default function ScheduleManager({
         onAddMasterCourse({
           name: newMasterName.trim(),
           durationMonths: parseInt(newMasterDuration) || undefined,
+          durationUnit: newMasterDurationUnit,
           description: newMasterDesc.trim() || undefined,
           roadmap: masterRoadmap,
           fee: finalMasterFee,
@@ -718,6 +733,7 @@ export default function ScheduleManager({
 
     setNewMasterName('');
     setNewMasterDuration('6');
+    setNewMasterDurationUnit('months');
     setNewMasterDesc('');
     setNewMasterFee('14999');
     setNewMasterTrialEnabled(false);
@@ -730,6 +746,7 @@ export default function ScheduleManager({
     setEditingMasterCourse(master);
     setNewMasterName(master.name);
     setNewMasterDuration(String(master.durationMonths || '6'));
+    setNewMasterDurationUnit(master.durationUnit || 'months');
     setNewMasterDesc(master.description || '');
     setMasterRoadmap(master.roadmap || []);
     setNewMasterFee(master.fee ? String(master.fee) : '14999');
@@ -742,6 +759,7 @@ export default function ScheduleManager({
     setEditingMasterCourse(null);
     setNewMasterName('');
     setNewMasterDuration('6');
+    setNewMasterDurationUnit('months');
     setNewMasterDesc('');
     setNewMasterFee('14999');
     setNewMasterTrialEnabled(false);
@@ -771,6 +789,7 @@ export default function ScheduleManager({
         batchNumber: writtenBatch,
         durationWeeks: matchedMaster.durationMonths ? String(matchedMaster.durationMonths * 4) : undefined,
         durationMonths: matchedMaster.durationMonths,
+        durationUnit: matchedMaster.durationUnit,
         description: matchedMaster.description,
         status: publishStatus,
         publishDate: publishBatchDate,
@@ -903,10 +922,39 @@ export default function ScheduleManager({
                   </div>
 
                   <div className="space-y-1.5 col-span-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Duration (Weeks)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">
+                        Duration ({newCourseDurationUnit === 'weeks' ? 'Weeks' : 'Months'})
+                      </label>
+                      <div className="inline-flex rounded-md bg-slate-100 dark:bg-[#0f0f11] p-0.5 text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => setNewCourseDurationUnit('months')}
+                          className={`px-1.5 py-0.5 rounded-md font-semibold transition-all ${
+                            newCourseDurationUnit === 'months'
+                              ? 'bg-white dark:bg-[#1c1c1f] text-amber-600 dark:text-amber-400 shadow-sm'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          Months
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewCourseDurationUnit('weeks')}
+                          className={`px-1.5 py-0.5 rounded-md font-semibold transition-all ${
+                            newCourseDurationUnit === 'weeks'
+                              ? 'bg-white dark:bg-[#1c1c1f] text-amber-600 dark:text-amber-400 shadow-sm'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          Weeks
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="number"
                       required
+                      min="1"
                       value={newCourseWeeks}
                       onChange={e => setNewCourseWeeks(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-mono"
@@ -1265,16 +1313,44 @@ export default function ScheduleManager({
                           </div>
 
                           <div className="space-y-1 col-span-1">
-                            <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Duration (Months)</label>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">
+                                Course Duration ({newMasterDurationUnit === 'weeks' ? 'Weeks' : 'Months'})
+                              </label>
+                              <div className="inline-flex rounded-md bg-slate-100 dark:bg-[#0f0f11] p-0.5 text-[9px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setNewMasterDurationUnit('months')}
+                                  className={`px-1.5 py-0.5 rounded-md font-semibold transition-all ${
+                                    newMasterDurationUnit === 'months'
+                                      ? 'bg-white dark:bg-[#1c1c1f] text-amber-600 dark:text-amber-400 shadow-sm'
+                                      : 'text-slate-500 hover:text-slate-700'
+                                  }`}
+                                >
+                                  Months
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setNewMasterDurationUnit('weeks')}
+                                  className={`px-1.5 py-0.5 rounded-md font-semibold transition-all ${
+                                    newMasterDurationUnit === 'weeks'
+                                      ? 'bg-white dark:bg-[#1c1c1f] text-amber-600 dark:text-amber-400 shadow-sm'
+                                      : 'text-slate-500 hover:text-slate-700'
+                                  }`}
+                                >
+                                  Weeks
+                                </button>
+                              </div>
+                            </div>
                             <input
                               type="number"
                               required
                               min="1"
                               max="36"
-                              placeholder="e.g. 6"
+                              placeholder={newMasterDurationUnit === 'weeks' ? 'e.g. 24' : 'e.g. 6'}
                               value={newMasterDuration}
                               onChange={e => setNewMasterDuration(e.target.value)}
-                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                             />
                           </div>
 
@@ -1339,7 +1415,7 @@ export default function ScheduleManager({
                       <div className="space-y-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-5 rounded-lg">
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2 mb-1.5 font-sans">
                           <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
-                            {masterRoadmap.length || 0}-Month Course Roadmap
+                            {masterRoadmap.length || 0}-{newMasterDurationUnit === 'weeks' ? 'Week' : 'Month'} Course Roadmap
                           </span>
                           <span className="text-xs bg-amber-500/10 text-amber-700 dark:text-amber-400 px-3.5 py-0.5 rounded font-semibold">
                             Active Preview
@@ -1359,28 +1435,28 @@ export default function ScheduleManager({
                               <div key={milestone.month} className="p-4 bg-slate-50 dark:bg-[#08080a]/60 border border-slate-200 dark:border-white/10 rounded-md space-y-2.5 font-sans">
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                                    Month {milestone.month} Course Theme
+                                    {newMasterDurationUnit === 'weeks' ? 'Week' : 'Month'} {milestone.month} Course Theme
                                   </span>
                                 </div>
                                 <input
                                   type="text"
-                                  placeholder={`Month ${milestone.month} Target Theme`}
+                                  placeholder={`${newMasterDurationUnit === 'weeks' ? 'Week' : 'Month'} ${milestone.month} Target Theme`}
                                   value={milestone.title}
                                   onChange={e => {
                                     const newVal = e.target.value;
                                     setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, title: newVal } : p));
                                   }}
-                                  className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-medium"
+                                  className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30 font-medium"
                                 />
                                 <textarea
-                                  placeholder={`Milestone Objectives for Month ${milestone.month}`}
+                                  placeholder={`Milestone Objectives for ${newMasterDurationUnit === 'weeks' ? 'Week' : 'Month'} ${milestone.month}`}
                                   rows={2}
                                   value={milestone.description}
                                   onChange={e => {
                                     const newVal = e.target.value;
                                     setMasterRoadmap(prev => prev.map(p => p.month === milestone.month ? { ...p, description: newVal } : p));
                                   }}
-                                  className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-amber-500/30 leading-relaxed resize-y min-h-[50px]"
+                                  className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-705 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-amber-500/30 leading-relaxed resize-y min-h-[50px]"
                                 />
                               </div>
                             ))}
@@ -1433,7 +1509,7 @@ export default function ScheduleManager({
                               <option value="">-- Choose Curriculum --</option>
                               {masterCourses.map(m => (
                                 <option key={m.id} value={m.id}>
-                                  {m.name} ({m.durationMonths || 6} Months Template)
+                                  {m.name} ({m.durationMonths || 6} {m.durationUnit === 'weeks' ? 'Weeks' : 'Months'} Template)
                                 </option>
                               ))}
                             </select>
@@ -1655,21 +1731,30 @@ export default function ScheduleManager({
                                 <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed mt-1">{linked.description}</p>
                               </div>
                               <div className="border-t border-slate-200 dark:border-white/10 pt-4">
-                                <h6 className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">Milestone Roadmap ({linked.durationMonths || 6} Months)</h6>
-                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                                  {linked.roadmap && linked.roadmap.length > 0 ? (
-                                    linked.roadmap.map(rm => (
-                                      <div key={rm.month} className="p-3 bg-white dark:bg-[#0c0c0e] rounded border border-slate-200 dark:border-white/10 shadow-xs">
-                                        <div className="text-sm font-bold text-slate-800 dark:text-zinc-200">
-                                          {rm.title.toLowerCase().startsWith("month") ? rm.title : `Month ${rm.month}: ${rm.title}`}
-                                        </div>
-                                        <div className="text-xs text-slate-600 dark:text-zinc-400 mt-1 leading-snug">{rm.description}</div>
+                                {(() => {
+                                  const isWeeks = linked.durationUnit === 'weeks';
+                                  const unitLabel = isWeeks ? 'Weeks' : 'Months';
+                                  const singleUnitLabel = isWeeks ? 'Week' : 'Month';
+                                  return (
+                                    <>
+                                      <h6 className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">Milestone Roadmap ({linked.durationMonths || 6} {unitLabel})</h6>
+                                      <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                                        {linked.roadmap && linked.roadmap.length > 0 ? (
+                                          linked.roadmap.map(rm => (
+                                            <div key={rm.month} className="p-3 bg-white dark:bg-[#0c0c0e] rounded border border-slate-200 dark:border-white/10 shadow-xs">
+                                              <div className="text-sm font-bold text-slate-800 dark:text-zinc-200">
+                                                {rm.title.toLowerCase().startsWith("month") || rm.title.toLowerCase().startsWith("week") ? rm.title : `${singleUnitLabel} ${rm.month}: ${rm.title}`}
+                                              </div>
+                                              <div className="text-xs text-slate-600 dark:text-zinc-400 mt-1 leading-snug">{rm.description}</div>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <div className="text-sm text-slate-400 italic">No milestones defined in template.</div>
+                                        )}
                                       </div>
-                                    ))
-                                  ) : (
-                                    <div className="text-sm text-slate-400 italic">No milestones defined in template.</div>
-                                  )}
-                                </div>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           );
@@ -1884,7 +1969,7 @@ export default function ScheduleManager({
                               <div className="flex justify-between items-start gap-4">
                                 <div>
                                   <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-snug">{master.name}</h5>
-                                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-1">{master.durationMonths || 6} Months Duration</p>
+                                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-1">{master.durationMonths || 6} {master.durationUnit === 'weeks' ? 'Weeks' : 'Months'} Duration</p>
                                   <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1.5 leading-relaxed line-clamp-2">{master.description || 'No course template summary provided.'}</p>
                                 </div>
                                 <div className="flex items-center gap-1">

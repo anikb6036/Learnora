@@ -156,6 +156,7 @@ export interface Course {
   publishDate?: string;
   admissionLastDate?: string;
   durationMonths?: number;
+  durationUnit?: 'months' | 'weeks';
   fee?: number; // Course enrollment fee in INR
   imageUrl?: string; // Optional cover image URL or Base64 string
   roadmap?: {
@@ -171,6 +172,7 @@ export interface MasterCourse {
   name: string;
   fee?: number;
   durationMonths?: number;
+  durationUnit?: 'months' | 'weeks';
   description?: string;
   imageUrl?: string; // Optional template cover image
   roadmap?: {
