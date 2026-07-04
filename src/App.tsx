@@ -5665,7 +5665,7 @@ function AppContent() {
 
              <div className="bg-slate-50 dark:bg-[#111113] border dark:border-white/5 rounded-2xl p-4 mb-4">
                <span className="text-[10px] uppercase text-amber-500 font-bold tracking-widest block mb-2">
-                 🔒 Cryptographic Proof-of-Work
+                 Cryptographic Proof-of-Work
                </span>
                <p className="text-xs text-slate-600 dark:text-gray-300 mb-3 leading-relaxed">
                  To dispatch this email securely to <strong className="font-semibold text-slate-800 dark:text-gray-100">{emailChallengeQueue.to}</strong>, please solve this math puzzle:
