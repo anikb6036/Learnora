@@ -4646,7 +4646,6 @@ function AppContent() {
 
                           <div className="flex items-center gap-4">
                             <span className="text-xs text-slate-450 dark:text-slate-500 font-mono flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               {currentUser.role === 'student' 
                                 ? 'Live Learning Sync Connected' 
                                 : 'Live Faculty Registry Connected'}
