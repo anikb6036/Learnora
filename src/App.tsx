@@ -4718,9 +4718,6 @@ function AppContent() {
                               {currentUser.paymentStatus !== 'paid' && trial.isTrialActive && (
                                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                   <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-amber-500/25 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
-                                      <Sparkles className="w-5 h-5 animate-pulse text-amber-500" />
-                                    </div>
                                     <div>
                                       <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm flex items-center gap-1.5">
                                         Active Free Trial Pass Enabled!
