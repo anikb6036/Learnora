@@ -8,6 +8,10 @@ import { UserAccount, ClassSchedule, ProgressRecord, StudentAssignment, StudentE
 import { Award, BookOpen, Clock, Calendar, Plus, CornerDownRight, CheckCircle, Search, Sparkles, Filter, Download, Printer, X, FileCode, Check, Send, ChevronRight, AlertCircle, TrendingUp, Sparkle, Terminal, Code, Copy, History, Play, Flame, RotateCcw, BookOpenText, ChevronLeft, HelpCircle, Maximize2, Settings, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+const cleanMilestoneTitle = (title: string): string => {
+  return (title || '').replace(/^(Month|Week|Day|Study)\s*\d+\s*[:\-]\s*/i, '').trim();
+};
+
 interface ProgressTrackerProps {
   currentUser: UserAccount;
   students: UserAccount[];
@@ -1826,7 +1830,7 @@ export default function ProgressTracker({
                           if (index === 1) {
                             return {
                               type: evoRec?.week1Type || 'instruction',
-                              title: evoRec?.title1 || 'Evolution 1',
+                              title: cleanMilestoneTitle(evoRec?.title1 || 'Evolution 1'),
                               desc: evoRec?.desc1 || `${subUnitLabel} Milestone task`,
                               feedback: evoRec?.feedback1,
                               score: evoRec?.evolution1,
@@ -1836,7 +1840,7 @@ export default function ProgressTracker({
                           if (index === 2) {
                             return {
                               type: evoRec?.week2Type || 'instruction',
-                              title: evoRec?.title2 || 'Evolution 2',
+                              title: cleanMilestoneTitle(evoRec?.title2 || 'Evolution 2'),
                               desc: evoRec?.desc2 || 'Weekly Milestone task',
                               feedback: evoRec?.feedback2,
                               score: evoRec?.evolution2,
@@ -1846,7 +1850,7 @@ export default function ProgressTracker({
                           if (index === 3) {
                             return {
                               type: evoRec?.week3Type || 'instruction',
-                              title: evoRec?.title3 || 'Evolution 3',
+                              title: cleanMilestoneTitle(evoRec?.title3 || 'Evolution 3'),
                               desc: evoRec?.desc3 || 'Weekly Milestone task',
                               feedback: evoRec?.feedback3,
                               score: evoRec?.evolution3,
@@ -1855,7 +1859,7 @@ export default function ProgressTracker({
                           }
                           return {
                             type: evoRec?.week4Type || 'instruction',
-                            title: evoRec?.title4 || 'Evolution 4',
+                            title: cleanMilestoneTitle(evoRec?.title4 || 'Evolution 4'),
                             desc: evoRec?.desc4 || 'Weekly Milestone task',
                             feedback: evoRec?.feedback4,
                             score: evoRec?.evolution4,
@@ -1987,7 +1991,7 @@ export default function ProgressTracker({
               if (index === 1) {
                 return {
                   type: evoRec?.week1Type || 'instruction',
-                  title: evoRec?.title1 || 'Evolution 1',
+                  title: cleanMilestoneTitle(evoRec?.title1 || 'Evolution 1'),
                   desc: evoRec?.desc1 || 'Weekly Milestone task',
                   question: evoRec?.week1Question || 'Compile and present your milestone findings.',
                   constraints: evoRec?.week1Constraints || 'No constraints specified.',
@@ -2002,7 +2006,7 @@ export default function ProgressTracker({
               if (index === 2) {
                 return {
                   type: evoRec?.week2Type || 'instruction',
-                  title: evoRec?.title2 || 'Evolution 2',
+                  title: cleanMilestoneTitle(evoRec?.title2 || 'Evolution 2'),
                   desc: evoRec?.desc2 || 'Weekly Milestone task',
                   question: evoRec?.week2Question || 'Compile and present your milestone findings.',
                   constraints: evoRec?.week2Constraints || 'No constraints specified.',
@@ -2017,7 +2021,7 @@ export default function ProgressTracker({
               if (index === 3) {
                 return {
                   type: evoRec?.week3Type || 'instruction',
-                  title: evoRec?.title3 || 'Evolution 3',
+                  title: cleanMilestoneTitle(evoRec?.title3 || 'Evolution 3'),
                   desc: evoRec?.desc3 || 'Weekly Milestone task',
                   question: evoRec?.week3Question || 'Compile and present your milestone findings.',
                   constraints: evoRec?.week3Constraints || 'No constraints specified.',
@@ -2031,7 +2035,7 @@ export default function ProgressTracker({
               }
               return {
                 type: evoRec?.week4Type || 'instruction',
-                title: evoRec?.title4 || 'Evolution 4',
+                title: cleanMilestoneTitle(evoRec?.title4 || 'Evolution 4'),
                 desc: evoRec?.desc4 || 'Weekly Milestone task',
                 question: evoRec?.week4Question || 'Compile and present your milestone findings.',
                 constraints: evoRec?.week4Constraints || 'No constraints specified.',
@@ -3143,7 +3147,7 @@ export default function ProgressTracker({
                           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                Week 1: {currentEvo?.title1 || 'Evolution Milestone 1'}
+                                Week 1: {cleanMilestoneTitle(currentEvo?.title1 || 'Evolution Milestone 1')}
                               </span>
                               <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
                                 {currentEvo?.week1Type || 'code/text'}
@@ -3192,7 +3196,7 @@ export default function ProgressTracker({
                           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                Week 2: {currentEvo?.title2 || 'Evolution Milestone 2'}
+                                Week 2: {cleanMilestoneTitle(currentEvo?.title2 || 'Evolution Milestone 2')}
                               </span>
                               <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
                                 {currentEvo?.week2Type || 'code/text'}
@@ -3241,7 +3245,7 @@ export default function ProgressTracker({
                           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                Week 3: {currentEvo?.title3 || 'Evolution Milestone 3'}
+                                Week 3: {cleanMilestoneTitle(currentEvo?.title3 || 'Evolution Milestone 3')}
                               </span>
                               <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
                                 {currentEvo?.week3Type || 'code/text'}
@@ -3290,7 +3294,7 @@ export default function ProgressTracker({
                           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 space-y-4">
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                Week 4: {currentEvo?.title4 || 'Evolution Milestone 4'}
+                                Week 4: {cleanMilestoneTitle(currentEvo?.title4 || 'Evolution Milestone 4')}
                               </span>
                               <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded capitalize">
                                 {currentEvo?.week4Type || 'code/text'}
