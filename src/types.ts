@@ -163,6 +163,7 @@ export interface Course {
     title: string;
     description: string;
   }[];
+  trialDays?: number; // Optional course trial period in days
 }
 
 export interface MasterCourse {
@@ -178,6 +179,7 @@ export interface MasterCourse {
     description: string;
   }[];
   createdDate: string;
+  trialDays?: number; // Optional course trial period in days
 }
 
 export interface StudentSubmission {

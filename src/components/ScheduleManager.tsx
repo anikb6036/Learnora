@@ -210,6 +210,8 @@ export default function ScheduleManager({
   const [newCourseBatchNumber, setNewCourseBatchNumber] = useState('');
   const [newCourseFee, setNewCourseFee] = useState('14999');
   const [newCourseImageUrl, setNewCourseImageUrl] = useState('');
+  const [newCourseTrialEnabled, setNewCourseTrialEnabled] = useState(false);
+  const [newCourseTrialDays, setNewCourseTrialDays] = useState('7');
   const [roadmapDetails, setRoadmapDetails] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedRoadmapMonth, setSelectedRoadmapMonth] = useState<number>(1);
   const [internalEditingCourse, setInternalEditingCourse] = useState<Course | null>(null);
@@ -223,6 +225,8 @@ export default function ScheduleManager({
   const [newMasterDuration, setNewMasterDuration] = useState('6');
   const [newMasterDesc, setNewMasterDesc] = useState('');
   const [newMasterFee, setNewMasterFee] = useState('14999');
+  const [newMasterTrialEnabled, setNewMasterTrialEnabled] = useState(false);
+  const [newMasterTrialDays, setNewMasterTrialDays] = useState('7');
   const [masterRoadmap, setMasterRoadmap] = useState<{ month: number; title: string; description: string }[]>([]);
   const [selectedMasterRoadmapMonth, setSelectedMasterRoadmapMonth] = useState<number>(1);
   const [editingMasterCourse, setEditingMasterCourse] = useState<MasterCourse | null>(null);
@@ -231,6 +235,8 @@ export default function ScheduleManager({
   const [selectedMasterId, setSelectedMasterId] = useState('');
   const [customBatchName, setCustomBatchName] = useState('');
   const [publishFee, setPublishFee] = useState('14999');
+  const [publishTrialEnabled, setPublishTrialEnabled] = useState(false);
+  const [publishTrialDays, setPublishTrialDays] = useState('7');
   const [publishBatchDate, setPublishBatchDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 15);
@@ -244,7 +250,7 @@ export default function ScheduleManager({
   const [publishStatus, setPublishStatus] = useState<'ongoing' | 'upcoming' | 'completed'>('upcoming');
   const [publishImageUrl, setPublishImageUrl] = useState('');
 
-  // Auto-sync cover image from master curriculum when selected
+  // Auto-sync cover image and trial days from master curriculum when selected
   React.useEffect(() => {
     if (selectedMasterId) {
       const matched = masterCourses.find(m => m.id === selectedMasterId);
@@ -253,8 +259,19 @@ export default function ScheduleManager({
       } else {
         setPublishImageUrl('');
       }
+      if (matched) {
+        if (matched.trialDays) {
+          setPublishTrialEnabled(true);
+          setPublishTrialDays(String(matched.trialDays));
+        } else {
+          setPublishTrialEnabled(false);
+          setPublishTrialDays('7');
+        }
+      }
     } else {
       setPublishImageUrl('');
+      setPublishTrialEnabled(false);
+      setPublishTrialDays('7');
     }
   }, [selectedMasterId, masterCourses]);
 
@@ -568,6 +585,7 @@ export default function ScheduleManager({
     
     const parsedDurationMonths = parseInt(newCourseWeeks) || undefined;
     const finalFee = parseInt(newCourseFee) || 14999;
+    const finalTrialDays = newCourseTrialEnabled ? parseInt(newCourseTrialDays) || 7 : undefined;
     
     const finalBatchNumber = newCourseBatchNumber.trim() || `stb_00${courses.length + 1}`;
     const generatedCode = finalBatchNumber.toUpperCase();
@@ -586,7 +604,8 @@ export default function ScheduleManager({
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails,
           fee: finalFee,
-          imageUrl: newCourseImageUrl || undefined
+          imageUrl: newCourseImageUrl || undefined,
+          trialDays: finalTrialDays
         });
       }
       setEditingCourse(null);
@@ -604,7 +623,8 @@ export default function ScheduleManager({
           durationMonths: parsedDurationMonths,
           roadmap: roadmapDetails,
           fee: finalFee,
-          imageUrl: newCourseImageUrl || undefined
+          imageUrl: newCourseImageUrl || undefined,
+          trialDays: finalTrialDays
         });
       }
     }
@@ -616,6 +636,8 @@ export default function ScheduleManager({
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
+    setNewCourseTrialEnabled(false);
+    setNewCourseTrialDays('7');
     setRoadmapDetails([]);
     setNewCourseImageUrl('');
   };
@@ -632,6 +654,8 @@ export default function ScheduleManager({
     setRoadmapDetails(course.roadmap || []);
     setNewCourseFee(course.fee ? String(course.fee) : '14999');
     setNewCourseImageUrl(course.imageUrl || '');
+    setNewCourseTrialEnabled(!!course.trialDays);
+    setNewCourseTrialDays(course.trialDays ? String(course.trialDays) : '7');
   };
 
   React.useEffect(() => {
@@ -650,6 +674,8 @@ export default function ScheduleManager({
     setNewCourseStatus('upcoming');
     setNewCoursePublishDate('2026-06-15');
     setNewCourseAdmissionLastDate('2026-06-14');
+    setNewCourseTrialEnabled(false);
+    setNewCourseTrialDays('7');
     setRoadmapDetails([]);
     setNewCourseImageUrl('');
     setAiError(null);
@@ -662,6 +688,7 @@ export default function ScheduleManager({
     if (!newMasterName.trim()) return;
 
     const finalMasterFee = parseInt(newMasterFee) || 14999;
+    const finalTrialDays = newMasterTrialEnabled ? parseInt(newMasterTrialDays) || 7 : undefined;
 
     if (editingMasterCourse) {
       if (onUpdateMasterCourse) {
@@ -671,7 +698,8 @@ export default function ScheduleManager({
           durationMonths: parseInt(newMasterDuration) || undefined,
           description: newMasterDesc.trim() || undefined,
           roadmap: masterRoadmap,
-          fee: finalMasterFee
+          fee: finalMasterFee,
+          trialDays: finalTrialDays
         });
       }
       setEditingMasterCourse(null);
@@ -682,7 +710,8 @@ export default function ScheduleManager({
           durationMonths: parseInt(newMasterDuration) || undefined,
           description: newMasterDesc.trim() || undefined,
           roadmap: masterRoadmap,
-          fee: finalMasterFee
+          fee: finalMasterFee,
+          trialDays: finalTrialDays
         });
       }
     }
@@ -691,6 +720,8 @@ export default function ScheduleManager({
     setNewMasterDuration('6');
     setNewMasterDesc('');
     setNewMasterFee('14999');
+    setNewMasterTrialEnabled(false);
+    setNewMasterTrialDays('7');
     setMasterRoadmap([]);
     setAiInfo("Master course registered successfully!");
   };
@@ -702,6 +733,8 @@ export default function ScheduleManager({
     setNewMasterDesc(master.description || '');
     setMasterRoadmap(master.roadmap || []);
     setNewMasterFee(master.fee ? String(master.fee) : '14999');
+    setNewMasterTrialEnabled(!!master.trialDays);
+    setNewMasterTrialDays(master.trialDays ? String(master.trialDays) : '7');
     setCourseDashboardSubTab('master');
   };
 
@@ -711,6 +744,8 @@ export default function ScheduleManager({
     setNewMasterDuration('6');
     setNewMasterDesc('');
     setNewMasterFee('14999');
+    setNewMasterTrialEnabled(false);
+    setNewMasterTrialDays('7');
     setMasterRoadmap([]);
   };
 
@@ -722,6 +757,7 @@ export default function ScheduleManager({
     if (!matchedMaster) return;
 
     const finalPublishFee = parseInt(publishFee) || matchedMaster.fee || 14999;
+    const finalTrialDays = publishTrialEnabled ? parseInt(publishTrialDays) || 7 : undefined;
     const writtenBatch = customBatchName.trim() || `stb_00${courses.length + 1}`;
     
     // Create an elegant custom course code from course initials and batch number
@@ -741,7 +777,8 @@ export default function ScheduleManager({
         admissionLastDate: publishAdmissionLastDate,
         roadmap: matchedMaster.roadmap,
         fee: finalPublishFee,
-        imageUrl: publishImageUrl || matchedMaster.imageUrl
+        imageUrl: publishImageUrl || matchedMaster.imageUrl,
+        trialDays: finalTrialDays
       });
     }
 
@@ -749,6 +786,8 @@ export default function ScheduleManager({
     setCustomBatchName('');
     setPublishStatus('upcoming');
     setPublishFee('14999');
+    setPublishTrialEnabled(false);
+    setPublishTrialDays('7');
     setPublishImageUrl('');
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
@@ -919,6 +958,36 @@ export default function ScheduleManager({
                       onChange={e => setNewCourseAdmissionLastDate(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                     />
+                  </div>
+
+                  <div className="col-span-1 sm:col-span-2 md:col-span-3 border-t border-slate-100 dark:border-white/5 pt-3 mt-1 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="newCourseTrialEnabled"
+                        type="checkbox"
+                        checked={newCourseTrialEnabled}
+                        onChange={e => setNewCourseTrialEnabled(e.target.checked)}
+                        className="rounded text-amber-500 focus:ring-amber-500/20 w-3.5 h-3.5 cursor-pointer"
+                      />
+                      <label htmlFor="newCourseTrialEnabled" className="text-xs font-bold text-slate-700 dark:text-zinc-300 cursor-pointer select-none">
+                        Enable Free Trial Period for Enrolled Students
+                      </label>
+                    </div>
+                    {newCourseTrialEnabled && (
+                      <div className="grid grid-cols-2 gap-4 animate-fadeIn">
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Trial Duration (Days)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            required
+                            value={newCourseTrialDays}
+                            onChange={e => setNewCourseTrialDays(e.target.value)}
+                            className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1222,6 +1291,36 @@ export default function ScheduleManager({
                             />
                           </div>
 
+                          <div className="md:col-span-2 border-t border-slate-100 dark:border-white/5 pt-3 mt-1 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <input
+                                id="newMasterTrialEnabled"
+                                type="checkbox"
+                                checked={newMasterTrialEnabled}
+                                onChange={e => setNewMasterTrialEnabled(e.target.checked)}
+                                className="rounded text-amber-500 focus:ring-amber-500/20 w-3.5 h-3.5 cursor-pointer"
+                              />
+                              <label htmlFor="newMasterTrialEnabled" className="text-xs font-bold text-slate-700 dark:text-zinc-300 cursor-pointer select-none">
+                                Enable Free Trial Period for Enrolled Students
+                              </label>
+                            </div>
+                            {newMasterTrialEnabled && (
+                              <div className="grid grid-cols-2 gap-4 animate-fadeIn">
+                                <div className="space-y-1">
+                                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Trial Duration (Days)</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    required
+                                    value={newMasterTrialDays}
+                                    onChange={e => setNewMasterTrialDays(e.target.value)}
+                                    className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-850 dark:text-white focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
                           <div className="space-y-1 md:col-span-2">
                             <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Course Description</label>
                             <textarea
@@ -1403,6 +1502,36 @@ export default function ScheduleManager({
                               <option value="ongoing">Ongoing (Current Active Class)</option>
                               <option value="completed">Completed (Archived Batch)</option>
                             </select>
+                          </div>
+
+                          <div className="md:col-span-2 border-t border-slate-100 dark:border-white/5 pt-3 mt-1 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <input
+                                id="publishTrialEnabled"
+                                type="checkbox"
+                                checked={publishTrialEnabled}
+                                onChange={e => setPublishTrialEnabled(e.target.checked)}
+                                className="rounded text-amber-500 focus:ring-amber-500/20 w-3.5 h-3.5 cursor-pointer"
+                              />
+                              <label htmlFor="publishTrialEnabled" className="text-xs font-bold text-slate-700 dark:text-zinc-300 cursor-pointer select-none">
+                                Enable Free Trial Period for Enrolled Students
+                              </label>
+                            </div>
+                            {publishTrialEnabled && (
+                              <div className="grid grid-cols-2 gap-4 animate-fadeIn">
+                                <div className="space-y-1">
+                                  <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 block">Trial Duration (Days)</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    required
+                                    value={publishTrialDays}
+                                    onChange={e => setPublishTrialDays(e.target.value)}
+                                    className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-white/15 rounded-md bg-white dark:bg-[#050507] text-slate-855 dark:text-white focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Cover Image Upload & Selection for New Published Batch */}

@@ -101,6 +101,19 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   const courseFee = activeCourse?.fee || 9999;
   const courseName = activeCourse?.name || 'Classroom Academic Course';
 
+  const isTrialExpired = (() => {
+    if (!activeCourse || !activeCourse.trialDays) return false;
+    const startDateStr = activeCourse.publishDate || activeCourse.createdDate || '';
+    if (!startDateStr) return false;
+    const startDate = new Date(startDateStr);
+    startDate.setHours(0,0,0,0);
+    const now = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + activeCourse.trialDays);
+    endDate.setHours(23, 59, 59, 999);
+    return now.getTime() > endDate.getTime();
+  })();
+
   // Format currency
   const formatSalary = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -304,15 +317,28 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
             <div className="md:col-span-7 space-y-6">
               <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/15 border border-amber-500/20 rounded-full text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-3 tracking-wide">
-                    <Lock className="w-3.5 h-3.5" />
-                    ACADEMIC GATEWAY LOCKED
-                  </div>
+                  {isTrialExpired ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-500/15 border border-red-500/20 rounded-full text-[11px] font-bold text-red-600 dark:text-red-400 mb-3 tracking-wide">
+                      <Lock className="w-3.5 h-3.5 animate-pulse" />
+                      FREE TRIAL EXPIRED (GATEWAY LOCKED)
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/15 border border-amber-500/20 rounded-full text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-3 tracking-wide">
+                      <Lock className="w-3.5 h-3.5" />
+                      ACADEMIC GATEWAY LOCKED
+                    </div>
+                  )}
                   <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Hello, {currentUser.name}!
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 pb-2 leading-relaxed">
-                    Welcome to the digital portal. To activate your official classroom syllabus, lecture calendar, live classes, assignment pipeline, and reports, please settle your enrollment dues securely via Razorpay.
+                    {isTrialExpired ? (
+                      <>
+                        Your <strong className="text-red-500 font-semibold">{activeCourse?.trialDays}-day free trial period</strong> has completed and your learning portal access is now locked. To reactivate your classroom syllabus, live classes, assessments, and progress records, please settle your enrollment dues securely via Razorpay.
+                      </>
+                    ) : (
+                      "Welcome to the digital portal. To activate your official classroom syllabus, lecture calendar, live classes, assignment pipeline, and reports, please settle your enrollment dues securely via Razorpay."
+                    )}
                   </p>
                 </div>
 

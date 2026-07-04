@@ -291,6 +291,75 @@ function AppContent() {
     name: c.name ? c.name.replace(/\.+$/, '').trim() : ''
   }));
 
+  const getStudentEnrolledCourse = (user: UserAccount | null) => {
+    if (!user || !user.course || !courses || courses.length === 0) return undefined;
+    const userCourseClean = user.course.trim().replace(/\.+$/, "").toLowerCase();
+    const userBatchClean = user.batch?.trim().toLowerCase() || "";
+    
+    if (userBatchClean) {
+      const batchMatched = courses.find(c => {
+        const cId = c.id?.trim().toLowerCase() || "";
+        const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+        const cCode = c.code?.trim().toLowerCase() || "";
+        const cBatch = c.batchNumber?.trim().toLowerCase() || "";
+        const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+        const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean;
+        return isCourseMatch && isBatchMatch;
+      });
+      if (batchMatched) return batchMatched;
+    }
+    
+    let matched = courses.find(c => {
+      const cId = c.id?.trim().toLowerCase() || "";
+      const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+      const cCode = c.code?.trim().toLowerCase() || "";
+      return cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+    });
+    if (matched) return matched;
+    
+    matched = courses.find(c => {
+      const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+      return cName.includes(userCourseClean) || userCourseClean.includes(cName);
+    });
+    return matched;
+  };
+
+  const getTrialInfo = (user: UserAccount | null) => {
+    const course = getStudentEnrolledCourse(user);
+    if (!course || !course.trialDays) {
+      return { hasTrial: false, isTrialActive: false, daysLeft: 0, startDate: null, endDate: null };
+    }
+
+    const startDateStr = course.publishDate || course.createdDate || '';
+    if (!startDateStr) {
+      return { hasTrial: true, isTrialActive: false, daysLeft: 0, startDate: null, endDate: null };
+    }
+
+    const startDate = new Date(startDateStr);
+    startDate.setHours(0, 0, 0, 0);
+
+    const now = new Date();
+    
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + course.trialDays);
+    endDate.setHours(23, 59, 59, 999);
+
+    const diffTime = endDate.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // trial starts on the course starting day.
+    // If we are before the startDate, the trial is also active.
+    const isTrialActive = now.getTime() <= endDate.getTime();
+
+    return {
+      hasTrial: true,
+      isTrialActive: isTrialActive,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+      startDate,
+      endDate
+    };
+  };
+
   // Master base courses bank
   const [masterCourses, setMasterCourses, masterCoursesLoaded] = useFirebaseState<MasterCourse[]>('db-master-courses', INITIAL_MASTER_COURSES);
 
@@ -4035,7 +4104,7 @@ function AppContent() {
 
                 {/* Central Navigation lists */}
                 <nav className="space-y-1">
-                  {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' ? (
+                  {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' && !getTrialInfo(currentUser).isTrialActive ? (
                     <button
                       type="button"
                       className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold"
@@ -4448,7 +4517,7 @@ function AppContent() {
 
           {/* Main Context Stage */}
           <main className="flex-1 relative z-10 p-5 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-            {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' ? (
+            {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' && !getTrialInfo(currentUser).isTrialActive ? (
               <RazorpayPayment
                 currentUser={currentUser}
                 users={users}
@@ -4626,9 +4695,12 @@ function AppContent() {
                           })();
                           if (!enrolledCourseConfig) return null;
 
-                          if (enrolledCourseConfig.status === 'upcoming') {
-                            return (
-                               <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
+                          const trial = getTrialInfo(currentUser);
+
+                          return (
+                            <div className="space-y-4 animate-fadeIn">
+                              {enrolledCourseConfig.status === 'upcoming' && (
+                                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                   <div className="flex items-center gap-3">
                                     <div className="p-2 bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 rounded-lg shrink-0">
                                       <Calendar className="w-5 h-5" />
@@ -4640,11 +4712,36 @@ function AppContent() {
                                       </p>
                                     </div>
                                   </div>
-                               </div>
-                            );
-                          }
+                                </div>
+                              )}
 
-                          return null;
+                              {currentUser.paymentStatus !== 'paid' && trial.isTrialActive && (
+                                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-amber-500/25 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
+                                      <Sparkles className="w-5 h-5 animate-pulse text-amber-500" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm flex items-center gap-1.5">
+                                        Active Free Trial Pass Enabled!
+                                      </h3>
+                                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                                        You have full, unlocked access to classes, assessments, and curriculum features. 
+                                        Your trial ends on <strong className="font-semibold">{trial.endDate?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</strong> 
+                                        {' '}(<span className="font-bold text-amber-700 dark:text-amber-400">{trial.daysLeft} {trial.daysLeft === 1 ? 'day' : 'days'} remaining</span>).
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveTab('enrollments')}
+                                    className="px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap self-start md:self-auto"
+                                  >
+                                    Secure Academic Gateway Pass
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
                         })()}
                     {/* Enrolled Classes List for Student */}
                     <div className="space-y-4 pt-4 font-sans">
