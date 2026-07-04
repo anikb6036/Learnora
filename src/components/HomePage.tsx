@@ -508,7 +508,7 @@ interface HomePageProps {
 }
 
 const LearnoraWaysToBeSeen = () => {
-  const [activeTab, setActiveTab] = useState('display');
+  const [activeTab, setActiveTab] = useState('search');
   
   const tabs = [
     { id: 'search', label: 'Search', icon: Search, title: 'Start with search', desc: 'Help drive your career forward by getting your profile in front of people actively searching for top tech talent.' },
