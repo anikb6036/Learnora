@@ -5,6 +5,14 @@
 
 export type UserRole = 'admin' | 'sub-admin' | 'instructor' | 'student';
 
+export interface VoiceNote {
+  id: string;
+  title: string;
+  transcript: string;
+  timestamp: string;
+  tag?: 'General' | 'Review' | 'Exam Prep' | 'Questions';
+}
+
 export interface UserAccount {
   id: string;
   name: string;
@@ -31,6 +39,7 @@ export interface UserAccount {
   paymentId?: string; // Razorpay transaction ref ID
   paymentDate?: string; // Razorpay payment date
   paidAmount?: number; // Razorpay paid amount in INR
+  voiceNotes?: VoiceNote[]; // Voice notes transcribed by Web Speech API
 }
 
 export interface RegistrationRequest {
