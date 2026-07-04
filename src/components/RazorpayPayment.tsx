@@ -491,7 +491,7 @@ export const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
               {onLogout && (
                 <button
                   type="button"
-                  onClick={onLogout}
+                  onClick={() => onLogout()}
                   className="w-full py-3 bg-red-50 dark:bg-red-950/10 hover:bg-red-100 dark:hover:bg-red-950/25 border border-red-200/50 dark:border-red-500/20 text-red-650 dark:text-red-400 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-95"
                 >
                   <LogOut className="w-4 h-4" />

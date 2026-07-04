@@ -2820,7 +2820,7 @@ function AppContent() {
 
   const handleLogout = (message?: string) => {
     setCurrentUser(null);
-    if (message) {
+    if (message && typeof message === 'string') {
       triggerToast({
         id: `notif-logout-${Date.now()}`,
         title: 'Session Ended',
