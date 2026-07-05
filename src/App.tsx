@@ -5289,6 +5289,7 @@ function AppContent() {
                 schedules={schedules}
                 batches={batches}
                 courses={courses}
+                progressRecords={progressRecords}
                 onAddStudent={handleAddStudent}
                 onAddInstructor={handleAddInstructor}
                 onAddSubAdmin={handleAddSubAdmin}

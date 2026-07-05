@@ -787,7 +787,11 @@ export default function ScheduleManager({
         name: matchedMaster.name,
         code: generatedCode,
         batchNumber: writtenBatch,
-        durationWeeks: matchedMaster.durationMonths ? String(matchedMaster.durationMonths * 4) : undefined,
+        durationWeeks: matchedMaster.durationMonths
+          ? (matchedMaster.durationUnit === 'weeks'
+              ? String(matchedMaster.durationMonths)
+              : String(matchedMaster.durationMonths * 4))
+          : undefined,
         durationMonths: matchedMaster.durationMonths,
         durationUnit: matchedMaster.durationUnit,
         description: matchedMaster.description,
