@@ -861,6 +861,42 @@ async function startServer() {
       return res.status(400).json({ error: "missing recipient(to), subject, and body (text or html)." });
     }
 
+    // 1.5 Content check to prevent phishing/spam abuse (Anti-Phishing Filter)
+    const normalizedSubject = (subject || "").toLowerCase();
+    const normalizedBody = ((text || "") + " " + (html || "")).toLowerCase();
+    
+    // Check for obvious phishing/malicious themes (shipping, billing, orders, tracking, packages, payments)
+    const phishingKeywords = [
+      "dhl", "fedex", "ups", "usps", "shipping charges", "outstanding amount", "actual dimensions",
+      "delivery region", "package's", "settle this balance", "order update", "invoice", "payment",
+      "parcel", "delivery", "blocked account", "security alert", "unusual activity", "refund", "receipt"
+    ];
+    
+    const hasPhishingKeyword = phishingKeywords.some(keyword => 
+      normalizedSubject.includes(keyword) || normalizedBody.includes(keyword)
+    );
+    
+    // We also want to enforce that legitimate emails are related to Learnora
+    const isLearnoraRelated = 
+      normalizedSubject.includes("learnora") || 
+      normalizedSubject.includes("admissions") || 
+      normalizedSubject.includes("otp") || 
+      normalizedSubject.includes("verification") || 
+      normalizedSubject.includes("credentials") || 
+      normalizedSubject.includes("placement") || 
+      normalizedSubject.includes("interview") || 
+      normalizedSubject.includes("registration") ||
+      normalizedSubject.includes("enrollment") ||
+      normalizedSubject.includes("course") ||
+      normalizedBody.includes("learnora") ||
+      normalizedBody.includes("admissions") ||
+      normalizedBody.includes("placement exam");
+
+    if (hasPhishingKeyword || (!isLearnoraRelated && !normalizedSubject.includes("hello"))) {
+      console.warn(`[Security Alert] Blocked suspicious/phishing email send attempt. Subject: "${subject}"`);
+      return res.status(400).json({ error: "Access denied. Suspicious or unauthorized email content detected." });
+    }
+
     const email = to; // for backwards compat in logging
 
     // 2. Enforce Human Verification Challenge
