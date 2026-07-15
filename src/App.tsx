@@ -766,7 +766,24 @@ function AppContent() {
       const isAccountExistsWithDifferentCredential =
         error.code === 'auth/account-exists-with-different-credential';
 
-      if (isUnauthorizedDomain) {
+      const isOperationNotAllowed =
+        error.code === 'auth/operation-not-allowed' ||
+        error.message?.includes('operation-not-allowed');
+
+      if (isOperationNotAllowed) {
+        setGithubError('GitHub authentication is not enabled in the Firebase Console. Please ask the administrator to enable the GitHub sign-in provider.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Provider Not Enabled',
+          message: 'GitHub sign-in is not enabled in Firebase.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isUnauthorizedDomain) {
         setGithubError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
         setIsDomainError(true);
         triggerToast({
