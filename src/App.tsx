@@ -134,7 +134,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
 import { GEO_COUNTRIES, getSmartPostOffices } from './geoAddressData';
 import { auth } from './firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, createUserWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, ConfirmationResult, signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, createUserWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, ConfirmationResult, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 
 declare global {
   interface Window {
@@ -662,7 +662,7 @@ function AppContent() {
           type: 'general',
           channel: 'system'
         });
-        setAdmissionMethod('google-login');
+        setAdmissionMethod('selection');
       } else if (isPopupBlocked) {
         setGoogleError('Sign-in popup was blocked by your browser. Please try again or use the email fallback form below.');
         setIsPopupError(true);
@@ -698,6 +698,149 @@ function AppContent() {
       setGoogleLoading(false);
     }
   };
+
+  const handleGithubSignIn = async () => {
+    setGithubLoading(true);
+    setGithubError('');
+    setIsPopupError(false);
+    setIsDomainError(false);
+    try {
+      const provider = new GithubAuthProvider();
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const displayName = user.displayName || '';
+      let first = '';
+      let last = '';
+      if (displayName) {
+        const parts = displayName.trim().split(/\s+/);
+        first = parts[0];
+        last = parts.slice(1).join(' ') || '';
+      } else if (user.email) {
+        const prefix = user.email.split('@')[0];
+        first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+        last = '';
+      }
+
+      setFastFirstName(first);
+      setFastLastName(last || 'Student');
+      setFastEmail(user.email || '');
+      setFastAvatarUrl(user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80');
+      setEmailVerified(true);
+      setEmailVerState('verified');
+      setSocialProvider('github');
+      setAdmissionMethod('social-course-select');
+      
+      triggerToast({
+        id: generateUniqueId('notif'),
+        title: 'GitHub Connected',
+        message: `Connected successfully with ${user.email || 'GitHub'}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      });
+    } catch (error: any) {
+      console.error("GitHub Authentication failed:", error);
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+      
+      const isPopupClosedOrCancelled = 
+        error.code === 'auth/popup-closed-by-user' || 
+        error.code === 'auth/cancelled-popup-request' ||
+        error.message?.includes('popup-closed-by-user') ||
+        error.message?.includes('cancelled-popup-request');
+
+      const isPopupBlocked = 
+        error.code === 'auth/popup-blocked' || 
+        error.message?.includes('popup-blocked');
+
+      const isUnauthorizedDomain =
+        error.code === 'auth/unauthorized-domain' ||
+        error.message?.includes('unauthorized-domain');
+
+      const isNetworkError = 
+        error.code === 'auth/network-request-failed' ||
+        error.message?.includes('network-request-failed');
+        
+      const isAccountExistsWithDifferentCredential =
+        error.code === 'auth/account-exists-with-different-credential';
+
+      if (isUnauthorizedDomain) {
+        setGithubError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
+        setIsDomainError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Domain Unauthorized',
+          message: 'Please add learnora.in to your Firebase authorized domains.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isAccountExistsWithDifferentCredential) {
+          setGithubError('An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.');
+          setIsPopupError(true);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Account Exists',
+            message: 'An account already exists with the same email address.',
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setAdmissionMethod('selection');
+      } else if (isPopupClosedOrCancelled) {
+        setGithubError('');
+        setIsPopupError(false);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Sign-in Cancelled',
+          message: 'The GitHub sign-in popup was closed or cancelled.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isPopupBlocked) {
+        setGithubError('Sign-in popup was blocked by your browser. Please try again.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Popup Blocked',
+          message: 'The GitHub sign-in popup was blocked by your browser.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isNetworkError && isIframe) {
+        setGithubError('Iframe connection blocked by browser security. Modern browsers block secure GitHub pop-up cookies inside embedded previews. Please try again.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Iframe Connection Blocked',
+          message: 'The GitHub sign-in was blocked by browser security inside the iframe.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else {
+        setGithubError(error.message || 'GitHub login was closed or failed.');
+        setIsPopupError(isIframe);
+        setAdmissionMethod('selection');
+      }
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
   const [githubUsername, setGithubUsername] = useState('');
   const [githubPassword, setGithubPassword] = useState('');
   const [githubError, setGithubError] = useState('');
@@ -3506,13 +3649,7 @@ function AppContent() {
                               {/* Option 2: GitHub */}
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setAdmissionMethod('github-login');
-                                  setGithubUsername('');
-                                  setGithubPassword('');
-                                  setGithubError('');
-                                  setGithubLoading(false);
-                                }}
+                                onClick={handleGithubSignIn}
                                 className="w-full p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-left flex items-start gap-4 cursor-pointer hover:border-indigo-500/30 group active:scale-[0.99]"
                               >
                                 <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
@@ -3683,118 +3820,6 @@ function AppContent() {
                           </div>
                         )}
 
-                        {admissionMethod === 'github-login' && (
-                          <div className="space-y-5 animate-fadeIn max-w-sm mx-auto bg-[#0d1117] text-[#c9d1d9] p-6 rounded-2xl border border-[#30363d] shadow-xl">
-                            {/* GitHub Logo */}
-                            <div className="flex flex-col items-center text-center space-y-2 pb-2">
-                              <Github className="w-9 h-9 text-white animate-pulse" />
-                              <h4 className="text-base font-bold text-white font-sans mt-2">Sign in to GitHub</h4>
-                              <p className="text-xs text-[#8b949e]">to authorize Learnora Admissions</p>
-                            </div>
-
-                            {githubError && (
-                              <div className="p-3 bg-[#f85149]/10 border border-[#f85149]/30 rounded-lg text-xs text-[#f85149] font-medium leading-relaxed">
-                                {githubError}
-                              </div>
-                            )}
-
-                            <div className="space-y-4">
-                              <div className="space-y-1.5 p-4 bg-[#161b22] border border-[#30363d] rounded-xl space-y-3">
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-[#8b949e] block">Username or email address</label>
-                                  <input
-                                    type="text"
-                                    value={githubUsername}
-                                    onChange={e => {
-                                      setGithubUsername(e.target.value);
-                                      setGithubError('');
-                                    }}
-                                    placeholder="e.g. anikb6036"
-                                    className="w-full px-3 py-2 text-xs bg-[#0d1117] rounded-md border border-[#30363d] focus:outline-none focus:border-[#58a6ff] text-white font-sans placeholder-gray-600"
-                                  />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <div className="flex justify-between items-center">
-                                    <label className="text-[11px] font-bold text-[#8b949e] block">Password</label>
-                                  </div>
-                                  <input
-                                    type="password"
-                                    value={githubPassword}
-                                    onChange={e => {
-                                      setGithubPassword(e.target.value);
-                                      setGithubError('');
-                                    }}
-                                    placeholder="••••••••"
-                                    className="w-full px-3 py-2 text-xs bg-[#0d1117] rounded-md border border-[#30363d] focus:outline-none focus:border-[#58a6ff] text-white font-sans placeholder-gray-600"
-                                  />
-                                </div>
-
-                                <button
-                                  type="button"
-                                  disabled={githubLoading}
-                                  onClick={() => {
-                                    if (!githubUsername.trim()) {
-                                      setGithubError("Please enter your GitHub username or email.");
-                                      return;
-                                    }
-                                    if (!githubPassword.trim()) {
-                                      setGithubError("Please enter your GitHub account password.");
-                                      return;
-                                    }
-                                    setGithubLoading(true);
-                                    setTimeout(() => {
-                                      setGithubLoading(false);
-                                      const prefix = githubUsername.includes('@') ? githubUsername.split('@')[0] : githubUsername;
-                                      let first = 'Anik';
-                                      let last = 'Baidya';
-                                      if (prefix.toLowerCase().includes('anik')) {
-                                        first = 'Anik';
-                                        last = 'Baidya';
-                                      } else if (prefix.includes('-') || prefix.includes('_')) {
-                                        const parts = prefix.split(/[-_]/);
-                                        first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-                                        last = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : '';
-                                      } else if (prefix.length > 2) {
-                                        first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
-                                        last = '';
-                                      }
-
-                                      setFastFirstName(first);
-                                      setFastLastName(last || 'Student');
-                                      setFastEmail(githubUsername.includes('@') ? githubUsername : `${githubUsername}@github.com`);
-                                      setFastAvatarUrl('https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&h=120&q=80');
-                                      setEmailVerified(true);
-                                      setEmailVerState('verified');
-                                      setSocialProvider('github');
-                                      setAdmissionMethod('social-course-select');
-                                    }, 1500);
-                                  }}
-                                  className="w-full py-2 bg-[#238636] hover:bg-[#2ea44f] disabled:bg-[#238636]/60 text-white text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                                >
-                                  {githubLoading ? (
-                                    <>
-                                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                      Authorizing...
-                                    </>
-                                  ) : (
-                                    'Sign in'
-                                  )}
-                                </button>
-                              </div>
-
-                              <div className="flex justify-center pt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setAdmissionMethod('selection')}
-                                  className="text-xs text-[#58a6ff] font-bold hover:underline"
-                                >
-                                  Cancel and return
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
 
                         {admissionMethod === 'social-course-select' && (
                           <div className="space-y-6 animate-fadeIn max-w-md mx-auto">
