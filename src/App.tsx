@@ -637,7 +637,28 @@ function AppContent() {
         error.code === 'auth/network-request-failed' ||
         error.message?.includes('network-request-failed');
 
-      if (isUnauthorizedDomain) {
+      const isAccountExistsWithDifferentCredential =
+        error.code === 'auth/account-exists-with-different-credential' ||
+        error.message?.includes('account-exists-with-different-credential');
+
+      const isOperationNotAllowed =
+        error.code === 'auth/operation-not-allowed' ||
+        error.message?.includes('operation-not-allowed');
+
+      if (isOperationNotAllowed) {
+        setGoogleError('Google authentication is not enabled in the Firebase Console. Please ask the administrator to enable the Google sign-in provider.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Provider Not Enabled',
+          message: 'Google sign-in is not enabled in Firebase.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isUnauthorizedDomain) {
         setGoogleError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
         setIsDomainError(true);
         triggerToast({
@@ -649,7 +670,20 @@ function AppContent() {
           type: 'general',
           channel: 'system'
         });
-        setAdmissionMethod('google-login');
+        setAdmissionMethod('selection');
+      } else if (isAccountExistsWithDifferentCredential) {
+          setGoogleError('An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.');
+          setIsPopupError(true);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Account Exists',
+            message: 'An account already exists with the same email address.',
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setAdmissionMethod('selection');
       } else if (isPopupClosedOrCancelled) {
         setGoogleError('');
         setIsPopupError(false);
@@ -764,7 +798,8 @@ function AppContent() {
         error.message?.includes('network-request-failed');
         
       const isAccountExistsWithDifferentCredential =
-        error.code === 'auth/account-exists-with-different-credential';
+        error.code === 'auth/account-exists-with-different-credential' ||
+        error.message?.includes('account-exists-with-different-credential');
 
       const isOperationNotAllowed =
         error.code === 'auth/operation-not-allowed' ||
