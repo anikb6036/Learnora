@@ -3488,18 +3488,20 @@ function AppContent() {
         showPortal ? (
 
           /* Dynamic Role-Based Sandbox Access & Create Account Page */
-          <div className="min-h-screen relative overflow-hidden flex flex-col justify-center items-center py-12 px-4 bg-white dark:bg-[#070708] dark:text-gray-200 animate-fadeIn font-sans z-0">
-            {/* Background elements removed for a clean look */}
+          <div className="min-h-screen w-full flex bg-white dark:bg-[#070708] text-slate-900 dark:text-gray-200 animate-fadeIn font-sans z-0">
+            
+            {/* Left side: Form container */}
+            <div className="flex-1 flex flex-col justify-center items-center py-12 px-4 sm:px-8 relative z-10 w-full overflow-y-auto">
 
-            <div className={`w-full bg-white/80 backdrop-blur-xl dark:bg-[#0F0F11]/90 border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden transition-all duration-300 z-10 ${
-              onboardingTab === 'fastReg'
-                ? (admissionMethod === 'manual' ? 'max-w-2xl' : 'max-w-md')
-                : 'max-w-[460px] flex flex-col gap-6'
-            }`}>
+              <div className={`w-full transition-all duration-300 z-10 ${
+                onboardingTab === 'fastReg'
+                  ? (admissionMethod === 'manual' ? 'max-w-2xl' : 'max-w-md')
+                  : 'max-w-[460px] flex flex-col gap-6'
+              }`}>
 
               
               {/* Ambient branding ornament */}
-              <div className="absolute top-0 right-0 h-40 w-40 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-full pointer-events-none" />
+              <div className="absolute top-0 right-0 h-40 w-40 bg-gradient-to-bl from-amber-500/5 to-transparent rounded-full pointer-events-none" />
 
               {/* Standalone Header for Admission form when Left column is hidden */}
               {onboardingTab === 'fastReg' && (
@@ -3551,7 +3553,7 @@ function AppContent() {
               )}
 
               {/* Right section: Signup workspace and authentication */}
-              <div className={onboardingTab === 'fastReg' ? 'w-full' : 'w-full bg-white dark:bg-[#111112] p-6 rounded-2xl border border-slate-150 dark:border-white/5 space-y-5 flex flex-col justify-start shadow-md relative animate-fadeIn'}>
+              <div className={onboardingTab === 'fastReg' ? 'w-full' : 'w-full bg-white dark:bg-[#111112] p-6 rounded-2xl border border-slate-150 dark:border-white/5 space-y-5 flex flex-col justify-start relative animate-fadeIn'}>
                 <div className="absolute top-0 right-0 h-32 w-32 bg-radial-gradient from-amber-500/10 to-transparent rounded-full pointer-events-none" />
                 
                 {/* Onboarding Mode Selection Tabs */}
@@ -4661,6 +4663,28 @@ function AppContent() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+            
+            {/* Right side: Decorative visual (hidden on mobile) */}
+            <div className="hidden lg:flex flex-1 relative bg-slate-50 dark:bg-black items-center justify-center overflow-hidden border-l border-slate-200 dark:border-white/5">
+              {/* Decorative background shapes */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200/50 dark:bg-purple-900/30 rounded-bl-[100px] pointer-events-none" />
+              <div className="absolute -top-16 left-1/4 w-80 h-80 bg-gradient-to-b from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full opacity-60 pointer-events-none" />
+              <div className="absolute bottom-1/4 -right-16 w-72 h-72 bg-purple-300/40 dark:bg-purple-800/30 rounded-tl-[120px] rounded-bl-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 left-1/4 w-96 h-96 bg-gradient-to-tr from-cyan-100 to-blue-100 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-[4rem] rotate-12 opacity-60 pointer-events-none" />
+              <div className="absolute top-1/2 left-20 w-32 h-32 bg-rose-300/40 dark:bg-rose-900/30 rounded-tr-[60px] rounded-br-[20px] rounded-bl-[60px] pointer-events-none" />
+              
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNFMkU4RjAiLz48L3N2Zz4=')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMzMzMzMzMiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom_right,white,transparent,transparent)] pointer-events-none" />
+
+              <div className="z-10 text-center max-w-md relative -translate-y-12">
+                <div className="absolute -top-12 -right-12 w-24 h-24 border border-slate-300 dark:border-white/10 grid grid-cols-4 grid-rows-4 opacity-50">
+                  {[...Array(16)].map((_, i) => <div key={i} className="border-[0.5px] border-slate-200 dark:border-white/5" />)}
+                </div>
+                <h2 className="text-5xl font-sans font-medium tracking-tight text-slate-900 dark:text-white leading-tight">
+                  Changing the way<br />the world <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500">learns</span>
+                </h2>
+              </div>
             </div>
 
           </div>
