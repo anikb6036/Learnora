@@ -672,12 +672,13 @@ function AppContent() {
         });
         setAdmissionMethod('selection');
       } else if (isAccountExistsWithDifferentCredential) {
-          setGoogleError('An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.');
+          const conflictingEmail = error.customData?.email || 'this email address';
+          setGoogleError(`An account already exists for ${conflictingEmail} but with different sign-in credentials (e.g. GitHub or Password). Sign in using the provider you originally used for this email.`);
           setIsPopupError(true);
           triggerToast({
             id: generateUniqueId('notif'),
             title: 'Account Exists',
-            message: 'An account already exists with the same email address.',
+            message: `An account already exists for ${conflictingEmail}.`,
             timestamp: new Date().toISOString(),
             read: false,
             type: 'general',
@@ -832,12 +833,13 @@ function AppContent() {
         });
         setAdmissionMethod('selection');
       } else if (isAccountExistsWithDifferentCredential) {
-          setGithubError('An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.');
+          const conflictingEmail = error.customData?.email || 'this email address';
+          setGithubError(`An account already exists for ${conflictingEmail} but with different sign-in credentials (e.g. Google or Password). Sign in using the provider you originally used for this email.`);
           setIsPopupError(true);
           triggerToast({
             id: generateUniqueId('notif'),
             title: 'Account Exists',
-            message: 'An account already exists with the same email address.',
+            message: `An account already exists for ${conflictingEmail}.`,
             timestamp: new Date().toISOString(),
             read: false,
             type: 'general',
