@@ -616,7 +616,7 @@ function AppContent() {
         channel: 'system'
       });
     } catch (error: any) {
-      console.error("Google Authentication failed:", error);
+      // console.error("Google Authentication failed:", error);
       const isIframe = typeof window !== 'undefined' && window.self !== window.top;
       
       const isPopupClosedOrCancelled = 
@@ -776,7 +776,7 @@ function AppContent() {
         channel: 'system'
       });
     } catch (error: any) {
-      console.error("GitHub Authentication failed:", error);
+      // console.error("GitHub Authentication failed:", error);
       const isIframe = typeof window !== 'undefined' && window.self !== window.top;
       
       const isPopupClosedOrCancelled = 
@@ -1112,7 +1112,7 @@ function AppContent() {
           });
         }
       } catch (error: any) {
-        console.error("Google Redirect Auth failed:", error);
+        // console.error("Google Redirect Auth failed:", error);
         const isUnauthorizedDomain =
           error.code === 'auth/unauthorized-domain' ||
           error.message?.includes('unauthorized-domain');
