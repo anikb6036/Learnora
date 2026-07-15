@@ -651,8 +651,8 @@ function AppContent() {
         });
         setAdmissionMethod('google-login');
       } else if (isPopupClosedOrCancelled) {
-        setGoogleError('Sign-in popup was closed or cancelled. Please try again or use the email fallback form below.');
-        setIsPopupError(true);
+        setGoogleError('');
+        setIsPopupError(false);
         triggerToast({
           id: generateUniqueId('notif'),
           title: 'Sign-in Cancelled',
