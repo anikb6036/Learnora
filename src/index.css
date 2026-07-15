@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Custom overrides to make all border-radii tighter globally */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6.5px;
+  --radius-xl: 8.5px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+
+  /* Precision Theme Colors from Spec */
+  --color-primary: #000000;
+  --color-accent: #FF3B5C;
+  --color-accent-hover: #E11D48;
+  --color-softbg: #F5F7FA;
+  --color-darktext: #1F2937;
+
+  /* Map standard color classes to spec to avoid layout fragmentation */
+  --color-amber-50: #FFF1F2;
+  --color-amber-100: #FFE4E6;
+  --color-amber-500: #000000; /* Deep Black Button Background */
+  --color-amber-600: #1a1a1a; /* Dark Charcoal Button Hover */
+  --color-amber-700: #2a2a2a; /* Even Deeper Hover */
+  --color-amber-95: #FFFFFF;  /* High contrast text on buttons */
+  --color-amber-950: #FFFFFF; /* High contrast text on buttons */
+  --color-amber-955: #FFFFFF; /* High contrast text on buttons */
+
+  --color-slate-50: #F5F7FA;
+  --color-slate-100: #EAEFF5;
+  --color-slate-200: #DCE3EE;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-800: #1F2937;
+  --color-slate-900: #000000; /* Header/Primary Black */
+
+  /* Extra custom weights used by existing files */
+  --color-slate-150: #F1F4F9;
+  --color-slate-450: #7C8BA1;
+  --color-slate-550: #4A5668;
+  --color-slate-705: #334155;
+  --color-slate-805: #1E293B;
+  --color-slate-855: #1F2937;
+
+  /* Soft Shadows infused with subtle Navy tint for stunning high-end design */
+  --shadow-sm: 0 1px 3px 0 rgba(10, 42, 102, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(10, 42, 102, 0.06), 0 2px 6px -2px rgba(10, 42, 102, 0.04);
+  --shadow-lg: 0 10px 25px -3px rgba(10, 42, 102, 0.08), 0 4px 10px -4px rgba(10, 42, 102, 0.06);
+  --shadow-xl: 0 20px 35px -5px rgba(10, 42, 102, 0.1), 0 8px 15px -6px rgba(10, 42, 102, 0.08);
+}
+
+/* Custom scrollbars for a cleaner design */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E2E8F0; /* Light mode thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1F1F23;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #2D2D33;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom branding to replace purple/indigo with #FFDE21 */
+:root {
+  --brand-yellow: #FFDE21;
+  --brand-yellow-darker: #bda400; /* Contrast-safe gold for light mode text */
+}
+
+/* Backgrounds */
+.bg-indigo-600, .bg-indigo-500 {
+  background-color: var(--brand-yellow) !important;
+  color: #000000 !important; /* Ensure high-contrast dark text on yellow background */
+}
+.bg-indigo-600:hover, .bg-indigo-500:hover {
+  background-color: #e6c71e !important;
+}
+.bg-indigo-50, .bg-indigo-50\/30, .bg-indigo-500\/10, .bg-indigo-500\/5, .bg-indigo-950\/30, .bg-indigo-500\/20 {
+  background-color: rgba(255, 222, 33, 0.12) !important;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-indigo-50, .dark .bg-indigo-50\/30, .dark .dark\:bg-indigo-950\/30, .dark .bg-indigo-500\/10, .dark .bg-indigo-500\/5, .dark .bg-indigo-950\/30, .dark .bg-indigo-500\/20 {
+  background-color: rgba(255, 222, 33, 0.08) !important;
+}
+
+/* Button hover and background states specifically in dark mode */
+.dark .bg-indigo-500 {
+  background-color: var(--brand-yellow) !important;
+  color: #000000 !important;
+}
+
+/* Text Colors */
+.text-indigo-600, .text-indigo-500, .text-indigo-400 {
+  color: var(--brand-yellow-darker) !important;
+}
+.dark .text-indigo-600, .dark .text-indigo-500, .dark .text-indigo-400 {
+  color: var(--brand-yellow) !important;
+}
+.hover\:text-indigo-500:hover {
+  color: var(--brand-yellow) !important;
+}
+.hover\:bg-indigo-500\/10:hover {
+  background-color: rgba(255, 222, 33, 0.15) !important;
+}
+
+/* Borders */
+.border-indigo-100\/40, .border-indigo-950\/30, .border-indigo-100\/30, .border-indigo-950\/20, .border-indigo-200, .border-indigo-200\/50 {
+  border-color: rgba(255, 222, 33, 0.3) !important;
+}
+.dark .border-indigo-100\/40, .dark .border-indigo-950\/30, .dark .border-indigo-100\/30, .dark .border-indigo-950\/20, .dark .border-indigo-200, .dark .border-indigo-200\/50 {
+  border-color: rgba(255, 222, 33, 0.2) !important;
+}
+
+/* Focus Rings */
+.focus\:ring-indigo-500\/30, .focus\:ring-indigo-500 {
+  --tw-ring-color: rgba(255, 222, 33, 0.4) !important;
+}
+

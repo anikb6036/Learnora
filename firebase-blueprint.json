@@ -1,0 +1,33 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user (admin, student, instructor).",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "phone": { "type": "string" }
+      }
+    },
+    "Course": {
+      "title": "Course",
+      "description": "A course at the coaching center",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users": {
+        "schema": "User",
+        "description": "All system users"
+    },
+    "courses": {
+        "schema": "Course",
+        "description": "Available courses"
+    }
+  }
+}
