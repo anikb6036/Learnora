@@ -651,7 +651,7 @@ function AppContent() {
         });
         setAdmissionMethod('google-login');
       } else if (isPopupClosedOrCancelled) {
-        setGoogleError('Sign-in popup was closed or cancelled. For the best experience inside the embedded preview, you can use the secure instant Google email sync form below.');
+        setGoogleError('Sign-in popup was closed or cancelled. Please try again or use the email fallback form below.');
         setIsPopupError(true);
         triggerToast({
           id: generateUniqueId('notif'),
@@ -664,7 +664,7 @@ function AppContent() {
         });
         setAdmissionMethod('google-login');
       } else if (isPopupBlocked) {
-        setGoogleError('Sign-in popup was blocked by your browser. For the best experience inside the embedded preview, please use the secure instant Google email sync form below.');
+        setGoogleError('Sign-in popup was blocked by your browser. Please try again or use the email fallback form below.');
         setIsPopupError(true);
         triggerToast({
           id: generateUniqueId('notif'),
@@ -677,7 +677,7 @@ function AppContent() {
         });
         setAdmissionMethod('google-login');
       } else if (isNetworkError && isIframe) {
-        setGoogleError('Iframe connection blocked by browser security. Modern browsers block secure Google pop-up cookies inside embedded previews. Please open the app in a new tab or use our secure Google email fallback form below.');
+        setGoogleError('Iframe connection blocked by browser security. Modern browsers block secure Google pop-up cookies inside embedded previews. Please try again or use the email fallback form below.');
         setIsPopupError(true);
         triggerToast({
           id: generateUniqueId('notif'),
@@ -3631,38 +3631,13 @@ function AppContent() {
                                     </div>
                                   </div>
                                 ) : isPopupError ? (
-                                  <div className="flex flex-col gap-3 text-left">
-                                    <div className="flex gap-2.5 items-start">
-                                      <span className="text-sm mt-0.5">⚠️</span>
-                                      <div>
-                                        <span className="font-bold block mb-1 text-amber-700 dark:text-amber-400 text-xs">Browser Security / Iframe Limitation Detected</span>
-                                        <p className="text-slate-600 dark:text-gray-400 font-sans leading-relaxed text-[11px]">
-                                          Your browser's security policies block secure Google connection cookies inside embedded preview frames. No worries! You can proceed instantly using either method:
-                                        </p>
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
-                                      <a
-                                        href={window.location.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-lg text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center justify-center gap-1.5 transition-all text-center no-underline"
-                                      >
-                                        <span>Open App in New Tab ↗</span>
-                                      </a>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const element = document.getElementById('iframe-fallback-section');
-                                          if (element) {
-                                            element.scrollIntoView({ behavior: 'smooth' });
-                                          }
-                                        }}
-                                        className="p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 rounded-lg text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                                      >
-                                        <span>Use Fallback Form ↓</span>
-                                      </button>
+                                  <div className="flex gap-2.5 items-start text-left">
+                                    <span className="text-sm mt-0.5">⚠️</span>
+                                    <div>
+                                      <span className="font-bold block mb-1 text-amber-700 dark:text-amber-400 text-xs">Sign-In Cancelled</span>
+                                      <p className="text-amber-800 dark:text-amber-300 font-sans leading-relaxed text-[11px]">
+                                        {googleError}
+                                      </p>
                                     </div>
                                   </div>
                                 ) : (
