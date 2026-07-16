@@ -6595,8 +6595,8 @@ function AppContent() {
           <div className="w-full max-w-[420px] bg-white dark:bg-[#0A0A0B] rounded-[24px] shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden">
             <div className="p-6 sm:p-8 space-y-6">
               <div className="flex items-start justify-between">
-                <div className="w-12 h-12 bg-rose-50 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-100 dark:border-rose-500/20 shadow-sm">
-                  <Lock className="w-6 h-6 text-rose-500" />
+                <div className="w-14 h-14 bg-[#fff0f2] dark:bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-100 dark:border-rose-500/20">
+                  <Lock className="w-6 h-6 text-[#ff0033] dark:text-rose-500" />
                 </div>
                 <button 
                   type="button"
@@ -6606,15 +6606,15 @@ function AppContent() {
                     setForgotModalSuccess('');
                     setForgotModalError('');
                   }}
-                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-gray-300 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors cursor-pointer mt-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white font-sans tracking-tight">Recover Credentials</h3>
-                <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
+              <div className="mt-4">
+                <h3 className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">Recover Credentials</h3>
+                <p className="text-[15px] text-slate-500 dark:text-gray-400 leading-relaxed mt-2.5">
                   Enter your registered email address and we'll send you instructions to securely access your account.
                 </p>
               </div>
@@ -6673,8 +6673,8 @@ function AppContent() {
                   }}
                   className="space-y-5 pt-2"
                 >
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-sans font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                  <div className="space-y-2.5">
+                    <label className="text-[14px] font-bold text-slate-800 dark:text-gray-300">Email Address</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                         <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
@@ -6685,7 +6685,7 @@ function AppContent() {
                         placeholder="name@example.com"
                         value={forgotEmailInput}
                         onChange={e => setForgotEmailInput(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 text-sm bg-white dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 shadow-sm transition-all font-sans"
+                        className="w-full pl-11 pr-4 py-3 text-sm bg-white dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] text-slate-900 dark:text-white placeholder-slate-400 shadow-sm transition-all font-sans"
                       />
                     </div>
                   </div>
@@ -6699,9 +6699,9 @@ function AppContent() {
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl text-sm transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer font-sans mt-2 border border-blue-700/50"
+                    className="w-full py-3.5 bg-[#2563eb] text-white font-semibold hover:bg-blue-700 rounded-xl text-[15px] transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-6"
                   >
-                    Send Recovery Link <ArrowRight className="w-4 h-4" />
+                    Send Recovery Link <ArrowRight className="w-5 h-5" />
                   </button>
                 </form>
               )}
