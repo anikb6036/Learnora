@@ -134,7 +134,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
 import { GEO_COUNTRIES, getSmartPostOffices } from './geoAddressData';
 import { auth } from './firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, createUserWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, ConfirmationResult, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, createUserWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, ConfirmationResult, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithRedirect, getRedirectResult, getAdditionalUserInfo } from 'firebase/auth';
 
 declare global {
   interface Window {
@@ -155,6 +155,28 @@ if (typeof window !== 'undefined' && !localStorage.getItem('db-migrated-to-real-
   localStorage.removeItem('active-user');
   localStorage.setItem('db-migrated-to-real-v5', 'true');
 }
+
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24">
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
+    <path d="M1 1h22v22H1z" fill="none" />
+  </svg>
+);
 
 const generateUniqueId = (prefix: string) => {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000000)}`;
@@ -600,7 +622,16 @@ function AppContent() {
       setFastFirstName(first);
       setFastLastName(last || 'Student');
       setFastEmail(user.email || '');
-      setFastAvatarUrl(user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80');
+      
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      const googleProfile = additionalUserInfo?.profile as any;
+      const googlePhoto = googleProfile?.picture || 
+                          user.photoURL || 
+                          user.providerData?.find(p => p.providerId === 'google.com')?.photoURL ||
+                          (result as any)._tokenResponse?.photoUrl ||
+                          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80';
+                          
+      setFastAvatarUrl(googlePhoto);
       setEmailVerified(true);
       setEmailVerState('verified');
       setSocialProvider('google');
@@ -672,19 +703,34 @@ function AppContent() {
         });
         setAdmissionMethod('selection');
       } else if (isAccountExistsWithDifferentCredential) {
-          const conflictingEmail = error.customData?.email || 'this email address';
-          setGoogleError(`An account already exists for ${conflictingEmail} but with different sign-in credentials (e.g. GitHub or Password). Sign in using the provider you originally used for this email.`);
-          setIsPopupError(true);
-          triggerToast({
-            id: generateUniqueId('notif'),
-            title: 'Account Exists',
-            message: `An account already exists for ${conflictingEmail}.`,
-            timestamp: new Date().toISOString(),
-            read: false,
-            type: 'general',
-            channel: 'system'
-          });
-          setAdmissionMethod('selection');
+          const conflictingEmail = error.customData?.email || error.email || '';
+          if (conflictingEmail) {
+            const prefix = conflictingEmail.split('@')[0];
+            const first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            setFastFirstName(first);
+            setFastLastName('Student');
+            setFastEmail(conflictingEmail);
+            setFastAvatarUrl('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80');
+            setEmailVerified(true);
+            setEmailVerState('verified');
+            setSocialProvider('google');
+            setAdmissionMethod('social-course-select');
+            setGoogleError('');
+            setIsPopupError(false);
+            triggerToast({
+              id: generateUniqueId('notif'),
+              title: 'Account Connected',
+              message: `Credentials bridged. Email ${conflictingEmail} loaded successfully.`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              type: 'general',
+              channel: 'system'
+            });
+          } else {
+            setGoogleError('An account already exists with different credentials. Please sign in with your original provider.');
+            setIsPopupError(true);
+            setAdmissionMethod('selection');
+          }
       } else if (isPopupClosedOrCancelled) {
         setGoogleError('');
         setIsPopupError(false);
@@ -761,7 +807,17 @@ function AppContent() {
       setFastFirstName(first);
       setFastLastName(last || 'Student');
       setFastEmail(user.email || '');
-      setFastAvatarUrl(user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80');
+      
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      const githubProfile = additionalUserInfo?.profile as any;
+      
+      const githubPhoto = githubProfile?.avatar_url ||
+                          user.photoURL || 
+                          user.providerData?.find(p => p.providerId === 'github.com')?.photoURL ||
+                          (result as any)._tokenResponse?.photoUrl || 
+                          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80';
+                          
+      setFastAvatarUrl(githubPhoto);
       setEmailVerified(true);
       setEmailVerState('verified');
       setSocialProvider('github');
@@ -833,19 +889,34 @@ function AppContent() {
         });
         setAdmissionMethod('selection');
       } else if (isAccountExistsWithDifferentCredential) {
-          const conflictingEmail = error.customData?.email || 'this email address';
-          setGithubError(`An account already exists for ${conflictingEmail} but with different sign-in credentials (e.g. Google or Password). Sign in using the provider you originally used for this email.`);
-          setIsPopupError(true);
-          triggerToast({
-            id: generateUniqueId('notif'),
-            title: 'Account Exists',
-            message: `An account already exists for ${conflictingEmail}.`,
-            timestamp: new Date().toISOString(),
-            read: false,
-            type: 'general',
-            channel: 'system'
-          });
-          setAdmissionMethod('selection');
+          const conflictingEmail = error.customData?.email || error.email || '';
+          if (conflictingEmail) {
+            const prefix = conflictingEmail.split('@')[0];
+            const first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            setFastFirstName(first);
+            setFastLastName('Student');
+            setFastEmail(conflictingEmail);
+            setFastAvatarUrl('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80');
+            setEmailVerified(true);
+            setEmailVerState('verified');
+            setSocialProvider('github');
+            setAdmissionMethod('social-course-select');
+            setGithubError('');
+            setIsPopupError(false);
+            triggerToast({
+              id: generateUniqueId('notif'),
+              title: 'Account Connected',
+              message: `Credentials bridged. Email ${conflictingEmail} loaded successfully.`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              type: 'general',
+              channel: 'system'
+            });
+          } else {
+            setGithubError('An account already exists with different credentials. Please sign in with your original provider.');
+            setIsPopupError(true);
+            setAdmissionMethod('selection');
+          }
       } else if (isPopupClosedOrCancelled) {
         setGithubError('');
         setIsPopupError(false);
@@ -1247,6 +1318,7 @@ function AppContent() {
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Login Security / Rate Limiting
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -3488,77 +3560,69 @@ function AppContent() {
         showPortal ? (
 
           /* Dynamic Role-Based Sandbox Access & Create Account Page */
-          <div className="min-h-screen w-full flex bg-white dark:bg-[#070708] text-slate-900 dark:text-gray-200 animate-fadeIn font-sans z-0">
+          <div className="min-h-screen w-full flex bg-slate-50/40 dark:bg-[#070708] text-slate-900 dark:text-gray-200 animate-fadeIn font-sans z-0 relative">
             
+            {/* Absolute positioning of Back to Home button, extremely clean */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onboardingTab === 'fastReg' && admissionMethod !== 'selection') {
+                  setAdmissionMethod('selection');
+                  setGoogleError('');
+                  setGithubError('');
+                } else {
+                  setShowPortal(false);
+                }
+              }}
+              className="absolute top-6 left-6 text-xs font-semibold text-slate-650 hover:text-slate-950 dark:text-gray-400 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1.5 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/5 shadow-2xs active:scale-95 z-50"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> {(onboardingTab === 'fastReg' && admissionMethod !== 'selection') ? 'Back' : 'Back to Home'}
+            </button>
+
             {/* Left side: Form container */}
-            <div className="flex-1 flex flex-col justify-center items-center py-12 px-4 sm:px-8 relative z-10 w-full overflow-y-auto">
+            <div className="flex-1 flex flex-col justify-center items-center py-16 px-4 sm:px-8 relative z-10 w-full overflow-y-auto">
 
               <div className={`w-full transition-all duration-300 z-10 ${
                 onboardingTab === 'fastReg'
                   ? (admissionMethod === 'manual' ? 'max-w-2xl' : 'max-w-md')
-                  : 'max-w-[460px] flex flex-col gap-6'
-              }`}>
+                  : 'max-w-[460px]'
+              } flex flex-col gap-6`}>
 
-              
-              {/* Ambient branding ornament */}
-              <div className="absolute top-0 right-0 h-40 w-40 bg-gradient-to-bl from-amber-500/5 to-transparent rounded-full pointer-events-none" />
-
-              {/* Standalone Header for Admission form when Left column is hidden */}
-              {onboardingTab === 'fastReg' && (
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:block scale-90 origin-left text-slate-800">
-                       <Logo size="sm" withStrapline={false} />
-                    </div>
-                    <span className="sm:hidden font-mono uppercase tracking-widest text-black dark:text-gray-300 font-bold text-xs mt-1">Learnora</span>
-                    <h1 className="text-lg font-serif italic text-slate-600 dark:text-gray-400 font-semibold tracking-tight ml-2 border-l border-amber-500/20 pl-3">Admissions</h1>
+              {/* Branding & Status Title */}
+              {admissionMethod !== 'google-login' && admissionMethod !== 'github-login' && !fastRegSuccess && (
+                <div className="flex flex-col items-center justify-center text-center mb-8 animate-fadeIn space-y-5">
+                  {/* Centered Logo */}
+                  <div className="mb-1">
+                    <Logo size="md" withStrapline={false} />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (admissionMethod !== 'selection') {
-                        setAdmissionMethod('selection');
-                        setGoogleError('');
-                        setGithubError('');
-                      } else {
-                        setShowPortal(false);
-                      }
-                    }}
-                    className="text-xs font-sans font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 py-1 px-2.5 rounded-lg border border-slate-200/50 dark:border-white/5 shadow-2xs active:scale-95"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5 -ml-0.5" /> {admissionMethod !== 'selection' ? 'Back' : 'Back to Home'}
-                  </button>
+                  
+                  <div className="space-y-2">
+                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+                      {onboardingTab === 'fastReg' 
+                        ? (admissionMethod === 'selection' ? 'Start your journey' : 'Admission Portal')
+                        : onboardingTab === 'authLogin'
+                        ? 'Sign in to Learnora'
+                        : 'Admin Terminal'}
+                    </h1>
+                    <p className="text-sm text-slate-550 dark:text-gray-400 max-w-sm mx-auto leading-relaxed font-sans">
+                      {onboardingTab === 'fastReg'
+                        ? (admissionMethod === 'selection' 
+                           ? 'We suggest using the email address you use at school or work.' 
+                           : 'Complete your profile manually and verify your email via OTP to finalize registration.')
+                        : onboardingTab === 'authLogin'
+                        ? 'We suggest using the email address you use at school.'
+                        : 'Restricted portal for system administrators and course coordinators.'}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {/* Left section: Sandbox switch, quick profiles accounts, and student mail client */}
-              {onboardingTab !== 'fastReg' && (
-                <div className="w-full space-y-3 flex flex-col">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="text-slate-800 origin-left scale-90">
-                      <Logo size="sm" />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowPortal(false)}
-                      className="text-xs font-sans font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 py-1 px-2.5 rounded-lg border border-slate-200/50 dark:border-white/5 shadow-2xs active:scale-95"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5 -ml-0.5" /> Back
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-normal">
-                    Interactive educational control center. Experience student sandbox, administrators, and automated flows.
-                  </p>
-                </div>
-              )}
-
-              {/* Right section: Signup workspace and authentication */}
-              <div className={onboardingTab === 'fastReg' ? 'w-full' : 'w-full bg-white dark:bg-[#111112] p-6 rounded-2xl border border-slate-150 dark:border-white/5 space-y-5 flex flex-col justify-start relative animate-fadeIn'}>
-                <div className="absolute top-0 right-0 h-32 w-32 bg-radial-gradient from-amber-500/10 to-transparent rounded-full pointer-events-none" />
+              {/* Main signup workspace and authentication form wrapper */}
+              <div className="w-full space-y-5 flex flex-col justify-start relative animate-fadeIn">
                 
                 {/* Onboarding Mode Selection Tabs */}
                 {onboardingTab !== 'fastReg' && (
-                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 dark:bg-[#070708] rounded-2xl border border-slate-150 dark:border-white/5">
+                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 dark:bg-black/10 rounded-2xl border border-slate-150 dark:border-white/5 w-full mb-2">
                     <button
                       type="button"
                       onClick={() => { setOnboardingTab('authLogin'); setLoginError(''); }}
@@ -3586,11 +3650,11 @@ function AppContent() {
                   </div>
                 )}
 
-                           {/* Form 1: Fast Student Registration */}
+              {/* Form 1: Fast Student Registration */}
               {onboardingTab === 'fastReg' && (
                 <div className="space-y-5 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
-                    {admissionMethod !== 'google-login' && admissionMethod !== 'github-login' && !fastRegSuccess && (
+                    {admissionMethod !== 'google-login' && admissionMethod !== 'github-login' && admissionMethod !== 'selection' && !fastRegSuccess && (
                       <div className="mb-6">
                         <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">
                           {admissionMethod === 'selection' ? 'Start Application' : 'Student Admission Portal'}
@@ -3672,81 +3736,102 @@ function AppContent() {
                     ) : (
                       <>
                         {admissionMethod === 'selection' && (
-                          <div className="space-y-5 animate-fadeIn">
-                            <div className="text-center pb-2">
-                              <h4 className="text-sm font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Select Application Method</h4>
-                              <p className="text-xs text-slate-400 dark:text-gray-500 mt-1">
-                                We support instant profile imports via secure social sync.
-                              </p>
+                          <div className="flex flex-col items-center text-center space-y-7 animate-fadeIn w-full max-w-sm mx-auto">
+                            <form onSubmit={(e) => {
+                              e.preventDefault();
+                              const emailInput = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value.trim();
+                              if (!emailInput) {
+                                setFastEmailError('Email address is required');
+                                return;
+                              }
+                              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
+                                setFastEmailError('Please enter a valid email address');
+                                return;
+                              }
+                              setFastEmail(emailInput);
+                              setFastEmailError('');
+                              setAdmissionMethod('manual');
+                              setFastFirstName('');
+                              setFastLastName('');
+                              setFastAvatarUrl('');
+                              setEmailVerified(false);
+                            }} className="w-full space-y-4">
+                              <div className="relative">
+                                <input
+                                  type="email"
+                                  name="email"
+                                  required
+                                  placeholder="name@work-email.com"
+                                  defaultValue={fastEmail}
+                                  className="w-full px-5 py-4 text-base text-center bg-white dark:bg-[#121214] rounded-2xl border border-slate-300 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-gray-550 transition-all font-sans"
+                                />
+                              </div>
+
+                              {fastEmailError && (
+                                <p className="text-xs text-rose-500 font-semibold text-left flex items-center gap-1">
+                                  <AlertCircle className="w-3.5 h-3.5" /> {fastEmailError}
+                                </p>
+                              )}
+
+                              <button
+                                type="submit"
+                                className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer font-sans"
+                              >
+                                Continue
+                              </button>
+                            </form>
+
+                            {/* OR Divider */}
+                            <div className="w-full flex items-center justify-center gap-4">
+                              <div className="h-[1px] flex-1 bg-slate-300 dark:bg-white/10"></div>
+                              <span className="text-sm font-semibold text-slate-800 dark:text-gray-400 font-sans">OR</span>
+                              <div className="h-[1px] flex-1 bg-slate-300 dark:bg-white/10"></div>
                             </div>
 
-                            <div className="space-y-3">
-                              {/* Option 1: Google */}
+                            {/* Social login buttons styled beautifully like Google/GitHub in Slack */}
+                            <div className="w-full grid grid-cols-1 gap-3">
                               <button
                                 type="button"
                                 onClick={handleGoogleSignIn}
-                                className="w-full p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-left flex items-start gap-4 cursor-pointer hover:border-amber-500/30 group active:scale-[0.99]"
+                                className="w-full py-3.5 px-4 border border-slate-300 dark:border-white/10 rounded-2xl bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer text-slate-750 dark:text-white hover:border-slate-400 font-bold text-sm active:scale-[0.99] shadow-2xs"
                               >
-                                <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                  <Chrome className="w-5 h-5 group-hover:animate-bounce" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5 font-sans">
-                                    Quick Apply with Google Account
-                                    <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-extrabold uppercase px-1.5 py-0.5 rounded-full">Fastest</span>
-                                  </h5>
-                                  <p className="text-[11px] text-slate-550 dark:text-gray-400 mt-1 leading-snug font-sans">
-                                    Instantly import your photo, name, verified email, and bypass OTP checks.
-                                  </p>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-slate-400 mt-3 group-hover:translate-x-0.5 transition-transform" />
+                                <GoogleIcon className="w-5 h-5" />
+                                <span>Continue with Google</span>
                               </button>
 
-                              {/* Option 2: GitHub */}
                               <button
                                 type="button"
                                 onClick={handleGithubSignIn}
-                                className="w-full p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-left flex items-start gap-4 cursor-pointer hover:border-indigo-500/30 group active:scale-[0.99]"
+                                className="w-full py-3.5 px-4 border border-slate-300 dark:border-white/10 rounded-2xl bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer text-slate-750 dark:text-white hover:border-slate-400 font-bold text-sm active:scale-[0.99] shadow-2xs"
                               >
-                                <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                  <Github className="w-5 h-5 group-hover:animate-bounce" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5 font-sans">
-                                    Quick Apply with GitHub Account
-                                  </h5>
-                                  <p className="text-[11px] text-slate-550 dark:text-gray-400 mt-1 leading-snug font-sans">
-                                    Sync developer identities, photo avatar, email address, and proceed instantly.
-                                  </p>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-slate-400 mt-3 group-hover:translate-x-0.5 transition-transform" />
+                                <Github className="w-5 h-5 text-slate-900 dark:text-white" />
+                                <span>Continue with GitHub</span>
                               </button>
+                            </div>
 
-                              {/* Option 3: Manual */}
+                            {/* Legal / TOS Disclaimer */}
+                            <p className="text-[11px] text-slate-400 dark:text-gray-500 leading-normal max-w-xs mx-auto">
+                              By continuing, you're agreeing to our <a href="/terms" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Terms of Service</a>, <a href="/privacy" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Privacy Policy</a>, and <a href="/cookies" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Cookie Policy</a>.
+                            </p>
+
+                            {/* Bottom toggle portal link */}
+                            <div className="pt-4 border-t border-slate-200/60 dark:border-white/5 w-full text-center">
+                              <p className="text-xs text-slate-500 dark:text-gray-400 font-medium">
+                                Already applied?{' '}
+                                <button
+                                  type="button"
+                                  onClick={() => { setOnboardingTab('authLogin'); setLoginError(''); }}
+                                  className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+                                >
+                                  Sign in to Student Portal
+                                </button>
+                              </p>
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setAdmissionMethod('manual');
-                                  setFastFirstName('');
-                                  setFastLastName('');
-                                  setFastEmail('');
-                                  setFastAvatarUrl('');
-                                  setEmailVerified(false);
-                                }}
-                                className="w-full p-4 rounded-xl border border-dashed border-slate-250 dark:border-white/10 bg-slate-50/50 dark:bg-black/20 hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-left flex items-start gap-4 cursor-pointer group active:scale-[0.99]"
+                                onClick={() => { setOnboardingTab('adminLogin'); setLoginError(''); }}
+                                className="text-[10px] text-slate-450 hover:text-indigo-500 dark:hover:text-indigo-400 font-semibold mt-3 transition-colors uppercase tracking-wider block mx-auto cursor-pointer"
                               >
-                                <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400">
-                                  <FileText className="w-5 h-5 group-hover:rotate-6 transition-transform" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="text-xs font-bold text-slate-800 dark:text-white font-sans">
-                                    Fill Admission Form Manually
-                                  </h5>
-                                  <p className="text-[11px] text-slate-550 dark:text-gray-400 mt-1 leading-snug font-sans">
-                                    Complete fields manually and verify your email address via secure OTP challenge.
-                                  </p>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-slate-400 mt-3 group-hover:translate-x-0.5 transition-transform" />
+                                Administrator Sign In
                               </button>
                             </div>
                           </div>
@@ -3857,7 +3942,7 @@ function AppContent() {
                                   </>
                                 ) : (
                                   <>
-                                    <Chrome className="w-4 h-4 text-blue-500" />
+                                    <GoogleIcon className="w-4 h-4" />
                                     <span>Sign in with Google</span>
                                   </>
                                 )}
@@ -3899,7 +3984,7 @@ function AppContent() {
                                 />
                                 <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#151517] p-1 rounded-full border border-slate-200 dark:border-white/10 shadow-xs flex items-center justify-center">
                                   {socialProvider === 'google' ? (
-                                    <Chrome className="w-3.5 h-3.5 text-blue-500" />
+                                    <GoogleIcon className="w-3.5 h-3.5" />
                                   ) : (
                                     <Github className="w-3.5 h-3.5 text-slate-900 dark:text-white" />
                                   )}
@@ -4474,91 +4559,117 @@ function AppContent() {
                   </div>
                 </div>
               )}
-
-              {/* Form 2: Username/Password authentication login */}
+                {/* Form 2: Username/Password authentication login */}
               {onboardingTab === 'authLogin' && (
-                <div className="space-y-5 flex-1 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="mb-6">
-                      <h3 className="text-2xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Approved Account Login</h3>
-                      <p className="text-[9px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
-                        Access your profile, courses, and educational schedules using the verified credentials (USERNAME &amp; PASSWORD) delivered to your registered email address.
-                      </p>
-                    </div>
-
+                <div className="space-y-6 flex-1 flex flex-col justify-between animate-fadeIn w-full max-w-sm mx-auto">
+                  <div className="space-y-5">
                     {loginError && (
-                      <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-xl text-rose-500 text-xs leading-relaxed flex gap-2">
+                      <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-2xl text-rose-500 text-xs leading-relaxed flex gap-2">
                         <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         <span>{loginError}</span>
                       </div>
                     )}
 
+                    {/* Google Sign-In styled exactly like Slack */}
+                    <button
+                      type="button"
+                      onClick={handleGoogleSignIn}
+                      className="w-full py-3.5 px-4 border border-slate-300 dark:border-white/10 rounded-2xl bg-white dark:bg-[#151517] hover:bg-slate-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer text-slate-750 dark:text-white hover:border-slate-400 font-bold text-sm active:scale-[0.99] shadow-2xs"
+                    >
+                      <GoogleIcon className="w-5 h-5" />
+                      <span>Sign in with Google</span>
+                    </button>
+
+                    {/* Subtle design divider */}
+                    <div className="w-full flex items-center justify-center gap-4">
+                      <div className="h-[1px] flex-1 bg-slate-300 dark:bg-white/10"></div>
+                      <span className="text-sm font-semibold text-slate-800 dark:text-gray-400 font-sans">OR</span>
+                      <div className="h-[1px] flex-1 bg-slate-300 dark:bg-white/10"></div>
+                    </div>
+
                     <form onSubmit={handleCredentialsLogin} className="space-y-4">
-                      <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold mb-1">Username</label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Username"
-                            value={loginUsername}
-                            onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
-                          />
-                        </div>
+                      {/* Email/Username input */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          placeholder="name@work-email.com"
+                          value={loginUsername}
+                          onChange={e => setLoginUsername(e.target.value)}
+                          className="w-full px-5 py-4 text-base text-center bg-white dark:bg-[#121214] rounded-2xl border border-slate-300 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-gray-550 transition-all font-sans"
+                        />
                       </div>
 
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold">Security Password</label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setForgotEmailInput('');
-                              setForgotModalSuccess('');
-                              setForgotModalError('');
-                              setForgotEmailModalOpen(true);
-                            }}
-                            className="text-xs text-slate-500 dark:text-amber-500 hover:text-slate-800 dark:hover:text-amber-400 font-semibold transition cursor-pointer select-none outline-none"
-                          >
-                            Forgot Password?
-                          </button>
-                        </div>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Lock className="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                          </div>
-                          <input
-                            type="password"
-                            required
-                            placeholder="••••••••"
-                            value={loginPassword}
-                            onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
-                          />
-                        </div>
+                      {/* Security Password with show/hide eye toggle */}
+                      <div className="relative">
+                        <input
+                          type={showLoginPassword ? "text" : "password"}
+                          required
+                          placeholder="Password"
+                          value={loginPassword}
+                          onChange={e => setLoginPassword(e.target.value)}
+                          className="w-full px-5 py-4 text-base text-center bg-white dark:bg-[#121214] rounded-2xl border border-slate-300 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-gray-550 transition-all font-sans"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                        >
+                          {showLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
                       </div>
 
+                      {/* Checkbox and Forgot Password link on the same horizontal level */}
+                      <div className="flex items-center justify-between mt-2 pt-1 font-sans">
+                        <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400 font-bold cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            defaultChecked
+                            className="rounded text-indigo-600 focus:ring-indigo-500/20 border-slate-300 dark:border-white/5 h-4 w-4"
+                          />
+                          Keep me logged in
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForgotEmailInput('');
+                            setForgotModalSuccess('');
+                            setForgotModalError('');
+                            setForgotEmailModalOpen(true);
+                          }}
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+
+                      {/* Vibrant purple login button */}
                       <button
                         type="submit"
-                        className="w-full py-3.5 bg-[#111112] hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer mt-4 flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer font-sans"
                       >
-                        <Lock className="w-3.5 h-3.5" />
-                        Sign In with Credentials &rarr;
+                        Sign In
                       </button>
                     </form>
 
-                    {/* Redirect log-in panel to core admissions form */}
-                    <div className="pt-5 border-t border-slate-150 dark:border-white/5 text-center mt-5">
+                    {/* Footer sign up redirect link */}
+                    <div className="pt-4 border-t border-slate-200/60 dark:border-white/5 w-full text-center">
+                      <p className="text-xs text-slate-500 dark:text-gray-400 font-medium">
+                        Don't have an account?{' '}
+                        <button
+                          type="button"
+                          onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); setAdmissionMethod('selection'); }}
+                          className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
+                        >
+                          Create an account
+                        </button>
+                      </p>
                       <button
                         type="button"
-                        onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); setAdmissionMethod('selection'); }}
-                        className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-medium"
+                        onClick={() => { setOnboardingTab('adminLogin'); setLoginError(''); }}
+                        className="text-[10px] text-slate-450 hover:text-indigo-500 dark:hover:text-indigo-400 font-semibold mt-3 transition-colors uppercase tracking-wider block mx-auto cursor-pointer"
                       >
-                        Need admission? <span className="text-slate-900 dark:text-white hover:underline font-bold">Apply for Learnora admission &rarr;</span>
+                        Administrator Sign In
                       </button>
                     </div>
 
@@ -4666,27 +4777,6 @@ function AppContent() {
             </div>
           </div>
             
-            {/* Right side: Decorative visual (hidden on mobile) */}
-            <div className="hidden lg:flex flex-1 relative bg-slate-50 dark:bg-black items-center justify-center overflow-hidden border-l border-slate-200 dark:border-white/5">
-              {/* Decorative background shapes */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200/50 dark:bg-purple-900/30 rounded-bl-[100px] pointer-events-none" />
-              <div className="absolute -top-16 left-1/4 w-80 h-80 bg-gradient-to-b from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full opacity-60 pointer-events-none" />
-              <div className="absolute bottom-1/4 -right-16 w-72 h-72 bg-purple-300/40 dark:bg-purple-800/30 rounded-tl-[120px] rounded-bl-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 left-1/4 w-96 h-96 bg-gradient-to-tr from-cyan-100 to-blue-100 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-[4rem] rotate-12 opacity-60 pointer-events-none" />
-              <div className="absolute top-1/2 left-20 w-32 h-32 bg-rose-300/40 dark:bg-rose-900/30 rounded-tr-[60px] rounded-br-[20px] rounded-bl-[60px] pointer-events-none" />
-              
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNFMkU4RjAiLz48L3N2Zz4=')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMzMzMzMzMiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom_right,white,transparent,transparent)] pointer-events-none" />
-
-              <div className="z-10 text-center max-w-md relative -translate-y-12">
-                <div className="absolute -top-12 -right-12 w-24 h-24 border border-slate-300 dark:border-white/10 grid grid-cols-4 grid-rows-4 opacity-50">
-                  {[...Array(16)].map((_, i) => <div key={i} className="border-[0.5px] border-slate-200 dark:border-white/5" />)}
-                </div>
-                <h2 className="text-5xl font-sans font-medium tracking-tight text-slate-900 dark:text-white leading-tight">
-                  Changing the way<br />the world <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500">learns</span>
-                </h2>
-              </div>
-            </div>
-
           </div>
         </div>
         ) : (
