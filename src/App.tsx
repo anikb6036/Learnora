@@ -608,6 +608,34 @@ function AppContent() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
+      if (user.email) {
+        const emailLower = user.email.toLowerCase();
+        const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+        if (matchedUser) {
+          setCurrentUser(matchedUser);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Logged In',
+            message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using Google.`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setGoogleLoading(false);
+          return;
+        } else {
+          if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+            setGoogleError(`This Google account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+            setLoginError(`This Google account (${user.email}) is not registered with Learnora. Please register your account first.`);
+            await auth.signOut();
+            setGoogleLoading(false);
+            return;
+          }
+        }
+      }
+      
       const displayName = user.displayName || '';
       let first = '';
       let last = '';
@@ -792,6 +820,34 @@ function AppContent() {
       
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      
+      if (user.email) {
+        const emailLower = user.email.toLowerCase();
+        const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+        if (matchedUser) {
+          setCurrentUser(matchedUser);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Logged In',
+            message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using GitHub.`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setGithubLoading(false);
+          return;
+        } else {
+          if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+            setGithubError(`This GitHub account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+            setLoginError(`This GitHub account (${user.email}) is not registered with Learnora. Please register your account first.`);
+            await auth.signOut();
+            setGithubLoading(false);
+            return;
+          }
+        }
+      }
       
       const displayName = user.displayName || '';
       let first = '';
@@ -1154,6 +1210,33 @@ function AppContent() {
         const result = await getRedirectResult(auth);
         if (result) {
           const user = result.user;
+          
+          if (user.email) {
+            const emailLower = user.email.toLowerCase();
+            const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+            if (matchedUser) {
+              setCurrentUser(matchedUser);
+              triggerToast({
+                id: generateUniqueId('notif'),
+                title: 'Logged In',
+                message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using Google.`,
+                timestamp: new Date().toISOString(),
+                read: false,
+                type: 'general',
+                channel: 'system'
+              });
+              return;
+            } else {
+              if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+                setGoogleError(`This Google account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+                setLoginError(`This Google account (${user.email}) is not registered with Learnora. Please register your account first.`);
+                await auth.signOut();
+                return;
+              }
+            }
+          }
+          
           const displayName = user.displayName || '';
           let first = '';
           let last = '';
