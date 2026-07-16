@@ -102,7 +102,7 @@ export default function CookiePolicy({ onBack }: CookiePolicyProps) {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="h-6 w-[1px] bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
-              <Logo hideTextOnMobile={true} />
+              <Logo />
             </div>
 
             <div className="flex items-center gap-4">
