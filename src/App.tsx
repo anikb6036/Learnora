@@ -4626,18 +4626,21 @@ function AppContent() {
                     </form>
 
                     {/* Footer sign up redirect link */}
-                    <div className="pt-4 border-t border-slate-200/60 dark:border-white/5 w-full text-center">
-                      <p className="text-xs text-slate-500 dark:text-gray-400 font-medium">
+                    <div className="pt-6 border-t border-slate-200/60 dark:border-white/5 w-full text-center space-y-7">
+                      <p className="text-[14px] text-slate-500 dark:text-gray-400 font-medium">
                         Don't have an account?{' '}
                         <button
                           type="button"
                           onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); setAdmissionMethod('selection'); }}
-                          className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
+                          className="text-[#c1a01c] font-bold hover:underline"
                         >
                           Create an account
                         </button>
                       </p>
-
+                      
+                      <p className="text-[14.5px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans max-w-[320px] mx-auto">
+                        By continuing, you're agreeing to our <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Terms of Service</a>, <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Privacy Policy</a>, and <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Cookie Policy</a>.
+                      </p>
                     </div>
 
                   </div>
