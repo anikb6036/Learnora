@@ -128,7 +128,8 @@ import {
   History,
   Database,
   Github,
-  Chrome
+  Chrome,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
@@ -3590,21 +3591,21 @@ function AppContent() {
 
               {/* Branding & Status Title */}
               {admissionMethod !== 'google-login' && admissionMethod !== 'github-login' && !fastRegSuccess && (
-                <div className="flex flex-col items-center justify-center text-center mb-8 animate-fadeIn space-y-5">
+                <div className="flex flex-col items-center justify-center text-center mb-10 animate-fadeIn">
                   {/* Centered Logo */}
-                  <div className="mb-1">
+                  <div className="mb-6">
                     <Logo size="md" withStrapline={false} />
                   </div>
                   
-                  <div className="space-y-2">
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+                  <div className="space-y-3">
+                    <h1 className="text-3xl sm:text-[2.5rem] leading-[1.1] font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
                       {onboardingTab === 'fastReg' 
-                        ? (admissionMethod === 'selection' ? 'Start your journey' : 'Admission Portal')
+                        ? (admissionMethod === 'selection' ? 'Knowledge Starts Here' : 'Admission Portal')
                         : onboardingTab === 'authLogin'
                         ? 'Sign in to Learnora'
                         : 'Admin Terminal'}
                     </h1>
-                    <p className="text-sm text-slate-550 dark:text-gray-400 max-w-sm mx-auto leading-relaxed font-sans">
+                    <p className="text-base text-slate-500 dark:text-gray-400 max-w-[320px] mx-auto leading-relaxed font-sans">
                       {onboardingTab === 'fastReg'
                         ? (admissionMethod === 'selection' 
                            ? 'We suggest using the email address you use at school or work.' 
@@ -3620,35 +3621,7 @@ function AppContent() {
               {/* Main signup workspace and authentication form wrapper */}
               <div className="w-full space-y-5 flex flex-col justify-start relative animate-fadeIn">
                 
-                {/* Onboarding Mode Selection Tabs */}
-                {onboardingTab !== 'fastReg' && (
-                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 dark:bg-black/10 rounded-2xl border border-slate-150 dark:border-white/5 w-full mb-2">
-                    <button
-                      type="button"
-                      onClick={() => { setOnboardingTab('authLogin'); setLoginError(''); }}
-                      className={`py-3 px-3 rounded-xl text-center font-bold text-xs transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
-                        onboardingTab === 'authLogin'
-                          ? 'bg-white dark:bg-[#1C1C1E] text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/5 scale-[1.02]'
-                          : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      Approved Sign In
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setOnboardingTab('adminLogin'); setLoginError(''); }}
-                      className={`py-3 px-3 rounded-xl text-center font-bold text-xs transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
-                        onboardingTab === 'adminLogin'
-                          ? 'bg-white dark:bg-[#1C1C1E] text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/5 scale-[1.02]'
-                          : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      <Shield className="w-3.5 h-3.5" />
-                      Admin Sign In
-                    </button>
-                  </div>
-                )}
+
 
               {/* Form 1: Fast Student Registration */}
               {onboardingTab === 'fastReg' && (
@@ -4664,116 +4637,14 @@ function AppContent() {
                           Create an account
                         </button>
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => { setOnboardingTab('adminLogin'); setLoginError(''); }}
-                        className="text-[10px] text-slate-450 hover:text-indigo-500 dark:hover:text-indigo-400 font-semibold mt-3 transition-colors uppercase tracking-wider block mx-auto cursor-pointer"
-                      >
-                        Administrator Sign In
-                      </button>
+
                     </div>
 
                   </div>
                 </div>
               )}
 
-              {/* Form 3: Administrator Sign In */}
-              {onboardingTab === 'adminLogin' && (
-                <div className="space-y-5 flex-1 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="p-0.5 px-2 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-gray-300 rounded-md text-sm font-sans font-bold uppercase tracking-widest border border-slate-200 dark:border-white/5 shadow-sm">
-                           Restricted Entry
-                        </span>
-                      </div>
-                      <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">Administrator Terminal</h3>
-                      <p className="text-[9px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
-                        Access Learnora's administrative panel, review student profiles, dispatch registration emails, and perform full ledger cleanups.
-                      </p>
-                    </div>
 
-                    {loginError && (
-                      <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-xl text-rose-500 text-xs leading-relaxed flex gap-2">
-                        <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>{loginError}</span>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleAdminLogin} className="space-y-4">
-                      <div className="space-y-1.5 animate-fadeIn">
-                        <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold mb-1">Admin Username</label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <User className="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Admin"
-                            value={loginUsername}
-                            onChange={e => setLoginUsername(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="text-[12px] font-sans text-slate-600 dark:text-slate-400 block font-semibold">Override Password</label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setForgotEmailInput('');
-                              setForgotModalSuccess('');
-                              setForgotModalError('');
-                              setForgotEmailModalOpen(true);
-                            }}
-                            className="text-xs text-slate-500 dark:text-amber-500 hover:text-slate-800 dark:hover:text-amber-400 font-semibold transition cursor-pointer select-none outline-none"
-                          >
-                            Forgot Password?
-                          </button>
-                        </div>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Key className="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                          </div>
-                          <input
-                            type="password"
-                            required
-                            placeholder="••••••••"
-                            value={loginPassword}
-                            onChange={e => setLoginPassword(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50/50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-slate-800 dark:text-gray-100 placeholder-slate-450 dark:placeholder-gray-600 transition-all font-sans"
-                          />
-                        </div>
-                      </div>
-
-
-
-                      <button
-                        type="submit"
-                        className="w-full py-3.5 bg-[#111112] hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer mt-4 flex items-center justify-center gap-2"
-                      >
-                        <Shield className="w-3.5 h-3.5" />
-                        Acknowledge & Sign In to Console &rarr;
-                      </button>
-                    </form>
-
-                    {/* Redirect log-in admin panel to core admissions form */}
-                    <div className="pt-5 border-t border-slate-150 dark:border-white/5 text-center mt-5">
-                      <button
-                        type="button"
-                        onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); setAdmissionMethod('selection'); }}
-                        className="text-xs text-slate-500 hover:text-amber-500 transition-colors cursor-pointer font-medium"
-                      >
-                        Register a new student? <span className="text-amber-500 hover:underline font-bold">Open Admissions form &rarr;</span>
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              )}
             </div>
           </div>
             
@@ -6720,32 +6591,14 @@ function AppContent() {
       )}
 
       {forgotEmailModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-md bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3">
-              <h3 className="text-base font-sans font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Lock className="w-4 h-4 text-red-500" /> Recover Account Credentials
-              </h3>
-              <button 
-                onClick={() => {
-                  setForgotEmailModalOpen(false);
-                  setForgotEmailInput('');
-                  setForgotModalSuccess('');
-                  setForgotModalError('');
-                }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {forgotModalSuccess ? (
-              <div className="space-y-4 py-2">
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl text-xs space-y-2">
-                  <p className="font-bold">Credential Recovery Email Sent!</p>
-                  <p className="leading-relaxed font-sans">{forgotModalSuccess}</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-[420px] bg-white dark:bg-[#0A0A0B] rounded-[24px] shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden">
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="flex items-start justify-between">
+                <div className="w-12 h-12 bg-rose-50 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-100 dark:border-rose-500/20 shadow-sm">
+                  <Lock className="w-6 h-6 text-rose-500" />
                 </div>
-                <button
+                <button 
                   type="button"
                   onClick={() => {
                     setForgotEmailModalOpen(false);
@@ -6753,79 +6606,106 @@ function AppContent() {
                     setForgotModalSuccess('');
                     setForgotModalError('');
                   }}
-                  className="w-full py-2.5 bg-blue-500 text-white font-bold hover:bg-amber-600 rounded-xl text-xs transition active:scale-[0.98] cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-gray-300 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  Close Window
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            ) : (
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setForgotModalError('');
-                  setForgotModalSuccess('');
-                  const targetEmail = forgotEmailInput.trim().toLowerCase();
-                  
-                  const matchedUser = users.find(u => u.email?.toLowerCase() === targetEmail);
-                  
-                  if (matchedUser) {
-                    const subject = `[SECURITY DISPATCH] Recovered Platform Credentials`;
-                    const body = `Dear ${matchedUser.name || matchedUser.username},\n\nWe received a dynamic password lookup request for your platform account. Your security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${matchedUser.username || 'n/a'}\nPASSWORD: ${matchedUser.password || 'n/a'}\n-----------------------------\n\nPlease make sure to memorize these credentials or change your password under Profile Settings once logged in.\n\nBest regards,\nLearnora Sandbox Security Dispatch Team`;
-                    
-                    handleSendEmail(matchedUser.email, subject, body, 'baidyaanik18@gmail.com');
-                    
-                    // Trigger a toast
-                    const notif: AppNotification = {
-                      id: `notif-forgot-${Date.now()}`,
-                      title: `Credentials Dispatched`,
-                      message: `Security recovery ledger packet transmitted to ${matchedUser.email}.`,
-                      timestamp: new Date().toISOString(),
-                      read: false,
-                      type: 'reminder',
-                      channel: 'push'
-                    };
-                    triggerToast(notif);
-                    
-                    setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to your registered email address: ${matchedUser.email}. Please check your email inbox to retrieve your credentials.`);
-                  } else {
-                    setForgotModalError('No active student, teacher, or administrative record matches this registered email address within our master databases.');
-                  }
-                }}
-                className="space-y-4"
-              >
-                <div className="space-y-1.5">
-                  <label className="text-sm font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Registered Email Address</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. email@domain.io"
-                      value={forgotEmailInput}
-                      onChange={e => setForgotEmailInput(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 text-xs bg-slate-50 dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800 dark:text-gray-100 font-sans"
-                    />
+
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white font-sans tracking-tight">Recover Credentials</h3>
+                <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
+                  Enter your registered email address and we'll send you instructions to securely access your account.
+                </p>
+              </div>
+
+              {forgotModalSuccess ? (
+                <div className="space-y-6 pt-2 animate-fadeIn">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-2xl text-[14px] space-y-2.5 shadow-sm">
+                    <p className="font-bold flex items-center gap-2 tracking-tight"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Recovery Email Sent</p>
+                    <p className="leading-relaxed font-sans text-emerald-600 dark:text-emerald-300">{forgotModalSuccess}</p>
                   </div>
-                  <p className="text-sm text-slate-400 dark:text-gray-500 leading-relaxed font-sans mt-1">
-                    Once requested, you will receive an email shortly with your recovery credentials containing your username and password.
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmailModalOpen(false);
+                      setForgotEmailInput('');
+                      setForgotModalSuccess('');
+                      setForgotModalError('');
+                    }}
+                    className="w-full py-3.5 bg-slate-900 text-white font-bold hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer shadow-md"
+                  >
+                    Return to Login
+                  </button>
                 </div>
-
-                {forgotModalError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-xs flex gap-1.5 animate-fadeIn">
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>{forgotModalError}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-blue-500 text-white font-bold hover:bg-amber-600 rounded-xl text-xs transition shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+              ) : (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setForgotModalError('');
+                    setForgotModalSuccess('');
+                    const targetEmail = forgotEmailInput.trim().toLowerCase();
+                    
+                    const matchedUser = users.find(u => u.email?.toLowerCase() === targetEmail);
+                    
+                    if (matchedUser) {
+                      const subject = `[SECURITY DISPATCH] Recovered Platform Credentials`;
+                      const body = `Dear ${matchedUser.name || matchedUser.username},\n\nWe received a dynamic password lookup request for your platform account. Your security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${matchedUser.username || 'n/a'}\nPASSWORD: ${matchedUser.password || 'n/a'}\n-----------------------------\n\nPlease make sure to memorize these credentials or change your password under Profile Settings once logged in.\n\nBest regards,\nLearnora Sandbox Security Dispatch Team`;
+                      
+                      handleSendEmail(matchedUser.email, subject, body, 'baidyaanik18@gmail.com');
+                      
+                      // Trigger a toast
+                      const notif: AppNotification = {
+                        id: `notif-forgot-${Date.now()}`,
+                        title: `Credentials Dispatched`,
+                        message: `Security recovery ledger packet transmitted to ${matchedUser.email}.`,
+                        timestamp: new Date().toISOString(),
+                        read: false,
+                        type: 'reminder',
+                        channel: 'push'
+                      };
+                      triggerToast(notif);
+                      
+                      setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to your registered email address: ${matchedUser.email}. Please check your email inbox to retrieve your credentials.`);
+                    } else {
+                      setForgotModalError('No active student, teacher, or administrative record matches this registered email address within our master databases.');
+                    }
+                  }}
+                  className="space-y-5 pt-2"
                 >
-                  <Mail className="w-3.5 h-3.5" /> Send Credentials Email
-                </button>
-              </form>
-            )}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-sans font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        placeholder="name@example.com"
+                        value={forgotEmailInput}
+                        onChange={e => setForgotEmailInput(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 text-sm bg-white dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 shadow-sm transition-all font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {forgotModalError && (
+                    <div className="p-3.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[13px] flex gap-2.5 animate-fadeIn shadow-sm">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />
+                      <span className="leading-relaxed">{forgotModalError}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl text-sm transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer font-sans mt-2 border border-blue-700/50"
+                  >
+                    Send Recovery Link <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}
