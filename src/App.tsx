@@ -4725,7 +4725,7 @@ function AppContent() {
                         <button
                           type="button"
                           onClick={() => { setOnboardingTab('fastReg'); setLoginError(''); setAdmissionMethod('selection'); }}
-                          className="text-[#c1a01c] font-bold hover:underline"
+                          className="text-[#FFDE21] font-bold hover:underline"
                         >
                           Create an account
                         </button>
