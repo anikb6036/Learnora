@@ -3783,7 +3783,7 @@ function AppContent() {
                             </div>
 
                             {/* Legal / TOS Disclaimer */}
-                            <p className="text-[11px] text-slate-400 dark:text-gray-500 leading-normal max-w-xs mx-auto">
+                            <p className="text-[11px] text-slate-400 dark:text-gray-500 leading-normal max-w-xs mx-auto text-center">
                               By continuing, you're agreeing to our <a href="/terms" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Terms of Service</a>, <a href="/privacy" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Privacy Policy</a>, and <a href="/cookies" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Cookie Policy</a>.
                             </p>
 
@@ -4625,8 +4625,13 @@ function AppContent() {
                       </button>
                     </form>
 
+                    {/* Legal / TOS Disclaimer */}
+                    <p className="text-[11px] text-slate-400 dark:text-gray-500 leading-normal max-w-xs mx-auto text-center">
+                      By continuing, you're agreeing to our <a href="/terms" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Terms of Service</a>, <a href="/privacy" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Privacy Policy</a>, and <a href="/cookies" target="_blank" className="underline hover:text-slate-600 dark:hover:text-white font-medium">Cookie Policy</a>.
+                    </p>
+
                     {/* Footer sign up redirect link */}
-                    <div className="pt-6 border-t border-slate-200/60 dark:border-white/5 w-full text-center space-y-7">
+                    <div className="pt-6 border-t border-slate-200/60 dark:border-white/5 w-full text-center">
                       <p className="text-[14px] text-slate-500 dark:text-gray-400 font-medium">
                         Don't have an account?{' '}
                         <button
@@ -4636,10 +4641,6 @@ function AppContent() {
                         >
                           Create an account
                         </button>
-                      </p>
-                      
-                      <p className="text-[14.5px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans max-w-[320px] mx-auto">
-                        By continuing, you're agreeing to our <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Terms of Service</a>, <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Privacy Policy</a>, and <a href="#" className="underline hover:text-slate-700 dark:hover:text-gray-300">Cookie Policy</a>.
                       </p>
                     </div>
 
