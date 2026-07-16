@@ -61,6 +61,7 @@ import AssignmentTracker from './components/AssignmentTracker';
 import HomePage from './components/HomePage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import CookiePolicy from './components/CookiePolicy';
 import Logo from './components/Logo';
 import AdmissionsExamModal from './components/AdmissionsExamModal';
 import StudentHomeworkModal from './components/StudentHomeworkModal';
@@ -990,7 +991,7 @@ function AppContent() {
     const path = currentPath;
     
     if (!currentUser) {
-      if (path === '/privacy' || path === '/terms') {
+      if (path === '/privacy' || path === '/terms' || path === '/cookies') {
         // Handled directly by rendering the full policy component
         return;
       }
@@ -1020,7 +1021,7 @@ function AppContent() {
       }
     } else {
       // Logged in
-      if (path === '/privacy' || path === '/terms') {
+      if (path === '/privacy' || path === '/terms' || path === '/cookies') {
         // Handled directly by rendering the full policy component
         return;
       }
@@ -1067,11 +1068,11 @@ function AppContent() {
         'adminLogin': '/admin'
       };
       const targetPath = tabToPathMap[onboardingTab];
-      if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms') {
+      if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies') {
         window.history.pushState(null, '', targetPath);
       }
     } else {
-      if (window.location.pathname !== '/' && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms') {
+      if (window.location.pathname !== '/' && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies') {
         window.history.pushState(null, '', '/');
       }
     }
@@ -1096,7 +1097,7 @@ function AppContent() {
     };
 
     const targetPath = tabToPathMap[activeTab];
-    if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms') {
+    if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies') {
       window.history.pushState(null, '', targetPath);
     }
   }, [activeTab, currentUser]);
@@ -3367,6 +3368,10 @@ function AppContent() {
 
   if (currentPath === '/terms') {
     return <TermsOfService onBack={() => { window.history.pushState({}, '', currentUser ? '/dashboard' : '/'); }} />;
+  }
+
+  if (currentPath === '/cookies') {
+    return <CookiePolicy onBack={() => { window.history.pushState({}, '', currentUser ? '/dashboard' : '/'); }} />;
   }
 
   if (activeClassroomSession && currentUser) {
