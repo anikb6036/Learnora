@@ -6592,7 +6592,7 @@ function AppContent() {
 
       {forgotEmailModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-[420px] bg-white dark:bg-[#0A0A0B] rounded-[24px] shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden">
+          <div className="w-full max-w-[420px] bg-white dark:bg-[#1a1a1e] rounded-3xl border border-slate-200 dark:border-white/5 shadow-xl overflow-hidden">
             <div className="p-6 sm:p-8 space-y-6">
               <div className="flex items-start justify-between">
                 <div className="w-14 h-14 bg-[#fff0f2] dark:bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-100 dark:border-rose-500/20">
@@ -6633,7 +6633,7 @@ function AppContent() {
                       setForgotModalSuccess('');
                       setForgotModalError('');
                     }}
-                    className="w-full py-3.5 bg-slate-900 text-white font-bold hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer shadow-md"
+                    className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-6 font-sans"
                   >
                     Return to Login
                   </button>
@@ -6676,8 +6676,8 @@ function AppContent() {
                   <div className="space-y-2.5">
                     <label className="text-[14px] font-bold text-slate-800 dark:text-gray-300">Email Address</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       </div>
                       <input
                         type="email"
@@ -6685,7 +6685,7 @@ function AppContent() {
                         placeholder="name@example.com"
                         value={forgotEmailInput}
                         onChange={e => setForgotEmailInput(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 text-sm bg-white dark:bg-[#070708] rounded-xl border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] text-slate-900 dark:text-white placeholder-slate-400 shadow-sm transition-all font-sans"
+                        className="w-full pl-12 pr-5 py-4 text-base bg-white dark:bg-[#121214] rounded-2xl border border-slate-300 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-550 transition-all font-sans"
                       />
                     </div>
                   </div>
@@ -6699,7 +6699,7 @@ function AppContent() {
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-[#2563eb] text-white font-semibold hover:bg-blue-700 rounded-xl text-[15px] transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-6"
+                    className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-6 font-sans"
                   >
                     Send Recovery Link <ArrowRight className="w-5 h-5" />
                   </button>
