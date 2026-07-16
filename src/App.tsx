@@ -4698,7 +4698,7 @@ function AppContent() {
                             setForgotModalError('');
                             setForgotEmailModalOpen(true);
                           }}
-                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                          className="text-xs text-[#0F2942] dark:text-[#38bdf8] hover:text-[#091A2B] hover:underline font-bold"
                         >
                           Forgot password?
                         </button>
