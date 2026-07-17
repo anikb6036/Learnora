@@ -450,9 +450,9 @@ export default function AdmissionsExamModal({
               <div className="h-8 w-px bg-slate-200 dark:bg-zinc-800" />
               <div>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-white/10 text-[9px] font-mono font-bold tracking-wider uppercase">
-                    <span>Proctored Exam</span>
-                  </div>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                    Proctored Exam
+                  </span>
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-0.5">
                   English Placement Entrance Examination
