@@ -515,7 +515,9 @@ export default function AdmissionsExamModal({
               >
                 <div className="space-y-8">
                   <div className="space-y-4 border-b border-slate-200 dark:border-zinc-800 pb-8">
-
+                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                      Attempts used: <span className="text-slate-900 dark:text-white font-semibold">{attemptsUsed} of 3 allowed</span>
+                    </div>
                     
                     <h3 className="text-3xl md:text-4xl font-sans font-extrabold tracking-tight text-slate-900 dark:text-white">
                       Candidate: {request.name}
