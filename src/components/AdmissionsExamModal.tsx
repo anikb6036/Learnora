@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { RegistrationRequest } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Mic, Volume2, Award, Activity, FileCheck, AlertCircle, Check, X, ShieldAlert, Sparkles, GraduationCap } from 'lucide-react';
+import Logo from './Logo';
 
 const SPEAKING_PARAGRAPHS = [
   "In an increasingly interconnected global economy, the mastery of articulate communication serves as the fundamental bridge between disparate perspectives. By cultivating both rigorous analytical reasoning and empathetic active listening, we empower ourselves to formulate solutions for our world's most critical academic and social challenges.",
@@ -443,18 +444,19 @@ export default function AdmissionsExamModal({
         <div className="relative bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-white/5 py-5 px-6 md:px-8 shrink-0 flex justify-center z-30 shadow-sm">
           <div className="w-full max-w-5xl flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-11 w-11 rounded-lg bg-slate-950 dark:bg-zinc-900 text-white flex items-center justify-center border border-slate-800 dark:border-zinc-700 shadow-md">
-                <GraduationCap className="w-6 h-6 text-amber-400 stroke-[1.5]" />
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border border-white dark:border-zinc-900" title="Secure examination active" />
+              <div className="relative flex items-center">
+                <Logo size="sm" withStrapline={false} />
+                <div className="absolute bottom-0 left-6 w-3 h-3 rounded-full bg-emerald-500 border border-white dark:border-zinc-900" title="Secure examination active" />
               </div>
+              <div className="h-8 w-px bg-slate-200 dark:bg-zinc-800" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-sans font-bold tracking-tight text-slate-900 dark:text-white">Learnora Assessment Center</h2>
+                  <h2 className="text-base font-sans font-bold tracking-tight text-slate-900 dark:text-white">Assessment Center</h2>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-white/10 text-[9px] font-mono font-bold tracking-wider uppercase">
                     <span>Proctored Exam</span>
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-zinc-450 font-medium uppercase tracking-wider mt-0.5">
+                <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-0.5">
                   English Placement Entrance Examination
                 </p>
               </div>
