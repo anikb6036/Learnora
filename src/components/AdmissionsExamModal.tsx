@@ -812,10 +812,10 @@ export default function AdmissionsExamModal({
                       <Volume2 className="w-4 h-4" />
                       <span>Oral Reading Examination Prompt</span>
                     </div>
-                    <div className="p-8 md:p-12 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-lg md:text-xl leading-relaxed text-slate-900 dark:text-zinc-100 text-center select-none shadow-sm max-w-3xl mx-auto relative font-sans">
-                      <div className="absolute top-2 left-4 text-slate-200 dark:text-zinc-800 text-5xl font-mono opacity-50">“</div>
+                    <div className="p-6 md:p-8 px-10 md:px-14 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm md:text-base leading-relaxed text-slate-700 dark:text-zinc-350 text-center select-none shadow-sm max-w-2xl mx-auto relative font-sans">
+                      <div className="absolute top-2 left-4 text-slate-200 dark:text-zinc-800 text-4xl font-mono opacity-50">“</div>
                       <span className="relative z-10 font-medium">{selectedParagraph}</span>
-                      <div className="absolute bottom-2 right-4 text-slate-200 dark:text-zinc-800 text-5xl font-mono opacity-50">”</div>
+                      <div className="absolute bottom-2 right-4 text-slate-200 dark:text-zinc-800 text-4xl font-mono opacity-50">”</div>
                     </div>
                   </div>
 
@@ -868,7 +868,7 @@ export default function AdmissionsExamModal({
                         <button
                           type="button"
                           onClick={handleStartRecording}
-                          className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-bold rounded-lg text-sm flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+                          className="px-8 py-3.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-bold rounded-lg text-sm flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
                         >
                           <Mic className="w-5 h-5" /> Start Speaking Section
                         </button>
