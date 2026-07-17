@@ -566,13 +566,13 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* Strictly official warning block */}
-                  <div className="p-4 rounded-lg bg-amber-50/40 dark:bg-amber-950/10 border border-amber-250/30 dark:border-amber-900/20 text-xs text-amber-900 dark:text-amber-400 leading-relaxed flex gap-3 shadow-sm">
-                    <div className="h-7 w-7 rounded bg-amber-100/80 dark:bg-amber-900/30 flex items-center justify-center text-amber-700 dark:text-amber-500 shrink-0 mt-0.5">
+                  <div className="p-4 rounded-lg bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/30 text-xs text-red-600 dark:text-red-400 leading-relaxed flex gap-3 shadow-sm">
+                    <div className="h-7 w-7 rounded bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500 dark:text-red-450 shrink-0 mt-0.5 border border-red-100 dark:border-red-900/20">
                       <AlertCircle className="w-4 h-4" />
                     </div>
                     <div className="space-y-0.5">
-                      <span className="font-bold tracking-wider block uppercase text-[9px] text-amber-800 dark:text-amber-500">Academic Evaluation Integrity Notice</span>
-                      <span className="text-amber-900/80 dark:text-amber-200/70 text-xs leading-relaxed">
+                      <span className="font-bold tracking-wider block uppercase text-[9px] text-red-700 dark:text-red-400">Academic Evaluation Integrity Notice</span>
+                      <span className="text-red-600/95 dark:text-red-300/80 text-xs leading-relaxed">
                         Please verify your audio and video inputs. Strict proctor monitoring remains active during the entire test duration. Navigating away from this window, losing audio/video signals, or talking during forbidden times will flag this attempt for administrative review.
                       </span>
                     </div>
