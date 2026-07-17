@@ -840,9 +840,9 @@ export default function AdmissionsExamModal({
 
                     {isRecording ? (
                       <div className="flex flex-col items-center gap-2 text-center">
-                        <span className="flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400 font-bold font-mono tracking-widest uppercase">
-                          <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
-                          RECORDING ACTIVE ({recordingSeconds}s)
+                        <span className="flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                          <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+                          Recording Active ({recordingSeconds}s)
                         </span>
                         <p className="text-xs text-slate-500 dark:text-zinc-500 font-medium">Please read the examination prompt above clearly into your microphone.</p>
                       </div>
