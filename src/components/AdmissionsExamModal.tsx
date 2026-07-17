@@ -455,7 +455,7 @@ export default function AdmissionsExamModal({
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-0.5">
-                  English Placement Entrance Examination
+                  Unlock Your Potential Through Learning
                 </p>
               </div>
             </div>
