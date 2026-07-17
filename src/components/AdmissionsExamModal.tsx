@@ -518,11 +518,11 @@ export default function AdmissionsExamModal({
                       Attempts used: <span className="text-slate-900 dark:text-white font-semibold">{attemptsUsed} of 3 allowed</span>
                     </div>
                     
-                    <h3 className="text-3xl md:text-4xl font-sans font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    <h3 className="text-xl md:text-2xl font-sans font-bold tracking-tight text-slate-900 dark:text-white">
                       Candidate: {request.name}
                     </h3>
-                    <p className="text-sm md:text-base text-slate-600 dark:text-zinc-400 leading-relaxed max-w-3xl">
-                      Welcome to the official placement examination. This evaluation determines your English reading literacy and spoken cadence parameters. To qualify for automatic registration and instant course onboarding, you are required to secure a minimum overall score of <strong className="text-slate-900 dark:text-white underline">25% or higher</strong>.
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-3xl">
+                      Welcome to the official placement examination. This evaluation determines your English reading literacy and spoken cadence parameters. To qualify for automatic registration and instant course onboarding, you are required to secure a minimum overall score of <strong className="text-slate-900 dark:text-white underline font-semibold">25% or higher</strong>.
                     </p>
                   </div>
 
@@ -535,11 +535,11 @@ export default function AdmissionsExamModal({
                           <div className="p-2 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-300">
                             <BookOpen className="w-4 h-4" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 1</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 1</span>
                         </div>
                         <div>
-                          <h4 className="text-lg font-sans font-bold text-slate-900 dark:text-white">Reading Comprehension</h4>
-                          <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mt-2">
+                          <h4 className="text-sm md:text-base font-sans font-semibold text-slate-900 dark:text-white">Reading Comprehension</h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-2">
                             Analyze an academic reading comprehension passage and answer four multiple-choice questions. This counts for 50% of the final exam grade.
                           </p>
                         </div>
@@ -553,11 +553,11 @@ export default function AdmissionsExamModal({
                           <div className="p-2 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-300">
                             <Mic className="w-4 h-4" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 2</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 2</span>
                         </div>
                         <div>
-                          <h4 className="text-lg font-sans font-bold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
-                          <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mt-2">
+                          <h4 className="text-sm md:text-base font-sans font-semibold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-2">
                             Read a phonetically rich sentence aloud. The system will evaluate pronunciation accuracy, spoken cadence, and speech delivery in real-time. Counts for 50%.
                           </p>
                         </div>
