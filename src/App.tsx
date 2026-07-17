@@ -3529,7 +3529,7 @@ function AppContent() {
                     <Mail className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <h3 className="text-base font-serif italic text-slate-900 dark:text-white font-bold">Inbox Simulator</h3>
+                    <h3 className="text-base font-sans text-slate-900 dark:text-white font-bold">Inbox Simulator</h3>
                     <p className="text-xs text-amber-500 font-semibold font-mono">{activeMailboxEmail}</p>
                   </div>
                 </div>
@@ -3578,30 +3578,41 @@ function AppContent() {
                         <p className="text-sm text-slate-500 dark:text-gray-400 max-w-md leading-relaxed">
                           Clicking this button opens the remote examination interface, administering synchronous English Reading and Vocal speaking modules.
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const req = registrationRequests.find(r => r.email.toLowerCase() === selectedMail.to.toLowerCase());
-                            if (req) {
-                              setExamRequest(req);
-                              setShowExamModal(true);
-                              setShowMailbox(false);
-                            } else {
-                              triggerToast({
-                                id: generateUniqueId('notif-err'),
-                                title: 'Exam System Error',
-                                message: 'No registered applicant record matched this email address in the database ledger.',
-                                timestamp: new Date().toISOString(),
-                                read: false,
-                                type: 'enrollment',
-                                channel: 'system'
-                              });
-                            }
-                          }}
-                          className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-955 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md animate-pulse"
-                        >
-                          Launch Admission Exam Now &rarr;
-                        </button>
+                        {(() => {
+                          const req = registrationRequests.find(r => r.email.toLowerCase() === selectedMail.to.toLowerCase());
+                          if (req) {
+                            return (
+                              <a
+                                href={`${window.location.protocol}//${window.location.host}/?examemail=${encodeURIComponent(req.email)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setShowMailbox(false)}
+                                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-955 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md animate-pulse inline-flex justify-center w-fit"
+                              >
+                                Launch Admission Exam Now &rarr;
+                              </a>
+                            );
+                          }
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                triggerToast({
+                                  id: generateUniqueId('notif-err'),
+                                  title: 'Exam System Error',
+                                  message: 'No registered applicant record matched this email address in the database ledger.',
+                                  timestamp: new Date().toISOString(),
+                                  read: false,
+                                  type: 'enrollment',
+                                  channel: 'system'
+                                });
+                              }}
+                              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-955 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md animate-pulse"
+                            >
+                              Launch Admission Exam Now &rarr;
+                            </button>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
@@ -3717,7 +3728,7 @@ function AppContent() {
                   <div className="space-y-4">
                     {admissionMethod !== 'google-login' && admissionMethod !== 'github-login' && admissionMethod !== 'selection' && !fastRegSuccess && (
                       <div className="mb-6">
-                        <h3 className="text-3xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight mb-3">
+                        <h3 className="text-3xl font-sans text-slate-900 dark:text-white font-extrabold tracking-tight mb-3">
                           {admissionMethod === 'selection' ? 'Start Application' : 'Student Admission Portal'}
                         </h3>
                         <p className="text-[13px] text-slate-500 dark:text-gray-400 leading-relaxed font-sans mt-2">
@@ -3767,16 +3778,14 @@ function AppContent() {
                               );
                             }
                             return (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setExamRequest(fastRegSuccess);
-                                  setShowExamModal(true);
-                                }}
+                              <a
+                                href={`${window.location.protocol}//${window.location.host}/?examemail=${encodeURIComponent(fastRegSuccess.email)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer hover:opacity-90 flex items-center justify-center gap-1.5"
                               >
                                 {attempts > 0 ? `Retake Exam (${3 - attempts} left)` : 'Launch Exam Now'}
-                              </button>
+                              </a>
                             );
                           })()}
 
@@ -4026,7 +4035,7 @@ function AppContent() {
                         {admissionMethod === 'social-course-select' && (
                           <div className="space-y-6 animate-fadeIn max-w-md mx-auto">
                             <div className="text-center space-y-2">
-                              <h3 className="text-2xl font-serif italic text-slate-900 dark:text-white font-bold tracking-tight">
+                              <h3 className="text-2xl font-sans text-slate-900 dark:text-white font-extrabold tracking-tight">
                                 Select Your Course Program
                               </h3>
                               <p className="text-xs text-slate-550 dark:text-gray-400 font-sans">

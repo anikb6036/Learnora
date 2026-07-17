@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { RegistrationRequest } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, Mic, Volume2, Award, Activity, FileCheck, AlertCircle, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { BookOpen, Mic, Volume2, Award, Activity, FileCheck, AlertCircle, Check, X, ShieldAlert, Sparkles, GraduationCap } from 'lucide-react';
 
 const SPEAKING_PARAGRAPHS = [
   "In an increasingly interconnected global economy, the mastery of articulate communication serves as the fundamental bridge between disparate perspectives. By cultivating both rigorous analytical reasoning and empathetic active listening, we empower ourselves to formulate solutions for our world's most critical academic and social challenges.",
@@ -443,13 +443,13 @@ export default function AdmissionsExamModal({
         <div className="relative bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-white/5 py-5 px-6 md:px-8 shrink-0 flex justify-center z-30 shadow-sm">
           <div className="w-full max-w-5xl flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-11 w-11 rounded bg-slate-900 dark:bg-zinc-800 text-white flex items-center justify-center font-bold text-xl border border-slate-700 shadow-sm">
-                L
-                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-[2.5px] border-white dark:border-zinc-900" title="Secure examination active" />
+              <div className="relative h-11 w-11 rounded-lg bg-slate-950 dark:bg-zinc-900 text-white flex items-center justify-center border border-slate-800 dark:border-zinc-700 shadow-md">
+                <GraduationCap className="w-6 h-6 text-amber-400 stroke-[1.5]" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border border-white dark:border-zinc-900" title="Secure examination active" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-serif font-bold tracking-tight text-slate-900 dark:text-white">Learnora Assessment Center</h2>
+                  <h2 className="text-base font-sans font-bold tracking-tight text-slate-900 dark:text-white">Learnora Assessment Center</h2>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-white/10 text-[9px] font-mono font-bold tracking-wider uppercase">
                     <span>Proctored Exam</span>
                   </div>
@@ -527,7 +527,7 @@ export default function AdmissionsExamModal({
                       </div>
                     </div>
                     
-                    <h3 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-slate-900 dark:text-white">
+                    <h3 className="text-3xl md:text-4xl font-sans font-extrabold tracking-tight text-slate-900 dark:text-white">
                       Candidate: {request.name}
                     </h3>
                     <p className="text-sm md:text-base text-slate-600 dark:text-zinc-400 leading-relaxed max-w-3xl">
@@ -547,7 +547,7 @@ export default function AdmissionsExamModal({
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 1</span>
                         </div>
                         <div>
-                          <h4 className="text-lg font-serif font-bold text-slate-900 dark:text-white">Reading Comprehension</h4>
+                          <h4 className="text-lg font-sans font-bold text-slate-900 dark:text-white">Reading Comprehension</h4>
                           <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mt-2">
                             Analyze an academic reading comprehension passage and answer four multiple-choice questions. This counts for 50% of the final exam grade.
                           </p>
@@ -565,7 +565,7 @@ export default function AdmissionsExamModal({
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 2</span>
                         </div>
                         <div>
-                          <h4 className="text-lg font-serif font-bold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
+                          <h4 className="text-lg font-sans font-bold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
                           <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mt-2">
                             Read a phonetically rich sentence aloud. The system will evaluate pronunciation accuracy, spoken cadence, and speech delivery in real-time. Counts for 50%.
                           </p>
@@ -634,7 +634,7 @@ export default function AdmissionsExamModal({
                       <BookOpen className="w-4 h-4 text-slate-700 dark:text-zinc-300" />
                       <span>OFFICIAL ACADEMIC READING EXCERPT</span>
                     </div>
-                    <p className="italic pl-6 text-slate-800 dark:text-zinc-200 font-serif text-lg leading-loose">
+                    <p className="italic pl-6 text-slate-800 dark:text-zinc-200 font-sans text-lg leading-loose">
                       "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
                     </p>
                   </div>
@@ -819,10 +819,10 @@ export default function AdmissionsExamModal({
                       <Volume2 className="w-4 h-4" />
                       <span>Oral Reading Examination Prompt</span>
                     </div>
-                    <div className="p-8 md:p-12 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-lg md:text-xl leading-relaxed text-slate-900 dark:text-zinc-100 text-center select-none shadow-sm max-w-3xl mx-auto italic relative font-serif">
-                      <div className="absolute top-4 left-6 text-slate-200 dark:text-zinc-800 text-6xl font-serif">“</div>
-                      <span className="relative z-10">{selectedParagraph}</span>
-                      <div className="absolute bottom-4 right-6 text-slate-200 dark:text-zinc-800 text-6xl font-serif">”</div>
+                    <div className="p-8 md:p-12 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-lg md:text-xl leading-relaxed text-slate-900 dark:text-zinc-100 text-center select-none shadow-sm max-w-3xl mx-auto relative font-sans">
+                      <div className="absolute top-2 left-4 text-slate-200 dark:text-zinc-800 text-5xl font-mono opacity-50">“</div>
+                      <span className="relative z-10 font-medium">{selectedParagraph}</span>
+                      <div className="absolute bottom-2 right-4 text-slate-200 dark:text-zinc-800 text-5xl font-mono opacity-50">”</div>
                     </div>
                   </div>
 
@@ -946,7 +946,7 @@ export default function AdmissionsExamModal({
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-400 text-[10px] uppercase font-mono font-bold tracking-wider border border-emerald-300/40 mb-2">
                           <Award className="w-4 h-4" /> Approved
                         </div>
-                        <h3 className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight mt-1">
+                        <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
                           Placement Requirements Satisfied
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-zinc-400 max-w-md mx-auto mt-3 leading-relaxed">
@@ -972,7 +972,7 @@ export default function AdmissionsExamModal({
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-100/80 dark:bg-rose-950/60 text-rose-900 dark:text-rose-400 text-[10px] uppercase font-mono font-bold tracking-wider border border-rose-300/40 mb-2">
                           Unqualified
                         </div>
-                        <h3 className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight mt-1">
+                        <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
                           {isTimeout ? "Evaluation Time Expired" : "Evaluation Score Below Requirement"}
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-zinc-400 max-w-md mx-auto mt-3 leading-relaxed">
@@ -996,7 +996,7 @@ export default function AdmissionsExamModal({
                       <div className="absolute top-0 left-0 h-full w-1 bg-slate-800 dark:bg-zinc-600 rounded-l-lg" />
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase block tracking-widest">Section 1 Score</span>
-                        <h5 className="text-sm font-serif font-bold text-slate-900 dark:text-zinc-100">Reading Comprehension</h5>
+                        <h5 className="text-sm font-sans font-bold text-slate-900 dark:text-zinc-100">Reading Comprehension</h5>
                       </div>
                       <span className="text-sm font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded shadow-sm">
                         {readingScore} / 50
@@ -1007,7 +1007,7 @@ export default function AdmissionsExamModal({
                       <div className="absolute top-0 left-0 h-full w-1 bg-slate-800 dark:bg-zinc-600 rounded-l-lg" />
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase block tracking-widest">Section 2 Score</span>
-                        <h5 className="text-sm font-serif font-bold text-slate-900 dark:text-zinc-100">Phonetic Articulation</h5>
+                        <h5 className="text-sm font-sans font-bold text-slate-900 dark:text-zinc-100">Phonetic Articulation</h5>
                       </div>
                       <span className="text-sm font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded shadow-sm">
                         {speakingScore} / 50
