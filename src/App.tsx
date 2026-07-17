@@ -3763,7 +3763,7 @@ function AppContent() {
                             const req = registrationRequests.find(r => r.id === fastRegSuccess.id);
                             if (req?.status === 'approved') {
                               return (
-                                <div className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
+                                <div className="bg-white border border-emerald-200 dark:bg-zinc-900 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium px-5 py-2.5 rounded-xl text-sm text-center">
                                   You have already cleared the exam.
                                 </div>
                               );
