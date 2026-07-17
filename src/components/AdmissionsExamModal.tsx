@@ -461,9 +461,9 @@ export default function AdmissionsExamModal({
             </div>
 
             {(step === 'reading' || step === 'speaking') && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 text-rose-700 dark:text-rose-400 font-mono text-xs font-bold">
-                <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-ping" />
-                <span>Time Remaining: {formatTime(timeLeft)}</span>
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-zinc-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span>Time Remaining: <span className="text-rose-600 dark:text-rose-400 font-semibold">{formatTime(timeLeft)}</span></span>
               </div>
             )}
             {(step === 'intro' || step === 'result') && (
