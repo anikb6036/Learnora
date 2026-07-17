@@ -450,7 +450,6 @@ export default function AdmissionsExamModal({
               <div className="h-8 w-px bg-slate-200 dark:bg-zinc-800" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-sans font-bold tracking-tight text-slate-900 dark:text-white">Assessment Center</h2>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-white/10 text-[9px] font-mono font-bold tracking-wider uppercase">
                     <span>Proctored Exam</span>
                   </div>
