@@ -429,145 +429,178 @@ export default function AdmissionsExamModal({
   };
 
   return (
-    <div className="fixed inset-0 z-55 bg-zinc-50 dark:bg-zinc-950 overflow-y-auto overflow-x-hidden flex flex-col items-center">
+    <div className="fixed inset-0 z-55 bg-[#f8fafc] dark:bg-zinc-950 overflow-y-auto overflow-x-hidden flex flex-col items-center select-none">
+      {/* Professional subtle overlay pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
+
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 15 }}
-        className="relative w-full h-full min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 font-sans"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="relative w-full h-full min-h-screen flex flex-col bg-[#f8fafc] dark:bg-zinc-950 font-sans"
       >
-        {/* Premium Minimalist Header */}
-        <div className="relative bg-white dark:bg-zinc-900 border-b border-zinc-200/80 dark:border-white/5 py-5 px-6 md:px-8 select-none shrink-0 flex justify-center shadow-xs">
+        {/* Premium Academic Header */}
+        <div className="relative bg-white dark:bg-zinc-900 border-b border-zinc-200/80 dark:border-white/5 py-4 px-6 md:px-8 shrink-0 flex justify-center z-30 shadow-xs">
           <div className="w-full max-w-4xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-extrabold text-base select-none">
+              <div className="relative h-10 w-10 rounded-lg bg-slate-900 dark:bg-zinc-800 text-white flex items-center justify-center font-bold text-lg border border-slate-700">
                 L
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-900" title="Secure examination active" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">Learnora Admissions</h2>
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono tracking-wider uppercase">
-                  Language Placement Exam
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Learnora Assessment Center</h2>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-white/10 text-[9px] font-mono font-bold tracking-wider uppercase">
+                    <span>Proctored Exam</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-zinc-450 font-medium uppercase tracking-wider">
+                  English Placement Entrance Examination
                 </p>
               </div>
             </div>
+
             {(step === 'reading' || step === 'speaking') && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/15 text-rose-600 dark:text-rose-400 font-mono text-xs font-semibold">
-                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                <span>Time: {formatTime(timeLeft)}</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 text-rose-700 dark:text-rose-400 font-mono text-xs font-bold">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-ping" />
+                <span>Time Remaining: {formatTime(timeLeft)}</span>
               </div>
             )}
             {(step === 'intro' || step === 'result') && (
               <button
                 onClick={handleClose}
-                className="px-3.5 py-1.5 text-xs font-medium text-zinc-650 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border border-zinc-200 dark:border-white/10 hover:border-zinc-350 dark:hover:border-white/20 rounded-lg cursor-pointer transition-all active:scale-95"
+                className="px-4 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white border border-slate-300/75 dark:border-white/15 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-850 rounded-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-xs"
               >
-                Close
+                <X className="w-3.5 h-3.5" />
+                Exit Exam
               </button>
             )}
           </div>
         </div>
 
-        <div className="flex-1 w-full flex justify-center relative bg-zinc-50 dark:bg-[#070708]">
-          {/* Anti-cheat Monitoring Video Feed - Sleek overlay */}
+        <div className="flex-1 w-full flex justify-center relative py-6">
+          {/* Strict Security Monitoring Video Stream */}
           {monitoringStream && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute top-4 right-4 md:top-8 md:right-8 w-28 h-20 md:w-40 md:h-28 bg-black rounded-lg overflow-hidden border border-zinc-300 dark:border-white/10 shadow-lg z-20 flex flex-col pointer-events-none"
+              className="absolute top-4 right-4 md:top-6 md:right-8 w-28 h-20 md:w-44 md:h-32 bg-black rounded-lg overflow-hidden border border-slate-300 dark:border-zinc-800 shadow-md z-25 flex flex-col pointer-events-none"
             >
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-x-[-1]"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black/75 backdrop-blur-xs p-1 flex items-center justify-center gap-1.5 border-t border-white/5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-mono text-zinc-200 tracking-wider uppercase font-semibold">Live stream</span>
+              <div className="absolute bottom-0 left-0 right-0 bg-slate-900/90 p-1.5 flex items-center justify-between px-2 flex-row border-t border-slate-800">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[7px] font-mono text-slate-300 tracking-wider uppercase font-bold">PROCTOR STREAM ACTIVE</span>
+                </div>
               </div>
             </motion.div>
           )}
 
-          <div className="w-full max-w-4xl p-6 md:p-8 overflow-y-auto space-y-6 flex flex-col justify-between">
+          <div className="w-full max-w-4xl p-6 md:p-8 overflow-y-auto space-y-6 flex flex-col justify-between z-20">
             <AnimatePresence mode="wait">
             {step === 'intro' && (
               <motion.div
                 key="intro"
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
-                <div className="space-y-5">
-                  <div className="space-y-2">
+                <div className="space-y-6">
+                  <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-650 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase">
-                        Assessment Mode
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-100 dark:bg-zinc-800 border border-slate-300/60 dark:border-white/5 text-slate-700 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase font-bold">
+                        Academic Assessment Portal
                       </div>
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase border ${
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono tracking-wider uppercase border font-bold ${
                         attemptsUsed >= 3 
-                          ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' 
-                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                          ? 'bg-rose-50 text-rose-700 dark:text-rose-450 border-rose-300/40' 
+                          : 'bg-amber-50 text-amber-700 dark:text-amber-500 border-amber-300/40'
                       }`}>
-                        Attempts: {attemptsUsed} / 3 Used
+                        Attempts Used: {attemptsUsed} / 3 Allowed
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight">
-                      Welcome, {request.name}
+                    
+                    <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                      Candidate: {request.name}
                     </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl font-normal">
-                      This placement evaluation determines your English writing literacy and spoken cadence parameters. To qualify for automatic registration and instant course onboarding, you are required to secure an evaluation score of <strong>25% or higher</strong>.
+                    <p className="text-sm text-slate-650 dark:text-zinc-400 leading-relaxed max-w-2xl">
+                      Welcome to the official placement examination. This evaluation determines your English reading literacy and spoken cadence parameters. To qualify for automatic registration and instant course onboarding, you are required to secure a minimum overall score of <strong className="text-slate-900 dark:text-white underline">25% or higher</strong>.
                     </p>
                   </div>
 
                   {/* Syllabus / Evaluation breakdown boxes */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                    <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-250/60 dark:border-white/5 space-y-2.5 shadow-sm hover:shadow-md transition duration-200">
-                      <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-                        <BookOpen className="w-4 h-4 text-zinc-550 dark:text-zinc-400" />
-                        <span className="text-xs font-semibold">1. Reading Comprehension</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                    <div className="relative p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 space-y-3 shadow-xs">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 dark:bg-zinc-600" />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-850 dark:text-zinc-100">
+                          <div className="p-1.5 rounded bg-slate-100 dark:bg-zinc-850 text-slate-700 dark:text-zinc-300">
+                            <BookOpen className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 1</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Reading Comprehension</h4>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                          Analyze an academic reading comprehension passage and answer four multiple-choice questions. This counts for 50% of the final exam grade.
+                        </p>
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        Analyze a short literary or ecological excerpt and answer four multiple-choice questions. This counts for 50% of the total score.
-                      </p>
                     </div>
 
-                    <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-250/60 dark:border-white/5 space-y-2.5 shadow-sm hover:shadow-md transition duration-200">
-                      <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-                        <Mic className="w-4 h-4 text-zinc-550 dark:text-zinc-400" />
-                        <span className="text-xs font-semibold">2. Verbal Articulation</span>
+                    <div className="relative p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 space-y-3 shadow-xs">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 dark:bg-zinc-600" />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-850 dark:text-zinc-100">
+                          <div className="p-1.5 rounded bg-slate-100 dark:bg-zinc-850 text-slate-700 dark:text-zinc-300">
+                            <Mic className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Section 2</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                          Read a phonetically rich sentence aloud. The system will evaluate pronunciation accuracy, spoken cadence, and speech delivery in real-time. Counts for 50%.
+                        </p>
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        Read a phonetically rich sentence aloud. Our articulation engine analyzes tone, cadence, and spelling coordinates in real-time. Counts for 50%.
-                      </p>
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-xs text-zinc-550 dark:text-zinc-450 leading-relaxed flex gap-3">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-zinc-400 mt-0.5" />
-                    <span>
-                      Please verify your audio and video inputs. Live monitoring coordinates remain active during the entire test duration to maintain strict academic evaluation integrity.
-                    </span>
+                  {/* Strictly official warning block */}
+                  <div className="p-4 rounded-lg bg-amber-500/[0.03] dark:bg-amber-500/[0.02] border border-amber-500/20 text-xs text-amber-900 dark:text-amber-400 leading-relaxed flex gap-3.5 shadow-2xs">
+                    <div className="h-8 w-8 rounded bg-amber-500/10 flex items-center justify-center text-amber-700 dark:text-amber-400 shrink-0 mt-0.5">
+                      <AlertCircle className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="font-bold tracking-tight block uppercase text-[10px]">Academic Evaluation Integrity Notice</span>
+                      <span className="text-slate-650 dark:text-zinc-400">
+                        Please verify your audio and video inputs. Strict proctor monitoring remains active during the entire test duration. Navigating away from this window, losing audio/video signals, or talking during forbidden times will flag this attempt for administrative review.
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-3">
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 space-y-3">
                   {monitoringError && (
-                    <div className="p-3.5 bg-rose-50 dark:bg-rose-950/10 border border-rose-200 dark:border-rose-900/30 rounded-xl text-xs text-rose-600 dark:text-rose-400">
-                      {monitoringError}
+                    <div className="p-4 bg-rose-50 dark:bg-rose-950/15 border border-rose-200 dark:border-rose-900/30 rounded-lg text-xs text-rose-700 dark:text-rose-400 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                      <span>{monitoringError}</span>
                     </div>
                   )}
                   <button
                     onClick={handleStartExam}
                     disabled={isRequestingPermissions || attemptsUsed >= 3}
-                    className="w-full py-3 bg-zinc-900 hover:bg-zinc-855 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 transition duration-200 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-50"
+                    className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition duration-200 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {attemptsUsed >= 3 
                       ? 'No Attempts Remaining (3/3 Used)' 
                       : isRequestingPermissions 
-                        ? 'Configuring evaluation streams...' 
-                        : 'Start Evaluation \u2192'}
+                        ? 'Configuring Proctor Audio & Video Feeds...' 
+                        : 'Acknowledge Rules & Begin Examination'}
                   </button>
                 </div>
               </motion.div>
@@ -576,33 +609,43 @@ export default function AdmissionsExamModal({
             {step === 'reading' && (
               <motion.div
                 key="reading"
-                initial={{ opacity: 0, x: 8 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
+                exit={{ opacity: 0, x: -20 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-5">
-                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-white/5 font-mono text-[9px] uppercase font-bold text-zinc-400 dark:text-zinc-550">
-                    <span>Part 1: Text Comprehension Analysis</span>
+                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-3 rounded-lg border border-slate-200 dark:border-white/5 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400">
+                    <span className="flex items-center gap-1.5 text-slate-800 dark:text-zinc-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-800 animate-ping" />
+                      Section A: Reading Comprehension
+                    </span>
                     <span>50 Points Max</span>
                   </div>
 
                   {/* Reading Passage Container */}
-                  <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-sm font-normal leading-relaxed text-zinc-800 dark:text-zinc-200 select-none relative shadow-xs">
-                    <div className="absolute top-4 left-0 w-1 h-3/4 bg-zinc-900 dark:bg-white rounded-r" />
-                    <p className="italic pl-3 text-zinc-650 dark:text-zinc-350 font-sans leading-relaxed">
+                  <div className="p-6 md:p-8 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 text-sm leading-relaxed text-slate-850 dark:text-zinc-200 select-none relative shadow-xs">
+                    <div className="absolute top-6 left-0 w-1 h-12 bg-slate-800 dark:bg-zinc-600 rounded-r" />
+                    <div className="flex items-center gap-2 text-slate-400 dark:text-zinc-500 text-[10px] uppercase font-mono tracking-wider font-bold mb-3.5">
+                      <BookOpen className="w-3.5 h-3.5 text-slate-600" />
+                      <span>OFFICIAL ACADEMIC READING EXCERPT</span>
+                    </div>
+                    <p className="italic pl-4 text-slate-750 dark:text-zinc-350 font-sans text-sm leading-relaxed md:text-base">
                       "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
                     </p>
                   </div>
 
                   {/* MCQ Questions list */}
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {/* Q1 */}
-                    <div className="space-y-2.5">
-                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Q1. Why is the Amazon Rainforest called the 'lungs of the Earth'?
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 01</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          Why is the Amazon Rainforest called the 'lungs of the Earth'?
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {[
                           { key: 'A', text: 'It has many rivers.' },
                           { key: 'B', text: 'It breathes out oxygen and helps the planet.' },
@@ -612,24 +655,30 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ1Answer(opt.key)}
-                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3.5 px-5 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
                               q1Answer === opt.key 
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
-                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                                ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-xs' 
+                                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/10'
                             }`}
                           >
-                            <span className={`font-mono uppercase font-bold mr-2 ${q1Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                            <span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 ${q1Answer === opt.key ? 'text-slate-300' : 'text-slate-400'}`}>{opt.key}</span> {opt.text}
+                            </span>
+                            {q1Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3]" />}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* Q2 */}
-                    <div className="space-y-2.5 pt-2">
-                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Q2. Which two animals are mentioned as living in the rainforest?
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 02</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          Which two animals are mentioned as living in the rainforest?
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {[
                           { key: 'A', text: 'Lions and elephants' },
                           { key: 'B', text: 'Bears and wolves' },
@@ -639,24 +688,30 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ2Answer(opt.key)}
-                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3.5 px-5 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
                               q2Answer === opt.key 
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
-                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                                ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-xs' 
+                                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/10'
                             }`}
                           >
-                            <span className={`font-mono uppercase font-bold mr-2 ${q2Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                            <span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 ${q2Answer === opt.key ? 'text-slate-300' : 'text-slate-400'}`}>{opt.key}</span> {opt.text}
+                            </span>
+                            {q2Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3]" />}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* Q3 */}
-                    <div className="space-y-2.5 pt-2">
-                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Q3. What is the Amazon Rainforest often called?
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 03</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          What is the Amazon Rainforest often called?
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {[
                           { key: 'A', text: 'The heart of the world' },
                           { key: 'B', text: 'The lungs of the Earth' },
@@ -666,24 +721,30 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ3Answer(opt.key)}
-                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3.5 px-5 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
                               q3Answer === opt.key 
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
-                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                                ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-xs' 
+                                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/10'
                             }`}
                           >
-                            <span className={`font-mono uppercase font-bold mr-2 ${q3Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                            <span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 ${q3Answer === opt.key ? 'text-slate-300' : 'text-slate-400'}`}>{opt.key}</span> {opt.text}
+                            </span>
+                            {q3Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3]" />}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* Q4 */}
-                    <div className="space-y-2.5 pt-2">
-                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Q4. Why do we need to learn about these forests?
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 04</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          Why do we need to learn about these forests?
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {[
                           { key: 'A', text: 'To find hidden treasures' },
                           { key: 'B', text: 'To understand why we need to protect our planet\'s wildlife' },
@@ -693,13 +754,16 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ4Answer(opt.key)}
-                            className={`p-3 px-4 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed ${
+                            className={`p-3.5 px-5 text-left text-xs rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
                               q4Answer === opt.key 
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold' 
-                                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'
+                                ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-xs' 
+                                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/10'
                             }`}
                           >
-                            <span className={`font-mono uppercase font-bold mr-2 ${q4Answer === opt.key ? 'text-zinc-350 dark:text-zinc-650' : 'text-zinc-400 dark:text-zinc-500'}`}>{opt.key}</span> {opt.text}
+                            <span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 ${q4Answer === opt.key ? 'text-slate-300' : 'text-slate-400'}`}>{opt.key}</span> {opt.text}
+                            </span>
+                            {q4Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3]" />}
                           </button>
                         ))}
                       </div>
@@ -707,14 +771,14 @@ export default function AdmissionsExamModal({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex justify-end gap-3">
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex justify-end">
                   <button
                     disabled={!q1Answer || !q2Answer || !q3Answer || !q4Answer}
                     onClick={handleProceedToSpeaking}
-                    className={`py-2.5 px-6 font-medium rounded-lg text-xs flex items-center gap-1.5 transition duration-200 cursor-pointer ${
+                    className={`py-3 px-8 font-bold rounded-lg text-xs flex items-center gap-2 transition duration-200 cursor-pointer ${
                       q1Answer && q2Answer && q3Answer && q4Answer 
-                        ? 'bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white shadow-sm active:scale-[0.98]' 
-                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600 cursor-not-allowed border dark:border-white/5'
+                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm hover:opacity-90 active:scale-[0.98]' 
+                        : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-zinc-650 cursor-not-allowed border border-slate-250 dark:border-white/5'
                     }`}
                   >
                     Proceed to Speaking Module &rarr;
@@ -726,82 +790,95 @@ export default function AdmissionsExamModal({
             {step === 'speaking' && (
               <motion.div
                 key="speaking"
-                initial={{ opacity: 0, scale: 0.99 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
-                <div className="space-y-5">
-                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-white/5 font-mono text-[9px] uppercase font-bold text-zinc-400 dark:text-zinc-550">
-                    <span>Part 2: Vocalic Expression & Articulation</span>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-4 py-3 rounded-lg border border-slate-200 dark:border-white/5 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400">
+                    <span className="flex items-center gap-1.5 text-slate-850 dark:text-zinc-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-800 animate-ping" />
+                      Section B: Spoken Articulation & Pronunciation
+                    </span>
                     <span>50 Points Max</span>
                   </div>
 
                   <div className="space-y-3 text-center md:px-6">
-                    <p className="text-xs font-semibold text-zinc-650 dark:text-zinc-350">
-                      Paragraph to read aloud:
-                    </p>
-                    <div className="p-7 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/5 text-xs sm:text-sm font-semibold leading-relaxed text-zinc-800 dark:text-zinc-100 text-center select-none shadow-xs font-sans max-w-2xl mx-auto">
-                      "{selectedParagraph}"
+                    <div className="flex items-center justify-center gap-1.5 text-[10px] uppercase font-mono tracking-wider text-slate-400 dark:text-zinc-500 font-bold">
+                      <Volume2 className="w-4 h-4 text-slate-500" />
+                      <span>Oral Reading Examination Prompt</span>
+                    </div>
+                    <div className="p-6 md:p-8 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 text-sm sm:text-base font-bold leading-relaxed text-slate-850 dark:text-zinc-100 text-center select-none shadow-xs max-w-2xl mx-auto italic relative">
+                      <div className="absolute top-2 left-4 text-slate-200 dark:text-zinc-800 text-5xl font-serif">“</div>
+                      <span className="relative z-10">{selectedParagraph}</span>
+                      <div className="absolute bottom-2 right-4 text-slate-200 dark:text-zinc-800 text-5xl font-serif">”</div>
                     </div>
                   </div>
 
                   {/* Voice recording console widget */}
-                  <div className="flex flex-col items-center justify-center space-y-5 py-6 p-6 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 relative overflow-hidden shadow-xs">
+                  <div className="flex flex-col items-center justify-center space-y-6 py-8 p-6 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 relative overflow-hidden shadow-2xs">
+                    
                     {/* Visualizer wave form output */}
-                    <div className="flex items-end justify-center gap-1.5 h-10 w-full max-w-xs">
+                    <div className="flex items-end justify-center gap-1.5 h-16 w-full max-w-sm">
                       {audioLevels.map((l, idx) => (
                         <motion.div
                           key={idx}
-                          animate={isRecording ? {} : { height: 4 }}
-                          style={{ height: Math.min(l, 40) }}
-                          className={`w-[4px] rounded-t-sm transition-all duration-75 ${
-                            isRecording ? 'bg-zinc-900 dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'
+                          animate={isRecording ? {} : { height: 6 }}
+                          style={{ height: Math.min(l + 6, 60) }}
+                          className={`w-[5px] rounded-full transition-all duration-75 ${
+                            isRecording 
+                              ? 'bg-slate-800 dark:bg-zinc-200 shadow-2xs' 
+                              : 'bg-zinc-200 dark:bg-zinc-800'
                           }`}
                         />
                       ))}
                     </div>
 
                     {isRecording ? (
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="flex items-center gap-1.5 text-[11px] text-zinc-900 dark:text-white font-semibold font-mono tracking-wider">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                          RECORDING AUDIO ({recordingSeconds}s)
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <span className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-extrabold font-mono tracking-widest uppercase">
+                          <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
+                          RECORDING ACTIVE ({recordingSeconds}s)
                         </span>
+                        <p className="text-[10px] text-slate-500 dark:text-zinc-500 font-medium">Please read the examination prompt above clearly into your microphone.</p>
                       </div>
                     ) : (
                       <div className="text-center">
-                        <span className="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center justify-center gap-1.5 font-mono">
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                          System Status: Microphone Standby
+                        <span className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-center gap-2 font-mono font-bold tracking-wider uppercase">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-350 dark:bg-zinc-700 animate-pulse" />
+                          Microphone Status: Ready
                         </span>
                       </div>
                     )}
 
-                    <div className="flex justify-center pt-1">
+                    <div className="flex justify-center pt-2">
                       {isRecording ? (
                         <button
                           type="button"
                           onClick={handleStopRecording}
-                          className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+                          className="px-8 py-3 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
                         >
-                          <Check className="w-4 h-4" /> Stop & Evaluate Output &rarr;
+                          <Check className="w-4 h-4 stroke-[3]" /> Stop & Submit Recording
                         </button>
                       ) : (
                         <button
                           type="button"
                           onClick={handleStartRecording}
-                          className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+                          className="px-8 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-bold rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
                         >
-                          <Mic className="w-4 h-4" /> Start Speaking Test
+                          <Mic className="w-4 h-4" /> Start Speaking Section
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex justify-between text-[11px] text-zinc-400 dark:text-zinc-500 leading-snug">
-                  <p className="max-w-xl">Speak clearly for at least 3 seconds at a natural pace. The engine will evaluate articulation coordinates upon completion.</p>
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex flex-col gap-1 text-[11px] text-slate-500 dark:text-zinc-500">
+                  <span className="font-semibold text-slate-700 dark:text-zinc-400 flex items-center gap-1">
+                    System Guidelines:
+                  </span>
+                  <p className="leading-relaxed">Speak clearly into your microphone for at least 3 seconds at a normal speech rate. The proctor system measures vocal duration and pronunciation clarity to score speech delivery.</p>
                 </div>
               </motion.div>
             )}
@@ -811,26 +888,32 @@ export default function AdmissionsExamModal({
                 key="analyzing"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="py-16 flex flex-col items-center justify-center space-y-6 flex-1 text-center"
+                className="py-16 flex flex-col items-center justify-center space-y-7 flex-1 text-center"
               >
-                {/* Clean and minimal loading loop */}
-                <div className="relative h-14 w-14 rounded-full border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-zinc-500 dark:text-zinc-400 animate-pulse" />
-                  <div className="absolute inset-0 rounded-full border border-dashed border-zinc-400 dark:border-zinc-500 animate-spin" style={{ animationDuration: '8s' }} />
+                {/* Clean, minimalist testing progress spinner */}
+                <div className="relative h-16 w-16 rounded-full border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-zinc-900 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-slate-750 dark:text-zinc-200 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full border border-dashed border-slate-400 dark:border-zinc-500 animate-spin" style={{ animationDuration: '6s' }} />
                 </div>
 
-                <div className="space-y-1.5">
-                  <h4 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Evaluating Speech & Text Responses</h4>
-                  <p className="text-[11px] text-zinc-400 dark:text-zinc-550 font-mono tracking-tight">{analysisText}</p>
+                <div className="space-y-2">
+                  <h4 className="text-xs font-mono font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">Evaluation Process Active</h4>
+                  <p className="text-xs text-slate-500 dark:text-zinc-500 font-mono tracking-tight h-4">{analysisText}</p>
                 </div>
 
-                {/* Progress bar */}
-                <div className="w-full max-w-xs h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${analysisProgress}%` }}
-                    className="h-full bg-zinc-900 dark:bg-white rounded-full"
-                  />
+                {/* Progress bar container */}
+                <div className="w-full max-w-sm space-y-1.5">
+                  <div className="w-full h-1 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner">
+                    <motion.div
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${analysisProgress}%` }}
+                      className="h-full bg-slate-900 dark:bg-white rounded-full"
+                    />
+                  </div>
+                  <div className="flex justify-between font-mono text-[9px] text-slate-400 dark:text-zinc-555 font-bold uppercase tracking-wider">
+                    <span>Grading Audio & Answers</span>
+                    <span>{analysisProgress}%</span>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -838,44 +921,51 @@ export default function AdmissionsExamModal({
             {step === 'result' && (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-6">
                   {totalScore >= 25 ? (
-                    <div className="flex flex-col items-center py-6 border border-emerald-500/15 bg-emerald-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
-                      <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-450">
-                        <FileCheck className="w-5 h-5" />
+                    <div className="relative flex flex-col items-center py-8 p-6 border border-emerald-250 dark:border-emerald-900/30 bg-emerald-50/[0.15] dark:bg-emerald-950/[0.05] rounded-lg space-y-4 text-center overflow-hidden">
+                      <div className="h-12 w-12 rounded bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/20 shadow-2xs">
+                        <FileCheck className="w-6 h-6 stroke-[2]" />
                       </div>
                       <div>
-                        <h3 className="text-base font-bold text-emerald-700 dark:text-emerald-400 tracking-tight">
-                          Admissions Qualification Successful
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-850 dark:text-emerald-400 text-[9px] uppercase font-mono font-bold tracking-wider border border-emerald-300/40 mb-1">
+                          <Award className="w-3.5 h-3.5" /> Approved
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                          Placement Requirements Satisfied
                         </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed animate-pulse">
+                        <p className="text-xs text-slate-650 dark:text-zinc-400 max-w-md mx-auto mt-1.5 leading-relaxed">
                           {isTimeout 
-                            ? "Even though time ran out, your evaluation performance successfully satisfied the academic requirements for registration!"
-                            : "Excellent work! Your evaluation performance has successfully satisfied the academic requirements for automatic registration."
+                            ? "Even though time ran out, your evaluation performance successfully satisfied the academic requirements for automatic course onboarding!"
+                            : "Excellent work. Your evaluation performance has successfully satisfied the academic requirements for automatic registration."
                           }
                         </p>
                       </div>
 
-                      <div className="text-center">
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
-                        <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
+                      <div className="bg-white dark:bg-zinc-900 p-4 px-8 rounded-lg border border-slate-200 dark:border-white/5 shadow-2xs">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-0.5">Final Assessment Grade</span>
+                        <span className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white block">{totalScore}%</span>
+                        <span className="text-[9px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mt-1 block">PASSING BENCHMARK MET (25%)</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center py-6 border border-rose-500/15 bg-rose-500/[0.02] rounded-xl space-y-4 relative overflow-hidden text-center md:px-8">
-                      <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-450">
-                        <AlertCircle className="w-5 h-5" />
+                    <div className="relative flex flex-col items-center py-8 p-6 border border-rose-250 dark:border-rose-900/30 bg-rose-50/[0.15] dark:bg-rose-950/[0.05] rounded-lg space-y-4 text-center overflow-hidden">
+                      <div className="h-12 w-12 rounded bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/20 shadow-2xs">
+                        <AlertCircle className="w-6 h-6 stroke-[2]" />
                       </div>
                       <div>
-                        <h3 className="text-base font-bold text-rose-700 dark:text-rose-400 tracking-tight">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded bg-rose-100/80 dark:bg-rose-950/60 text-rose-850 dark:text-rose-400 text-[9px] uppercase font-mono font-bold tracking-wider border border-rose-300/40 mb-1">
+                          Unqualified
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                           {isTimeout ? "Evaluation Time Expired" : "Evaluation Score Below Requirement"}
                         </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1 leading-relaxed">
+                        <p className="text-xs text-slate-650 dark:text-zinc-400 max-w-md mx-auto mt-1.5 leading-relaxed">
                           {isTimeout 
                             ? "The 20-minute exam timer has run out. You did not achieve the 25% score required to automatically qualify."
                             : `You scored ${totalScore}%, which is below the 25% score threshold required to qualify for automatic registration.`
@@ -883,50 +973,54 @@ export default function AdmissionsExamModal({
                         </p>
                       </div>
 
-                      <div className="text-center">
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block tracking-wider">Final Assessment Grade</span>
-                        <span className="text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1 block">{totalScore}%</span>
+                      <div className="bg-white dark:bg-zinc-900 p-4 px-8 rounded-lg border border-slate-200 dark:border-white/5 shadow-2xs">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-0.5">Final Assessment Grade</span>
+                        <span className="text-4xl font-extrabold tracking-tight text-rose-700 dark:text-rose-400 block">{totalScore}%</span>
+                        <span className="text-[9px] font-mono font-bold text-rose-700 dark:text-rose-450 uppercase tracking-widest mt-1 block">PASSING BENCHMARK: 25%</span>
                       </div>
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 flex justify-between items-center shadow-xs">
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase block tracking-wider">Reading Evaluation</span>
-                        <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Text Comprehension</h5>
+                    <div className="p-5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 flex justify-between items-center shadow-2xs relative overflow-hidden">
+                      <div className="absolute top-0 left-0 h-full w-1 bg-slate-700 dark:bg-zinc-600" />
+                      <div className="space-y-1">
+                        <span className="text-[8.5px] font-bold text-slate-400 dark:text-zinc-550 uppercase block tracking-wider">Section 1 Score</span>
+                        <h5 className="text-xs font-bold text-slate-850 dark:text-zinc-100">Reading Comprehension</h5>
                       </div>
-                      <span className="text-sm font-semibold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300/60 dark:border-white/10 px-3 py-1.5 rounded shadow-2xs">
                         {readingScore} / 50
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/5 flex justify-between items-center shadow-xs">
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase block tracking-wider">Speaking Evaluation</span>
-                        <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Phonetic Articulation</h5>
+                    <div className="p-5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/5 flex justify-between items-center shadow-2xs relative overflow-hidden">
+                      <div className="absolute top-0 left-0 h-full w-1 bg-slate-700 dark:bg-zinc-600" />
+                      <div className="space-y-1">
+                        <span className="text-[8.5px] font-bold text-slate-400 dark:text-zinc-550 uppercase block tracking-wider">Section 2 Score</span>
+                        <h5 className="text-xs font-bold text-slate-850 dark:text-zinc-100">Phonetic Articulation</h5>
                       </div>
-                      <span className="text-sm font-semibold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300/60 dark:border-white/10 px-3 py-1.5 rounded shadow-2xs">
                         {speakingScore} / 50
                       </span>
                     </div>
                   </div>
 
                   {totalScore >= 25 ? (
-                    <div className="p-3.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl text-xs text-zinc-550 dark:text-zinc-450 text-center leading-relaxed font-sans">
+                    <div className="p-4 bg-slate-100/50 dark:bg-zinc-900/40 border border-slate-200/55 dark:border-white/5 rounded-lg text-xs text-slate-650 dark:text-zinc-450 text-center leading-relaxed font-sans shadow-inner">
                       Your student profile has been automatically provisioned. Login credentials and onboarding schedules have been dispatched to your mailbox.
                     </div>
                   ) : (
-                    <div className="p-3.5 bg-rose-500/[0.03] dark:bg-rose-500/[0.05] border border-rose-200/40 dark:border-rose-900/10 rounded-xl text-xs text-zinc-650 dark:text-zinc-400 text-center leading-relaxed font-sans">
-                      Don't worry! You can retake the Language Placement Exam. You have <strong>{3 - attemptsUsed}</strong> of 3 attempts remaining.
+                    <div className="p-4 bg-rose-500/[0.01] dark:bg-rose-500/[0.02] border border-rose-200/20 dark:border-rose-900/10 rounded-lg text-xs text-slate-650 dark:text-zinc-455 text-center leading-relaxed font-sans shadow-inner">
+                      Do don't worry! You can retake the Placement Exam. You have <strong>{3 - attemptsUsed}</strong> of 3 attempts remaining.
                     </div>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/5 flex flex-col gap-3">
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex flex-col gap-3">
                   {totalScore < 25 && attemptsUsed >= 3 && (
-                    <div className="p-3 bg-rose-500/[0.04] border border-rose-500/25 rounded-xl text-xs text-rose-600 dark:text-rose-400 text-center font-semibold">
-                      ⚠️ You have used all 3 available attempts and did not reach the 25% passing score. Please contact administration for further support.
+                    <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-300/45 rounded-lg text-xs text-rose-700 dark:text-rose-450 text-center font-bold flex items-center justify-center gap-2">
+                      <ShieldAlert className="w-4.5 h-4.5" />
+                      <span>You have used all 3 available attempts and did not reach the 25% passing score. Please contact administration for further support.</span>
                     </div>
                   )}
 
@@ -934,7 +1028,7 @@ export default function AdmissionsExamModal({
                     {totalScore < 25 ? (
                       <button
                         onClick={handleResetExam}
-                        className="flex-1 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
+                        className="flex-1 py-3 bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-slate-750 dark:text-zinc-300 border border-slate-300/80 dark:border-white/15 font-bold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-2 active:scale-[0.99] shadow-2xs"
                       >
                         {attemptsUsed >= 3 ? "Reset Attempts & Restart Exam" : `Restart Exam (${3 - attemptsUsed} attempts remaining)`}
                       </button>
@@ -943,14 +1037,14 @@ export default function AdmissionsExamModal({
                         {attemptsUsed < 3 && (
                           <button
                             onClick={handleResetExam}
-                            className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-750 dark:text-zinc-300 border border-zinc-200 dark:border-white/15 font-semibold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5"
+                            className="px-5 py-3 bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-slate-750 dark:text-zinc-300 border border-slate-300/80 dark:border-white/15 font-bold rounded-lg cursor-pointer transition text-xs flex items-center justify-center gap-1.5 active:scale-[0.99] shadow-2xs"
                           >
                             Restart Exam
                           </button>
                         )}
                         <button
                           onClick={handleCompleteAssessment}
-                          className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
+                          className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
                         >
                           Access Your Dashboard &rarr;
                         </button>
