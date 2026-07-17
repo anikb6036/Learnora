@@ -510,15 +510,15 @@ export default function AdmissionsExamModal({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="space-y-8 flex-1 flex flex-col justify-between"
+                className="space-y-6 flex-1 flex flex-col justify-between"
               >
-                <div className="space-y-8">
-                  <div className="space-y-4 border-b border-slate-200 dark:border-zinc-800 pb-8">
+                <div className="space-y-6">
+                  <div className="space-y-3 border-b border-slate-200 dark:border-zinc-800 pb-5">
                     <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
                       Attempts used: <span className="text-slate-900 dark:text-white font-semibold">{attemptsUsed} of 3 allowed</span>
                     </div>
                     
-                    <h3 className="text-xl md:text-2xl font-sans font-bold tracking-tight text-slate-900 dark:text-white">
+                    <h3 className="text-lg md:text-xl font-sans font-bold tracking-tight text-slate-900 dark:text-white">
                       Candidate: {request.name}
                     </h3>
                     <p className="text-xs md:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-3xl">
@@ -527,37 +527,37 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* Syllabus / Evaluation breakdown boxes */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                    <div className="relative p-6 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                    <div className="relative p-5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm">
                       <div className="absolute top-0 left-0 w-1 h-full bg-slate-900 dark:bg-slate-500 rounded-l-lg" />
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2.5 text-slate-850 dark:text-zinc-100">
-                          <div className="p-2 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-300">
-                            <BookOpen className="w-4 h-4" />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+                          <div className="p-1.5 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-150 dark:border-zinc-800 text-slate-650 dark:text-zinc-350">
+                            <BookOpen className="w-3.5 h-3.5" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 1</span>
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 1</span>
                         </div>
                         <div>
-                          <h4 className="text-sm md:text-base font-sans font-semibold text-slate-900 dark:text-white">Reading Comprehension</h4>
-                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-2">
+                          <h4 className="text-sm font-sans font-semibold text-slate-900 dark:text-white">Reading Comprehension</h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-1">
                             Analyze an academic reading comprehension passage and answer four multiple-choice questions. This counts for 50% of the final exam grade.
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative p-6 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-sm">
+                    <div className="relative p-5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm">
                       <div className="absolute top-0 left-0 w-1 h-full bg-slate-900 dark:bg-slate-500 rounded-l-lg" />
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2.5 text-slate-850 dark:text-zinc-100">
-                          <div className="p-2 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-300">
-                            <Mic className="w-4 h-4" />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+                          <div className="p-1.5 rounded bg-slate-50 dark:bg-zinc-850 border border-slate-150 dark:border-zinc-800 text-slate-650 dark:text-zinc-350">
+                            <Mic className="w-3.5 h-3.5" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 2</span>
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-450">Section 2</span>
                         </div>
                         <div>
-                          <h4 className="text-sm md:text-base font-sans font-semibold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
-                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-2">
+                          <h4 className="text-sm font-sans font-semibold text-slate-900 dark:text-white">Speaking & Pronunciation</h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed mt-1">
                             Read a phonetically rich sentence aloud. The system will evaluate pronunciation accuracy, spoken cadence, and speech delivery in real-time. Counts for 50%.
                           </p>
                         </div>
@@ -566,13 +566,13 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* Strictly official warning block */}
-                  <div className="p-5 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 text-sm text-amber-900 dark:text-amber-400 leading-relaxed flex gap-4 shadow-sm">
-                    <div className="h-9 w-9 rounded bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-500 shrink-0 mt-0.5">
-                      <AlertCircle className="w-5 h-5" />
+                  <div className="p-4 rounded-lg bg-amber-50/40 dark:bg-amber-950/10 border border-amber-250/30 dark:border-amber-900/20 text-xs text-amber-900 dark:text-amber-400 leading-relaxed flex gap-3 shadow-sm">
+                    <div className="h-7 w-7 rounded bg-amber-100/80 dark:bg-amber-900/30 flex items-center justify-center text-amber-700 dark:text-amber-500 shrink-0 mt-0.5">
+                      <AlertCircle className="w-4 h-4" />
                     </div>
-                    <div className="space-y-1">
-                      <span className="font-bold tracking-tight block uppercase text-[10px] text-amber-800 dark:text-amber-500">Academic Evaluation Integrity Notice</span>
-                      <span className="text-amber-900/80 dark:text-amber-200/70 text-xs">
+                    <div className="space-y-0.5">
+                      <span className="font-bold tracking-wider block uppercase text-[9px] text-amber-800 dark:text-amber-500">Academic Evaluation Integrity Notice</span>
+                      <span className="text-amber-900/80 dark:text-amber-200/70 text-xs leading-relaxed">
                         Please verify your audio and video inputs. Strict proctor monitoring remains active during the entire test duration. Navigating away from this window, losing audio/video signals, or talking during forbidden times will flag this attempt for administrative review.
                       </span>
                     </div>
