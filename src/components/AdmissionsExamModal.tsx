@@ -848,8 +848,7 @@ export default function AdmissionsExamModal({
                       </div>
                     ) : (
                       <div className="text-center">
-                        <span className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-center gap-2 font-mono font-bold tracking-wider uppercase">
-                          <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-zinc-700 animate-pulse" />
+                        <span className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-center gap-2 font-medium">
                           Microphone Status: Ready
                         </span>
                       </div>
