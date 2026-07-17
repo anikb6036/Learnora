@@ -930,12 +930,12 @@ export default function AdmissionsExamModal({
               >
                 <div className="space-y-6">
                   {totalScore >= 25 ? (
-                    <div className="relative flex flex-col items-center py-10 p-8 border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/10 rounded-lg space-y-5 text-center overflow-hidden shadow-sm">
-                      <div className="h-14 w-14 rounded bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 shadow-sm">
+                    <div className="relative flex flex-col items-center py-10 p-8 border border-slate-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 rounded-lg space-y-5 text-center overflow-hidden shadow-sm">
+                      <div className="h-14 w-14 rounded bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 shadow-xs">
                         <FileCheck className="w-7 h-7 stroke-[2]" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-400 text-[10px] uppercase font-semibold tracking-wider border border-emerald-300/40 mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] uppercase font-semibold tracking-wider border border-emerald-100 dark:border-emerald-900/20 mb-2">
                           <Award className="w-4 h-4" /> Approved
                         </div>
                         <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -949,19 +949,19 @@ export default function AdmissionsExamModal({
                         </p>
                       </div>
 
-                      <div className="bg-white dark:bg-zinc-900 p-5 px-10 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm mt-4">
+                      <div className="bg-slate-50 dark:bg-zinc-950 p-5 px-10 rounded-lg border border-slate-150 dark:border-zinc-850 shadow-sm mt-4">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-1">Final Assessment Grade</span>
                         <span className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white block">{totalScore}%</span>
-                        <span className="text-[10px] font-semibold text-emerald-750 dark:text-emerald-400 tracking-wide mt-2 block">Passing Benchmark Met (25%)</span>
+                        <span className="text-[10px] font-semibold text-emerald-650 dark:text-emerald-450 tracking-wide mt-2 block">Passing Benchmark Met (25%)</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="relative flex flex-col items-center py-10 p-8 border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/10 rounded-lg space-y-5 text-center overflow-hidden shadow-sm">
-                      <div className="h-14 w-14 rounded bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 shadow-sm">
+                    <div className="relative flex flex-col items-center py-10 p-8 border border-slate-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 rounded-lg space-y-5 text-center overflow-hidden shadow-sm">
+                      <div className="h-14 w-14 rounded bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 shadow-xs">
                         <AlertCircle className="w-7 h-7 stroke-[2]" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-100/80 dark:bg-rose-950/60 text-rose-900 dark:text-rose-400 text-[10px] uppercase font-semibold tracking-wider border border-rose-300/40 mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-450 text-[10px] uppercase font-semibold tracking-wider border border-rose-100 dark:border-rose-900/20 mb-2">
                           Unqualified
                         </div>
                         <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -975,10 +975,10 @@ export default function AdmissionsExamModal({
                         </p>
                       </div>
 
-                      <div className="bg-white dark:bg-zinc-900 p-5 px-10 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm mt-4">
+                      <div className="bg-slate-50 dark:bg-zinc-950 p-5 px-10 rounded-lg border border-slate-150 dark:border-zinc-850 shadow-sm mt-4">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-1">Final Assessment Grade</span>
-                        <span className="text-5xl font-extrabold tracking-tight text-rose-700 dark:text-rose-400 block">{totalScore}%</span>
-                        <span className="text-[10px] font-semibold text-rose-700 dark:text-rose-450 tracking-wide mt-2 block">Passing Benchmark: 25%</span>
+                        <span className="text-5xl font-extrabold tracking-tight text-rose-650 dark:text-rose-450 block">{totalScore}%</span>
+                        <span className="text-[10px] font-semibold text-rose-650 dark:text-rose-450 tracking-wide mt-2 block">Passing Benchmark: 25%</span>
                       </div>
                     </div>
                   )}
