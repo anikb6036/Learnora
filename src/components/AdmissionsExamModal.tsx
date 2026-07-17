@@ -630,16 +630,16 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* MCQ Questions list */}
-                  <div className="space-y-6 bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm">
+                  <div className="space-y-5 bg-white dark:bg-zinc-900 p-5 md:p-6 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm">
                     {/* Q1 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 01</span>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 01</span>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                           Why is the Amazon Rainforest called the 'lungs of the Earth'?
                         </p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
                           { key: 'A', text: 'It has many rivers.' },
                           { key: 'B', text: 'It breathes out oxygen and helps the planet.' },
@@ -649,15 +649,15 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ1Answer(opt.key)}
-                            className={`py-2.5 px-4 text-left text-sm rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
+                            className={`py-2 px-3 text-left text-xs sm:text-[13px] rounded-lg border transition duration-150 cursor-pointer font-medium leading-tight flex items-center justify-between ${
                               q1Answer === opt.key 
                                 ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-sm' 
                                 : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
                           >
                             <span className="flex items-start">
-                              <span className={`font-mono uppercase font-bold mr-3 shrink-0 mt-0.5 ${q1Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
-                              <span className="text-xs md:text-sm">{opt.text}</span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 shrink-0 text-xs ${q1Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
+                              <span>{opt.text}</span>
                             </span>
                             {q1Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3] shrink-0 ml-2" />}
                           </button>
@@ -668,14 +668,14 @@ export default function AdmissionsExamModal({
                     <div className="w-full h-px bg-slate-100 dark:bg-zinc-850" />
 
                     {/* Q2 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 02</span>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 02</span>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                           Which two animals are mentioned as living in the rainforest?
                         </p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
                           { key: 'A', text: 'Lions and elephants' },
                           { key: 'B', text: 'Bears and wolves' },
@@ -685,15 +685,15 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ2Answer(opt.key)}
-                            className={`py-2.5 px-4 text-left text-sm rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
+                            className={`py-2 px-3 text-left text-xs sm:text-[13px] rounded-lg border transition duration-150 cursor-pointer font-medium leading-tight flex items-center justify-between ${
                               q2Answer === opt.key 
                                 ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-sm' 
                                 : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
                           >
                             <span className="flex items-start">
-                              <span className={`font-mono uppercase font-bold mr-3 shrink-0 mt-0.5 ${q2Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
-                              <span className="text-xs md:text-sm">{opt.text}</span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 shrink-0 text-xs ${q2Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
+                              <span>{opt.text}</span>
                             </span>
                             {q2Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3] shrink-0 ml-2" />}
                           </button>
@@ -704,14 +704,14 @@ export default function AdmissionsExamModal({
                     <div className="w-full h-px bg-slate-100 dark:bg-zinc-850" />
 
                     {/* Q3 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 03</span>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 03</span>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                           What is the Amazon Rainforest often called?
                         </p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
                           { key: 'A', text: 'The heart of the world' },
                           { key: 'B', text: 'The lungs of the Earth' },
@@ -721,15 +721,15 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ3Answer(opt.key)}
-                            className={`py-2.5 px-4 text-left text-sm rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
+                            className={`py-2 px-3 text-left text-xs sm:text-[13px] rounded-lg border transition duration-150 cursor-pointer font-medium leading-tight flex items-center justify-between ${
                               q3Answer === opt.key 
                                 ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-sm' 
-                                : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+                                : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:bg-zinc-700'
                             }`}
                           >
                             <span className="flex items-start">
-                              <span className={`font-mono uppercase font-bold mr-3 shrink-0 mt-0.5 ${q3Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
-                              <span className="text-xs md:text-sm">{opt.text}</span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 shrink-0 text-xs ${q3Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
+                              <span>{opt.text}</span>
                             </span>
                             {q3Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3] shrink-0 ml-2" />}
                           </button>
@@ -740,14 +740,14 @@ export default function AdmissionsExamModal({
                     <div className="w-full h-px bg-slate-100 dark:bg-zinc-850" />
 
                     {/* Q4 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 04</span>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 04</span>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                           Why do we need to learn about these forests?
                         </p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {[
                           { key: 'A', text: 'To find hidden treasures' },
                           { key: 'B', text: 'To understand why we need to protect our planet\'s wildlife' },
@@ -757,15 +757,15 @@ export default function AdmissionsExamModal({
                           <button
                             key={opt.key}
                             onClick={() => setQ4Answer(opt.key)}
-                            className={`py-2.5 px-4 text-left text-sm rounded-lg border transition duration-150 cursor-pointer font-medium leading-relaxed flex items-center justify-between ${
+                            className={`py-2 px-3 text-left text-xs sm:text-[13px] rounded-lg border transition duration-150 cursor-pointer font-medium leading-tight flex items-center justify-between ${
                               q4Answer === opt.key 
                                 ? 'bg-slate-900 text-white dark:bg-zinc-100 dark:text-slate-900 border-slate-900 dark:border-zinc-100 font-bold shadow-sm' 
                                 : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
                           >
                             <span className="flex items-start">
-                              <span className={`font-mono uppercase font-bold mr-3 shrink-0 mt-0.5 ${q4Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
-                              <span className="text-xs md:text-sm">{opt.text}</span>
+                              <span className={`font-mono uppercase font-bold mr-2.5 shrink-0 text-xs ${q4Answer === opt.key ? 'text-slate-300 dark:text-slate-500' : 'text-slate-400'}`}>{opt.key}</span>
+                              <span>{opt.text}</span>
                             </span>
                             {q4Answer === opt.key && <Check className="w-3.5 h-3.5 text-white dark:text-slate-900 stroke-[3] shrink-0 ml-2" />}
                           </button>
