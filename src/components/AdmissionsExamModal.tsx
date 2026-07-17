@@ -515,18 +515,7 @@ export default function AdmissionsExamModal({
               >
                 <div className="space-y-8">
                   <div className="space-y-4 border-b border-slate-200 dark:border-zinc-800 pb-8">
-                    <div className="flex flex-wrap gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-100 dark:bg-zinc-800 border border-slate-300/60 dark:border-white/5 text-slate-700 dark:text-zinc-300 text-[10px] font-mono tracking-wider uppercase font-bold">
-                        Academic Assessment Portal
-                      </div>
-                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono tracking-wider uppercase border font-bold ${
-                        attemptsUsed >= 3 
-                          ? 'bg-rose-50 text-rose-700 dark:text-rose-450 border-rose-300/40' 
-                          : 'bg-amber-50 text-amber-700 dark:text-amber-500 border-amber-300/40'
-                      }`}>
-                        Attempts Used: {attemptsUsed} / 3 Allowed
-                      </div>
-                    </div>
+
                     
                     <h3 className="text-3xl md:text-4xl font-sans font-extrabold tracking-tight text-slate-900 dark:text-white">
                       Candidate: {request.name}
