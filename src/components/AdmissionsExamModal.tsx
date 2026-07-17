@@ -935,7 +935,7 @@ export default function AdmissionsExamModal({
                         <FileCheck className="w-7 h-7 stroke-[2]" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-400 text-[10px] uppercase font-mono font-bold tracking-wider border border-emerald-300/40 mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-400 text-[10px] uppercase font-semibold tracking-wider border border-emerald-300/40 mb-2">
                           <Award className="w-4 h-4" /> Approved
                         </div>
                         <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -952,7 +952,7 @@ export default function AdmissionsExamModal({
                       <div className="bg-white dark:bg-zinc-900 p-5 px-10 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm mt-4">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-1">Final Assessment Grade</span>
                         <span className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white block">{totalScore}%</span>
-                        <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mt-2 block">PASSING BENCHMARK MET (25%)</span>
+                        <span className="text-[10px] font-semibold text-emerald-750 dark:text-emerald-400 tracking-wide mt-2 block">Passing Benchmark Met (25%)</span>
                       </div>
                     </div>
                   ) : (
@@ -961,7 +961,7 @@ export default function AdmissionsExamModal({
                         <AlertCircle className="w-7 h-7 stroke-[2]" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-100/80 dark:bg-rose-950/60 text-rose-900 dark:text-rose-400 text-[10px] uppercase font-mono font-bold tracking-wider border border-rose-300/40 mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-rose-100/80 dark:bg-rose-950/60 text-rose-900 dark:text-rose-400 text-[10px] uppercase font-semibold tracking-wider border border-rose-300/40 mb-2">
                           Unqualified
                         </div>
                         <h3 className="text-2xl font-sans font-bold text-slate-900 dark:text-white tracking-tight mt-1">
@@ -978,7 +978,7 @@ export default function AdmissionsExamModal({
                       <div className="bg-white dark:bg-zinc-900 p-5 px-10 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm mt-4">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block tracking-widest mb-1">Final Assessment Grade</span>
                         <span className="text-5xl font-extrabold tracking-tight text-rose-700 dark:text-rose-400 block">{totalScore}%</span>
-                        <span className="text-[10px] font-mono font-bold text-rose-700 dark:text-rose-450 uppercase tracking-widest mt-2 block">PASSING BENCHMARK: 25%</span>
+                        <span className="text-[10px] font-semibold text-rose-700 dark:text-rose-450 tracking-wide mt-2 block">Passing Benchmark: 25%</span>
                       </div>
                     </div>
                   )}
@@ -990,7 +990,7 @@ export default function AdmissionsExamModal({
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase block tracking-widest">Section 1 Score</span>
                         <h5 className="text-sm font-sans font-bold text-slate-900 dark:text-zinc-100">Reading Comprehension</h5>
                       </div>
-                      <span className="text-sm font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded shadow-sm">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 px-3 py-1.5 rounded shadow-xs">
                         {readingScore} / 50
                       </span>
                     </div>
@@ -1001,7 +1001,7 @@ export default function AdmissionsExamModal({
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase block tracking-widest">Section 2 Score</span>
                         <h5 className="text-sm font-sans font-bold text-slate-900 dark:text-zinc-100">Phonetic Articulation</h5>
                       </div>
-                      <span className="text-sm font-mono font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded shadow-sm">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-white bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 px-3 py-1.5 rounded shadow-xs">
                         {speakingScore} / 50
                       </span>
                     </div>
