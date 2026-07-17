@@ -618,13 +618,13 @@ export default function AdmissionsExamModal({
                   </div>
 
                   {/* Reading Passage Container */}
-                  <div className="p-8 md:p-10 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm leading-relaxed text-slate-850 dark:text-zinc-200 select-none relative shadow-sm">
-                    <div className="absolute top-10 left-0 w-1 h-16 bg-slate-900 dark:bg-slate-400 rounded-r-lg" />
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-4">
+                  <div className="p-5 md:p-6 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm leading-relaxed text-slate-850 dark:text-zinc-200 select-none relative shadow-sm">
+                    <div className="absolute top-6 left-0 w-1 h-10 bg-slate-900 dark:bg-slate-400 rounded-r-lg" />
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-3">
                       <BookOpen className="w-4 h-4 text-slate-700 dark:text-zinc-300" />
                       <span>Official Academic Reading Excerpt</span>
                     </div>
-                    <p className="italic pl-6 text-slate-800 dark:text-zinc-200 font-sans text-lg leading-loose">
+                    <p className="pl-4 text-slate-700 dark:text-zinc-300 font-sans text-xs sm:text-sm leading-relaxed">
                       "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
                     </p>
                   </div>
