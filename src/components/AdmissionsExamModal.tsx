@@ -430,7 +430,7 @@ export default function AdmissionsExamModal({
   };
 
   return (
-    <div className="fixed inset-0 z-55 bg-slate-50 dark:bg-zinc-950 overflow-y-auto overflow-x-hidden flex flex-col items-center select-none">
+    <div className="fixed inset-0 z-55 bg-white dark:bg-zinc-950 overflow-y-auto overflow-x-hidden flex flex-col items-center select-none">
       {/* Professional subtle overlay pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
 
@@ -438,7 +438,7 @@ export default function AdmissionsExamModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="relative w-full h-full min-h-screen flex flex-col bg-slate-50 dark:bg-zinc-950 font-sans"
+        className="relative w-full h-full min-h-screen flex flex-col bg-white dark:bg-zinc-950 font-sans"
       >
         {/* Premium Academic Header */}
         <div className="relative bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-white/5 py-5 px-6 md:px-8 shrink-0 flex justify-center z-30 shadow-sm">
