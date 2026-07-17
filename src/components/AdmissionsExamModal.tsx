@@ -612,7 +612,6 @@ export default function AdmissionsExamModal({
                 <div className="space-y-6">
                   <div className="flex justify-between items-center bg-slate-50 dark:bg-zinc-950 px-5 py-3 rounded-lg border border-slate-200/60 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 shadow-sm">
                     <span className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-medium">
-                      <span className="h-2 w-2 rounded-full bg-slate-500 dark:bg-zinc-500 animate-pulse" />
                       Section A: Reading Comprehension
                     </span>
                     <span className="font-semibold text-slate-600 dark:text-zinc-400">50 Points Max</span>
@@ -799,7 +798,6 @@ export default function AdmissionsExamModal({
                 <div className="space-y-6">
                   <div className="flex justify-between items-center bg-slate-50 dark:bg-zinc-950 px-5 py-3 rounded-lg border border-slate-200/60 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 shadow-sm">
                     <span className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-medium">
-                      <span className="h-2 w-2 rounded-full bg-slate-500 dark:bg-zinc-500 animate-pulse" />
                       Section B: Spoken Articulation & Pronunciation
                     </span>
                     <span className="font-semibold text-slate-600 dark:text-zinc-400">50 Points Max</span>
