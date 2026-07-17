@@ -446,7 +446,6 @@ export default function AdmissionsExamModal({
             <div className="flex items-center gap-4">
               <div className="relative flex items-center">
                 <Logo size="sm" withStrapline={false} />
-                <div className="absolute bottom-0 left-6 w-3 h-3 rounded-full bg-emerald-500 border border-white dark:border-zinc-900" title="Secure examination active" />
               </div>
               <div className="h-8 w-px bg-slate-200 dark:bg-zinc-800" />
               <div>
