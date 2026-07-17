@@ -610,20 +610,20 @@ export default function AdmissionsExamModal({
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-5 py-4 rounded-lg border border-slate-200 dark:border-zinc-800 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400 shadow-sm">
-                    <span className="flex items-center gap-2 text-slate-800 dark:text-zinc-200">
-                      <span className="h-2 w-2 rounded-full bg-slate-800 dark:bg-zinc-200 animate-ping" />
+                  <div className="flex justify-between items-center bg-slate-50 dark:bg-zinc-950 px-5 py-3 rounded-lg border border-slate-200/60 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 shadow-sm">
+                    <span className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-slate-500 dark:bg-zinc-500 animate-pulse" />
                       Section A: Reading Comprehension
                     </span>
-                    <span>50 Points Max</span>
+                    <span className="font-semibold text-slate-600 dark:text-zinc-400">50 Points Max</span>
                   </div>
 
                   {/* Reading Passage Container */}
                   <div className="p-8 md:p-10 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm leading-relaxed text-slate-850 dark:text-zinc-200 select-none relative shadow-sm">
                     <div className="absolute top-10 left-0 w-1 h-16 bg-slate-900 dark:bg-slate-400 rounded-r-lg" />
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-[10px] uppercase font-mono tracking-wider font-bold mb-4">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-4">
                       <BookOpen className="w-4 h-4 text-slate-700 dark:text-zinc-300" />
-                      <span>OFFICIAL ACADEMIC READING EXCERPT</span>
+                      <span>Official Academic Reading Excerpt</span>
                     </div>
                     <p className="italic pl-6 text-slate-800 dark:text-zinc-200 font-sans text-lg leading-loose">
                       "The Amazon Rainforest is often called the 'lungs of the Earth' because it draws in a lot of carbon dioxide and breathes out oxygen. Many unique animals live there, like the colorful toucan and the slow-moving sloth. Learning about these forests helps us understand why we need to protect our planet's wildlife."
@@ -635,7 +635,7 @@ export default function AdmissionsExamModal({
                     {/* Q1 */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 01</span>
+                        <span className="text-xs font-semibold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 01</span>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">
                           Why is the Amazon Rainforest called the 'lungs of the Earth'?
                         </p>
@@ -670,7 +670,7 @@ export default function AdmissionsExamModal({
                     {/* Q2 */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 02</span>
+                        <span className="text-xs font-semibold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 02</span>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">
                           Which two animals are mentioned as living in the rainforest?
                         </p>
@@ -705,7 +705,7 @@ export default function AdmissionsExamModal({
                     {/* Q3 */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 03</span>
+                        <span className="text-xs font-semibold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 03</span>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">
                           What is the Amazon Rainforest often called?
                         </p>
@@ -740,7 +740,7 @@ export default function AdmissionsExamModal({
                     {/* Q4 */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 04</span>
+                        <span className="text-xs font-semibold px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/40">Item 04</span>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">
                           Why do we need to learn about these forests?
                         </p>
@@ -797,16 +797,16 @@ export default function AdmissionsExamModal({
                 className="space-y-6 flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center bg-white dark:bg-zinc-900 px-5 py-4 rounded-lg border border-slate-200 dark:border-zinc-800 font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400 shadow-sm">
-                    <span className="flex items-center gap-2 text-slate-850 dark:text-zinc-200">
-                      <span className="h-2 w-2 rounded-full bg-slate-800 dark:bg-zinc-200 animate-ping" />
+                  <div className="flex justify-between items-center bg-slate-50 dark:bg-zinc-950 px-5 py-3 rounded-lg border border-slate-200/60 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 shadow-sm">
+                    <span className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-slate-500 dark:bg-zinc-500 animate-pulse" />
                       Section B: Spoken Articulation & Pronunciation
                     </span>
-                    <span>50 Points Max</span>
+                    <span className="font-semibold text-slate-600 dark:text-zinc-400">50 Points Max</span>
                   </div>
 
                   <div className="space-y-4 text-center md:px-8 mt-4">
-                    <div className="flex items-center justify-center gap-2 text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-zinc-400 font-bold">
+                    <div className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 dark:text-zinc-400">
                       <Volume2 className="w-4 h-4" />
                       <span>Oral Reading Examination Prompt</span>
                     </div>
