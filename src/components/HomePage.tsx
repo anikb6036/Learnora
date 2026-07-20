@@ -1508,7 +1508,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             {/* Duration & Fee breakdown */}
                             <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-2.5">
                               <div className="flex flex-col">
-                                <span className="text-[8.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Tuition Fee</span>
+                                <span className="text-[8.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Course Fee</span>
                                 <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                                   <span className="mr-1 inline-block font-sans font-black">₹</span>{(course.fee || 14999).toLocaleString('en-IN')}
                                 </span>
