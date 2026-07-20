@@ -1460,14 +1460,14 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseId(course.id)}
-                        className={`group rounded-3xl transition-all duration-300 cursor-pointer select-none border text-left flex flex-col overflow-hidden bg-white dark:bg-[#09090B] ${
+                        className={`group rounded-2xl transition-all duration-300 cursor-pointer select-none border text-left flex flex-col overflow-hidden bg-white dark:bg-[#09090B] ${
                           isSelected
                             ? 'border-slate-800 dark:border-slate-300 shadow-[0_12px_40px_rgb(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgb(255,255,255,0.05)] ring-1 ring-slate-800 dark:ring-slate-300'
                             : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-[0_10px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-none hover:-translate-y-1'
                         }`}
                       >
                         {/* Course Cover Image Header */}
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 border-b border-slate-150/50 dark:border-white/5">
+                        <div className="relative aspect-[16/7] w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 border-b border-slate-150/50 dark:border-white/5">
                           <img 
                             src={coverSrc} 
                             alt={course.name} 
@@ -1477,14 +1477,14 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                           
                           {/* Batch Overlay Tag */}
                           {course.batchNumber && (
-                            <span className="absolute top-3.5 left-3.5 text-[9.5px] bg-white/95 dark:bg-zinc-900/95 text-slate-800 dark:text-zinc-200 font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 backdrop-blur-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="absolute top-2.5 left-2.5 text-[8.5px] bg-white/95 dark:bg-zinc-900/95 text-slate-800 dark:text-zinc-200 font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1 backdrop-blur-xs">
+                              <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
                               Batch {course.batchNumber}
                             </span>
                           )}
 
                           {/* Category Icon Badge */}
-                          <div className="absolute top-3.5 right-3.5 shrink-0 bg-white/90 dark:bg-zinc-900/90 p-1.5 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm backdrop-blur-xs z-10">
+                          <div className="absolute top-2.5 right-2.5 shrink-0 bg-white/90 dark:bg-zinc-900/90 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm backdrop-blur-xs z-10 scale-[0.68] origin-top-right">
                             {category === 'Product Management with AI' && <PMIcon />}
                             {category === 'Analytics and AI' && <AnalyticsIcon />}
                             {category === 'Data Science and AI-ML' && <DataScienceIcon />}
@@ -1495,27 +1495,27 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </div>
 
                         {/* Card Content & Details */}
-                        <div className="p-5 flex-1 flex flex-col justify-between">
+                        <div className="p-4 flex-1 flex flex-col justify-between">
                           <div>
-                            <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
+                            <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-snug tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors line-clamp-1">
                               {course.name}
                             </h3>
 
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 line-clamp-2 leading-relaxed">
+                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
                               {course.description || "Deep dive career pathway designed with comprehensive roadmap and 1-on-1 cohort sessions."}
                             </p>
 
                             {/* Duration & Fee breakdown */}
-                            <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-3.5">
+                            <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-2.5">
                               <div className="flex flex-col">
-                                <span className="text-[9.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Tuition Fee</span>
-                                <span className="text-base font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+                                <span className="text-[8.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Tuition Fee</span>
+                                <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                                   ₹{(course.fee || 14999).toLocaleString('en-IN')}
                                 </span>
                               </div>
-                              <div className="bg-amber-500/10 dark:bg-amber-500/20 px-2.5 py-1 rounded-xl border border-amber-500/10 dark:border-amber-500/10 text-center">
-                                <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider block">Duration</span>
-                                <span className="text-xs font-black text-slate-800 dark:text-zinc-200 mt-0.5 block">
+                              <div className="bg-amber-500/10 dark:bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/10 dark:border-amber-500/10 text-center">
+                                <span className="text-[8.5px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider block">Duration</span>
+                                <span className="text-[11px] font-black text-slate-800 dark:text-zinc-200 mt-0.5 block">
                                   {course.durationUnit === 'weeks' || (!course.durationUnit && course.durationWeeks && !course.durationMonths)
                                     ? `${course.durationMonths || course.durationWeeks || 12} Weeks`
                                     : `${course.durationMonths || 6} Months`}
@@ -1525,16 +1525,16 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-3.5 mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 font-medium">
-                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-zinc-500 font-mono">
+                          <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-2.5 mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-slate-400 dark:text-zinc-500 font-mono">
                               ID: {course.code || course.batchNumber || 'COHORT'}
                             </span>
-                            <span className={`text-[11px] font-bold transition-colors flex items-center gap-1.5 ${
+                            <span className={`text-[10.5px] font-bold transition-colors flex items-center gap-1 ${
                               isSelected 
                                 ? 'text-amber-500 dark:text-amber-400' 
                                 : 'text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300'
                             }`}>
-                              Interactive Syllabus <ChevronRight className="w-3.5 h-3.5" />
+                              Interactive Syllabus <ChevronRight className="w-3 h-3" />
                             </span>
                           </div>
                         </div>
