@@ -1510,7 +1510,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                               <div className="flex flex-col">
                                 <span className="text-[8.5px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Tuition Fee</span>
                                 <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
-                                  <span className="mr-[-2px] inline-block font-sans font-black">₹</span>{(course.fee || 14999).toLocaleString('en-IN')}
+                                  <span className="mr-1 inline-block font-sans font-black">₹</span>{(course.fee || 14999).toLocaleString('en-IN')}
                                 </span>
                               </div>
                               <div className="bg-amber-500/10 dark:bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/10 dark:border-amber-500/10 text-center">
@@ -3155,7 +3155,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500 font-bold uppercase block">Course Fee</span>
                   <span className="text-sm font-black text-slate-700 font-mono tracking-tight mt-1 block">
-                    <span className="mr-[-2px] inline-block font-sans font-black">₹</span>{eligibilityResult.baseFee.toLocaleString('en-IN')}
+                    <span className="mr-1 inline-block font-sans font-black">₹</span>{eligibilityResult.baseFee.toLocaleString('en-IN')}
                   </span>
                 </div>
 
@@ -3171,7 +3171,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500 font-bold uppercase block">Estimated Fee</span>
                   <span className="text-sm font-black text-slate-900 font-mono tracking-tight mt-1 block">
-                    <span className="mr-[-2px] inline-block font-sans font-black">₹</span>{eligibilityResult.estimatedFee.toLocaleString('en-IN')}
+                    <span className="mr-1 inline-block font-sans font-black">₹</span>{eligibilityResult.estimatedFee.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
