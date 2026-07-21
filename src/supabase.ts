@@ -96,8 +96,10 @@ export function subscribeSupabaseState(key: string, onUpdate: (data: any) => voi
   if (!supabase) return () => {};
 
   try {
+    // Generate a unique channel name to prevent cache collision on re-renders / multi-subscriptions
+    const uniqueId = Math.random().toString(36).substring(2, 11);
     const channel = supabase
-      .channel(`app_state_realtime_${key}`)
+      .channel(`app_state_realtime_${key}_${uniqueId}`)
       .on(
         'postgres_changes',
         {
