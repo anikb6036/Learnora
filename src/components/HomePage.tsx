@@ -3809,6 +3809,16 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                               Terms of Service
                             </button>
                           </li>
+                          <li>
+                            <button
+                              onClick={() => {
+                                if (onNavigate) onNavigate('/cookies');
+                              }}
+                              className="hover:text-white transition-colors hover:underline underline-offset-4 text-left cursor-pointer"
+                            >
+                              Cookies Policy
+                            </button>
+                          </li>
                        </ul>
                     </div>
 
@@ -3854,6 +3864,15 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       className="hover:text-amber-400 transition-colors cursor-pointer"
                     >
                       Terms of Service
+                    </button>
+                    <span className="opacity-30">|</span>
+                    <button
+                      onClick={() => {
+                        if (onNavigate) onNavigate('/cookies');
+                      }}
+                      className="hover:text-amber-400 transition-colors cursor-pointer"
+                    >
+                      Cookies Policy
                     </button>
                   </div>
                 </div>
