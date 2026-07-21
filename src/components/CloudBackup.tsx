@@ -1535,6 +1535,9 @@ export default function CloudBackup({
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Disable Row Level Security (RLS) to allow public read/write access:
+alter table app_state disable row level security;
+
 -- Enable Realtime for app_state table:
 alter table app_state replica identity full;
 alter publication supabase_realtime add table app_state;`);
@@ -1547,7 +1550,7 @@ alter publication supabase_realtime add table app_state;`);
                 </div>
 
                 <p className="text-[11px] text-slate-500 leading-normal select-none">
-                  Execute this code in your Supabase project's <strong>SQL Editor</strong> tab to create the key-value state store table and activate Postgres Realtime replication.
+                  Execute this code in your Supabase project's <strong>SQL Editor</strong> tab to create the key-value state store table, disable RLS (or define insert/select policies), and activate Postgres Realtime replication.
                 </p>
 
                 <pre className="p-4 bg-slate-950 text-slate-300 rounded-2xl text-[11px] font-mono leading-relaxed overflow-x-auto border border-white/5 select-all">
@@ -1556,6 +1559,9 @@ alter publication supabase_realtime add table app_state;`);
   data jsonb,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Disable Row Level Security (RLS) to allow public read/write access:
+alter table app_state disable row level security;
 
 -- Enable Realtime for app_state table:
 alter table app_state replica identity full;

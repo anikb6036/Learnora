@@ -24,6 +24,9 @@ if (supabase) {
  *   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
  * );
  * 
+ * -- Disable Row Level Security (RLS) to allow public read/write access:
+ * alter table app_state disable row level security;
+ * 
  * -- Enable Realtime for app_state table:
  * alter table app_state replica identity full;
  * alter publication supabase_realtime add table app_state;
@@ -52,7 +55,7 @@ export async function getSupabaseState(key: string): Promise<any | null> {
       if (error.code === '42P01') {
         console.warn(`Supabase table 'app_state' does not exist yet. Please run the SQL schema setup.`);
       } else {
-        console.error(`Supabase error fetching key ${key}:`, error);
+        console.error(`Supabase error fetching key ${key}: ${error.message} (Code: ${error.code}) Details: ${error.details || 'None'} Hint: ${error.hint || 'None'}`);
       }
       return null;
     }
@@ -78,7 +81,7 @@ export async function setSupabaseState(key: string, data: any): Promise<boolean>
       if (error.code === '42P01') {
         console.warn(`Supabase table 'app_state' does not exist yet. Cannot save key ${key}.`);
       } else {
-        console.error(`Supabase error saving key ${key}:`, error);
+        console.error(`Supabase error saving key ${key}: ${error.message} (Code: ${error.code}) Details: ${error.details || 'None'} Hint: ${error.hint || 'None'}`);
       }
       return false;
     }
