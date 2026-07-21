@@ -2520,7 +2520,7 @@ export default function ScheduleManager({
 
                       {/* Vercel-style Actions */}
                       <div className="flex items-center gap-2">
-                        {cl.status === 'scheduled' && (
+                        {cl.status === 'scheduled' && !isTimeOver && (
                           <div className="flex items-center gap-2">
                             {((['admin', 'sub-admin'].includes(currentUser.role)) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId)) ? (
                               <div className="flex flex-wrap items-center gap-1.5">
@@ -2629,8 +2629,12 @@ export default function ScheduleManager({
                           </div>
                         )}
 
-                        {cl.status === 'completed' && (
+                        {(cl.status === 'completed' || (cl.status === 'scheduled' && isTimeOver)) && (
                           <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 rounded-md text-[10px] font-bold border border-blue-100 dark:border-blue-500/10 uppercase tracking-wider select-none">
+                              Completed
+                            </span>
+
                             {['admin', 'sub-admin'].includes(currentUser.role) || (currentUser.role === 'instructor' && currentUser.id === cl.instructorId) ? (
                               <button
                                 onClick={(e) => {
