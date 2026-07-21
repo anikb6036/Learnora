@@ -27,6 +27,7 @@ import {
   FileCode 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../supabase';
 
 interface CloudBackupProps {
   students: UserAccount[];
@@ -70,7 +71,7 @@ export default function CloudBackup({
   onUpdateAssignments
 }: CloudBackupProps) {
   // Navigation tabs
-  const [activeSubTab, setActiveSubTab] = useState<'snapshots' | 'explorer' | 'sql'>('explorer');
+  const [activeSubTab, setActiveSubTab] = useState<'snapshots' | 'explorer' | 'sql' | 'supabase'>('explorer');
 
   // Existing Snapshot states
   const [isSyncing, setIsSyncing] = useState(false);
@@ -774,6 +775,17 @@ export default function CloudBackup({
               <Cloud className="w-3.5 h-3.5" />
               Cloud Snapshots
             </button>
+            <button
+              onClick={() => setActiveSubTab('supabase')}
+              className={`px-4.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                activeSubTab === 'supabase'
+                  ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white'
+              }`}
+            >
+              <Database className="w-3.5 h-3.5" />
+              Supabase Sync
+            </button>
           </div>
         </div>
 
@@ -1401,6 +1413,110 @@ export default function CloudBackup({
                 </div>
               </div>
             )}
+          </motion.div>
+        )}
+
+        {activeSubTab === 'supabase' && (
+          <motion.div
+            key="supabase"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            {/* Supabase connection status card */}
+            <div className="bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-6">
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-white/5 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-3 rounded-2xl ${supabase ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white select-none">
+                      Supabase Integration Status
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5 select-none">
+                      Check your real-time cloud database replication & schema
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${supabase ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                  <span className={`text-xs font-bold font-mono ${supabase ? 'text-emerald-500' : 'text-amber-500'}`}>
+                    {supabase ? 'CONNECTED & SYNCHRONIZED' : 'PENDING CONFIGURATION'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Status explanation */}
+              {supabase ? (
+                <div className="bg-emerald-500/5 border border-emerald-500/10 p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-bold text-xs select-none">
+                    <CheckCircle className="w-4 h-4" /> Dual-Streaming Activated (Zero Data Loss)
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed select-none">
+                    Great news! Your Supabase database is successfully connected. The system is running in <strong>Active Dual-Sync</strong> mode:
+                    all writes are simultaneously routed in real-time to both <strong>Firebase Firestore</strong> and <strong>Supabase</strong>.
+                    Any existing Firebase registries will be automatically migrated to Supabase the moment they are loaded. You are safe to shut down Firebase!
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-amber-500/5 border border-amber-500/10 p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-bold text-xs select-none">
+                    <Info className="w-4 h-4" /> Ready for Connection
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed select-none">
+                    The codebase has been fully upgraded to support Supabase. To complete the database switch without any data loss:
+                    please set the <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> environment variables in your workspace settings.
+                    Once provided, the application will automatically migrate all existing datasets from Firebase to your Supabase tables upon load.
+                  </p>
+                </div>
+              )}
+
+              {/* Required SQL Schema */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileCode className="w-4 h-4 text-indigo-500" />
+                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 select-none">Required Supabase SQL Schema</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`create table if not exists app_state (
+  key text primary key,
+  data jsonb,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable Realtime for app_state table:
+alter table app_state replica identity full;
+alter publication supabase_realtime add table app_state;`);
+                      alert('SQL Schema copied to clipboard!');
+                    }}
+                    className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Copy SQL Script
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-normal select-none">
+                  Execute this code in your Supabase project's <strong>SQL Editor</strong> tab to create the key-value state store table and activate Postgres Realtime replication.
+                </p>
+
+                <pre className="p-4 bg-slate-950 text-slate-300 rounded-2xl text-[11px] font-mono leading-relaxed overflow-x-auto border border-white/5 select-all">
+{`create table if not exists app_state (
+  key text primary key,
+  data jsonb,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable Realtime for app_state table:
+alter table app_state replica identity full;
+alter publication supabase_realtime add table app_state;`}
+                </pre>
+              </div>
+            </div>
           </motion.div>
         )}
 

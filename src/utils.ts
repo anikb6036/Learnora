@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { supabase, getSupabaseState, setSupabaseState, subscribeSupabaseState } from './supabase';
 import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, EvolutionBankItem } from './types';
 
 // Initial seed data for the Coaching Center
@@ -289,54 +290,118 @@ export function saveState<T>(key: string, data: T): void {
 }
 
 export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {
-  // Try to load any existing local data while Firebase fetches
+  // Try to load any existing local data while loading server state
   const [state, setState] = useState<T>(() => getSavedState<T>(key, defaultValue));
   const [isLoaded, setIsLoaded] = useState(false);
   const isLoadedRef = useRef(false);
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "app_state", key), {
-      next: (docSnap) => {
-        if (docSnap.exists() && docSnap.data()?.data !== undefined) {
-          const newData = docSnap.data().data as T;
-          setState(newData);
-          saveState(key, newData); // Sync to local storage
-          isLoadedRef.current = true;
-          setIsLoaded(true);
-        } else if (!docSnap.metadata.fromCache) {
-          // Genuinely does not exist on server. Init record remotely if it doesn't exist
-          const initialLocalData = getSavedState<T>(key, defaultValue);
-          setDoc(doc(db, "app_state", key), { data: initialLocalData }, { merge: true }).catch(err => {
-            console.error(`Failed to init remote state for ${key}`, err);
-          });
+    let active = true;
+    let unsubFirebase: (() => void) | null = null;
+    let unsubSupabase: (() => void) | null = null;
+
+    async function initAndSync() {
+      // 1. If Supabase is available, attempt to load from it first
+      let supabaseData: any = null;
+      if (supabase) {
+        supabaseData = await getSupabaseState(key);
+        if (supabaseData !== null && active) {
+          setState(supabaseData);
+          saveState(key, supabaseData);
           isLoadedRef.current = true;
           setIsLoaded(true);
         }
-      },
-      error: (err) => {
-        console.warn(`Firebase read failing for ${key}, falling back to local.`, err);
-        isLoadedRef.current = false;
-        setIsLoaded(true);
       }
-    });
-    return () => unsub();
+
+      // 2. Load from Firebase as well (acting as master sync source if Supabase is fresh)
+      unsubFirebase = onSnapshot(doc(db, "app_state", key), {
+        next: (docSnap) => {
+          if (!active) return;
+          if (docSnap.exists() && docSnap.data()?.data !== undefined) {
+            const firebaseData = docSnap.data().data as T;
+            
+            // If Supabase was empty or not initialized yet but Firebase has data, sync it to Supabase!
+            if (supabase && supabaseData === null) {
+              setSupabaseState(key, firebaseData).then((success) => {
+                if (success) {
+                  console.log(`Successfully migrated Firebase state to Supabase for key: ${key}`);
+                  supabaseData = firebaseData; // Mark as populated
+                }
+              });
+            }
+
+            // Only update local state from Firebase if we don't have a newer Supabase state
+            if (!supabase || supabaseData === null) {
+              setState(firebaseData);
+              saveState(key, firebaseData);
+            }
+            
+            isLoadedRef.current = true;
+            setIsLoaded(true);
+          } else if (!docSnap.metadata.fromCache) {
+            // Document doesn't exist on Firebase. Check if we can init it from Supabase or Local
+            const currentData = supabaseData !== null ? supabaseData : getSavedState<T>(key, defaultValue);
+            setDoc(doc(db, "app_state", key), { data: currentData }, { merge: true }).catch(err => {
+              console.error(`Failed to init remote Firebase state for ${key}`, err);
+            });
+            isLoadedRef.current = true;
+            setIsLoaded(true);
+          }
+        },
+        error: (err) => {
+          console.warn(`Firebase read failed or restricted for ${key}.`, err);
+          // If Supabase is loaded, we are good. Otherwise fall back to local
+          if (!isLoadedRef.current) {
+            isLoadedRef.current = true;
+            setIsLoaded(true);
+          }
+        }
+      });
+
+      // 3. Set up real-time subscription for Supabase
+      if (supabase) {
+        unsubSupabase = subscribeSupabaseState(key, (newData) => {
+          if (!active) return;
+          if (newData !== undefined && newData !== null) {
+            setState(newData);
+            saveState(key, newData);
+            isLoadedRef.current = true;
+            setIsLoaded(true);
+          }
+        });
+      }
+    }
+
+    initAndSync();
+
+    return () => {
+      active = false;
+      if (unsubFirebase) unsubFirebase();
+      if (unsubSupabase) unsubSupabase();
+    };
   }, [key]);
   
   const setFirebaseState: React.Dispatch<React.SetStateAction<T>> = React.useCallback((value) => {
     setState((prevState) => {
       const nextState = value instanceof Function ? value(prevState) : value;
-      saveState(key, nextState); // maintain local copy just in case
+      saveState(key, nextState); // maintain local copy
       
-      // Clean undefined values for Firestore
       const cleanState = JSON.parse(JSON.stringify(nextState));
 
-      // Push changes back to Firestore ONLY after loading from remote has finished!
+      // Push changes back ONLY after we've finished the initial load!
       if (isLoadedRef.current) {
+        // 1. Sync to Supabase
+        if (supabase) {
+          setSupabaseState(key, cleanState).catch(err => {
+            console.error(`Failed to push sync to Supabase for ${key}`, err);
+          });
+        }
+        // 2. Sync to Firestore (always do both to prevent any data loss during migration)
         setDoc(doc(db, "app_state", key), { data: cleanState }, { merge: true }).catch(err => {
-            console.error(`Failed to push sync to Firebase for ${key}`, err);
+          console.error(`Failed to push sync to Firebase for ${key}`, err);
         });
       } else {
-        console.warn(`Prevented writing unloaded state back to Firebase for key: ${key}`);
+        console.warn(`Prevented writing unloaded state back for key: ${key}`);
       }
       return nextState;
     });
