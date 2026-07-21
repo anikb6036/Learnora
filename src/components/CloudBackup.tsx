@@ -27,7 +27,7 @@ import {
   FileCode 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase } from '../supabase';
+import { supabase, setSupabaseState } from '../supabase';
 
 interface CloudBackupProps {
   students: UserAccount[];
@@ -94,6 +94,52 @@ export default function CloudBackup({
   const [queryResultData, setQueryResultData] = useState<any[] | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [querySuccess, setQuerySuccess] = useState<string | null>(null);
+
+  // Supabase migration states
+  const [migrationStatus, setMigrationStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
+  const [migratedKeysCount, setMigratedKeysCount] = useState(0);
+
+  const handleFullMigration = async () => {
+    if (!supabase) return;
+    setMigrationStatus('running');
+    setMigrationLogs(['Initializing manual database replication...']);
+    setMigratedKeysCount(0);
+
+    const keysToMigrate = [
+      { key: 'db-users', name: 'Users accounts & registries', data: users },
+      { key: 'db-schedules', name: 'Class schedules', data: schedules },
+      { key: 'db-progress', name: 'Progress records & metrics', data: progressRecords },
+      { key: 'db-courses', name: 'Active courses list', data: courses },
+      { key: 'db-batches', name: 'Student batches', data: batches },
+      { key: 'db-assignments', name: 'Student assignments', data: assignments }
+    ];
+
+    let successCount = 0;
+    for (const item of keysToMigrate) {
+      setMigrationLogs(prev => [...prev, `Syncing ${item.name} (${item.key})...`]);
+      try {
+        const success = await setSupabaseState(item.key, item.data);
+        if (success) {
+          successCount++;
+          setMigratedKeysCount(successCount);
+          setMigrationLogs(prev => [...prev, `✓ Successfully synchronized ${item.name} (${item.key})`]);
+        } else {
+          setMigrationLogs(prev => [...prev, `✗ Failed to synchronize ${item.name}. Please ensure the table 'app_state' exists.`]);
+        }
+      } catch (err) {
+        setMigrationLogs(prev => [...prev, `✗ Exception during synchronization of ${item.key}: ${err}`]);
+      }
+    }
+
+    if (successCount === keysToMigrate.length) {
+      setMigrationStatus('success');
+      setMigrationLogs(prev => [...prev, '🎉 Full replication completed successfully! All datasets are now live in Supabase.']);
+    } else {
+      setMigrationStatus('error');
+      setMigrationLogs(prev => [...prev, '⚠️ Migration complete with warnings. Please verify SQL Schema setup and database credentials.']);
+    }
+  };
 
   // Trigger simulated secure cloud synchronization
   const handleBackupNow = () => {
@@ -1517,6 +1563,52 @@ alter publication supabase_realtime add table app_state;`}
                 </pre>
               </div>
             </div>
+
+            {/* Manual replication block */}
+            {supabase && (
+              <div className="bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-emerald-500" />
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white select-none">
+                    Manual Firebase to Supabase Sync
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-500 leading-normal select-none">
+                  If your Supabase database is still empty or you want to force-replicate the entire dataset from Firebase right now, click the button below. This will copy all current live collections to Supabase in one operation.
+                </p>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleFullMigration}
+                    disabled={migrationStatus === 'running'}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm ${
+                      migrationStatus === 'running'
+                        ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed animate-pulse'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-emerald-500/10'
+                    }`}
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    {migrationStatus === 'running' ? 'Replicating Live State...' : 'Replicate Firebase to Supabase Now'}
+                  </button>
+
+                  {migrationStatus === 'success' && (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 animate-fadeIn">
+                      <CheckCircle className="w-4 h-4" /> Migration complete ({migratedKeysCount}/6 tables synchronized)
+                    </span>
+                  )}
+                </div>
+
+                {migrationLogs.length > 0 && (
+                  <div className="bg-slate-950 p-4 rounded-2xl border border-white/5 space-y-1.5 max-h-48 overflow-y-auto font-mono text-[10px] leading-relaxed text-emerald-400">
+                    {migrationLogs.map((log, index) => (
+                      <div key={index} className="truncate">
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
 
