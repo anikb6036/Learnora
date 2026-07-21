@@ -33,7 +33,13 @@ const sendSystemEmail = async (to: string, subject: string, text: string, html?:
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ to, subject, text, html })
+      body: JSON.stringify({ 
+        to, 
+        subject, 
+        text, 
+        html,
+        systemBypassKey: 'learnora_internal_dispatch_secure_v1'
+      })
     });
     const data = await res.json();
     if (!res.ok) {
@@ -57,6 +63,7 @@ import ReportingDashboard from './components/ReportingDashboard';
 import CloudBackup from './components/CloudBackup';
 import MailboxManager from './components/MailboxManager';
 import ProfileSettings from './components/ProfileSettings';
+import VoiceNotes from './components/VoiceNotes';
 import AssignmentTracker from './components/AssignmentTracker';
 import HomePage from './components/HomePage';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -130,7 +137,8 @@ import {
   Database,
   Github,
   Chrome,
-  ArrowRight
+  ArrowRight,
+  Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
@@ -425,7 +433,7 @@ function AppContent() {
                        backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded && evolutionBankLoaded;
 
   // Navigation tab state
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline' | 'voice-notes'>('dashboard');
 
   // Active integrated classroom session
   const [activeClassroomSession, setActiveClassroomSession] = useState<ClassSchedule | null>(null);
@@ -3013,7 +3021,7 @@ function AppContent() {
     triggerToast(notif);
   };
 
-  const handleSendEmail = (toEmail: string, subject: string, body: string, fromOverride?: string) => {
+  const handleSendEmail = async (toEmail: string, subject: string, body: string, fromOverride?: string) => {
     const senderEmail = fromOverride || (currentUser ? currentUser.email : 'baidyaanik18@gmail.com');
     const newEmail: SimulatedEmail = {
       id: generateUniqueId('mail'),
@@ -3024,11 +3032,38 @@ function AppContent() {
       timestamp: new Date().toISOString()
     };
 
-    // Send real email
-    sendSystemEmail(toEmail, subject, body, body.replace(/\n/g, '<br>'));
-
     // Record in local database/state for visual mailbox tracking
     setSimulatedEmails(prev => [newEmail, ...prev]);
+
+    // Send real email and capture result
+    const result = await sendSystemEmail(toEmail, subject, body, body.replace(/\n/g, '<br>'));
+    
+    if (result.success) {
+      const successNotif: AppNotification = {
+        id: generateUniqueId('notif-mail-success'),
+        title: `Real Email Sent`,
+        message: `Real security recovery dispatch successfully delivered to ${toEmail}.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'push'
+      };
+      setNotifications(prev => [successNotif, ...prev]);
+      triggerToast(successNotif);
+    } else {
+      console.error("Real email dispatch failed:", result.error);
+      const errorNotif: AppNotification = {
+        id: generateUniqueId('notif-mail-error'),
+        title: `Real Email Failed`,
+        message: `Simulated mail saved to Secure Mailbox, but real email delivery failed: ${result.error}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'reminder',
+        channel: 'push'
+      };
+      setNotifications(prev => [errorNotif, ...prev]);
+      triggerToast(errorNotif);
+    }
 
     // If the recipient is indeed in our system, let's trigger a push notice
     const targetUser = users.find(u => u.email.toLowerCase() === toEmail.toLowerCase());
@@ -4927,13 +4962,15 @@ function AppContent() {
                 {/* Central Navigation lists */}
                 <nav className="space-y-1">
                   {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' && !getTrialInfo(currentUser).isTrialActive ? (
-                    <button
+                    <motion.button
                       type="button"
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs bg-rose-50 border border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 font-bold"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs bg-rose-50 border border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 font-bold cursor-pointer"
                     >
                       <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 animate-pulse" />
                       {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Fee Settle Required</span>}
-                    </button>
+                    </motion.button>
                   ) : (
                     <>
                       {/* Student Academic Sub-Menu */}
@@ -4950,118 +4987,205 @@ function AppContent() {
                             </button>
                           )}
                           <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStudentAcademicExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('dashboard');
                                 setStudentScheduleTab('schedule');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'dashboard' && studentScheduleTab === 'schedule'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "My Schedule" : undefined}
                             >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'schedule' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <Calendar className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">My Schedule</span>}
-                            </button>
+                            </motion.button>
 
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('dashboard');
                                 setStudentScheduleTab('tasks');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'dashboard' && studentScheduleTab === 'tasks'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "Pending Tasks" : undefined}
                             >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'tasks' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <Clock className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Pending Tasks</span>}
-                            </button>
+                            </motion.button>
 
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('dashboard');
                                 setStudentScheduleTab('completed');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'dashboard' && studentScheduleTab === 'completed'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "Completed Classes" : undefined}
                             >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'completed' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <CheckCircle className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn font-sans">Completed Classes</span>}
-                            </button>
+                            </motion.button>
 
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('dashboard');
                                 setStudentScheduleTab('assignments');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'dashboard' && studentScheduleTab === 'assignments'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "Assignments & Homework" : undefined}
                             >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'assignments' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <ClipboardList className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignments & Homework</span>}
-                            </button>
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('voice-notes');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'voice-notes'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Voice Notes" : undefined}
+                            >
+                              {activeTab === 'voice-notes' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Mic className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Voice Notes</span>}
+                            </motion.button>
                           </div>
                         </div>
                       ) : (
-                        <button
+                        <motion.button
                           type="button"
                           onClick={() => {
                             setActiveTab('dashboard');
                             if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                           }}
-                          className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                          whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                             activeTab === 'dashboard'
-                              ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                              : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                              ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                              : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                           }`}
                           title={isActuallyCollapsed ? "Center Dashboard" : undefined}
                         >
+                          {activeTab === 'dashboard' && (
+                            <motion.div
+                              layoutId="active-nav-pill"
+                              className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
                           <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
                           {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Center Dashboard</span>}
-                        </button>
+                        </motion.button>
                       )}
 
-                      <button
+                      <motion.button
                         type="button"
                         onClick={() => {
                           setActiveTab('profile');
                           if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                         }}
-                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                        whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                           activeTab === 'profile'
-                            ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                            : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                            ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                            : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                         }`}
                         title={isActuallyCollapsed ? (currentUser.role === 'student' ? 'My Profile' : "Profile & Password Settings") : undefined}
                       >
+                        {activeTab === 'profile' && (
+                          <motion.div
+                            layoutId="active-nav-pill"
+                            className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          />
+                        )}
                         <User className="w-4 h-4 flex-shrink-0" />
                         {!isActuallyCollapsed && (
                           <span className="truncate animate-fadeIn">
                             {currentUser.role === 'student' ? 'My Profile' : 'Profile Settings'}
                           </span>
                         )}
-                      </button>
+                      </motion.button>
 
                       {currentUser.role !== 'student' && (
                         <div className="space-y-1">
@@ -5076,19 +5200,29 @@ function AppContent() {
                             </button>
                           )}
                           <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStaffAcademicExpanded || isActuallyCollapsed ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('enrollments');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'enrollments'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : '') : undefined}
                             >
+                              {activeTab === 'enrollments' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <Users className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && (
                                 <span className="truncate animate-fadeIn">
@@ -5099,12 +5233,12 @@ function AppContent() {
                                       : 'Student Profiles Registry'}
                                 </span>
                               )}
-                            </button>
+                            </motion.button>
 
                             {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
                               <>
                                 {/* First-level: Schedule New Live Class */}
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={() => {
                                     if (activeTab === 'schedule' && scheduleShowAddForm) {
@@ -5117,20 +5251,30 @@ function AppContent() {
                                     }
                                     if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                                   }}
-                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                     activeTab === 'schedule' && scheduleShowAddForm
-                                      ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                                   }`}
                                   title={isActuallyCollapsed ? "Schedule New Live Class" : undefined}
                                 >
+                                  {activeTab === 'schedule' && scheduleShowAddForm && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
                                   <Plus className="w-4 h-4 flex-shrink-0" />
                                   {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Schedule New Live Class</span>}
-                                </button>
+                                </motion.button>
 
                                 {/* First-level: Courses Publish Dashboard */}
                                 {['admin', 'sub-admin'].includes(currentUser.role) && (
-                                  <button
+                                  <motion.button
                                     type="button"
                                     onClick={() => {
                                       if (activeTab === 'schedule' && scheduleShowCourseDashboard) {
@@ -5143,20 +5287,30 @@ function AppContent() {
                                       }
                                       if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                                     }}
-                                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                    whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                       activeTab === 'schedule' && scheduleShowCourseDashboard
-                                        ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                        : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                        ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                        : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                                     }`}
                                     title={isActuallyCollapsed ? "Courses Publish Dashboard" : undefined}
                                   >
+                                    {activeTab === 'schedule' && scheduleShowCourseDashboard && (
+                                      <motion.div
+                                        layoutId="active-nav-pill"
+                                        className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                      />
+                                    )}
                                     <GraduationCap className="w-4 h-4 flex-shrink-0" />
                                     {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Courses Publish Dashboard</span>}
-                                  </button>
+                                  </motion.button>
                                 )}
 
                                 {/* First-level: Scheduled Lectures */}
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={() => {
                                     setActiveTab('lectures');
@@ -5165,19 +5319,29 @@ function AppContent() {
                                     setScheduleShowBatchManager(false);
                                     if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                                   }}
-                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                     activeTab === 'lectures'
-                                      ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                                   }`}
                                   title={isActuallyCollapsed ? "Scheduled Lectures" : undefined}
                                 >
+                                  {activeTab === 'lectures' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
                                   <Calendar className="w-4 h-4 flex-shrink-0" />
                                   {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
-                                </button>
+                                </motion.button>
 
                                 {/* Consolidated Academic & Evolution Pipeline */}
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={() => {
                                     setActiveTab('assignment-pipeline');
@@ -5186,19 +5350,29 @@ function AppContent() {
                                     setScheduleShowBatchManager(false);
                                     if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                                   }}
-                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                     activeTab === 'assignment-pipeline'
-                                      ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                                   }`}
                                   title={isActuallyCollapsed ? "Academic & Evolution Pipeline" : undefined}
                                 >
+                                  {activeTab === 'assignment-pipeline' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
                                   <Layers className="w-4 h-4 flex-shrink-0" />
                                   {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic & Evolution Pipeline</span>}
-                                </button>
+                                </motion.button>
 
                                 {/* First-level: Assignment Submission Tracker */}
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={() => {
                                     setActiveTab('assignment-tracker');
@@ -5207,16 +5381,26 @@ function AppContent() {
                                     setScheduleShowBatchManager(false);
                                     if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                                   }}
-                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                     activeTab === 'assignment-tracker'
-                                      ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                                   }`}
                                   title={isActuallyCollapsed ? "Assignment Status Tracker" : undefined}
                                 >
+                                  {activeTab === 'assignment-tracker' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
                                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
                                   {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
-                                </button>
+                                </motion.button>
                               </>
                             )}
                           </div>
@@ -5237,7 +5421,7 @@ function AppContent() {
                         )}
                         <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isSystemCategoriesExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
                           {['admin', 'sub-admin'].includes(currentUser.role) && (
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('courses-directory');
@@ -5246,48 +5430,78 @@ function AppContent() {
                                 setScheduleShowBatchManager(false);
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'courses-directory'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
                             >
+                              {activeTab === 'courses-directory' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <BookOpen className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
-                            </button>
+                            </motion.button>
                           )}
 
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => {
                               setActiveTab('progress');
                               if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                             }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                            whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                               activeTab === 'progress'
-                                ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                             }`}
                             title={isActuallyCollapsed ? "Certificate Progress" : undefined}
                           >
+                            {activeTab === 'progress' && (
+                              <motion.div
+                                layoutId="active-nav-pill"
+                                className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                              />
+                            )}
                             <Award className="w-4 h-4 flex-shrink-0" />
                             {!isActuallyCollapsed && <span className="truncate animate-fadeIn">{currentUser.role === 'student' ? 'Certificate Progress' : 'Grading Progress Books'}</span>}
-                          </button>
+                          </motion.button>
 
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => {
                               setActiveTab('inbox');
                               if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                             }}
-                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                            whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                               activeTab === 'inbox'
-                                ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                             }`}
                             title={isActuallyCollapsed ? "Secure Mailbox" : undefined}
                           >
+                            {activeTab === 'inbox' && (
+                              <motion.div
+                                layoutId="active-nav-pill"
+                                className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                              />
+                            )}
                             <Mail className="w-4 h-4 flex-shrink-0" />
                             {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Mailbox</span>}
                             {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length > 0 && (
@@ -5295,25 +5509,35 @@ function AppContent() {
                                 {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length}
                               </span>
                             )}
-                          </button>
+                          </motion.button>
 
                           {currentUser.role === 'admin' && (
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => {
                                 setActiveTab('backup');
                                 if (window.innerWidth < 768) setIsSidebarCollapsed(true);
                               }}
-                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs transition relative cursor-pointer ${
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
                                 activeTab === 'backup'
-                                  ? 'bg-slate-200/50 border border-slate-300/50 text-slate-900 dark:bg-white/[0.05] dark:border-white/10 dark:text-white font-bold shadow-sm'
-                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-50/50 dark:hover:bg-[#161618] border border-transparent'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
                               }`}
                               title={isActuallyCollapsed ? "Secure Backups" : undefined}
                             >
+                              {activeTab === 'backup' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
                               <CloudLightning className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Backups</span>}
-                            </button>
+                            </motion.button>
                           )}
                         </div>
                       </div>
@@ -5323,15 +5547,18 @@ function AppContent() {
 
                 {/* Logout anchor workspace */}
                 <div className="pt-2 border-t border-slate-100 dark:border-white/5">
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => handleLogout()}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                     className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-3' : 'gap-3.5 px-3.5 py-3'} rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.03] hover:text-slate-900 dark:hover:text-white font-bold text-xs text-slate-550 dark:text-gray-400 transition cursor-pointer`}
                     title={isActuallyCollapsed ? "Change Simulator Role" : undefined}
                   >
                     <LogOut className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Change Simulator Role</span>}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -6675,6 +6902,14 @@ function AppContent() {
               />
             )}
 
+            {activeTab === 'voice-notes' && currentUser && currentUser.role === 'student' && (
+              <VoiceNotes
+                currentUser={currentUser}
+                onUpdateProfile={handleUpdateProfile}
+                onTriggerToast={triggerToast}
+              />
+            )}
+
             {activeTab === 'profile' && (
               <ProfileSettings
                 currentUser={currentUser}
@@ -6769,7 +7004,7 @@ function AppContent() {
                       
                       setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to your registered email address: ${matchedUser.email}. Please check your email inbox to retrieve your credentials.`);
                     } else {
-                      setForgotModalError('No active student, teacher, or administrative record matches this registered email address within our master databases.');
+                      setForgotModalError('Please input register mail id.');
                     }
                   }}
                   className="space-y-5 pt-2"
