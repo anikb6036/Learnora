@@ -213,7 +213,6 @@ export default function MailboxManager({
           </div>
 
           <div className="border-t border-slate-100 dark:border-white/5 pt-4 text-[10px] text-slate-400 flex items-center gap-2 select-none">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Email Dispatch: Online & Ready
           </div>
         </div>
