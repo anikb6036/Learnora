@@ -172,7 +172,7 @@ export default function ScheduleManager({
 
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [instructorFilter, setInstructorFilter] = useState<'all' | string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('scheduled');
   const [batchFilter, setBatchFilter] = useState<'all' | string>('all');
   const [courseFilter, setCourseFilter] = useState<'all' | string>('all');
   
