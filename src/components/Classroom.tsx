@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UserAccount, ClassSchedule } from '../types';
 import { useFirebaseState } from '../utils';
 import { db } from '../firebase';
-import { doc, onSnapshot, setDoc, arrayUnion } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, arrayUnion, deleteDoc } from 'firebase/firestore';
 
 interface ClassroomProps {
   currentUser: UserAccount;
@@ -81,9 +81,51 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const dummyStreamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
   const currentStrokePoints = useRef<{ x: number; y: number }[]>([]);
+
+  // Creates or returns a blank silent fallback stream to ensure WebRTC SDP always negotiates sendrecv
+  const getDummyStream = (): MediaStream => {
+    if (dummyStreamRef.current) return dummyStreamRef.current;
+
+    const tracks: MediaStreamTrack[] = [];
+
+    // 1. Silent Audio Track
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        const audioCtx = new AudioContextClass();
+        const dest = audioCtx.createMediaStreamDestination();
+        const audioTrack = dest.stream.getAudioTracks()[0];
+        if (audioTrack) tracks.push(audioTrack);
+      }
+    } catch (e) {
+      console.warn("Failed to create dummy audio track", e);
+    }
+
+    // 2. Black Video Track
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 640;
+      canvas.height = 480;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, 640, 480);
+      }
+      const stream = canvas.captureStream(10);
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) tracks.push(videoTrack);
+    } catch (e) {
+      console.warn("Failed to create dummy video track", e);
+    }
+
+    const dummyStream = new MediaStream(tracks);
+    dummyStreamRef.current = dummyStream;
+    return dummyStream;
+  };
 
   // High-fidelity dynamic virtual stream generator
   const createVirtualStream = (userName: string, needVideo: boolean, needAudio: boolean): MediaStream => {
@@ -338,12 +380,12 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
 
         // Set initial tracks if available IMMEDIATELY before negotiation to populate SDP correctly
         const localStream = localStreamRef.current;
-        if (localStream) {
-          const audioTrack = localStream.getAudioTracks()[0];
-          const videoTrack = localStream.getVideoTracks()[0];
-          if (audioTrack) audioTransceiver.sender.replaceTrack(audioTrack).catch(e => console.warn("Initial audio replace failed", e));
-          if (videoTrack) videoTransceiver.sender.replaceTrack(videoTrack).catch(e => console.warn("Initial video replace failed", e));
-        }
+        const dummyStream = getDummyStream();
+        const audioTrack = (isMicOn ? localStream?.getAudioTracks()[0] : null) || dummyStream.getAudioTracks()[0] || null;
+        const videoTrack = (isCameraOn ? localStream?.getVideoTracks()[0] : null) || dummyStream.getVideoTracks()[0] || null;
+
+        if (audioTrack) audioTransceiver.sender.replaceTrack(audioTrack).catch(e => console.warn("Initial audio replace failed", e));
+        if (videoTrack) videoTransceiver.sender.replaceTrack(videoTrack).catch(e => console.warn("Initial video replace failed", e));
 
         pc.onconnectionstatechange = () => {
           console.log(`WebRTC Connection State with ${p.id}: ${pc.connectionState}`);
@@ -431,6 +473,12 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
 
         // Setup real-time listener for the peer's answers or offers
         const docRef = doc(db, "app_state", `webrtc-${activeClass.id}-${connectionId}`);
+        
+        if (isCaller) {
+          // Clear any stale signaling data from a previous session
+          deleteDoc(docRef).catch(e => console.warn("Error clearing stale signaling doc", e));
+        }
+
         const unsub = onSnapshot(docRef, async (snapshot) => {
           if (!snapshot.exists()) return;
           const data = snapshot.data();
@@ -438,12 +486,10 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
           try {
             if (isCaller) {
               // Caller logic: receive answer and callee candidates
-              if (data.answer && pc.signalingState === "have-local-offer") {
-                if (!pc.remoteDescription || pc.remoteDescription.sdp !== data.answer.sdp) {
-                  console.log("Caller setting remote description answer");
-                  await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                  await flushCandidates();
-                }
+              if (data.answer && !pc.remoteDescription) {
+                console.log("Caller setting remote description answer");
+                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                await flushCandidates();
               }
               if (data.calleeCandidates && Array.isArray(data.calleeCandidates)) {
                 for (const candidate of data.calleeCandidates) {
@@ -456,17 +502,15 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
               }
             } else {
               // Callee logic: receive offer and caller candidates
-              if (data.offer && pc.signalingState === "stable") {
-                if (!pc.remoteDescription || pc.remoteDescription.sdp !== data.offer.sdp) {
-                  console.log("Callee setting remote description offer");
-                  await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                  const answer = await pc.createAnswer();
-                  await pc.setLocalDescription(answer);
-                  await setDoc(docRef, {
-                    answer: { type: answer.type, sdp: answer.sdp }
-                  }, { merge: true });
-                  await flushCandidates();
-                }
+              if (data.offer && !pc.remoteDescription) {
+                console.log("Callee setting remote description offer");
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await setDoc(docRef, {
+                  answer: { type: answer.type, sdp: answer.sdp }
+                }, { merge: true });
+                await flushCandidates();
               }
               if (data.callerCandidates && Array.isArray(data.callerCandidates)) {
                 for (const candidate of data.callerCandidates) {
@@ -491,6 +535,7 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
   // 1b. Sync tracks logic
   const syncWebRTCTracks = () => {
     const stream = localStreamRef.current;
+    const dummyStream = getDummyStream();
     
     Object.entries(peerConnectionsRef.current).forEach(([peerId, conn]) => {
       const { pc } = conn as { pc: RTCPeerConnection; unsub: () => void };
@@ -499,8 +544,8 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
         const audioTransceiver = transceivers.find(t => t.receiver.track.kind === 'audio');
         const videoTransceiver = transceivers.find(t => t.receiver.track.kind === 'video');
         
-        const audioTrack = stream?.getAudioTracks()[0] || null;
-        const videoTrack = stream?.getVideoTracks()[0] || null;
+        const audioTrack = (isMicOn ? stream?.getAudioTracks()[0] : null) || dummyStream.getAudioTracks()[0] || null;
+        const videoTrack = (isCameraOn ? stream?.getVideoTracks()[0] : null) || dummyStream.getVideoTracks()[0] || null;
 
         if (audioTransceiver) audioTransceiver.sender.replaceTrack(audioTrack).catch(e => console.warn("Audio replace failed", e));
         if (videoTransceiver) videoTransceiver.sender.replaceTrack(videoTrack).catch(e => console.warn("Video replace failed", e));
@@ -528,6 +573,11 @@ export default function Classroom({ currentUser, activeClass, onLeave }: Classro
         }
       });
       peerConnectionsRef.current = {};
+
+      if (dummyStreamRef.current) {
+        dummyStreamRef.current.getTracks().forEach(track => track.stop());
+        dummyStreamRef.current = null;
+      }
     };
   }, []);
 

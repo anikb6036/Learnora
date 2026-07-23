@@ -3695,7 +3695,7 @@ function AppContent() {
         showPortal ? (
 
           /* Dynamic Role-Based Sandbox Access & Create Account Page */
-          <div className="min-h-screen w-full flex bg-slate-50/40 dark:bg-[#070708] text-slate-900 dark:text-gray-200 animate-fadeIn font-sans z-0 relative">
+          <div className="min-h-screen w-full flex bg-[#f8fafc] dark:bg-[#0f172a] text-slate-900 dark:text-gray-200 animate-fadeIn font-sans z-0 relative">
             
             {/* Absolute positioning of Back to Home button, extremely clean */}
             <button
@@ -3713,6 +3713,68 @@ function AppContent() {
             >
               <ChevronLeft className="w-3.5 h-3.5" /> {(onboardingTab === 'fastReg' && admissionMethod !== 'selection') ? 'Back' : 'Back to Home'}
             </button>
+
+            {/* Left-side Premium Brand & Feature Side Panel */}
+            <div className="hidden lg:flex w-[380px] xl:w-[440px] flex-col justify-between p-10 bg-[#fafafa] dark:bg-[#151f32] border-r border-slate-200 dark:border-white/5 relative overflow-hidden shrink-0 select-none">
+              {/* Subtle visual elements for polished design depth */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-slate-200/40 dark:bg-slate-800/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-slate-200/30 dark:bg-slate-800/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+              
+              {/* Top Section: Branding with high contrast spacing */}
+              <div className="relative z-10 pt-10">
+                <Logo size="md" withStrapline={true} />
+              </div>
+
+              {/* Middle Section: Sophisticated educational and functional details */}
+              <div className="space-y-8 relative z-10 my-auto">
+                <div className="space-y-3">
+                  <h2 className="text-xl font-extrabold text-slate-900 dark:text-white leading-snug">
+                    Learnora Student & Administrator Portal
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
+                    Access your personalized learning paths, real-time classroom updates, active timetables, and unified dashboard communications.
+                  </p>
+                </div>
+
+                {/* Features list with elegant icons */}
+                <div className="space-y-5">
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-[#4A154B] dark:text-[#d946ef] font-bold text-xs shrink-0 shadow-3xs">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-gray-200">Dynamic Active Scheduler</h4>
+                      <p className="text-[11px] text-slate-400 dark:text-gray-400 leading-normal">Synchronize classes, study hours, and academic events instantly.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-[#4A154B] dark:text-[#d946ef] font-bold text-xs shrink-0 shadow-3xs">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-gray-200">Secure Admissions Workspace</h4>
+                      <p className="text-[11px] text-slate-400 dark:text-gray-400 leading-normal">Submit profiles with built-in email OTP identity verification.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-[#4A154B] dark:text-[#d946ef] font-bold text-xs shrink-0 shadow-3xs">
+                      3
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-gray-200">Simulated Sandbox Mailbox</h4>
+                      <p className="text-[11px] text-slate-400 dark:text-gray-400 leading-normal">Safely inspect credentials, onboarding letters, and notifications.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Section: Footer signature */}
+              <div className="text-[10px] font-semibold text-slate-400 dark:text-gray-500 relative z-10">
+                Learnora Academic Systems &bull; Built with Care
+              </div>
+            </div>
 
             {/* Left side: Form container */}
             <div className="flex-1 flex flex-col justify-center items-center py-16 px-4 sm:px-8 relative z-10 w-full overflow-y-auto">
