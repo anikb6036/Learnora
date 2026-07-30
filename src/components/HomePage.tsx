@@ -46,7 +46,7 @@ import {
 import { Course } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import admissionHeroImg from '../assets/images/admission_hero_1781153839906.png';
-import mynaHeroStudents from '../assets/images/myna_crowd_hero_selfie_1785449693642.jpg';
+import mynaHeroStudents from '../assets/images/myna_exact_ui_selfie_1785450094820.jpg';
 
 // Dynamic Area of Interest Categorizer
 const getCourseCategory = (courseName: string): string => {
