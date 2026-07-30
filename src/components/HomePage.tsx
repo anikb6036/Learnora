@@ -1887,9 +1887,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
 
                   {/* Right: Live Interactive Simulator */}
                   <div className="lg:col-span-4 space-y-6 max-w-md lg:max-w-none mx-auto w-full">
-                    <div className="bg-slate-50 border border-slate-300 rounded-2xl shadow-lg text-left text-slate-800 overflow-hidden flex flex-col">
+                    <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-slate-300/60 dark:border-zinc-700/60 rounded-2xl shadow-xl text-left text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col">
                       {/* macOS Window Header (macOS Sierra Style) */}
-                      <div className="bg-gradient-to-b from-[#EDEDED] to-[#D8D8D8] border-b border-[#B1B1B1] px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px]">
+                      <div className="bg-white/40 dark:bg-zinc-800/40 border-b border-slate-300/50 dark:border-zinc-700/50 px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px] backdrop-blur-md">
                         {/* Left: macOS Dots (Absolutely Positioned) */}
                         <div className="absolute left-3.5 flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-[inset_0_0.5px_0.5px_rgba(0,0,0,0.15)] shrink-0" />
@@ -1898,13 +1898,13 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </div>
 
                         {/* Center/Full: macOS Sierra style Tabs segment */}
-                        <div className="flex bg-[#F5F5F5]/90 border border-[#B1B1B1] p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1">
+                        <div className="flex bg-white/40 dark:bg-zinc-800/40 border border-slate-300/50 dark:border-zinc-700/50 p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1 backdrop-blur-sm">
                           <button
                             onClick={() => setStudentActiveTab('profile')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 ${
                               studentActiveTab === 'profile'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <UserCheck className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -1914,8 +1914,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setStudentActiveTab('cohort')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               studentActiveTab === 'cohort'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Users className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -1925,8 +1925,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setStudentActiveTab('scholarship')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               studentActiveTab === 'scholarship'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Calculator className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -1936,7 +1936,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       </div>
 
                       {/* Tab Contents with AnimatePresence */}
-                      <div className="flex-1 bg-[#ECECEC] flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+                      <div className="flex-1 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-md flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
                         <AnimatePresence mode="wait">
                           {studentActiveTab === 'profile' && (
                             <motion.div
@@ -2081,7 +2081,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </AnimatePresence>
 
                         {/* Interactive Footer */}
-                        <div className="h-7 border-t border-[#D9D9D9] bg-[#F5F5F5] flex items-center justify-between px-3 text-[10px] text-[#666]">
+                        <div className="h-7 border-t border-slate-300/50 dark:border-zinc-700/50 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-sm flex items-center justify-between px-3 text-[10px] text-slate-600 dark:text-slate-300">
                           <span className="flex items-center gap-1.5">
                             <span>Proctor-Compliant Sorting Active</span>
                           </span>
@@ -2166,9 +2166,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
 
                   {/* Right: Live Interactive Simulator */}
                   <div className="lg:col-span-4 space-y-6 max-w-md lg:max-w-none mx-auto w-full">
-                    <div className="bg-slate-50 border border-slate-300 rounded-2xl shadow-lg text-left text-slate-800 overflow-hidden flex flex-col">
+                    <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-slate-300/60 dark:border-zinc-700/60 rounded-2xl shadow-xl text-left text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col">
                       {/* macOS Window Header (macOS Sierra Style) */}
-                      <div className="bg-gradient-to-b from-[#EDEDED] to-[#D8D8D8] border-b border-[#B1B1B1] px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px]">
+                      <div className="bg-white/40 dark:bg-zinc-800/40 border-b border-slate-300/50 dark:border-zinc-700/50 px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px] backdrop-blur-md">
                         {/* Left: macOS Dots (Absolutely Positioned) */}
                         <div className="absolute left-3.5 flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-[inset_0_0.5px_0.5px_rgba(0,0,0,0.15)] shrink-0" />
@@ -2177,13 +2177,13 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </div>
 
                         {/* Center/Full: macOS Sierra style Tabs segment */}
-                        <div className="flex bg-[#F5F5F5]/90 border border-[#B1B1B1] p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1">
+                        <div className="flex bg-white/40 dark:bg-zinc-800/40 border border-slate-300/50 dark:border-zinc-700/50 p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1 backdrop-blur-sm">
                           <button
                             onClick={() => setCourseActiveTab('progress')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 ${
                               courseActiveTab === 'progress'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <TrendingUp className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2193,8 +2193,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setCourseActiveTab('lecture')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               courseActiveTab === 'lecture'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Play className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2204,8 +2204,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setCourseActiveTab('assets')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               courseActiveTab === 'assets'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <BookMarked className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2215,7 +2215,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       </div>
 
                       {/* Tab Contents with AnimatePresence */}
-                      <div className="flex-1 bg-[#ECECEC] flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+                      <div className="flex-1 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-md flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
                         <AnimatePresence mode="wait">
                           {courseActiveTab === 'progress' && (
                             <motion.div
@@ -2336,7 +2336,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </AnimatePresence>
 
                         {/* Interactive Footer */}
-                        <div className="h-7 border-t border-[#D9D9D9] bg-[#F5F5F5] flex items-center justify-between px-3 text-[10px] text-[#666]">
+                        <div className="h-7 border-t border-slate-300/50 dark:border-zinc-700/50 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-sm flex items-center justify-between px-3 text-[10px] text-slate-600 dark:text-slate-300">
                           <span className="flex items-center gap-1.5">
                             <span>Progress Lock Synced</span>
                           </span>
@@ -2421,9 +2421,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
 
                   {/* Right: Live Interactive Simulator */}
                   <div className="lg:col-span-4 space-y-6 max-w-md lg:max-w-none mx-auto w-full">
-                    <div className="bg-slate-50 border border-slate-300 rounded-2xl shadow-lg text-left text-slate-800 overflow-hidden flex flex-col">
+                    <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-slate-300/60 dark:border-zinc-700/60 rounded-2xl shadow-xl text-left text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col">
                       {/* macOS Window Header (macOS Sierra Style) */}
-                      <div className="bg-gradient-to-b from-[#EDEDED] to-[#D8D8D8] border-b border-[#B1B1B1] px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px]">
+                      <div className="bg-white/40 dark:bg-zinc-800/40 border-b border-slate-300/50 dark:border-zinc-700/50 px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px] backdrop-blur-md">
                         {/* Left: macOS Dots (Absolutely Positioned) */}
                         <div className="absolute left-3.5 flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-[inset_0_0.5px_0.5px_rgba(0,0,0,0.15)] shrink-0" />
@@ -2432,13 +2432,13 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </div>
 
                         {/* Center/Full: macOS Sierra style Tabs segment */}
-                        <div className="flex bg-[#F5F5F5]/90 border border-[#B1B1B1] p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1">
+                        <div className="flex bg-white/40 dark:bg-zinc-800/40 border border-slate-300/50 dark:border-zinc-700/50 p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1 backdrop-blur-sm">
                           <button
                             onClick={() => setAssessmentActiveTab('sandbox')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 ${
                               assessmentActiveTab === 'sandbox'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Terminal className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2448,8 +2448,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setAssessmentActiveTab('proctor')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               assessmentActiveTab === 'proctor'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Eye className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2459,8 +2459,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setAssessmentActiveTab('grading')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               assessmentActiveTab === 'grading'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Award className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2470,7 +2470,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       </div>
 
                       {/* Tab Contents with AnimatePresence */}
-                      <div className="flex-1 bg-[#ECECEC] flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+                      <div className="flex-1 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-md flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
                         <AnimatePresence mode="wait">
                           {assessmentActiveTab === 'sandbox' && (
                             <motion.div
@@ -2622,7 +2622,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </AnimatePresence>
 
                         {/* Interactive Footer */}
-                        <div className="h-7 border-t border-[#D9D9D9] bg-[#F5F5F5] flex items-center justify-between px-3 text-[10px] text-[#666]">
+                        <div className="h-7 border-t border-slate-300/50 dark:border-zinc-700/50 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-sm flex items-center justify-between px-3 text-[10px] text-slate-600 dark:text-slate-300">
                           <span className="flex items-center gap-1.5">
                             <span>Proctor Integrity Active</span>
                           </span>
@@ -2708,9 +2708,9 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                   {/* Right: Live Interactive Simulator */}
                   <div className="lg:col-span-4 space-y-6 max-w-md lg:max-w-none mx-auto w-full">
                     {/* Professional Milestone & Graduation Tracker Card */}
-                    <div className="bg-slate-50 border border-slate-300 rounded-2xl shadow-lg text-left text-slate-800 overflow-hidden flex flex-col">
+                    <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-slate-300/60 dark:border-zinc-700/60 rounded-2xl shadow-xl text-left text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col">
                       {/* macOS Window Header (macOS Sierra Style) */}
-                      <div className="bg-gradient-to-b from-[#EDEDED] to-[#D8D8D8] border-b border-[#B1B1B1] px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px]">
+                      <div className="bg-white/40 dark:bg-zinc-800/40 border-b border-slate-300/50 dark:border-zinc-700/50 px-3 py-2 flex items-center select-none shrink-0 relative min-h-[42px] backdrop-blur-md">
                         {/* Left: macOS Dots (Absolutely Positioned) */}
                         <div className="absolute left-3.5 flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-[inset_0_0.5px_0.5px_rgba(0,0,0,0.15)] shrink-0" />
@@ -2719,13 +2719,13 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </div>
 
                         {/* Center/Full: macOS Sierra style Tabs segment */}
-                        <div className="flex bg-[#F5F5F5]/90 border border-[#B1B1B1] p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1">
+                        <div className="flex bg-white/40 dark:bg-zinc-800/40 border border-slate-300/50 dark:border-zinc-700/50 p-0.5 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] w-full ml-14 mr-1 backdrop-blur-sm">
                           <button
                             onClick={() => setEvolutionActiveTab('milestones')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 ${
                               evolutionActiveTab === 'milestones'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Award className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2735,8 +2735,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setEvolutionActiveTab('credential')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               evolutionActiveTab === 'credential'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <GraduationCap className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2746,8 +2746,8 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                             onClick={() => setEvolutionActiveTab('placements')}
                             className={`flex-1 py-1 text-[11px] font-semibold rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer min-w-0 border-l border-slate-200/50 ${
                               evolutionActiveTab === 'placements'
-                                ? 'bg-gradient-to-b from-[#FAFAFA] to-[#ECECEC] text-slate-800 font-bold shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] border border-[#B0B0B0]'
-                                : 'text-slate-600 hover:bg-slate-200/50 border border-transparent'
+                                ? 'bg-white/90 dark:bg-zinc-700/90 text-slate-900 dark:text-white font-bold shadow-sm border border-slate-300/80 dark:border-zinc-600'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-white/30 border border-transparent'
                             }`}
                           >
                             <Briefcase className="w-3.5 h-3.5 shrink-0 text-slate-500" />
@@ -2757,7 +2757,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                       </div>
 
                       {/* Tab Contents with AnimatePresence */}
-                      <div className="flex-1 bg-[#ECECEC] flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+                      <div className="flex-1 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-md flex flex-col justify-between relative shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
                         <AnimatePresence mode="wait">
                           {evolutionActiveTab === 'milestones' && (
                             <motion.div
@@ -2934,7 +2934,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         </AnimatePresence>
                         
                         {/* Interactive Footer */}
-                        <div className="h-7 border-t border-[#D9D9D9] bg-[#F5F5F5] flex items-center justify-between px-3 text-[10px] text-[#666]">
+                        <div className="h-7 border-t border-slate-300/50 dark:border-zinc-700/50 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-sm flex items-center justify-between px-3 text-[10px] text-slate-600 dark:text-slate-300">
                           <span className="flex items-center gap-1.5">
                             <span>Placement Network Active</span>
                           </span>
