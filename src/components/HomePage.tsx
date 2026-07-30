@@ -1555,7 +1555,7 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                         Admission & Onboarding Roadmap
                       </h3>
                     </div>
-                    <span className="text-[9.5px] bg-indigo-50 border border-indigo-200/60 text-indigo-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    <span className="text-[9.5px] bg-transparent border border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
                       Default Path
                     </span>
                   </div>
