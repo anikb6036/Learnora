@@ -46,7 +46,7 @@ import {
 import { Course } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import admissionHeroImg from '../assets/images/admission_hero_1781153839906.png';
-import mynaHeroStudents from '../assets/images/crowd_hero_students_1785448606849.jpg';
+import mynaHeroStudents from '../assets/images/myna_hero_group_selfie_1785449349852.jpg';
 
 // Dynamic Area of Interest Categorizer
 const getCourseCategory = (courseName: string): string => {
@@ -1405,11 +1405,11 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
         </div>
 
         {/* Student Group Graphic Layer (Full Screen Edge-to-Edge Widescreen) */}
-        <div className="w-full relative z-10 mt-4 sm:mt-8 pointer-events-none select-none flex justify-center overflow-hidden">
+        <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 relative z-10 mt-2 sm:mt-6 pointer-events-none select-none flex justify-center overflow-hidden">
           <img 
             src={mynaHeroStudents} 
             alt="Diverse 3D Student Group Selfie" 
-            className="w-full h-auto max-h-[850px] object-cover object-center mix-blend-multiply dark:mix-blend-normal"
+            className="w-full h-auto max-h-[720px] object-contain object-bottom mix-blend-multiply dark:mix-blend-normal"
             referrerPolicy="no-referrer"
           />
         </div>
