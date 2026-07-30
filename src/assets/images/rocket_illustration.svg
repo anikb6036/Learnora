@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 620" fill="none" preserveAspectRatio="xMidYMid meet">
+  <!-- Clean White Background -->
+  <rect width="400" height="620" fill="#ffffff" />
+
+  <!-- Background Horizontal Speed Dash Lines -->
+  <g stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round">
+    <line x1="25" y1="25" x2="65" y2="25" />
+    <line x1="180" y1="22" x2="215" y2="22" />
+    <line x1="330" y1="20" x2="365" y2="20" />
+    <line x1="85" y1="58" x2="125" y2="58" />
+    <line x1="205" y1="65" x2="245" y2="65" />
+    <line x1="305" y1="70" x2="345" y2="70" />
+    <line x1="30" y1="110" x2="70" y2="110" />
+    <line x1="125" y1="118" x2="165" y2="118" />
+    <line x1="245" y1="130" x2="285" y2="130" />
+    <line x1="325" y1="110" x2="360" y2="110" />
+    <line x1="75" y1="175" x2="115" y2="175" />
+    <line x1="195" y1="180" x2="230" y2="180" />
+    <line x1="320" y1="175" x2="360" y2="175" />
+    <line x1="20" y1="228" x2="60" y2="228" />
+    <line x1="100" y1="235" x2="140" y2="235" />
+    <line x1="270" y1="230" x2="310" y2="230" />
+    <line x1="350" y1="225" x2="380" y2="225" />
+    <line x1="85" y1="288" x2="125" y2="288" />
+    <line x1="185" y1="292" x2="225" y2="292" />
+    <line x1="295" y1="285" x2="335" y2="285" />
+    <line x1="30" y1="345" x2="70" y2="345" />
+    <line x1="125" y1="350" x2="165" y2="350" />
+    <line x1="225" y1="348" x2="265" y2="348" />
+    <line x1="325" y1="355" x2="365" y2="355" />
+    <line x1="70" y1="410" x2="110" y2="410" />
+    <line x1="180" y1="415" x2="220" y2="415" />
+    <line x1="300" y1="410" x2="340" y2="410" />
+    <line x1="25" y1="465" x2="65" y2="465" />
+    <line x1="250" y1="470" x2="290" y2="470" />
+    <line x1="335" y1="465" x2="375" y2="465" />
+  </g>
+
+  <!-- 4-Point Cross Stars (+) -->
+  <g stroke="#475569" stroke-width="1.5" stroke-linecap="round">
+    <!-- Star 1 (Top Center Right) -->
+    <path d="M 285 62 L 285 70 M 281 66 L 289 66" stroke-width="1.3" />
+    <!-- Star 2 (Mid Left) -->
+    <path d="M 88 275 L 88 283 M 84 279 L 92 279" />
+    <!-- Star 3 (Mid Right) -->
+    <path d="M 252 192 L 252 200 M 248 196 L 256 196" />
+    <!-- Star 4 (Lower Mid Left) -->
+    <path d="M 108 332 L 108 340 M 104 336 L 112 336" />
+    <!-- Star 5 (Lower Mid Right) -->
+    <path d="M 348 292 L 348 300 M 344 296 L 352 296" />
+    <!-- Star 6 (Far Left Lower) -->
+    <path d="M 22 388 L 22 396 M 18 392 L 26 392" />
+  </g>
+
+  <!-- Circular Dot Stars -->
+  <g fill="#475569" stroke="none">
+    <circle cx="185" cy="22" r="2" />
+    <circle cx="20" cy="70" r="2" />
+    <circle cx="365" cy="42" r="1.5" />
+    <circle cx="268" cy="115" r="2" />
+    <circle cx="150" cy="142" r="2" />
+    <circle cx="24" cy="222" r="2" />
+    <circle cx="148" cy="208" r="1.5" />
+    <circle cx="222" cy="265" r="2" />
+    <circle cx="278" cy="332" r="2" />
+    <circle cx="108" cy="412" r="1.5" />
+    <circle cx="358" cy="410" r="2" />
+    <circle cx="362" cy="482" r="2" />
+  </g>
+
+  <!-- METEOR / COMET (Top Left) -->
+  <g stroke="#2d3748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Comet Head -->
+    <circle cx="60" cy="138" r="14" fill="#ffffff" />
+    <circle cx="60" cy="138" r="10" stroke-dasharray="3 3" />
+    <!-- Tail Parallel Streaks -->
+    <line x1="48" y1="128" x2="30" y2="108" />
+    <line x1="54" y1="123" x2="36" y2="101" />
+    <line x1="60" y1="120" x2="44" y2="98" />
+    <line x1="66" y1="122" x2="52" y2="101" />
+  </g>
+
+  <!-- RINGED PLANET (Top Right) -->
+  <g stroke="#2d3748" stroke-width="2">
+    <!-- Back Ring -->
+    <ellipse cx="230" cy="98" rx="26" ry="8" fill="none" transform="rotate(-20 230 98)" />
+    <!-- Planet Body -->
+    <circle cx="230" cy="98" r="15" fill="#ffffff" />
+    <!-- Planet Face Details -->
+    <path d="M 220 94 Q 230 90 240 94" stroke-dasharray="2 2" stroke-width="1.5" />
+    <circle cx="230" cy="98" r="1" fill="#2d3748" />
+    <!-- Front Ring -->
+    <path d="M 204 100 A 26 8 0 0 0 256 96" fill="none" transform="rotate(-20 230 98)" />
+  </g>
+
+  <!-- SATELLITE (Middle Right) -->
+  <g stroke="#2d3748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(340, 225) rotate(-22)">
+    <!-- Central Body -->
+    <rect x="-10" y="-8" width="20" height="16" rx="3" fill="#ffffff" />
+    <!-- Left Solar Wing -->
+    <rect x="-26" y="-6" width="12" height="12" fill="#ffffff" />
+    <line x1="-20" y1="-6" x2="-20" y2="6" stroke-width="1" />
+    <line x1="-26" y1="0" x2="-14" y2="0" stroke-width="1" />
+    <!-- Right Solar Wing -->
+    <rect x="14" y="-6" width="12" height="12" fill="#ffffff" />
+    <line x1="20" y1="-6" x2="20" y2="6" stroke-width="1" />
+    <line x1="14" y1="0" x2="26" y2="0" stroke-width="1" />
+    <!-- Antenna Stems -->
+    <path d="M -5 8 L -9 16" />
+    <path d="M 0 8 L 0 18" />
+    <path d="M 5 8 L 9 16" />
+    <circle cx="-9" cy="16" r="1.5" fill="#2d3748" />
+    <circle cx="0" cy="18" r="1.5" fill="#2d3748" />
+    <circle cx="9" cy="16" r="1.5" fill="#2d3748" />
+  </g>
+
+  <!-- ROCKET (Center Stage) -->
+  <g stroke="#2d3748" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#ffffff">
+    <!-- Left Fin -->
+    <path d="M 172 370 L 146 415 L 172 415 Z" />
+    <!-- Right Fin -->
+    <path d="M 228 370 L 254 415 L 228 415 Z" />
+
+    <!-- Thruster Nozzle -->
+    <rect x="182" y="415" width="36" height="20" rx="1" />
+
+    <!-- Rocket Fuselage Body -->
+    <path d="M 200 280 Q 166 345 172 415 L 228 415 Q 234 345 200 280 Z" />
+
+    <!-- 3 Stacked Horizontal Inner Stripes -->
+    <line x1="187" y1="335" x2="213" y2="335" stroke-width="2.5" />
+    <line x1="185" y1="352" x2="215" y2="352" stroke-width="2.5" />
+    <line x1="184" y1="369" x2="216" y2="369" stroke-width="2.5" />
+  </g>
+
+  <!-- SMOKE CLOUD MOUND (Exact match to reference artwork) -->
+  <g stroke="#2d3748" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- 1. Opaque White Fill Mask for Cloud Mound (Extends to bottom edge y=620, hiding all back elements) -->
+    <path d="M -10 630
+             L -10 545
+             A 38 38 0 0 1 20 480
+             A 38 38 0 0 1 65 435
+             A 32 32 0 0 1 115 395
+             A 22 22 0 0 1 155 422
+             A 12 12 0 0 1 180 432
+             A 10 10 0 0 1 200 430
+             A 10 10 0 0 1 220 432
+             A 14 14 0 0 1 245 422
+             A 22 22 0 0 1 285 395
+             A 32 32 0 0 1 335 435
+             A 38 38 0 0 1 380 480
+             A 42 42 0 0 1 410 545
+             L 410 630 Z" fill="#ffffff" stroke="none" />
+
+    <!-- 2. Outer Stroked Cloud Scallops (Top and side edges only - NO bottom line) -->
+    <path d="M -10 545
+             A 38 38 0 0 1 20 480
+             A 38 38 0 0 1 65 435
+             A 32 32 0 0 1 115 395
+             A 22 22 0 0 1 155 422
+             A 12 12 0 0 1 180 432
+             A 10 10 0 0 1 200 430
+             A 10 10 0 0 1 220 432
+             A 14 14 0 0 1 245 422
+             A 22 22 0 0 1 285 395
+             A 32 32 0 0 1 335 435
+             A 38 38 0 0 1 380 480
+             A 42 42 0 0 1 410 545" fill="none" />
+
+    <!-- 3. Internal Open Floating Cloud Arcs (Exact shapes from reference image) -->
+
+    <!-- Upper-center internal cloud arc (Left side under nozzle) -->
+    <path d="M 138 485 
+             A 32 32 0 0 1 185 442 
+             A 28 28 0 0 1 225 460" fill="none" />
+
+    <!-- Lower-left internal cloud arc -->
+    <path d="M 82 562 
+             A 34 34 0 0 1 130 512 
+             A 32 32 0 0 1 172 528" fill="none" />
+
+    <!-- Lower-right internal cloud arc -->
+    <path d="M 238 528 
+             A 32 32 0 0 1 280 500 
+             A 30 30 0 0 1 325 525 
+             A 26 26 0 0 1 348 558" fill="none" />
+
+    <!-- Extra soft accent curves -->
+    <path d="M 15 528 A 32 32 0 0 1 58 495" fill="none" />
+    <path d="M 338 495 A 32 32 0 0 1 382 528" fill="none" />
+  </g>
+</svg>

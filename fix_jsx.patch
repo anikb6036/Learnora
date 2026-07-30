@@ -1,0 +1,18 @@
+--- src/App.tsx
++++ src/App.tsx
+@@ -4664,6 +4664,7 @@
+                 </div>
+               )}
+             </div>
++          </div>
+             
+             {/* Right side: Decorative visual (hidden on mobile) */}
+             <div className="hidden lg:flex flex-1 relative bg-slate-50 dark:bg-black items-center justify-center overflow-hidden border-l border-slate-200 dark:border-white/5">
+@@ -4687,7 +4688,6 @@
+             </div>
+ 
+           </div>
+-        </div>
+         ) : (
+           <HomePage
+             isDark={isDark}

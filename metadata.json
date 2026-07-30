@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Coaching Scheduler \u0026 Progress Tracker",
+  "description": "An intuitive web application for managing student enrollments, schedules, multiple instructors, and individual progress trackers, integrated with secure role-based access and automated backup solutions.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

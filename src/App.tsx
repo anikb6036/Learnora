@@ -1,0 +1,6854 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ * Vercel Deployment Trigger: Supabase integration removed successfully.
+ */
+
+import React, { useState, useEffect, useRef } from 'react';
+import { UserAccount, ClassSchedule, ProgressRecord, AppNotification, BackupHistory, RegistrationRequest, SimulatedEmail, StudentBatch, Course, MasterCourse, StudentAssignment, AssignmentBankItem, StudentEvolution, EvolutionBankItem } from './types';
+import {
+  INITIAL_USERS,
+  INITIAL_SCHEDULES,
+  INITIAL_PROGRESS,
+  INITIAL_NOTIFICATIONS,
+  INITIAL_BACKUPS,
+  INITIAL_BATCHES,
+  INITIAL_COURSES,
+  INITIAL_MASTER_COURSES,
+  INITIAL_ASSIGNMENTS,
+  INITIAL_ASSIGNMENT_BANK,
+  INITIAL_EVOLUTION_BANK,
+  getSavedState,
+  saveState,
+  useFirebaseState
+} from './utils';
+import { ThemeProvider, useTheme } from './components/ThemeContext';
+import { AssignmentPipeline } from './components/AssignmentPipeline';
+import { compressImage } from './imageUtils';
+
+const sendSystemEmail = async (to: string, subject: string, text: string, html?: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        to, 
+        subject, 
+        text, 
+        html,
+        systemBypassKey: 'learnora_internal_dispatch_secure_v1'
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("Real email failed:", data.error);
+      return { success: false, error: data.error || "Failed to send email" };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to call send-email API:", err);
+    return { success: false, error: err.message || "Network error communicating with mail API" };
+  }
+};
+
+import NotificationCenter from './components/NotificationCenter';
+import EnrollmentManager from './components/EnrollmentManager';
+import ScheduleManager from './components/ScheduleManager';
+import Classroom from './components/Classroom';
+import { CourseDirectory } from './components/CourseDirectory';
+import ProgressTracker from './components/ProgressTracker';
+import ReportingDashboard from './components/ReportingDashboard';
+import CloudBackup from './components/CloudBackup';
+import MailboxManager from './components/MailboxManager';
+import ProfileSettings from './components/ProfileSettings';
+import VoiceNotes from './components/VoiceNotes';
+import AssignmentTracker from './components/AssignmentTracker';
+import HomePage from './components/HomePage';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
+import CookiePolicy from './components/CookiePolicy';
+import CourseDetailsPage from './components/CourseDetailsPage';
+import Logo from './components/Logo';
+import AdmissionsExamModal from './components/AdmissionsExamModal';
+import StudentHomeworkModal from './components/StudentHomeworkModal';
+import { RazorpayPayment } from './components/RazorpayPayment';
+import learnoraOnboardingImg from './assets/images/learnora_onboarding_1784966250477.jpg';
+import admissionHeroImg from './assets/images/admission_hero_1781153839906.png';
+import heroCoupleImg from './assets/images/hero_couple_illustration_1781084705355.png';
+import programmerBoyImg from './assets/images/programmer_boy_1785112075746.jpg';
+import zenMeditationImg from './assets/images/zen_meditation_illustration_1785131649076.jpg';
+import rocketIllustrationImg from './assets/images/rocket_illustration.svg';
+import {
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  LayoutDashboard,
+  Users,
+  Calendar,
+  Award,
+  BarChart3,
+  CloudLightning,
+  LogOut,
+  Bell,
+  Sun,
+  Moon,
+  Clock,
+  Briefcase,
+  User,
+  Activity,
+  ChevronRight,
+  ShieldAlert,
+  Shield,
+  ShieldCheck,
+  Key,
+  Smartphone,
+  Check,
+  Mail,
+  Lock,
+  Sparkles,
+  MapPin,
+  BookOpen,
+  GraduationCap,
+  Camera,
+  Trash2,
+  Plus,
+  Upload,
+  Settings,
+  X,
+  AlertCircle,
+  ChevronLeft,
+  Menu,
+  Search,
+  ChevronDown,
+  Download,
+  Code,
+  MoreHorizontal,
+  GitBranch,
+  ExternalLink,
+  Video,
+  Eye,
+  CheckCircle,
+  EyeOff,
+  Cpu,
+  Layers,
+  Globe,
+  RefreshCw,
+  Play,
+  CheckCircle2,
+  FileText,
+  CheckSquare,
+  Send,
+  Star,
+  ClipboardList,
+  TrendingUp,
+  History,
+  Database,
+  Github,
+  Chrome,
+  ArrowRight,
+  Mic,
+  UserCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { COUNTRY_PHONE_CONFIGS } from './countryPhoneData';
+import { GEO_COUNTRIES, getSmartPostOffices } from './geoAddressData';
+import { auth } from './firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber, createUserWithEmailAndPassword, sendEmailVerification, checkActionCode, applyActionCode, ConfirmationResult, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithRedirect, getRedirectResult, getAdditionalUserInfo } from 'firebase/auth';
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+    recaptchaVerifier: any;
+  }
+}
+
+// Auto-detect and perform a one-time clean-up migration of old dummy/simulation storage data
+if (typeof window !== 'undefined' && !localStorage.getItem('db-migrated-to-real-v5')) {
+  localStorage.removeItem('db-users');
+  localStorage.removeItem('db-schedules');
+  localStorage.removeItem('db-progress');
+  localStorage.removeItem('db-notifications');
+  localStorage.removeItem('db-backups');
+  localStorage.removeItem('db-registration-requests');
+  localStorage.removeItem('db-simulated-emails');
+  localStorage.removeItem('active-user');
+  localStorage.setItem('db-migrated-to-real-v5', 'true');
+}
+
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24">
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
+    <path d="M1 1h22v22H1z" fill="none" />
+  </svg>
+);
+
+const generateUniqueId = (prefix: string) => {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000000)}`;
+};
+
+const generateUniversalId = (existingUsers?: UserAccount[]) => {
+  let uid = '';
+  let isUnique = false;
+  let attempts = 0;
+  while (!isUnique && attempts < 100) {
+    uid = Math.floor(100000 + Math.random() * 900000).toString();
+    if (!existingUsers) {
+      isUnique = true;
+    } else {
+      isUnique = !existingUsers.some(u => u.universalId === uid);
+    }
+    attempts++;
+  }
+  return uid;
+};
+
+declare global {
+  interface Window {
+    recaptchaVerifier: any;
+  }
+}
+
+const getSubjectIconObj = (subject?: string) => {
+  const norm = (subject || '').trim().toLowerCase();
+  if (norm.includes('physic')) {
+    return { icon: Sparkles, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10 dark:bg-purple-500/20' };
+  } else if (norm.includes('math')) {
+    return { icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10 dark:bg-blue-500/20' };
+  } else if (norm.includes('code') || norm.includes('coding') || norm.includes('program')) {
+    return { icon: GraduationCap, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10 dark:bg-emerald-500/20' };
+  } else if (norm.includes('logic')) {
+    return { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10 dark:bg-amber-500/20' };
+  } else if (norm.includes('biolog')) {
+    return { icon: Users, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10 dark:bg-rose-500/20' };
+  }
+  return { icon: Calendar, color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-500/10 dark:bg-slate-500/20' };
+};
+
+const isScheduleDateOnOrAfterJoinedDate = (scheduleDate: string, joinedDateStr: string | undefined): boolean => {
+  if (!joinedDateStr) return true;
+  try {
+    const sDate = new Date(scheduleDate + 'T00:00:00');
+    let jDate: Date;
+    if (joinedDateStr.includes('-')) {
+      const parts = joinedDateStr.split('-');
+      if (parts[0].length === 4) {
+        jDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 0, 0, 0, 0);
+      } else {
+        jDate = new Date(joinedDateStr);
+      }
+    } else if (joinedDateStr.includes('/')) {
+      const parts = joinedDateStr.split('/');
+      if (parts[2]?.length === 4) {
+        jDate = new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10), 0, 0, 0, 0);
+      } else if (parts[0]?.length === 4) {
+        jDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 0, 0, 0, 0);
+      } else {
+        jDate = new Date(joinedDateStr);
+      }
+    } else {
+      jDate = new Date(joinedDateStr);
+    }
+    
+    sDate.setHours(0, 0, 0, 0);
+    jDate.setHours(0, 0, 0, 0);
+    
+    if (isNaN(sDate.getTime()) || isNaN(jDate.getTime())) return true;
+    return sDate.getTime() >= jDate.getTime();
+  } catch (e) {
+    return true;
+  }
+};
+
+function AppContent() {
+  const { isDark } = useTheme();
+
+  const [currentPath, setCurrentPath] = useState(() => typeof window !== 'undefined' ? window.location.pathname : '/');
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleLocationChange();
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.history.pushState = originalPushState;
+    };
+  }, []);
+
+  // Root states synchronized with Firebase Live Queries
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getSavedState('active-user', null));
+  const [originalAdminUser, setOriginalAdminUser] = useState<UserAccount | null>(() => getSavedState('original-admin-user', null));
+  const [users, setUsers, usersLoaded] = useFirebaseState<UserAccount[]>('db-users', INITIAL_USERS);
+  const [schedules, setSchedules, schedulesLoaded] = useFirebaseState<ClassSchedule[]>('db-schedules', INITIAL_SCHEDULES);
+  const [progressRecords, setProgressRecords, progressLoaded] = useFirebaseState<ProgressRecord[]>('db-progress', INITIAL_PROGRESS);
+  const [notifications, setNotifications, notificationsLoaded] = useFirebaseState<AppNotification[]>('db-notifications', INITIAL_NOTIFICATIONS);
+  const [backupHistory, setBackupHistory, backupsLoaded] = useFirebaseState<BackupHistory[]>('db-backups', INITIAL_BACKUPS);
+  const [assignments, setAssignments, assignmentsLoaded] = useFirebaseState<StudentAssignment[]>('db-assignments', INITIAL_ASSIGNMENTS);
+  const [assignmentBank, setAssignmentBank, assignmentBankLoaded] = useFirebaseState<AssignmentBankItem[]>('db-assignment-bank', INITIAL_ASSIGNMENT_BANK);
+  const [evolutionBank, setEvolutionBank, evolutionBankLoaded] = useFirebaseState<EvolutionBankItem[]>('db-evolution-bank', INITIAL_EVOLUTION_BANK);
+
+  useEffect(() => {
+    saveState('active-user', currentUser);
+  }, [currentUser]);
+
+  useEffect(() => {
+    saveState('original-admin-user', originalAdminUser);
+  }, [originalAdminUser]);
+
+  // Pending admission registration requests state
+  const [registrationRequests, setRegistrationRequests, registrationLoaded] = useFirebaseState<RegistrationRequest[]>('db-registration-requests', []);
+
+  const [studentScheduleTab, setStudentScheduleTab] = useState<'schedule'|'tasks'|'completed'|'assignments'>('schedule');
+  const [completedClassSearch, setCompletedClassSearch] = useState('');
+  const [completedClassSubjectFilter, setCompletedClassSubjectFilter] = useState('all');
+
+  // Instructor assignment flow states
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [assigningClass, setAssigningClass] = useState<ClassSchedule | null>(null);
+  const [assignmentTitle, setAssignmentTitle] = useState('');
+  const [assignmentDesc, setAssignmentDesc] = useState('');
+  const [assignmentDueDate, setAssignmentDueDate] = useState('');
+  const [assignmentMaxPoints, setAssignmentMaxPoints] = useState(100);
+  const [assignmentMonth, setAssignmentMonth] = useState('Month 1');
+  const [assignmentSyllabus, setAssignmentSyllabus] = useState('');
+  const [selectedBankTemplateIdForModal, setSelectedBankTemplateIdForModal] = useState('');
+
+  // Grading / Submission state
+  const [gradingAssignmentId, setGradingAssignmentId] = useState<string | null>(null);
+  const [gradingSubmissionId, setGradingSubmissionId] = useState<string | null>(null);
+  const [gradingScore, setGradingScore] = useState<number>(100);
+  const [gradingFeedback, setGradingFeedback] = useState<string>('');
+
+  // Student submission workflow states
+  const [activeStudentModalAssignment, setActiveStudentModalAssignment] = useState<StudentAssignment | undefined>(undefined);
+  const [activeStudentModalEvolution, setActiveStudentModalEvolution] = useState<StudentEvolution | undefined>(undefined);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  
+  // Backward compatibility with legacy state (though we won't strictly need them, we keep them so older code doesn't crash before being refactored)
+  const [submittingAssignmentId, setSubmittingAssignmentId] = useState<string | null>(null);
+  const [submissionText, setSubmissionText] = useState('');
+  const [submissionFileUrn, setSubmissionFileUrn] = useState('');
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+
+  // Simulated student mailbox communications
+  const [simulatedEmails, setSimulatedEmails, emailsLoaded] = useFirebaseState<SimulatedEmail[]>('db-simulated-emails', []);
+
+  // Student batches published by admin/sub-admin
+  const [batches, setBatches, batchesLoaded] = useFirebaseState<StudentBatch[]>('db-batches', INITIAL_BATCHES);
+
+  // Student courses published by admin/sub-admin
+  const [rawCourses, setCourses, coursesLoaded] = useFirebaseState<Course[]>('db-courses', INITIAL_COURSES);
+  const courses = rawCourses.map(c => ({
+    ...c,
+    name: c.name ? c.name.replace(/\.+$/, '').trim() : ''
+  }));
+
+  const getStudentEnrolledCourse = (user: UserAccount | null) => {
+    if (!user || !user.course || !courses || courses.length === 0) return undefined;
+    const userCourseClean = user.course.trim().replace(/\.+$/, "").toLowerCase();
+    const userBatchClean = user.batch?.trim().toLowerCase() || "";
+    
+    if (userBatchClean) {
+      const batchMatched = courses.find(c => {
+        const cId = c.id?.trim().toLowerCase() || "";
+        const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+        const cCode = c.code?.trim().toLowerCase() || "";
+        const cBatch = c.batchNumber?.trim().toLowerCase() || "";
+        const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+        const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean;
+        return isCourseMatch && isBatchMatch;
+      });
+      if (batchMatched) return batchMatched;
+    }
+    
+    let matched = courses.find(c => {
+      const cId = c.id?.trim().toLowerCase() || "";
+      const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+      const cCode = c.code?.trim().toLowerCase() || "";
+      return cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+    });
+    if (matched) return matched;
+    
+    matched = courses.find(c => {
+      const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+      return cName.includes(userCourseClean) || userCourseClean.includes(cName);
+    });
+    return matched;
+  };
+
+  const getTrialInfo = (user: UserAccount | null) => {
+    const course = getStudentEnrolledCourse(user);
+    if (!course || !course.trialDays) {
+      return { hasTrial: false, isTrialActive: false, daysLeft: 0, startDate: null, endDate: null };
+    }
+
+    const startDateStr = course.publishDate || course.createdDate || '';
+    if (!startDateStr) {
+      return { hasTrial: true, isTrialActive: false, daysLeft: 0, startDate: null, endDate: null };
+    }
+
+    const startDate = new Date(startDateStr);
+    startDate.setHours(0, 0, 0, 0);
+
+    const now = new Date();
+    
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + course.trialDays);
+    endDate.setHours(23, 59, 59, 999);
+
+    const diffTime = endDate.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // trial starts on the course starting day.
+    // If we are before the startDate, the trial is also active.
+    const isTrialActive = now.getTime() <= endDate.getTime();
+
+    return {
+      hasTrial: true,
+      isTrialActive: isTrialActive,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+      startDate,
+      endDate
+    };
+  };
+
+  // Master base courses bank
+  const [masterCourses, setMasterCourses, masterCoursesLoaded] = useFirebaseState<MasterCourse[]>('db-master-courses', INITIAL_MASTER_COURSES);
+
+  // Student evolution months and scores (four evolutions system)
+  const [studentEvolutions, setStudentEvolutions, studentEvolutionsLoaded] = useFirebaseState<StudentEvolution[]>('db-student-evolutions', []);
+
+  const isDataLoaded = usersLoaded && schedulesLoaded && progressLoaded && notificationsLoaded && 
+                       backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded && evolutionBankLoaded;
+
+  // Navigation tab state
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline' | 'voice-notes'>('dashboard');
+
+  // Active integrated classroom session
+  const [activeClassroomSession, setActiveClassroomSession] = useState<ClassSchedule | null>(null);
+
+  // Control individual show variables inside ScheduleManager from the main sidebar
+  const [scheduleShowAddForm, setScheduleShowAddForm] = useState(false);
+  const [scheduleShowBatchManager, setScheduleShowBatchManager] = useState(false);
+  const [scheduleShowCourseDashboard, setScheduleShowCourseDashboard] = useState(false);
+  const [sharedEditingCourse, setSharedEditingCourse] = useState<Course | null>(null);
+
+  // Vercel-style dashboard states
+  const [adminDashboardSubTab, setAdminDashboardSubTab] = useState<'deployments' | 'overview' | 'logs' | 'env' | 'domains'>('deployments');
+  const [vercelBranchFilter, setVercelBranchFilter] = useState('all');
+  const [vercelAuthorFilter, setVercelAuthorFilter] = useState('all');
+  const [vercelEnvironmentFilter, setVercelEnvironmentFilter] = useState('all');
+  const [vercelDateFilter, setVercelDateFilter] = useState('all');
+  const [vercelStatusFilter, setVercelStatusFilter] = useState('all');
+  const [customDeployments, setCustomDeployments] = useState<any[]>([]);
+  const [isSimulatedBuilding, setIsSimulatedBuilding] = useState(false);
+  const [revealedEnvSecrets, setRevealedEnvSecrets] = useState<Record<string, boolean>>({});
+  const [domainCheckStatus, setDomainCheckStatus] = useState<Record<string, 'idle' | 'checking' | 'active'>>({
+    'learnora.edu': 'active',
+    'learnora-preview.vercel.app': 'active',
+    'learnora-dev.vercel.app': 'active'
+  });
+
+  useEffect(() => {
+    if (activeTab !== 'schedule') {
+      setScheduleShowAddForm(false);
+      setScheduleShowBatchManager(false);
+      setScheduleShowCourseDashboard(false);
+    }
+  }, [activeTab]);
+
+  const getCurrentDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Automatically move upcoming courses to ongoing when start date or admission deadline is met
+  // DISABLED: Data should not change/transition automatically. Only manually adjusted by administrators as requested.
+  /*
+  useEffect(() => {
+    if (!coursesLoaded || !courses || courses.length === 0) return;
+
+    const todayStr = getCurrentDateString();
+    let hasChanges = false;
+    const updatedCourses = courses.map(course => {
+      if (course.status === 'upcoming') {
+        const hasStarted = course.publishDate && todayStr >= course.publishDate;
+        const admissionClosed = course.admissionLastDate && todayStr > course.admissionLastDate;
+
+        if (hasStarted || admissionClosed) {
+          hasChanges = true;
+          const reason = hasStarted ? "course start date reached" : "admission last date has passed";
+          console.log(`Auto-transitioning course "${course.name}" to 'ongoing' status because ${reason}.`);
+          return {
+            ...course,
+            status: 'ongoing' as const
+          };
+        }
+      }
+      return course;
+    });
+
+    if (hasChanges) {
+      setCourses(updatedCourses);
+
+      const notif: AppNotification = {
+        id: generateUniqueId('notif'),
+        title: 'Class Cohort Auto-Transitioned',
+        message: 'One or more upcoming courses have officially started or passed their admission deadline, transferring them to current ongoing courses and closing new admissions.',
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+      triggerToast(notif);
+    }
+  }, [courses, coursesLoaded]);
+  */
+
+  // Security Session Activity Auto-Logout
+  const AUTO_LOGOUT_TIME_MS = 4 * 60 * 60 * 1000; // 4 hours of inactivity
+  const lastActivityRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    // Auto logout timer check
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivityRef.current > AUTO_LOGOUT_TIME_MS) {
+        handleLogout('Your session expired due to inactivity. For your security, you have been logged out.');
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    // Throttle the state update to avoid overwhelming renders
+    let throttleTimeout: NodeJS.Timeout | null = null;
+    const updateActivity = () => {
+      if (!throttleTimeout) {
+        throttleTimeout = setTimeout(() => {
+          lastActivityRef.current = Date.now();
+          throttleTimeout = null;
+        }, 5000); // only update at most once every 5 seconds
+      }
+    };
+    
+    // Listen to standard interaction events
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'];
+
+    events.forEach(event => {
+      window.addEventListener(event, updateActivity, { passive: true });
+    });
+
+    return () => {
+      if (throttleTimeout) clearTimeout(throttleTimeout);
+      events.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+    };
+  }, [currentUser]);
+
+  // Sidebar expand/collapse and hover active state checks
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth < 1024 : true
+  );
+  const [isSidebarHovered, setIsSidebarHovered] = useState<boolean>(false);
+  const [ignoreHover, setIgnoreHover] = useState<boolean>(false);
+
+  // Collapsible sidebar sub-menu states
+  const [isStudentAcademicExpanded, setIsStudentAcademicExpanded] = useState<boolean>(true);
+  const [isStaffAcademicExpanded, setIsStaffAcademicExpanded] = useState<boolean>(true);
+  const [isSystemCategoriesExpanded, setIsSystemCategoriesExpanded] = useState<boolean>(true);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarCollapsed(true);
+      } else {
+        setIsSidebarCollapsed(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Onboarding screens and fast registration workflow states
+  const [onboardingTab, setOnboardingTab] = useState<'fastReg' | 'authLogin' | 'adminLogin'>('authLogin');
+  const [admissionMethod, setAdmissionMethod] = useState<'selection' | 'google-login' | 'github-login' | 'manual' | 'social-course-select'>('selection');
+  const [socialProvider, setSocialProvider] = useState<'google' | 'github' | null>(null);
+  const [googleEmail, setGoogleEmail] = useState('baidyaanik18@gmail.com');
+  const [googlePassword, setGooglePassword] = useState('');
+  const [googleError, setGoogleError] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [isPopupError, setIsPopupError] = useState(false);
+  const [isDomainError, setIsDomainError] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setGoogleError('');
+    setIsPopupError(false);
+    setIsDomainError(false);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      if (user.email) {
+        const emailLower = user.email.toLowerCase();
+        const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+        if (matchedUser) {
+          setCurrentUser(matchedUser);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Logged In',
+            message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using Google.`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setGoogleLoading(false);
+          return;
+        } else {
+          if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+            setGoogleError(`This Google account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+            setLoginError(`This Google account (${user.email}) is not registered with Learnora. Please register your account first.`);
+            await auth.signOut();
+            setGoogleLoading(false);
+            return;
+          }
+        }
+      }
+      
+      const displayName = user.displayName || '';
+      let first = '';
+      let last = '';
+      if (displayName) {
+        const parts = displayName.trim().split(/\s+/);
+        first = parts[0];
+        last = parts.slice(1).join(' ') || '';
+      } else if (user.email) {
+        const prefix = user.email.split('@')[0];
+        first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+        last = '';
+      }
+
+      setFastFirstName(first);
+      setFastLastName(last || 'Student');
+      setFastEmail(user.email || '');
+      
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      const googleProfile = additionalUserInfo?.profile as any;
+      const googlePhoto = googleProfile?.picture || 
+                          user.photoURL || 
+                          user.providerData?.find(p => p.providerId === 'google.com')?.photoURL ||
+                          (result as any)._tokenResponse?.photoUrl ||
+                          '';
+                          
+      setFastAvatarUrl(googlePhoto);
+      setEmailVerified(true);
+      setEmailVerState('verified');
+      setSocialProvider('google');
+      setAdmissionMethod('social-course-select');
+      
+      triggerToast({
+        id: generateUniqueId('notif'),
+        title: 'Google Connected',
+        message: `Connected successfully with ${user.email}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      });
+    } catch (error: any) {
+      // console.error("Google Authentication failed:", error);
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+      
+      const isPopupClosedOrCancelled = 
+        error.code === 'auth/popup-closed-by-user' || 
+        error.code === 'auth/cancelled-popup-request' ||
+        error.message?.includes('popup-closed-by-user') ||
+        error.message?.includes('cancelled-popup-request');
+
+      const isPopupBlocked = 
+        error.code === 'auth/popup-blocked' || 
+        error.message?.includes('popup-blocked');
+
+      const isUnauthorizedDomain =
+        error.code === 'auth/unauthorized-domain' ||
+        error.message?.includes('unauthorized-domain');
+
+      const isNetworkError = 
+        error.code === 'auth/network-request-failed' ||
+        error.message?.includes('network-request-failed');
+
+      const isAccountExistsWithDifferentCredential =
+        error.code === 'auth/account-exists-with-different-credential' ||
+        error.message?.includes('account-exists-with-different-credential');
+
+      const isOperationNotAllowed =
+        error.code === 'auth/operation-not-allowed' ||
+        error.message?.includes('operation-not-allowed');
+
+      if (isOperationNotAllowed) {
+        setGoogleError('Google authentication is not enabled in the Firebase Console. Please ask the administrator to enable the Google sign-in provider.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Provider Not Enabled',
+          message: 'Google sign-in is not enabled in Firebase.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isUnauthorizedDomain) {
+        setGoogleError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
+        setIsDomainError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Domain Unauthorized',
+          message: 'Please add learnora.in to your Firebase authorized domains.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isAccountExistsWithDifferentCredential) {
+          const conflictingEmail = error.customData?.email || error.email || '';
+          if (conflictingEmail) {
+            const prefix = conflictingEmail.split('@')[0];
+            const first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            setFastFirstName(first);
+            setFastLastName('Student');
+            setFastEmail(conflictingEmail);
+            setFastAvatarUrl('');
+            setEmailVerified(true);
+            setEmailVerState('verified');
+            setSocialProvider('google');
+            setAdmissionMethod('social-course-select');
+            setGoogleError('');
+            setIsPopupError(false);
+            triggerToast({
+              id: generateUniqueId('notif'),
+              title: 'Account Connected',
+              message: `Credentials bridged. Email ${conflictingEmail} loaded successfully.`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              type: 'general',
+              channel: 'system'
+            });
+          } else {
+            setGoogleError('An account already exists with different credentials. Please sign in with your original provider.');
+            setIsPopupError(true);
+            setAdmissionMethod('selection');
+          }
+      } else if (isPopupClosedOrCancelled) {
+        setGoogleError('');
+        setIsPopupError(false);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Sign-in Cancelled',
+          message: 'The Google sign-in popup was closed or cancelled.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isPopupBlocked) {
+        setGoogleError('Sign-in popup was blocked by your browser. Please try again or use the email fallback form below.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Popup Blocked',
+          message: 'The Google sign-in popup was blocked by your browser.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('google-login');
+      } else if (isNetworkError && isIframe) {
+        setGoogleError('Iframe connection blocked by browser security. Modern browsers block secure Google pop-up cookies inside embedded previews. Please try again or use the email fallback form below.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Iframe Connection Blocked',
+          message: 'The Google sign-in was blocked by browser security inside the iframe.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('google-login');
+      } else {
+        setGoogleError(error.message || 'Google login was closed or failed.');
+        setIsPopupError(isIframe);
+        setAdmissionMethod('google-login');
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    setGithubLoading(true);
+    setGithubError('');
+    setIsPopupError(false);
+    setIsDomainError(false);
+    try {
+      const provider = new GithubAuthProvider();
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      if (user.email) {
+        const emailLower = user.email.toLowerCase();
+        const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+        if (matchedUser) {
+          setCurrentUser(matchedUser);
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Logged In',
+            message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using GitHub.`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+          setGithubLoading(false);
+          return;
+        } else {
+          if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+            setGithubError(`This GitHub account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+            setLoginError(`This GitHub account (${user.email}) is not registered with Learnora. Please register your account first.`);
+            await auth.signOut();
+            setGithubLoading(false);
+            return;
+          }
+        }
+      }
+      
+      const displayName = user.displayName || '';
+      let first = '';
+      let last = '';
+      if (displayName) {
+        const parts = displayName.trim().split(/\s+/);
+        first = parts[0];
+        last = parts.slice(1).join(' ') || '';
+      } else if (user.email) {
+        const prefix = user.email.split('@')[0];
+        first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+        last = '';
+      }
+
+      setFastFirstName(first);
+      setFastLastName(last || 'Student');
+      setFastEmail(user.email || '');
+      
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      const githubProfile = additionalUserInfo?.profile as any;
+      
+      const githubPhoto = githubProfile?.avatar_url ||
+                          user.photoURL || 
+                          user.providerData?.find(p => p.providerId === 'github.com')?.photoURL ||
+                          (result as any)._tokenResponse?.photoUrl || 
+                          '';
+                          
+      setFastAvatarUrl(githubPhoto);
+      setEmailVerified(true);
+      setEmailVerState('verified');
+      setSocialProvider('github');
+      setAdmissionMethod('social-course-select');
+      
+      triggerToast({
+        id: generateUniqueId('notif'),
+        title: 'GitHub Connected',
+        message: `Connected successfully with ${user.email || 'GitHub'}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      });
+    } catch (error: any) {
+      // console.error("GitHub Authentication failed:", error);
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+      
+      const isPopupClosedOrCancelled = 
+        error.code === 'auth/popup-closed-by-user' || 
+        error.code === 'auth/cancelled-popup-request' ||
+        error.message?.includes('popup-closed-by-user') ||
+        error.message?.includes('cancelled-popup-request');
+
+      const isPopupBlocked = 
+        error.code === 'auth/popup-blocked' || 
+        error.message?.includes('popup-blocked');
+
+      const isUnauthorizedDomain =
+        error.code === 'auth/unauthorized-domain' ||
+        error.message?.includes('unauthorized-domain');
+
+      const isNetworkError = 
+        error.code === 'auth/network-request-failed' ||
+        error.message?.includes('network-request-failed');
+        
+      const isAccountExistsWithDifferentCredential =
+        error.code === 'auth/account-exists-with-different-credential' ||
+        error.message?.includes('account-exists-with-different-credential');
+
+      const isOperationNotAllowed =
+        error.code === 'auth/operation-not-allowed' ||
+        error.message?.includes('operation-not-allowed');
+
+      if (isOperationNotAllowed) {
+        setGithubError('GitHub authentication is not enabled in the Firebase Console. Please ask the administrator to enable the GitHub sign-in provider.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Provider Not Enabled',
+          message: 'GitHub sign-in is not enabled in Firebase.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isUnauthorizedDomain) {
+        setGithubError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
+        setIsDomainError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Domain Unauthorized',
+          message: 'Please add learnora.in to your Firebase authorized domains.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isAccountExistsWithDifferentCredential) {
+          const conflictingEmail = error.customData?.email || error.email || '';
+          if (conflictingEmail) {
+            const prefix = conflictingEmail.split('@')[0];
+            const first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            setFastFirstName(first);
+            setFastLastName('Student');
+            setFastEmail(conflictingEmail);
+            setFastAvatarUrl('');
+            setEmailVerified(true);
+            setEmailVerState('verified');
+            setSocialProvider('github');
+            setAdmissionMethod('social-course-select');
+            setGithubError('');
+            setIsPopupError(false);
+            triggerToast({
+              id: generateUniqueId('notif'),
+              title: 'Account Connected',
+              message: `Credentials bridged. Email ${conflictingEmail} loaded successfully.`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              type: 'general',
+              channel: 'system'
+            });
+          } else {
+            setGithubError('An account already exists with different credentials. Please sign in with your original provider.');
+            setIsPopupError(true);
+            setAdmissionMethod('selection');
+          }
+      } else if (isPopupClosedOrCancelled) {
+        setGithubError('');
+        setIsPopupError(false);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Sign-in Cancelled',
+          message: 'The GitHub sign-in popup was closed or cancelled.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isPopupBlocked) {
+        setGithubError('Sign-in popup was blocked by your browser. Please try again.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Popup Blocked',
+          message: 'The GitHub sign-in popup was blocked by your browser.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else if (isNetworkError && isIframe) {
+        setGithubError('Iframe connection blocked by browser security. Modern browsers block secure GitHub pop-up cookies inside embedded previews. Please try again.');
+        setIsPopupError(true);
+        triggerToast({
+          id: generateUniqueId('notif'),
+          title: 'Iframe Connection Blocked',
+          message: 'The GitHub sign-in was blocked by browser security inside the iframe.',
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        });
+        setAdmissionMethod('selection');
+      } else {
+        setGithubError(error.message || 'GitHub login was closed or failed.');
+        setIsPopupError(isIframe);
+        setAdmissionMethod('selection');
+      }
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  const [githubUsername, setGithubUsername] = useState('');
+  const [githubPassword, setGithubPassword] = useState('');
+  const [githubError, setGithubError] = useState('');
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [currentRegStep, setCurrentRegStep] = useState<number>(1);
+  const [showPortal, setShowPortal] = useState<boolean>(false);
+  const [fastFirstName, setFastFirstName] = useState('');
+  const [fastLastName, setFastLastName] = useState('');
+  const [fastEmail, setFastEmail] = useState('');
+  const [fastPhone, setFastPhone] = useState('');
+  const [fastInstructorId, setFastInstructorId] = useState('');
+  const [fastFatherName, setFastFatherName] = useState('');
+  const [fastAddress, setFastAddress] = useState('');
+  const [fastCourse, setFastCourse] = useState('');
+  const [lastEmailStatus, setLastEmailStatus] = useState<{ success: boolean; error?: string; sending: boolean } | null>(null);
+  const [sandboxOtp, setSandboxOtp] = useState<string | null>(null);
+
+  // --- REAL-TIME ROUTING & DEEP-LINKING SYNC ---
+  // 1. Sync Browser URL path changes back into App State
+  useEffect(() => {
+    const path = currentPath;
+    
+    if (!currentUser) {
+      if (path === '/privacy' || path === '/terms' || path === '/cookies' || path.startsWith('/course/')) {
+        // Handled directly by rendering the full policy or course component
+        return;
+      }
+      
+      if (path === '/portal' || path === '/login') {
+        if (!showPortal || onboardingTab !== 'authLogin') {
+          setShowPortal(true);
+          setOnboardingTab('authLogin');
+        }
+      } else if (path === '/admissions' || path === '/register') {
+        if (!showPortal || onboardingTab !== 'fastReg') {
+          setShowPortal(true);
+          setOnboardingTab('fastReg');
+        }
+      } else if (path === '/admin' || path === '/admin-login') {
+        if (!showPortal || onboardingTab !== 'adminLogin') {
+          setShowPortal(true);
+          setOnboardingTab('adminLogin');
+        }
+      } else if (path === '/') {
+        if (showPortal) {
+          setShowPortal(false);
+        }
+      } else {
+        // Redirect any other path to homepage in logged-out state
+        window.history.replaceState(null, '', '/');
+      }
+    } else {
+      // Logged in
+      if (path === '/privacy' || path === '/terms' || path === '/cookies') {
+        // Handled directly by rendering the full policy component
+        return;
+      }
+      
+      const pathToTabMap: Record<string, typeof activeTab> = {
+        '/dashboard': 'dashboard',
+        '/enrollments': 'enrollments',
+        '/schedule': 'schedule',
+        '/lectures': 'lectures',
+        '/courses': 'courses-directory',
+        '/courses-directory': 'courses-directory',
+        '/progress': 'progress',
+        '/inbox': 'inbox',
+        '/messages': 'inbox',
+        '/backup': 'backup',
+        '/assignment-pipeline': 'assignment-pipeline',
+        '/assignment-tracker': 'assignment-tracker',
+        '/profile': 'profile'
+      };
+
+      const matchedTab = pathToTabMap[path];
+      if (matchedTab) {
+        if (activeTab !== matchedTab) {
+          setActiveTab(matchedTab);
+        }
+      } else if (path === '/' || path === '/portal' || path === '/login' || path === '/admissions' || path === '/register' || path === '/admin' || path === '/admin-login') {
+        // Logged in user shouldn't view home page/portal, redirect to dashboard
+        window.history.replaceState(null, '', '/dashboard');
+      } else {
+        // Unknown path, fallback to /dashboard
+        window.history.replaceState(null, '', '/dashboard');
+      }
+    }
+  }, [currentPath, currentUser]);
+
+  // 2. Sync Onboarding/Login tab state changes back to browser URL
+  useEffect(() => {
+    if (currentUser) return;
+    
+    if (showPortal) {
+      const tabToPathMap: Record<string, string> = {
+        'authLogin': '/login',
+        'fastReg': '/admissions',
+        'adminLogin': '/admin'
+      };
+      const targetPath = tabToPathMap[onboardingTab];
+      if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies' && !window.location.pathname.startsWith('/course/')) {
+        window.history.pushState(null, '', targetPath);
+      }
+    } else {
+      if (window.location.pathname !== '/' && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies' && !window.location.pathname.startsWith('/course/')) {
+        window.history.pushState(null, '', '/');
+      }
+    }
+  }, [showPortal, onboardingTab, currentUser]);
+
+  // 3. Sync Active Dashboard Tab state changes back to browser URL
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const tabToPathMap: Record<string, string> = {
+      'dashboard': '/dashboard',
+      'enrollments': '/enrollments',
+      'schedule': '/schedule',
+      'lectures': '/lectures',
+      'courses-directory': '/courses',
+      'progress': '/progress',
+      'inbox': '/inbox',
+      'backup': '/backup',
+      'assignment-pipeline': '/assignment-pipeline',
+      'assignment-tracker': '/assignment-tracker',
+      'profile': '/profile'
+    };
+
+    const targetPath = tabToPathMap[activeTab];
+    if (targetPath && window.location.pathname !== targetPath && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/cookies') {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [activeTab, currentUser]);
+
+
+  const [fastFirstNameError, setFastFirstNameError] = useState('');
+  const [fastLastNameError, setFastLastNameError] = useState('');
+  const [fastEmailError, setFastEmailError] = useState('');
+  const [fastEmailSuccess, setFastEmailSuccess] = useState('');
+  const [fastGenderError, setFastGenderError] = useState('');
+  const [fastDobError, setFastDobError] = useState('');
+  const [fastFatherNameError, setFastFatherNameError] = useState('');
+  const [fastAddressError, setFastAddressError] = useState('');
+  const [fastLastQualificationError, setFastLastQualificationError] = useState('');
+  const [fastCourseError, setFastCourseError] = useState('');
+  const [fastLastQualification, setFastLastQualification] = useState('');
+  const [lastQualificationCategory, setLastQualificationCategory] = useState('');
+  const [schoolClassInput, setSchoolClassInput] = useState('');
+  const [collegeDegreeInput, setCollegeDegreeInput] = useState('');
+
+  useEffect(() => {
+    if (lastQualificationCategory === 'school') {
+      setFastLastQualification(schoolClassInput ? `School (Class: ${schoolClassInput})` : '');
+    } else if (lastQualificationCategory === 'college') {
+      setFastLastQualification(collegeDegreeInput ? `College (Degree: ${collegeDegreeInput})` : '');
+    } else {
+      setFastLastQualification('');
+    }
+  }, [lastQualificationCategory, schoolClassInput, collegeDegreeInput]);
+
+  const [fastGender, setFastGender] = useState('');
+  const [fastDob, setFastDob] = useState('');
+  const [fastAvatarUrl, setFastAvatarUrl] = useState('');
+  const [fastAvatarError, setFastAvatarError] = useState('');
+
+  // Phone country verification states
+  const [fastPhonePrefix, setFastPhonePrefix] = useState('+91');
+  const [fastPhoneError, setFastPhoneError] = useState('');
+
+  // Firebase Verification States - bypassed by user request
+  const [phoneVerified, setPhoneVerified] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerState, setPhoneVerState] = useState<'idle' | 'sending' | 'sent' | 'verifying'>('idle');
+  const [emailVerState, setEmailVerState] = useState<'idle' | 'sending' | 'sent' | 'verifying'>('idle');
+  const [emailOtpCooldown, setEmailOtpCooldown] = useState(0);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpHash, setOtpHash] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+
+  // Listen for Google Sign-in redirect results on mount
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          
+          if (user.email) {
+            const emailLower = user.email.toLowerCase();
+            const matchedUser = users.find(u => u.email?.toLowerCase() === emailLower);
+
+            if (matchedUser) {
+              setCurrentUser(matchedUser);
+              triggerToast({
+                id: generateUniqueId('notif'),
+                title: 'Logged In',
+                message: `Welcome back, ${matchedUser.name || matchedUser.username}! Logged in using Google.`,
+                timestamp: new Date().toISOString(),
+                read: false,
+                type: 'general',
+                channel: 'system'
+              });
+              return;
+            } else {
+              if (onboardingTab === 'authLogin' || onboardingTab === 'adminLogin') {
+                setGoogleError(`This Google account (${user.email}) is not registered with Learnora. Only registered accounts can sign in.`);
+                setLoginError(`This Google account (${user.email}) is not registered with Learnora. Please register your account first.`);
+                await auth.signOut();
+                return;
+              }
+            }
+          }
+          
+          const displayName = user.displayName || '';
+          let first = '';
+          let last = '';
+          if (displayName) {
+            const parts = displayName.trim().split(/\s+/);
+            first = parts[0];
+            last = parts.slice(1).join(' ') || '';
+          } else if (user.email) {
+            const prefix = user.email.split('@')[0];
+            first = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            last = '';
+          }
+
+          setFastFirstName(first);
+          setFastLastName(last || 'Student');
+          setFastEmail(user.email || '');
+          setFastAvatarUrl(user.photoURL || '');
+          setEmailVerified(true);
+          setEmailVerState('verified');
+          setSocialProvider('google');
+          setAdmissionMethod('social-course-select');
+          
+          triggerToast({
+            id: generateUniqueId('notif'),
+            title: 'Google Connected',
+            message: `Connected successfully with ${user.email}`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'general',
+            channel: 'system'
+          });
+        }
+      } catch (error: any) {
+        // console.error("Google Redirect Auth failed:", error);
+        const isUnauthorizedDomain =
+          error.code === 'auth/unauthorized-domain' ||
+          error.message?.includes('unauthorized-domain');
+
+        if (isUnauthorizedDomain) {
+          setGoogleError('Unauthorized domain detected. The domain learnora.in is not authorized in your Firebase Console.');
+          setIsDomainError(true);
+          setAdmissionMethod('google-login');
+        } else {
+          setGoogleError(error.message || 'Google redirect login failed.');
+        }
+      }
+    };
+
+    handleRedirectResult();
+  }, []);
+
+  useEffect(() => {
+    let timer: any;
+    if (emailOtpCooldown > 0) {
+      timer = setInterval(() => setEmailOtpCooldown(c => c - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [emailOtpCooldown]);
+
+  const handleSendEmailOtp = async () => {
+    if (!fastEmail || !/\S+@\S+\.\S+/.test(fastEmail)) {
+      setFastEmailError("Enter a valid email first");
+      return;
+    }
+
+    const emailLower = fastEmail.toLowerCase();
+    
+    // Check if email already registered
+    const isRegistered = users.some(u => u.email.toLowerCase() === emailLower);
+    const isPending = registrationRequests.some(r => r.email.toLowerCase() === emailLower && r.status === 'pending');
+    
+    if (isRegistered || isPending) {
+      setFastEmailError("Mail id is already register");
+      return;
+    }
+
+    setFastEmailError("");
+    setFastEmailSuccess("");
+    setSandboxOtp(null);
+    setEmailVerState('sending');
+    
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: fastEmail
+        })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        if (data.developerSandboxOtp) {
+          setSandboxOtp(data.developerSandboxOtp);
+          setEmailVerState('sent');
+          setFastEmailError(data.error || "Sandbox restriction detected");
+          return;
+        } else {
+          setEmailVerState('idle');
+          throw new Error(data.error || "Failed to send OTP");
+        }
+      }
+      
+      setOtpHash(data.hash || "");
+      if (data.developerSandboxOtp) {
+        setSandboxOtp(data.developerSandboxOtp);
+      }
+      setEmailVerState('sent');
+      setEmailOtpCooldown(60);
+      if (data.note) {
+        setFastEmailSuccess(data.note);
+      }
+    } catch (err: any) {
+      setEmailVerState('idle');
+      setFastEmailError(err.message || 'Error communicating with server');
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      setFastEmailError('Enter the 6-digit code');
+      return;
+    }
+    
+    // Developer Sandbox Bypass
+    if (sandboxOtp) {
+      if (otpCode === sandboxOtp) {
+        setEmailVerified(true);
+        setFastEmailSuccess("Sandbox Email Verified!");
+        setEmailVerState('idle');
+        return;
+      }
+    }
+    
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fastEmail, code: otpCode, hash: otpHash })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Invalid OTP");
+      }
+      
+      setEmailVerified(true);
+      setEmailVerState('idle');
+      setFastEmailError('');
+      setFastEmailSuccess('');
+    } catch (err: any) {
+      setFastEmailError(err.message || 'Invalid OTP');
+      if (err.message?.toLowerCase().includes("request a new one")) {
+        setEmailVerState('idle'); // allows them to request a new one
+        setOtpCode('');
+      }
+    }
+  };
+
+  const [fastRegSuccess, setFastRegSuccess] = useState<RegistrationRequest | null>(null);
+
+
+
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Login Security / Rate Limiting
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+
+  // Forgot Password modal level states
+  const [forgotEmailModalOpen, setForgotEmailModalOpen] = useState(false);
+  const [forgotEmailInput, setForgotEmailInput] = useState('');
+  const [forgotModalSuccess, setForgotModalSuccess] = useState('');
+  const [forgotModalError, setForgotModalError] = useState('');
+
+  const [mailSearchEmail, setMailSearchEmail] = useState('');
+  const [activeMailboxEmail, setActiveMailboxEmail] = useState<string | null>(null);
+  const [showMailbox, setShowMailbox] = useState(false);
+  const [selectedMail, setSelectedMail] = useState<SimulatedEmail | null>(null);
+
+  // English Placement Test Modal and Request state
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [examRequest, setExamRequest] = useState<RegistrationRequest | null>(null);
+
+
+
+  // Push notifications toast overlay state
+  const [toastAlert, setToastAlert] = useState<AppNotification | null>(null);
+
+  useEffect(() => {
+    // Look for exam link in URL to trigger admission exam automatically
+    const params = new URLSearchParams(window.location.search);
+    const examEmail = params.get('examemail');
+    if (examEmail && registrationRequests.length > 0 && !showExamModal && !examRequest) {
+      const q = registrationRequests.find(r => r.email.toLowerCase() === examEmail.toLowerCase() && r.status === 'pending');
+      if (q) {
+        setExamRequest(q);
+        setShowExamModal(true);
+        // Clear param from URL so it doesn't trigger again continuously on re-renders if closed
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [registrationRequests, showExamModal, examRequest]);
+
+  // Synchronize state of currently logged-in user with active database records or invalidate if deleted
+  useEffect(() => {
+    if (currentUser && currentUser.id !== 'admin-1') {
+      const dbUser = users.find(u => u.id === currentUser.id);
+      if (!dbUser) {
+        setCurrentUser(null);
+      } else if (JSON.stringify(dbUser) !== JSON.stringify(currentUser)) {
+        setCurrentUser(dbUser);
+      }
+    }
+  }, [users, currentUser]);
+
+  // Firebase Verification Logic
+  const handleSendPhoneOTP = async () => {
+    if (!fastPhone) {
+      setFastPhoneError("Please enter phone number first.");
+      return;
+    }
+    setPhoneVerState('sending');
+    setFastPhoneError('');
+    try {
+      const calculatedPhone = `${fastPhonePrefix}${fastPhone}`;
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible'
+        });
+      }
+      const result = await signInWithPhoneNumber(auth, calculatedPhone, window.recaptchaVerifier);
+      setConfirmationResult(result);
+      setPhoneVerState('sent');
+      triggerToast({ id: generateUniqueId('notif'), title: 'Verification', message: 'SMS verification code sent.', timestamp: new Date().toISOString(), read: false, type: 'general', channel: 'system' });
+    } catch (error: any) {
+      console.error(error);
+      setPhoneVerState('error');
+      setFastPhoneError(error.message || 'Error sending OTP');
+      if (window.recaptchaVerifier) {
+         window.recaptchaVerifier.clear();
+         window.recaptchaVerifier = null;
+      }
+    }
+  };
+
+  const handleVerifyPhoneOTP = async () => {
+    if (!otpCode || !confirmationResult) return;
+    setPhoneVerState('verifying');
+    setFastPhoneError('');
+    try {
+      await confirmationResult.confirm(otpCode);
+      setPhoneVerified(true);
+      setPhoneVerState('verified');
+      triggerToast({ id: generateUniqueId('notif'), title: 'Verification', message: 'Phone number verified successfully.', timestamp: new Date().toISOString(), read: false, type: 'general', channel: 'system' });
+    } catch (error: any) {
+      console.error(error);
+      setPhoneVerState('error');
+      setFastPhoneError(error.message || 'Invalid OTP code');
+    }
+  };
+
+  const handleSendEmailLink = async () => {
+     if (!fastEmail) {
+       setFastEmailError("Please enter email first.");
+       return;
+     }
+     setEmailVerState('sending');
+     setFastEmailError('');
+     try {
+        const tempPass = generateUniqueId('pwd');
+        const userCredential = await createUserWithEmailAndPassword(auth, fastEmail, tempPass);
+        await sendEmailVerification(userCredential.user);
+        setEmailVerState('sent');
+        triggerToast({ id: generateUniqueId('notif'), title: 'Verification', message: 'Verification link sent to email.', timestamp: new Date().toISOString(), read: false, type: 'general', channel: 'system' });
+     } catch (error: any) {
+        console.error(error);
+        if (error.code === 'auth/email-already-in-use') {
+           setFastEmailError('Email involves an existing Firebase account.');
+        } else {
+           setFastEmailError(error.message || 'Error sending email verification');
+        }
+        setEmailVerState('error');
+     }
+  };
+
+  const handleCheckEmailVerified = async () => {
+    if (!auth.currentUser) return;
+    await auth.currentUser.reload();
+    if (auth.currentUser.emailVerified) {
+      setEmailVerified(true);
+      setEmailVerState('verified');
+      triggerToast({ id: generateUniqueId('notif'), title: 'Verification', message: 'Email address verified successfully.', timestamp: new Date().toISOString(), read: false, type: 'general', channel: 'system' });
+    } else {
+      setFastEmailError('Email is not verified yet. Please check your inbox.');
+    }
+  };
+
+  // Push Notice trigger helper
+  const triggerToast = (n: AppNotification) => {
+    setToastAlert(n);
+    setTimeout(() => {
+      setToastAlert(null);
+    }, 4500);
+  };
+
+  const handleImpersonateStudent = (student: UserAccount) => {
+    if (!currentUser) return;
+    if (!['admin', 'sub-admin'].includes(currentUser.role)) return;
+
+    // Save original user
+    setOriginalAdminUser(currentUser);
+    // Switch active user to student
+    setCurrentUser(student);
+
+    triggerToast({
+      id: `impersonate-${Date.now()}`,
+      title: 'Emergency View Mode',
+      message: `Impersonating student: ${student.name}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'push'
+    });
+  };
+
+  const handleExitImpersonation = () => {
+    if (!originalAdminUser) return;
+
+    // Restore original user
+    setCurrentUser(originalAdminUser);
+    setOriginalAdminUser(null);
+
+    triggerToast({
+      id: `exit-impersonate-${Date.now()}`,
+      title: 'View Mode Ended',
+      message: 'Returned to administrator panel',
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'push'
+    });
+  };
+
+  // Update Profile details or password handler
+  const handleUpdateProfile = (updatedUser: UserAccount) => {
+    // 1. Update active current user state if current user is the one updated
+    if (currentUser && updatedUser.id === currentUser.id) {
+      setCurrentUser(updatedUser);
+    }
+    
+    // 2. Update the user account in our central databases
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+  };
+
+  // State modification Handlers
+  const handleAddStudent = (studentData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
+    const generatedUsername = studentData.username || studentData.email.toLowerCase();
+    const generatedPassword = studentData.password || `pass_${Math.floor(1000 + Math.random() * 9000)}`;
+    const studentUid = generateUniversalId(users);
+
+    const newStudent: UserAccount = {
+      ...studentData,
+      id: generateUniqueId('student'),
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      universalId: studentUid,
+      username: generatedUsername,
+      password: generatedPassword,
+      avatarUrl: studentData.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
+    };
+
+    setUsers(prev => [...prev, newStudent]);
+
+    const emailBodyTxt = `Dear ${newStudent.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.\n\nYour profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.\n\nPlease find your secure system access credentials and Universal ID below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${generatedUsername}\nPASSWORD: ${generatedPassword}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    sendSystemEmail(
+      newStudent.email,
+      'Welcome to Learnora! - Access Credentials & Quick Start',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Welcome to Learnora!</h2>
+        <p>Dear ${newStudent.name},</p>
+        <p>Welcome to Learnora Institute! An administrator has manually created and registered your student profile in our directory.</p>
+        <p>Your profile is now active and ready for scheduling course timetables, joining live classes, or working with your assigned coach.</p>
+        <p>Please find your secure system access credentials and Universal ID below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${generatedUsername}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${generatedPassword}</p>
+        </div>
+        <p>You can use these credentials to sign in directly from the login tab. Keep this information confidential and do not share it with other students.</p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
+
+    // System Notification Action
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Student Account Registered',
+      message: `Successful registration folder instantiated for ${newStudent.name} (Universal ID: ${studentUid}). Profile active and welcome email dispatched.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddInstructor = (instructorData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
+    const newInstructor: UserAccount = {
+      ...instructorData,
+      id: generateUniqueId('instructor'),
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      role: 'instructor'
+    };
+    setUsers(prev => [...prev, newInstructor]);
+
+    const emailBodyTxt = `Dear ${newInstructor.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your instructor profile in our directory.\n\nYour profile is now active and ready for managing schedules, conducting live classes, and tracking student progress.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${newInstructor.username}\nPASSWORD: ${newInstructor.password}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    sendSystemEmail(
+      newInstructor.email,
+      'Welcome to Learnora! - Instructor Access Credentials',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Welcome to Learnora!</h2>
+        <p>Dear ${newInstructor.name},</p>
+        <p>Welcome to Learnora Institute! An administrator has manually created and registered your instructor profile in our directory.</p>
+        <p>Your profile is now active and ready for managing schedules, conducting live classes, and tracking student progress.</p>
+        <p>Please find your secure system access credentials below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${newInstructor.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${newInstructor.password}</p>
+        </div>
+        <p>You can use these credentials to sign in directly from the login tab. Keep this information confidential.</p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Instructor Account Created',
+      message: `New Instructor account configured for ${newInstructor.name} (${newInstructor.specialization || 'General'}). Credentialed access is active and welcome email dispatched.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddSubAdmin = (subAdminData: Omit<UserAccount, 'id' | 'joinedDate'>) => {
+    const newSubAdmin: UserAccount = {
+      ...subAdminData,
+      id: generateUniqueId('subadmin'),
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      role: 'sub-admin'
+    };
+    setUsers(prev => [...prev, newSubAdmin]);
+
+    const emailBodyTxt = `Dear ${newSubAdmin.name},\n\nWelcome to Learnora Institute! An administrator has manually created and registered your sub-admin profile in our directory.\n\nYour professional access is now granted.\n\nPlease find your secure system access credentials below:\n\n-----------------------------\nUSERNAME: ${newSubAdmin.username}\nPASSWORD: ${newSubAdmin.password}\n-----------------------------\n\nYou can use these credentials to sign in directly from the login tab. Keep this information confidential.\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    sendSystemEmail(
+      newSubAdmin.email,
+      'Welcome to Learnora! - Sub-Admin Access Credentials',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Welcome to Learnora!</h2>
+        <p>Dear ${newSubAdmin.name},</p>
+        <p>Welcome to Learnora Institute! An administrator has manually created and registered your sub-admin profile in our directory.</p>
+        <p>Your professional access is now granted.</p>
+        <p>Please find your secure system access credentials below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${newSubAdmin.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${newSubAdmin.password}</p>
+        </div>
+        <p>You can use these credentials to sign in directly from the login tab. Keep this information confidential.</p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Sub-Admin Account Created',
+      message: `New Sub-Admin account configured for ${newSubAdmin.name}. Professional access is granted and welcome email dispatched.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleRemoveStudent = (studentId: string) => {
+    const student = users.find(u => u.id === studentId);
+    if (student) {
+      setRegistrationRequests(prev => prev.filter(r => r.email.toLowerCase() !== student.email.toLowerCase()));
+    }
+    setUsers(prev => prev.filter(u => u.id !== studentId));
+    // Remove student enrollment from other schedules
+    setSchedules(prev => prev.map(s => ({
+      ...s,
+      enrolledStudentIds: s.enrolledStudentIds.filter(id => id !== studentId)
+    })));
+    if (currentUser && currentUser.id === studentId) {
+      setCurrentUser(null);
+    }
+  };
+
+  const handleRemoveInstructor = (instructorId: string) => {
+    setUsers(prev => prev.map(u => {
+      if (u.role === 'student' && u.assignedInstructorId === instructorId) {
+        return { ...u, assignedInstructorId: undefined };
+      }
+      return u;
+    }).filter(u => u.id !== instructorId));
+    setSchedules(prev => prev.map(s => s.instructorId === instructorId ? { ...s, instructorId: '' } : s));
+    if (currentUser && currentUser.id === instructorId) {
+      setCurrentUser(null);
+    }
+  };
+
+  const handleRemoveSubAdmin = (subAdminId: string) => {
+    setUsers(prev => prev.filter(u => u.id !== subAdminId));
+    if (currentUser && currentUser.id === subAdminId) {
+      setCurrentUser(null);
+    }
+  };
+
+  const handleEnrollStudentInClass = (studentId: string, classId: string) => {
+    const student = users.find(u => u.id === studentId);
+    if (!student) return;
+
+    setSchedules(prev => prev.map(cl => {
+      if (cl.id === classId) {
+        if (cl.enrolledStudentIds.includes(studentId)) return cl;
+        return {
+          ...cl,
+          enrolledStudentIds: [...cl.enrolledStudentIds, studentId]
+        };
+      }
+      return cl;
+    }));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Student Added to Class Roll',
+      message: `${student.name} is now registered in session. Syllabus curriculum synchronized correctly.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddClass = (classData: Omit<ClassSchedule, 'id' | 'enrolledStudentIds'>) => {
+    const newClass: ClassSchedule = {
+      ...classData,
+      id: generateUniqueId('class'),
+      enrolledStudentIds: []
+    };
+    setSchedules(prev => [...prev, newClass]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Lesson Schedule Live',
+      message: `"${newClass.title}" (${newClass.subject}) added to active syllabus by ${newClass.instructorName}. Reserve slots now.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleUpdateClass = (updatedClass: ClassSchedule) => {
+    setSchedules(prev => prev.map(cl => cl.id === updatedClass.id ? updatedClass : cl));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Class Schedule Updated',
+      message: `The details for "${updatedClass.title}" have been successfully updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddBatch = (newBatch: Omit<StudentBatch, 'id' | 'createdDate'>) => {
+    const batch: StudentBatch = {
+      ...newBatch,
+      id: generateUniqueId('batch'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setBatches(prev => [...prev, batch]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Student Batch Published',
+      message: `Batch "${batch.name}" has been registered and published to the live class scheduler.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteBatch = (batchId: string) => {
+    const batchToDelete = batches.find(b => b.id === batchId);
+    if (!batchToDelete) return;
+
+    setBatches(prev => prev.filter(b => b.id !== batchId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Student Batch Unregistered',
+      message: `Batch "${batchToDelete.name}" has been removed from active cohorts.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddCourse = (newCourse: Omit<Course, 'id' | 'createdDate'>) => {
+    const course: Course = {
+      ...newCourse,
+      id: generateUniqueId('course'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setCourses(prev => [...prev, course]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Course Registered & Published',
+      message: `Course "${course.name}" (${course.code}) has been successfully registered and is now available.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddMasterCourse = (newMaster: Omit<MasterCourse, 'id' | 'createdDate'>) => {
+    const master: MasterCourse = {
+      ...newMaster,
+      id: generateUniqueId('master-course'),
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+    setMasterCourses(prev => [...prev, master]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'New Base Course Added',
+      message: `Base Course "${master.name}" has been successfully added to the curriculum list.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleUpdateMasterCourse = (updatedMaster: MasterCourse) => {
+    setMasterCourses(prev => prev.map(m => m.id === updatedMaster.id ? updatedMaster : m));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Base Course Updated',
+      message: `Base Course "${updatedMaster.name}" has been updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteMasterCourse = (masterId: string) => {
+    const masterToDelete = masterCourses.find(m => m.id === masterId);
+    if (!masterToDelete) return;
+
+    setMasterCourses(prev => prev.filter(m => m.id !== masterId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Base Course Deleted',
+      message: `Base Course "${masterToDelete.name}" has been removed.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleUpdateCourse = (updatedCourse: Course) => {
+    // 1. Get original course
+    const originalCourse = courses.find(c => c.id === updatedCourse.id);
+
+    // 2. Update courses
+    setCourses(prev => prev.map(c => c.id === updatedCourse.id ? updatedCourse : c));
+
+    // 3. Dynamically sync course and batch details to all student records, lectures, assignments, registrations
+    if (originalCourse) {
+      const origName = originalCourse.name.trim().toLowerCase();
+      const origCode = originalCourse.code?.trim().toLowerCase();
+      const origBatchNumber = originalCourse.batchNumber?.trim().toLowerCase();
+
+      // Sync student user records (including their assigned course and batch names/numbers)
+      setUsers(prevUsers => prevUsers.map(u => {
+        let updatedUser = { ...u };
+        let matched = false;
+
+        if (u.course) {
+          const uCourseLower = u.course.trim().toLowerCase();
+          if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
+            updatedUser.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (matched || (u.batch && (
+          (origBatchNumber && u.batch.trim().toLowerCase() === origBatchNumber) ||
+          (origCode && u.batch.trim().toLowerCase() === origCode) ||
+          (origBatchNumber && u.batch.trim().toLowerCase() === `batch ${origBatchNumber}`)
+        ))) {
+          if (u.batch && u.batch.toLowerCase().startsWith('batch ')) {
+            updatedUser.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+          } else {
+            updatedUser.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+        return updatedUser;
+      }));
+
+      // Synchronize currently logged-in student profile if applicable
+      if (currentUser) {
+        let updatedCurrentUser = { ...currentUser };
+        let matched = false;
+
+        if (currentUser.course) {
+          const uCourseLower = currentUser.course.trim().toLowerCase();
+          if (uCourseLower === origName || (origCode && uCourseLower === origCode)) {
+            updatedCurrentUser.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (matched || (currentUser.batch && (
+          (origBatchNumber && currentUser.batch.trim().toLowerCase() === origBatchNumber) ||
+          (origCode && currentUser.batch.trim().toLowerCase() === origCode) ||
+          (origBatchNumber && currentUser.batch.trim().toLowerCase() === `batch ${origBatchNumber}`)
+        ))) {
+          if (currentUser.batch && currentUser.batch.toLowerCase().startsWith('batch ')) {
+            updatedCurrentUser.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+          } else {
+            updatedCurrentUser.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+
+        if (matched || updatedCurrentUser.course !== currentUser.course || updatedCurrentUser.batch !== currentUser.batch) {
+          setCurrentUser(updatedCurrentUser);
+        }
+      }
+
+      // Sync class lectures / schedules (ClassSchedule)
+      setSchedules(prevSchedules => prevSchedules.map(cl => {
+        let updatedSchedule = { ...cl };
+        let matched = false;
+
+        if (cl.course) {
+          const clCourseLower = cl.course.trim().toLowerCase();
+          if (clCourseLower === origName || (origCode && clCourseLower === origCode)) {
+            updatedSchedule.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (cl.batch) {
+          const clBatchLower = cl.batch.trim().toLowerCase();
+          if (
+            clBatchLower === origName ||
+            (origCode && clBatchLower === origCode) ||
+            (origBatchNumber && clBatchLower === origBatchNumber) ||
+            (origBatchNumber && clBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            updatedSchedule.batch = updatedCourse.batchNumber || 'stb_001';
+          }
+        }
+
+        return updatedSchedule;
+      }));
+
+      // Sync active student assignments (StudentAssignment)
+      setAssignments(prevAssignments => prevAssignments.map(asg => {
+        let updatedAsg = { ...asg };
+        let matched = false;
+
+        if (asg.course) {
+          const asgCourseLower = asg.course.trim().toLowerCase();
+          if (asgCourseLower === origName || (origCode && asgCourseLower === origCode)) {
+            updatedAsg.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (asg.batch) {
+          const asgBatchLower = asg.batch.trim().toLowerCase();
+          if (
+            asgBatchLower === origName ||
+            (origCode && asgBatchLower === origCode) ||
+            (origBatchNumber && asgBatchLower === origBatchNumber) ||
+            (origBatchNumber && asgBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            if (asgBatchLower !== 'all') {
+              updatedAsg.batch = updatedCourse.batchNumber || 'stb_001';
+            }
+          }
+        }
+
+        return updatedAsg;
+      }));
+
+      // Sync and adapt registration intake requests (RegistrationRequest)
+      setRegistrationRequests(prevRequests => prevRequests.map(r => {
+        let updatedReq = { ...r };
+        let matched = false;
+
+        if (r.course) {
+          const rCourseLower = r.course.trim().toLowerCase();
+          if (rCourseLower === origName || (origCode && rCourseLower === origCode)) {
+            updatedReq.course = updatedCourse.name;
+            matched = true;
+          }
+        }
+
+        if (r.batch) {
+          const rBatchLower = r.batch.trim().toLowerCase();
+          if (
+            rBatchLower === origName ||
+            (origCode && rBatchLower === origCode) ||
+            (origBatchNumber && rBatchLower === origBatchNumber) ||
+            (origBatchNumber && rBatchLower === `batch ${origBatchNumber}`)
+          ) {
+            if (r.batch.toLowerCase().startsWith('batch ')) {
+              updatedReq.batch = `Batch ${updatedCourse.batchNumber || 'stb_001'}`;
+            } else {
+              updatedReq.batch = updatedCourse.batchNumber || 'stb_001';
+            }
+          }
+        }
+
+        return updatedReq;
+      }));
+    }
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Course Updated',
+      message: `Course "${updatedCourse.name}" (${updatedCourse.code}) has been successfully updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleDeleteCourse = (courseId: string) => {
+    const courseToDelete = courses.find(c => c.id === courseId);
+    if (!courseToDelete) return;
+
+    setCourses(prev => prev.filter(c => c.id !== courseId));
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Course Decommissioned',
+      message: `Course "${courseToDelete.name}" has been decommissioned from active directories.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleUpdateClassStatus = (classId: string, status: 'scheduled' | 'completed' | 'cancelled') => {
+    setSchedules(prev => prev.map(cl => {
+      if (cl.id === classId) {
+        return { ...cl, status };
+      }
+      return cl;
+    }));
+
+    // Raise real notification trigger on completes
+    if (status === 'completed' || status === 'cancelled') {
+      const cls = schedules.find(c => c.id === classId);
+      if (cls) {
+        const notif: AppNotification = {
+          id: generateUniqueId('notif'),
+          title: `Class Session ${status.toUpperCase()}`,
+          message: `The session "${cls.title}" was updated to ${status}. All attendance indices saved.`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: 'general',
+          channel: 'system'
+        };
+        setNotifications(prev => [notif, ...prev]);
+        triggerToast(notif);
+
+        // Auto mark as absent for students who didn't join!
+        if (status === 'completed') {
+          const targetStudents = users.filter(u => {
+            if (u.role !== 'student') return false;
+            const isExplicitlyEnrolled = cls.enrolledStudentIds?.includes(u.id);
+            const isMyCourse = cls.course && u.course && cls.course.toLowerCase() === u.course.toLowerCase();
+            const isAllCourse = !cls.course || cls.course === 'All';
+            const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+            const isMyBatch = cls.batch && u.batch && cls.batch.toLowerCase() === u.batch.toLowerCase();
+            const isAllBatch = !cls.batch || cls.batch === 'All';
+            const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+            return matchesCourse && matchesBatch;
+          });
+
+          setProgressRecords(prev => {
+            const newRecords: ProgressRecord[] = [];
+            targetStudents.forEach(st => {
+              const hasRecord = prev.some(r => r.studentId === st.id && r.classId === classId);
+              if (!hasRecord) {
+                const attended = cls.enrolledStudentIds?.includes(st.id);
+                newRecords.push({
+                  id: generateUniqueId('progress'),
+                  studentId: st.id,
+                  studentName: st.name,
+                  classId: cls.id,
+                  className: cls.title,
+                  instructorId: cls.instructorId || 'admin-1',
+                  instructorName: cls.instructorName || 'Center Administrator',
+                  evaluationDate: new Date().toISOString().slice(0, 10),
+                  subject: cls.subject,
+                  score: attended ? 100 : 0,
+                  attendanceStatus: attended ? 'present' : 'absent',
+                  feedback: attended
+                    ? 'Automatically marked present for attending the live session.'
+                    : 'Automatically marked absent as student did not attend the live session.',
+                  academicPerformance: attended ? 'excellent' : 'needs-improvement'
+                });
+              }
+            });
+
+            if (newRecords.length > 0) {
+              return [...newRecords, ...prev];
+            }
+            return prev;
+          });
+        }
+      }
+    }
+  };
+
+  const handleAssignAssignment = (
+    title: string,
+    desc: string,
+    dueDate: string,
+    maxPts: number,
+    cls: ClassSchedule,
+    month?: string,
+    syllabus?: string
+  ) => {
+    if (!currentUser) return;
+    const newAsg: StudentAssignment = {
+      id: generateUniqueId('asg'),
+      title,
+      description: desc,
+      classId: cls.id,
+      className: cls.title,
+      course: cls.course || 'All',
+      batch: cls.batch || 'All',
+      instructorId: currentUser.id,
+      instructorName: currentUser.name,
+      dueDate: dueDate || new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0],
+      maxPoints: maxPts || 100,
+      status: 'published',
+      createdDate: new Date().toISOString().split('T')[0],
+      submissions: [],
+      month,
+      syllabus
+    };
+
+    setAssignments(prev => [newAsg, ...prev]);
+
+    // Send Notifications to enrolled students
+    const targetStudents = users.filter(u => 
+      u.role === 'student' && 
+      (newAsg.batch === 'All' || u.batch === newAsg.batch) &&
+      (newAsg.course === 'All' || u.course === newAsg.course)
+    );
+
+    targetStudents.forEach(st => {
+      const notif: AppNotification = {
+        id: generateUniqueId('notif-asg'),
+        title: `📄 New Assignment: ${newAsg.title}`,
+        message: `Instructor ${currentUser.name} assigned homework for class "${cls.title}". Due date: ${newAsg.dueDate}.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+    });
+
+    // Toast notice
+    const toastNotif: AppNotification = {
+      id: generateUniqueId('notif-toast'),
+      title: 'Assignment Assigned',
+      message: `Successfully published course assignment: "${newAsg.title}" for ${newAsg.batch}.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    triggerToast(toastNotif);
+  };
+
+  const handleStudentSubmitAssignment = (
+    asgId: string,
+    ansText: string,
+    fileUrnVal?: string,
+    proctoringLogs?: any[],
+    recordedVideoUrl?: string
+  ) => {
+    if (!currentUser) return;
+    setAssignments(prev => prev.map(asg => {
+      if (asg.id === asgId) {
+        const existingSubIdx = asg.submissions.findIndex(s => s.studentId === currentUser.id);
+        const newSub = {
+          id: generateUniqueId('sub'),
+          studentId: currentUser.id,
+          studentName: currentUser.name,
+          submittedDate: new Date().toISOString(),
+          answerText: ansText,
+          fileUrn: fileUrnVal || 'homework_solution_uploaded.pdf',
+          status: 'pending' as const,
+          proctoringLogs,
+          recordedVideoUrl
+        };
+
+        let updatedSubmissions = [...asg.submissions];
+        if (existingSubIdx >= 0) {
+          updatedSubmissions[existingSubIdx] = newSub;
+        } else {
+          updatedSubmissions.push(newSub);
+        }
+
+        return {
+          ...asg,
+          submissions: updatedSubmissions
+        };
+      }
+      return asg;
+    }));
+
+    // Toast
+    const toastNotif: AppNotification = {
+      id: generateUniqueId('notif-toast'),
+      title: 'Assignment Submitted',
+      message: `Your work has been submitted successfully and queued for grading.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    triggerToast(toastNotif);
+  };
+
+  const handleGradeSubmission = (
+    asgId: string,
+    subId: string,
+    score: number,
+    feedback: string
+  ) => {
+    if (!currentUser) return;
+    let studentId = '';
+    let studentName = '';
+    let asgTitle = '';
+
+    setAssignments(prev => prev.map(asg => {
+      if (asg.id === asgId) {
+        asgTitle = asg.title;
+        const updatedSubs = asg.submissions.map(sub => {
+          if (sub.id === subId) {
+            studentId = sub.studentId;
+            studentName = sub.studentName;
+            return {
+              ...sub,
+              score,
+              feedback,
+              status: 'graded' as const
+            };
+          }
+          return sub;
+        });
+        return {
+          ...asg,
+          submissions: updatedSubs
+        };
+      }
+      return asg;
+    }));
+
+    // Inform student with notification
+    if (studentId) {
+      const notif: AppNotification = {
+        id: generateUniqueId('notif-graded'),
+        title: `⭐ Homework Graded: ${asgTitle}`,
+        message: `Your solution for "${asgTitle}" was evaluated. Score: ${score}. Feedback: "${feedback || 'Excellent work!'}"`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'grade',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+
+      const toastNotif: AppNotification = {
+         id: generateUniqueId('notif-toast'),
+         title: 'Grade Recorded',
+         message: `Successfully graded ${studentName}'s homework. Saved: ${score} points.`,
+         timestamp: new Date().toISOString(),
+         read: false,
+         type: 'general',
+         channel: 'system'
+      };
+      triggerToast(toastNotif);
+    }
+  };
+
+  const handleSelfEnroll = (classId: string) => {
+    if (!currentUser) return;
+    setSchedules(prev => prev.map(cl => {
+      if (cl.id === classId) {
+        if (cl.enrolledStudentIds.includes(currentUser.id)) return cl;
+        return {
+          ...cl,
+          enrolledStudentIds: [...cl.enrolledStudentIds, currentUser.id]
+        };
+      }
+      return cl;
+    }));
+
+    const cls = schedules.find(c => c.id === classId);
+    if (cls) {
+      setProgressRecords(prev => {
+        const hasRecord = prev.some(r => r.studentId === currentUser.id && r.classId === classId);
+        if (!hasRecord) {
+          return [{
+            id: generateUniqueId('progress'),
+            studentId: currentUser.id,
+            studentName: currentUser.name,
+            classId: classId,
+            className: cls.title,
+            instructorId: cls.instructorId || 'admin-1',
+            instructorName: cls.instructorName || 'Center Administrator',
+            evaluationDate: new Date().toISOString().slice(0, 10),
+            subject: cls.subject,
+            score: 100,
+            attendanceStatus: 'present',
+            feedback: 'Joined the live interactive class session.',
+            academicPerformance: 'excellent'
+          }, ...prev];
+        }
+        return prev;
+      });
+    }
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Self-Enrollment Approved',
+      message: `You successfully self-registered into the course session. Timetable logged!`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'email'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleAddProgressRecord = (recordData: Omit<ProgressRecord, 'id' | 'evaluationDate' | 'instructorId' | 'instructorName'>) => {
+    const newRecord: ProgressRecord = {
+      ...recordData,
+      id: generateUniqueId('progress'),
+      evaluationDate: new Date().toISOString().slice(0, 10),
+      instructorId: currentUser?.id || 'admin-1',
+      instructorName: currentUser?.name || 'Center Administrator'
+    };
+    setProgressRecords(prev => [newRecord, ...prev]);
+
+    // Send push trigger immediately
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Academic Score Evaluated',
+      message: `Evaluated score of ${newRecord.score}% added for ${newRecord.studentName} in "${newRecord.className}".`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'grade',
+      channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleStudentJoinClass = (classId: string) => {
+    if (!currentUser || currentUser.role !== 'student') return;
+    const cl = schedules.find(s => s.id === classId);
+    if (!cl) return;
+
+    // Check if progress record already exists
+    const hasRecord = progressRecords.some(r => r.studentId === currentUser.id && r.classId === classId);
+    if (!hasRecord) {
+      const recordData: ProgressRecord = {
+        id: generateUniqueId('progress'),
+        studentId: currentUser.id,
+        studentName: currentUser.name,
+        classId: cl.id,
+        className: cl.title,
+        instructorId: cl.instructorId || 'admin-1',
+        instructorName: cl.instructorName || 'Center Administrator',
+        evaluationDate: new Date().toISOString().slice(0, 10),
+        subject: cl.subject,
+        score: 100, // full positive score for attending
+        attendanceStatus: 'present',
+        feedback: 'Student attended the class by clicking Join Class.',
+        academicPerformance: 'good'
+      };
+      setProgressRecords(prev => [recordData, ...prev]);
+
+      // Trigger a toast notifying student they've been marked present
+      const notif: AppNotification = {
+        id: generateUniqueId('notif'),
+        title: 'Attendance Recorded',
+        message: `Your attendance of "Present" has been recorded for session "${cl.title}".`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'enrollment',
+        channel: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+      triggerToast(notif);
+    }
+  };
+
+  const handleSaveClassAttendance = (
+    classId: string,
+    studentAttendanceList: { studentId: string; status: 'present' | 'absent' | 'excused' }[]
+  ) => {
+    const cl = schedules.find(s => s.id === classId);
+    if (!cl) return;
+
+    setProgressRecords(prev => {
+      // Filter out any existing records for this class for the targeted students
+      const targetStudentIds = studentAttendanceList.map(a => a.studentId);
+      const filtered = prev.filter(r => !(r.classId === classId && targetStudentIds.includes(r.studentId)));
+
+      const newRecords: ProgressRecord[] = studentAttendanceList.map(item => {
+        const student = users.find(u => u.id === item.studentId);
+        return {
+          id: generateUniqueId('progress'),
+          studentId: item.studentId,
+          studentName: student ? student.name : 'Unknown Student',
+          classId: cl.id,
+          className: cl.title,
+          instructorId: cl.instructorId || 'admin-1',
+          instructorName: cl.instructorName || 'Center Administrator',
+          evaluationDate: new Date().toISOString().slice(0, 10),
+          subject: cl.subject,
+          score: item.status === 'present' ? 100 : 0, // Score 100 if present, 0 if absent/excused
+          attendanceStatus: item.status,
+          feedback: item.status === 'present' 
+            ? 'Attendance marked: Student was Present.' 
+            : item.status === 'absent' 
+              ? 'Attendance marked: Student was Absent.' 
+              : 'Attendance marked: Student was Excused.',
+          academicPerformance: item.status === 'present' ? 'good' : 'needs-improvement'
+        };
+      });
+
+      return [...newRecords, ...filtered];
+    });
+
+    // Notify
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Attendance Sheet Updated',
+      message: `Successfully saved attendance sheet with ${studentAttendanceList.length} student records for "${cl.title}".`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleTriggerBackup = () => {
+    const timestamp = new Date().toISOString();
+    const newBackup: BackupHistory = {
+      id: generateUniqueId('backup'),
+      timestamp,
+      fileName: `coaching_backup_${timestamp.slice(0, 10).replace(/-/g, '')}_manual.json`,
+      fileSize: `${(Math.random() * 2 + 3).toFixed(2)} KB`,
+      recordCount: {
+        students: users.filter(u => u.role === 'student').length,
+        instructors: users.filter(u => u.role === 'instructor').length,
+        classes: schedules.length,
+        progress: progressRecords.length
+      },
+      status: 'success'
+    };
+    setBackupHistory(prev => [newBackup, ...prev]);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Durable Cloud Backup Complete',
+      message: 'Secure cloud databases backup succeeded. All active academic ledger databases synced safely in external bucket.',
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleRestoreState = (newState: { students: UserAccount[]; schedules: ClassSchedule[]; progress: ProgressRecord[] }) => {
+    setUsers(prev => {
+      // Retain current administrators and instructors, pull only students
+      return [
+        ...prev.filter(u => u.role !== 'student'),
+        ...newState.students
+      ];
+    });
+    setSchedules(newState.schedules);
+    setProgressRecords(newState.progress);
+
+    const notif: AppNotification = {
+      id: generateUniqueId('notif'),
+      title: 'Cloud State Reinstated',
+      message: 'Successfully validated and restored student databases registry. Registers synchronized.',
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'general',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleTriggerTestNotification = (type: 'reminder' | 'grade' | 'enrollment') => {
+    let title = 'Test Warning';
+    let message = 'This is testing simulated events pipeline.';
+    if (type === 'reminder') {
+      title = 'Automated Reminder Dispatched';
+      message = 'Simulated cron system transmitted WhatsApp and email reminder transcripts to students.';
+    } else if (type === 'grade') {
+      title = 'Dynamic Goal Progress Alert';
+      message = 'Jordan achieved high scores. Automated milestone alert and certificate transcript created.';
+    } else if (type === 'enrollment') {
+      title = 'Student Admitted';
+      message = 'Administrative registry updated student enrollments folder in high-perf fileserver.';
+    }
+
+    const testNotif: AppNotification = {
+      id: generateUniqueId('test'),
+      title,
+      message,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type,
+      channel: type === 'reminder' ? 'email' : 'push'
+    };
+    setNotifications(prev => [testNotif, ...prev]);
+    triggerToast(testNotif);
+  };
+
+
+
+  const handleCreateRegistrationRequest = (
+    name: string, 
+    email: string, 
+    phone?: string, 
+    instructorId?: string,
+    fatherName?: string,
+    fatherPhone?: string,
+    address?: string,
+    lastQualification?: string,
+    gender?: string,
+    dob?: string,
+    avatarUrl?: string,
+    course?: string,
+    batch?: string
+  ) => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    
+    // Auto-generate credentials
+    const username = cleanEmail;
+    
+    const titleName = cleanName.split(' ')[0] || 'Student';
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    const password = `Learn@${titleName}${randomNum}`;
+  
+    const newRequest: RegistrationRequest = {
+      id: generateUniqueId('req'),
+      name: cleanName,
+      email: cleanEmail,
+      phone: phone?.trim() || undefined,
+      status: 'pending',
+      submittedDate: new Date().toLocaleDateString('en-US'),
+      assignedInstructorId: instructorId || undefined,
+      username,
+      password,
+      fatherName: fatherName?.trim() || undefined,
+      fatherPhone: fatherPhone?.trim() || undefined,
+      address: address?.trim() || undefined,
+      lastQualification: lastQualification?.trim() || undefined,
+      gender: gender?.trim() || undefined,
+      dob: dob?.trim() || undefined,
+      avatarUrl: avatarUrl || undefined,
+      course: course,
+      batch: batch
+    };
+
+    setRegistrationRequests(prev => [newRequest, ...prev]);
+
+    // Send a real email with the placement exam link
+    const examUrl = `${window.location.protocol}//${window.location.host}/?examemail=${encodeURIComponent(cleanEmail)}`;
+    setLastEmailStatus({ success: false, error: undefined, sending: true });
+    sendSystemEmail(
+      cleanEmail,
+      'Learnora Admissions: Mandatory English Placement Exam Link',
+      `Dear ${cleanName},\n\nThank you for applying to Learnora Institute. We've received your fast student admission registration details!\n\nTo complete your enrollment automatically, you are required to take a brief, mandatory English Placement Examination. This test evaluates:\n\n1. English Reading Comprehension Test (2 multiple choice questions)\n2. English Speaking voice articulation evaluation test (read passage aloud)\n\nPassing Criteria: A score of 25% or more on this test will trigger INSTANT AUTOMATIC ADMISSION.\n\nTake the exam now by clicking this link:\n${examUrl}\n\nGood luck!`,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #f59e0b;">Learnora Admissions</h2>
+        <p>Dear ${cleanName},</p>
+        <p>Thank you for applying to Learnora Institute. We've received your fast student admission registration details!</p>
+        <p>To complete your enrollment automatically, you are required to take a brief, mandatory English Placement Examination. This test evaluates:</p>
+        <ol>
+          <li>English Reading Comprehension Test (2 multiple choice questions)</li>
+          <li>English Speaking voice articulation evaluation test (read passage aloud)</li>
+        </ol>
+        <p><strong>Passing Criteria:</strong> A score of 25% or more on this test will trigger <strong>INSTANT AUTOMATIC ADMISSION</strong> under the administration rules. Your permanent student username and login credentials will then be automatically generated and sent to you!</p>
+        <div style="margin: 30px 0;">
+          <a href="${examUrl}" style="background-color: #f59e0b; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;">Launch Admission Exam Now &rarr;</a>
+        </div>
+        <p><small>If the button doesn't work, copy and paste this link into your browser:<br>${examUrl}</small></p>
+      </div>`
+    ).then(res => {
+      setLastEmailStatus({ success: res.success, error: res.error, sending: false });
+    });
+
+    // Send a system event notice to the logs
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-req'),
+      title: 'Admission Request Pending',
+      message: `${cleanName} registered via fast student registration. English selection test dispatched to student inbox.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+
+    return newRequest;
+  };
+
+  const handleApproveRegistration = (requestId: string) => {
+    const r = registrationRequests.find(req => req.id === requestId);
+    if (!r || r.status !== 'pending') return;
+
+    const studentUid = generateUniversalId(users);
+
+    // Add user profile
+    const newStudent: UserAccount = {
+      id: generateUniqueId('student'),
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      role: 'student',
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      assignedInstructorId: r.assignedInstructorId,
+      universalId: studentUid,
+      username: r.username,
+      password: r.password,
+      avatarUrl: r.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
+      fatherName: r.fatherName,
+      fatherPhone: r.fatherPhone,
+      address: r.address,
+      lastQualification: r.lastQualification,
+      gender: r.gender,
+      dob: r.dob,
+      batch: r.batch || 'Batch A',
+      course: r.course
+    };
+
+    const loginUrl = `${window.location.protocol}//${window.location.host}/`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that your Enrollment Request has been APPROVED and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    
+    sendSystemEmail(
+      r.email,
+      'Learnora Admission Approved! - Credentials Enclosed',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Learnora Admissions</h2>
+        <p>Dear ${r.name},</p>
+        <p>We are absolutely delighted to inform you that your Enrollment Request has been <strong>APPROVED</strong> and your profile instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
+        </div>
+        <p><a href="${loginUrl}" style="background-color: #10b981; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In Now</a></p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
+
+    // Trigger Notification
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-appr'),
+      title: 'Admissions Request Accepted',
+      message: `Student account created for ${r.name} (Universal ID: ${studentUid}). Security credentials dispatched to email.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+
+    setUsers(u => [...u, newStudent]);
+    setNotifications(n => [notif, ...n]);
+    triggerToast(notif);
+
+    setRegistrationRequests(prev => prev.map(req => {
+      if (req.id === requestId) {
+        return { ...req, status: 'approved' };
+      }
+      return req;
+    }));
+  };
+
+  const handleAutoApproveRegistration = (requestId: string, score: number) => {
+    let r = registrationRequests.find(req => req.id === requestId);
+    if (!r && examRequest && examRequest.id === requestId) {
+      r = examRequest;
+    }
+    if (!r) return;
+
+    // Check if user already exists to prevent duplicate profiles
+    const alreadyAdmitted = users.some(u => u.email.toLowerCase() === r!.email.toLowerCase());
+    if (alreadyAdmitted) {
+      console.log("User already exists with email, skipping duplicate creation:", r.email);
+      return;
+    }
+
+    const studentUid = generateUniversalId(users);
+
+    // Add user profile
+    const newStudent: UserAccount = {
+      id: generateUniqueId('student'),
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      role: 'student',
+      joinedDate: new Date().toLocaleDateString('en-US'),
+      assignedInstructorId: r.assignedInstructorId,
+      universalId: studentUid,
+      username: r.username,
+      password: r.password,
+      avatarUrl: r.avatarUrl || `https://images.unsplash.com/photo-${['1534528741775-53994a69daeb', '1506794778202-cad84cf45f1d', '1517841905240-472988babdf9', '1492562080023-ab3db95bfbce'][Math.floor(Math.random() * 4)]}?w=150`,
+      fatherName: r.fatherName,
+      fatherPhone: r.fatherPhone,
+      address: r.address,
+      lastQualification: r.lastQualification,
+      gender: r.gender,
+      dob: r.dob,
+      batch: r.batch || 'Batch A',
+      course: r.course
+    };
+
+    const loginUrl = `${window.location.protocol}//${window.location.host}/`;
+    const emailBodyTxt = `Dear ${r.name},\n\nWe are absolutely delighted to inform you that you have PASSED the Mandatory English Placement Exam with a qualifying score of ${score}% (Threshold: 25% for auto-admission)!\n\nAs a result, your enrollment has been AUTOMATICALLY APPROVED and instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:\n\n-----------------------------\nUNIVERSAL STUDENT ID: ${studentUid}\nUSERNAME: ${r.username}\nPASSWORD: ${r.password}\n-----------------------------\n\nPlease log in here: ${loginUrl}\n\nBest regards,\nAnik Baidya,\nHead Administrator, Learnora Institute`;
+    
+    sendSystemEmail(
+      r.email,
+      'Learnora Admission Automatic Approval! - Credentials Enclosed',
+      emailBodyTxt,
+      `<div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+        <h2>Learnora Admissions</h2>
+        <p>Dear ${r.name},</p>
+        <p>We are absolutely delighted to inform you that you have <strong>PASSED</strong> the Mandatory English Placement Exam with a qualifying score of <strong>${score}%</strong> (Threshold: 25% for auto-admission)!</p>
+        <p>As a result, your enrollment has been <strong>AUTOMATICALLY APPROVED</strong> and instantiated within our main Student Ledger database. Your auto-generated security credentials and Universal ID are listed below:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+          <p style="margin: 0;"><strong>UNIVERSAL STUDENT ID:</strong> ${studentUid}</p>
+          <p style="margin: 0;"><strong>USERNAME:</strong> ${r.username}</p>
+          <p style="margin: 0;"><strong>PASSWORD:</strong> ${r.password}</p>
+        </div>
+        <p><a href="${loginUrl}" style="background-color: #10b981; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In Now</a></p>
+        <p>Best regards,<br>Anik Baidya,<br>Head Administrator, Learnora Institute</p>
+      </div>`
+    );
+
+    // Trigger Notification
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-appr'),
+      title: 'Auto Admission Passed!',
+      message: `${r.name} (Universal ID: ${studentUid}) achieved a scoring grade of ${score}% on their entrance test. Admitted automatically.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+
+    setUsers(u => [...u, newStudent]);
+    setNotifications(n => [notif, ...n]);
+    triggerToast(notif);
+
+    const rId = r.id;
+    const existsInRequests = registrationRequests.some(req => req.id === rId);
+    if (existsInRequests) {
+      setRegistrationRequests(prev => prev.map(req => {
+        if (req.id === rId) {
+          return { 
+            ...req, 
+            status: 'approved',
+            examScore: score,
+            examPassed: true
+          };
+        }
+        return req;
+      }));
+    } else {
+      const updatedReq: RegistrationRequest = {
+        ...r,
+        status: 'approved',
+        examScore: score,
+        examPassed: true
+      };
+      setRegistrationRequests(prev => [updatedReq, ...prev]);
+    }
+  };
+
+  const handleExamFinished = (requestId: string, score: number) => {
+    if (score >= 25) {
+      handleAutoApproveRegistration(requestId, score);
+      return;
+    }
+
+    // Fail case: record failed state but keep status as pending
+    let r = registrationRequests.find(req => req.id === requestId);
+    if (!r && examRequest && examRequest.id === requestId) {
+      r = examRequest;
+    }
+    if (!r) return;
+
+    const rId = r.id;
+    const existsInRequests = registrationRequests.some(req => req.id === rId);
+    if (existsInRequests) {
+      setRegistrationRequests(prev => prev.map(req => {
+        if (req.id === rId) {
+          return { 
+            ...req, 
+            status: 'pending',
+            examScore: score,
+            examPassed: false
+          };
+        }
+        return req;
+      }));
+    } else {
+      const updatedReq: RegistrationRequest = {
+        ...r,
+        status: 'pending',
+        examScore: score,
+        examPassed: false
+      };
+      setRegistrationRequests(prev => [updatedReq, ...prev]);
+    }
+
+    // Send failure/encouragement email to the student (never send approval details if failed)
+    const emailBodyTxt = `Dear ${r.name},\n\nThank you for taking the Language Placement Exam for Learnora.\n\nYour score is ${score}%, which is below our auto-approval threshold of 25%.\n\nDo not worry! You have 3 total attempts to clear the exam. Please prepare and try again.\n\nBest regards,\nAdmissions Office,\nLearnora Institute`;
+    sendSystemEmail(
+      r.email,
+      'Learnora Placement Exam Update - Attention Required',
+      emailBodyTxt
+    );
+
+    // Trigger Fail Notification
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-fail'),
+      title: 'Entrance Exam Attempt Completed',
+      message: `${r.name} completed their entrance test with a grade of ${score}%. Minimum 25% required for auto-admission.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+    setNotifications(n => [notif, ...n]);
+    triggerToast(notif);
+  };
+
+  const handleRejectRegistration = (requestId: string) => {
+    const r = registrationRequests.find(req => req.id === requestId);
+    if (!r || r.status !== 'pending') return;
+
+    const emailBodyTxt = `Dear ${r.name},\n\nThank you for submitting your Fast Student Registration Request with Learnora.\n\nAfter reviewing your application coordinates, we regret to inform you that our classes are currently at maximum capacity, and we cannot approve your enrollment at this time.\n\nWe have retained your interest profile on our priority waiting list. Should seats open up in upcoming sessions, we will reach out immediately.\n\nBest regards,\nCenter Administration,\nLearnora Institute`;
+
+    sendSystemEmail(
+      r.email,
+      'Learnora Registration Status Update',
+      emailBodyTxt
+    );
+
+    setRegistrationRequests(prev => prev.filter(req => req.id !== requestId));
+  };
+
+  const handleUpdateRegistrationRequest = (updatedReq: RegistrationRequest) => {
+    const originalReq = registrationRequests.find(r => r.id === updatedReq.id);
+    const dateChanged = originalReq?.interviewDate !== updatedReq.interviewDate || originalReq?.interviewTime !== updatedReq.interviewTime;
+    const statusChanged = originalReq?.interviewStatus !== updatedReq.interviewStatus;
+
+    if (updatedReq.interviewStatus === 'scheduled' && (dateChanged || statusChanged)) {
+      // Send real interview invite email
+      const emailBodyTxt = `Dear ${updatedReq.name},\n\nWe are pleased to inform you that we have scheduled an interview regarding your admission application at Learnora Institute.\n\nHere are your scheduled details:\n\n- Date: ${updatedReq.interviewDate || 'To be selected'}\n- Time: ${updatedReq.interviewTime || 'To be selected'}\n- Status: Scheduled\n- Notes: ${updatedReq.interviewNotes || 'No notes provided.'}\n\nPlease make sure to be available at this designated slot.\n\nBest regards,\nAdmissions Office,\nLearnora Institute`;
+      sendSystemEmail(
+        updatedReq.email,
+        `Learnora Admission - Interview Scheduled for ${updatedReq.name}`,
+        emailBodyTxt
+      );
+    }
+
+    setRegistrationRequests(prev => prev.map(req => req.id === updatedReq.id ? updatedReq : req));
+    
+    const notif: AppNotification = {
+      id: generateUniqueId('notif-int'),
+      title: 'Interview System Sync',
+      message: `Interview details for ${updatedReq.name} have been updated.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'enrollment',
+      channel: 'push'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    triggerToast(notif);
+  };
+
+  const handleSendEmail = async (toEmail: string, subject: string, body: string, fromOverride?: string) => {
+    const senderEmail = fromOverride || (currentUser ? currentUser.email : 'baidyaanik18@gmail.com');
+    const newEmail: SimulatedEmail = {
+      id: generateUniqueId('mail'),
+      to: toEmail,
+      from: senderEmail,
+      subject: subject,
+      body: body,
+      timestamp: new Date().toISOString()
+    };
+
+    // Record in local database/state for visual mailbox tracking
+    setSimulatedEmails(prev => [newEmail, ...prev]);
+
+    // Send real email and capture result
+    const result = await sendSystemEmail(toEmail, subject, body, body.replace(/\n/g, '<br>'));
+    
+    if (result.success) {
+      const successNotif: AppNotification = {
+        id: generateUniqueId('notif-mail-success'),
+        title: `Real Email Sent`,
+        message: `Real security recovery dispatch successfully delivered to ${toEmail}.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'push'
+      };
+      setNotifications(prev => [successNotif, ...prev]);
+      triggerToast(successNotif);
+    } else {
+      console.error("Real email dispatch failed:", result.error);
+      const errorNotif: AppNotification = {
+        id: generateUniqueId('notif-mail-error'),
+        title: `Real Email Failed`,
+        message: `Simulated mail saved to Secure Mailbox, but real email delivery failed: ${result.error}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'reminder',
+        channel: 'push'
+      };
+      setNotifications(prev => [errorNotif, ...prev]);
+      triggerToast(errorNotif);
+    }
+
+    // If the recipient is indeed in our system, let's trigger a push notice
+    const targetUser = users.find(u => u.email.toLowerCase() === toEmail.toLowerCase());
+    if (targetUser) {
+      const displaySenderName = fromOverride ? "System Security Dispatch" : (currentUser ? currentUser.name : "System Security Dispatch");
+      const notif: AppNotification = {
+        id: generateUniqueId('notif-mail'),
+        title: `New Message Delivered`,
+        message: `Simulated mail from ${displaySenderName} dispatched to ${targetUser.name}.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'reminder',
+        channel: 'email'
+      };
+      setNotifications(n => [notif, ...n]);
+      triggerToast(notif);
+    }
+  };
+
+  const validateStep = (step: number): boolean => {
+    if (step === 1) {
+      let err = false;
+      setFastFirstNameError('');
+      setFastLastNameError('');
+      setFastCourseError('');
+      setFastAvatarError('');
+
+      if (!fastFirstName.trim()) {
+        setFastFirstNameError('First name is required');
+        err = true;
+      }
+      if (!fastLastName.trim()) {
+        setFastLastNameError('Last name is required');
+        err = true;
+      }
+      if (!fastCourse) {
+        setFastCourseError('Please select a course program');
+        err = true;
+      }
+      if (fastAvatarError) {
+        err = true;
+      } else if (!fastAvatarUrl) {
+        setFastAvatarError('Please upload a profile photo under 2MB');
+        err = true;
+      }
+      return !err;
+    }
+
+    if (step === 2) {
+      let err = false;
+      setFastEmailError('');
+      setFastPhoneError('');
+      setFastGenderError('');
+      setFastDobError('');
+
+      if (!fastEmail.trim()) {
+        setFastEmailError('Email address is required');
+        err = true;
+      } else if (!/\S+@\S+\.\S+/.test(fastEmail)) {
+        setFastEmailError('Please enter a valid email address');
+        err = true;
+      } else if (!emailVerified) {
+        setFastEmailError('Please verify your email address via OTP');
+        err = true;
+      }
+
+      if (!fastPhone) {
+        setFastPhoneError('Phone number is required');
+        err = true;
+      } else {
+        const config = COUNTRY_PHONE_CONFIGS.find(c => c.code === fastPhonePrefix);
+        const reqLen = config ? config.length : 10;
+        if (fastPhone.length !== reqLen) {
+          setFastPhoneError(`Phone number must be exactly ${reqLen} digits for ${fastPhonePrefix}`);
+          err = true;
+        }
+      }
+
+      if (!fastGender) {
+        setFastGenderError('Gender selection is required');
+        err = true;
+      }
+
+      if (!fastDob) {
+        setFastDobError('Date of birth is required');
+        err = true;
+      }
+
+      return !err;
+    }
+
+    return true;
+  };
+
+  const handleFastStudentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset all errors
+    setFastFirstNameError('');
+    setFastLastNameError('');
+    setFastEmailError('');
+    setFastGenderError('');
+    setFastDobError('');
+    setFastFatherNameError('');
+    setFastLastQualificationError('');
+    setFastPhoneError('');
+    setFastAddressError('');
+
+    let hasError = false;
+
+    // Check Name
+    if (!fastFirstName.trim()) {
+      setFastFirstNameError('First name is required');
+      hasError = true;
+    }
+    if (!fastLastName.trim()) {
+      setFastLastNameError('Last name is required');
+      hasError = true;
+    }
+
+    // Check Email
+    if (!fastEmail.trim()) {
+      setFastEmailError('Email address is required');
+      hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(fastEmail)) {
+      setFastEmailError('Please enter a valid email address');
+      hasError = true;
+    } else if (!emailVerified) {
+      setFastEmailError('Please verify your email address via OTP');
+      hasError = true;
+    } else if (users.some(u => u.email.toLowerCase() === fastEmail.toLowerCase()) || 
+               registrationRequests.some(r => r.email.toLowerCase() === fastEmail.toLowerCase() && r.status === 'pending')) {
+      setFastEmailError('Mail id is already register');
+      hasError = true;
+    }
+
+    // Check Gender
+    if (!fastGender) {
+      setFastGenderError('Gender selection is required');
+      hasError = true;
+    }
+
+    // Check Date of Birth
+    if (!fastDob) {
+      setFastDobError('Date of birth is required');
+      hasError = true;
+    }
+
+    // Check Course
+    if (!fastCourse) {
+      setFastCourseError('Desired course selection is required');
+      hasError = true;
+    } else {
+      setFastCourseError('');
+    }
+
+    // Check Father Name
+    if (!fastFatherName.trim()) {
+      setFastFatherNameError("Father's name is required");
+      hasError = true;
+    }
+
+    // Check Last Qualification
+    if (!lastQualificationCategory) {
+      setFastLastQualificationError('Please select if your last qualification was School or College');
+      hasError = true;
+    } else if (lastQualificationCategory === 'school' && !schoolClassInput.trim()) {
+      setFastLastQualificationError('Please select your class');
+      hasError = true;
+    } else if (lastQualificationCategory === 'college' && !collegeDegreeInput.trim()) {
+      setFastLastQualificationError('Please specify your degree name');
+      hasError = true;
+    }
+
+
+
+    // Check profile photo (mandatory + size limit check)
+    if (fastAvatarError) {
+      hasError = true;
+    } else if (!fastAvatarUrl) {
+      setFastAvatarError("photo size more then 2mb please upload photo under 2mb");
+      hasError = true;
+    }
+
+    // Check Phone number length
+    if (!fastPhone) {
+      setFastPhoneError("Phone number is required");
+      hasError = true;
+    } else {
+      const config = COUNTRY_PHONE_CONFIGS.find(c => c.code === fastPhonePrefix);
+      const reqLen = config ? config.length : 10;
+      if (fastPhone.length !== reqLen) {
+        setFastPhoneError(`Phone number must be exactly ${reqLen} digits for ${fastPhonePrefix}`);
+        hasError = true;
+      }
+    }
+
+    // Check Full Address
+    if (!fastAddress.trim()) {
+      setFastAddressError('Full resident address is required');
+      hasError = true;
+    } else {
+      setFastAddressError('');
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    const calculatedPhone = `${fastPhonePrefix} ${fastPhone}`;
+    const assembledAddress = fastAddress.trim();
+
+    const parsedCourse = fastCourse.includes('::') ? fastCourse.split('::')[0] : fastCourse;
+    const parsedBatch = fastCourse.includes('::') ? fastCourse.split('::')[1] || '' : '';
+
+    const req = handleCreateRegistrationRequest(
+      `${fastFirstName.trim()} ${fastLastName.trim()}`, 
+      fastEmail, 
+      calculatedPhone, 
+      fastInstructorId,
+      fastFatherName,
+      undefined, // fatherPhone removed
+      assembledAddress,
+      fastLastQualification,
+      fastGender,
+      fastDob,
+      fastAvatarUrl,
+      parsedCourse,
+      parsedBatch
+    );
+    setFastRegSuccess(req);
+    
+    // Reset form states
+    setFastFirstName('');
+    setFastLastName('');
+    setFastEmail('');
+    setFastPhone('');
+    setFastPhonePrefix('+91');
+    setFastPhoneError('');
+    setFastInstructorId('');
+    setFastFatherName('');
+    setFastAddress('');
+    setFastAddressError('');
+    setFastCourse('');
+    setFastCourseError('');
+    
+
+
+    setFastLastQualification('');
+    setLastQualificationCategory('');
+    setSchoolClassInput('');
+    setCollegeDegreeInput('');
+    setFastGender('');
+    setFastDob('');
+    setFastAvatarUrl('');
+    setFastAvatarError('');
+    setPhoneVerified(true);
+    setEmailVerified(true);
+    setPhoneVerState('idle');
+    setEmailVerState('idle');
+    setOtpCode('');
+    setCurrentRegStep(1);
+  };
+
+  const handleSocialStudentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setFastCourseError('');
+    setFastEmailError('');
+    setFastAvatarError('');
+
+    if (fastAvatarError) {
+      return;
+    } else if (!fastAvatarUrl) {
+      setFastAvatarError('photo size more then 2mb please upload photo under 2mb');
+      return;
+    }
+
+    if (!socialProvider && !emailVerified) {
+      setFastEmailError('Please verify your email address via OTP');
+      return;
+    }
+
+    if (!fastCourse) {
+      setFastCourseError('Desired course selection is required');
+      return;
+    }
+
+    // Check if the user is already registered in the system
+    if (users.some(u => u.email.toLowerCase() === fastEmail.toLowerCase()) || 
+        registrationRequests.some(r => r.email.toLowerCase() === fastEmail.toLowerCase() && r.status === 'pending')) {
+      setFastCourseError('This email address is already registered in Learnora.');
+      triggerToast({
+        id: generateUniqueId('notif'),
+        title: 'Registration Error',
+        message: 'This email is already registered in Learnora.',
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'system'
+      });
+      return;
+    }
+
+    const parsedCourse = fastCourse.includes('::') ? fastCourse.split('::')[0] : fastCourse;
+    const parsedBatch = fastCourse.includes('::') ? fastCourse.split('::')[1] || '' : '';
+
+    const req = handleCreateRegistrationRequest(
+      `${fastFirstName.trim()} ${fastLastName.trim()}`, 
+      fastEmail, 
+      undefined, // phone
+      undefined, // instructorId
+      undefined, // fatherName
+      undefined, // fatherPhone
+      socialProvider === 'google' ? 'Connected via Google Account' : 'Connected via GitHub Account', // address
+      'Not Specified (Social Registration)', // lastQualification
+      'Unspecified', // gender
+      undefined, // dob
+      fastAvatarUrl,
+      parsedCourse,
+      parsedBatch
+    );
+    setFastRegSuccess(req);
+    
+    // Reset form states
+    setFastFirstName('');
+    setFastLastName('');
+    setFastEmail('');
+    setFastCourse('');
+    setFastCourseError('');
+    setFastAvatarUrl('');
+    setFastAvatarError('');
+    setSocialProvider(null);
+  };
+
+  const handleCredentialsLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      setLoginError(`Terminal locked due to too many failed attempts. Please try again in ${Math.ceil((lockoutUntil - Date.now()) / 1000)} seconds.`);
+      return;
+    }
+    
+    setLoginError('');
+    const matched = users.find(u => 
+      u.username && u.username.toLowerCase() === loginUsername.trim().toLowerCase() && 
+      u.password && u.password === loginPassword.trim()
+    );
+    if (matched) {
+      setCurrentUser(matched);
+      setLoginUsername('');
+      setLoginPassword('');
+      setLoginAttempts(0); // reset on success
+    } else {
+      const remainingAttempts = 4 - loginAttempts;
+      if (remainingAttempts <= 0) {
+        setLockoutUntil(Date.now() + 60000); // 1 minute lockout
+        setLoginError('Too many failed attempts. Terminal locked for 60 seconds.');
+        setLoginAttempts(0);
+      } else {
+        setLoginAttempts(prev => prev + 1);
+        setLoginError(`Invalid Username/Password. (${remainingAttempts} attempts remaining)`);
+      }
+    }
+  };
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      setLoginError(`Terminal locked due to too many failed attempts. Please try again in ${Math.ceil((lockoutUntil - Date.now()) / 1000)} seconds.`);
+      return;
+    }
+
+    setLoginError('');
+    const matched = users.find(u => 
+      u.username && u.username.toLowerCase() === loginUsername.trim().toLowerCase() && 
+      u.password && u.password === loginPassword.trim()
+    );
+    if (matched) {
+      if (matched.role === 'admin' || matched.role === 'sub-admin') {
+        setCurrentUser(matched);
+        setLoginUsername('');
+        setLoginPassword('');
+        setLoginAttempts(0);
+      } else {
+        setLoginError('Access Denied. This terminal is restricted to Administrator and Sub-Admin roles only.');
+      }
+    } else {
+      const remainingAttempts = 4 - loginAttempts;
+      if (remainingAttempts <= 0) {
+        setLockoutUntil(Date.now() + 60000); // 1 minute lockout
+        setLoginError('Too many failed attempts. Admin terminal locked for 60 seconds.');
+        setLoginAttempts(0);
+      } else {
+        setLoginAttempts(prev => prev + 1);
+        setLoginError(`Invalid Administrator or Sub-Admin credentials. (${remainingAttempts} attempts remaining)`);
+      }
+    }
+  };
+
+  const handleLogout = (message?: string) => {
+    setCurrentUser(null);
+    if (message && typeof message === 'string') {
+      triggerToast({
+        id: `notif-logout-${Date.now()}`,
+        title: 'Session Ended',
+        message: message,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'general',
+        channel: 'push'
+      });
+    }
+  };
+
+  const isActuallyCollapsed = isSidebarCollapsed && !(isSidebarHovered && !ignoreHover);
+
+  if (!isDataLoaded) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#070708] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-white/10 border-t-amber-500 animate-spin" />
+          <p className="text-xs font-mono uppercase tracking-widest text-slate-500 dark:text-gray-500 text-center">
+            Synchronizing with<br />Live Database
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const matchAndFormatCourse = (rawCourseName: string) => {
+    if (!rawCourseName) return '';
+    if (rawCourseName.includes('::')) return rawCourseName;
+
+    const cleanInput = rawCourseName.toLowerCase();
+    const matched = (courses || []).find(c => {
+      const cName = (c.name || '').toLowerCase();
+      const cCode = (c.code || '').toLowerCase();
+      return cleanInput.includes(cName) || cName.includes(cleanInput) || (cCode && cleanInput.includes(cCode));
+    });
+
+    if (matched) {
+      return `${matched.name}::${matched.batchNumber || ''}`;
+    }
+    return rawCourseName;
+  };
+
+  if (currentPath === '/privacy') {
+    return <PrivacyPolicy onBack={() => { window.history.pushState({}, '', currentUser ? '/dashboard' : '/'); }} />;
+  }
+
+  if (currentPath === '/terms') {
+    return <TermsOfService onBack={() => { window.history.pushState({}, '', currentUser ? '/dashboard' : '/'); }} />;
+  }
+
+  if (currentPath === '/cookies') {
+    return <CookiePolicy onBack={() => { window.history.pushState({}, '', currentUser ? '/dashboard' : '/'); }} />;
+  }
+
+  if (currentPath.startsWith('/course/')) {
+    const courseId = currentPath.replace('/course/', '').trim();
+    return (
+      <CourseDetailsPage
+        courseId={courseId}
+        courses={courses}
+        isDark={isDark}
+        onBack={() => {
+          window.history.pushState({}, '', currentUser ? '/dashboard' : '/');
+        }}
+        onEnroll={(course) => {
+          const formatted = matchAndFormatCourse(`${course.name}::${course.batchNumber || ''}`);
+          window.history.pushState({}, '', '/admissions');
+          setShowPortal(true);
+          setOnboardingTab('fastReg');
+          setAdmissionMethod('selection');
+          setFastCourse(formatted);
+        }}
+      />
+    );
+  }
+
+  if (activeClassroomSession && currentUser) {
+    return (
+      <Classroom
+        currentUser={currentUser}
+        activeClass={activeClassroomSession}
+        onLeave={() => setActiveClassroomSession(null)}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-tr from-[#FFF3F5] via-[#FFF8F9] to-[#FFFBFB] text-slate-800 dark:from-[#110D12] dark:via-[#160E14] dark:to-[#0A0A0B] dark:text-gray-200 transition-colors duration-300 font-sans">
+      
+      {originalAdminUser && currentUser && (
+        <div className="sticky top-0 z-[9999] w-full bg-amber-600 dark:bg-amber-700 text-white px-4 py-2.5 shadow-md flex flex-wrap items-center justify-between gap-3 font-sans border-b border-amber-500/30">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-amber-100 animate-pulse flex-shrink-0" />
+            <p className="text-xs md:text-sm font-semibold tracking-wide">
+              EMERGENCY IMPERSONATION: Currently viewing student profile for <span className="underline font-bold">{currentUser.name}</span> ({currentUser.username || currentUser.email})
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExitImpersonation}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white text-amber-700 dark:text-amber-800 hover:bg-amber-50 font-bold rounded-xl shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+            Exit View Mode
+          </button>
+        </div>
+      )}
+
+      {/* Real-time Toast Popups */}
+      <AnimatePresence>
+        {toastAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: -40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-full bg-[#161618] border border-amber-500/30 text-white p-4 rounded-2xl shadow-xl flex gap-3.5"
+          >
+            <Smartphone className="w-5 h-5 text-amber-500 mt-0.5 animate-bounce flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-bold font-sans tracking-wide text-amber-500 uppercase">PUSH ALERT: {toastAlert.title}</p>
+              <p className="text-sm text-gray-300 leading-relaxed mt-0.5">{toastAlert.message}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Simulated Email Pop-up Modal */}
+      <AnimatePresence>
+        {showMailbox && activeMailboxEmail && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.96, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 20 }}
+              className="bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-[#0F0F11]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 rounded-xl">
+                    <Mail className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-sans text-slate-900 dark:text-white font-bold">Inbox Simulator</h3>
+                    <p className="text-xs text-amber-500 font-semibold font-mono">{activeMailboxEmail}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMailbox(false);
+                    setSelectedMail(null);
+                  }}
+                  className="p-1 px-3.5 rounded-lg bg-red-700 hover:bg-red-800 text-xs text-white shadow-sm border border-red-800 cursor-pointer font-bold transition active:scale-95"
+                >
+                  Close Mailbox
+                </button>
+              </div>
+
+              {/* Content Body */}
+              <div className="flex-1 overflow-y-auto p-5 min-h-[350px]">
+                {selectedMail ? (
+                  /* Single Email Read View */
+                  <div className="space-y-4">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMail(null)}
+                      className="text-xs text-amber-500 hover:underline flex items-center gap-1 mb-2 font-bold cursor-pointer"
+                    >
+                      &larr; Back to Inbox List
+                    </button>
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0F0F11] border dark:border-white/5 space-y-2">
+                      <div className="flex justify-between items-center text-xs border-b dark:border-white/5 pb-2 font-mono">
+                        <p><span className="text-slate-400">From:</span> <b className="text-amber-500">{selectedMail.from}</b></p>
+                        <p className="text-slate-400">{new Date(selectedMail.timestamp).toLocaleString()}</p>
+                      </div>
+                      <p className="text-xs font-mono"><span className="text-slate-400 font-sans">To:</span> {selectedMail.to}</p>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white pt-1">{selectedMail.subject}</h4>
+                    </div>
+                    <div className="p-5 rounded-2xl border dark:border-white/5 bg-slate-50 dark:bg-[#0A0A0B] whitespace-pre-line text-xs leading-relaxed text-slate-800 dark:text-gray-300 font-sans border-l-2 border-l-amber-500">
+                      {selectedMail.body}
+                    </div>
+
+                    {/* Interactive Exam Link / Action Button */}
+                    {selectedMail.subject.includes("Mandatory English Placement Exam Link") && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col items-center text-center space-y-2 mt-4">
+                        <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                          Learnora Admissions Online Placement System
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-gray-400 max-w-md leading-relaxed">
+                          Clicking this button opens the remote examination interface, administering synchronous English Reading and Vocal speaking modules.
+                        </p>
+                        {(() => {
+                          const req = registrationRequests.find(r => r.email.toLowerCase() === selectedMail.to.toLowerCase());
+                          if (req) {
+                            return (
+                              <a
+                                href={`${window.location.protocol}//${window.location.host}/?examemail=${encodeURIComponent(req.email)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setShowMailbox(false)}
+                                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-955 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md animate-pulse inline-flex justify-center w-fit"
+                              >
+                                Launch Admission Exam Now &rarr;
+                              </a>
+                            );
+                          }
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                triggerToast({
+                                  id: generateUniqueId('notif-err'),
+                                  title: 'Exam System Error',
+                                  message: 'No registered applicant record matched this email address in the database ledger.',
+                                  timestamp: new Date().toISOString(),
+                                  read: false,
+                                  type: 'enrollment',
+                                  channel: 'system'
+                                });
+                              }}
+                              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-955 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md animate-pulse"
+                            >
+                              Launch Admission Exam Now &rarr;
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Emails List View */
+                  <div className="space-y-3">
+                    <p className="text-sm font-mono uppercase text-slate-400 tracking-wider">Simulated Inbound Transmissions ({simulatedEmails.filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase()).length})</p>
+                    {simulatedEmails.filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase()).length === 0 ? (
+                      <div className="text-center py-12 text-slate-400 dark:text-gray-500 font-mono text-xs">
+                        No emails detected in this sandbox ledger yet.<br />
+                        <span className="text-sm block mt-2.5 text-amber-500 font-bold bg-amber-500/5 p-3 rounded-xl max-w-sm mx-auto border border-amber-500/10">
+                          If you submitted an application, switch simulator profile to Admin (Anik Baidya) on the landing page, open Student Profiles, and approve it.
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100 dark:divide-white/5">
+                        {simulatedEmails
+                          .filter(m => m.to.toLowerCase() === activeMailboxEmail.toLowerCase())
+                          .map(mail => (
+                            <button
+                              key={mail.id}
+                              type="button"
+                              onClick={() => setSelectedMail(mail)}
+                              className="w-full text-left py-3.5 px-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 flex flex-col gap-1 transition block border border-transparent hover:border-slate-150 dark:hover:border-white/5 cursor-pointer"
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-mono text-sm text-amber-500 font-bold">{mail.from}</span>
+                                <span className="text-sm text-slate-400">{new Date(mail.timestamp).toLocaleTimeString()}</span>
+                              </div>
+                              <p className="text-xs font-bold text-slate-900 dark:text-gray-200 truncate">{mail.subject}</p>
+                              <p className="text-sm text-slate-500 dark:text-gray-400 truncate leading-none mt-1">{mail.body.substring(0, 90)}...</p>
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!currentUser ? (
+        showPortal ? (
+          <div className="min-h-screen w-full flex items-center justify-center bg-[#F3F4F6] font-sans z-0 relative p-4 sm:p-6 lg:p-10 overflow-y-auto">
+            {/* Back Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowPortal(false);
+                setAdmissionMethod('selection');
+                setFastRegSuccess(null);
+              }}
+              className="absolute top-6 left-6 inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[13px] font-bold text-slate-700 transition-colors cursor-pointer shadow-xs z-10"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1.5 text-slate-500" />
+              Back
+            </button>
+
+            {/* Central Card */}
+            <div className="w-full max-w-[1000px] min-h-[640px] bg-white rounded-[32px] overflow-hidden flex flex-col md:flex-row shadow-2xl border border-white/20 animate-scaleIn my-auto">
+              
+              {/* Left Side: Form / Steps */}
+              <div className="w-full md:w-1/2 min-w-0 flex flex-col justify-center px-6 sm:px-12 py-10 overflow-hidden">
+                <div className="w-full max-w-md mx-auto">
+
+                  {/* CASE 1: REGISTRATION SUCCESSFUL */}
+                  {fastRegSuccess ? (
+                    <div className="space-y-6 text-center animate-fadeIn">
+                      <div>
+                        <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full mb-2">
+                          Application Submitted
+                        </span>
+                        <h2 className="text-2xl font-extrabold text-slate-900">
+                          Registration Successful!
+                        </h2>
+                        <p className="text-sm text-slate-500 mt-1 font-medium">
+                          Welcome to Learnora, <span className="font-bold text-slate-800">{fastRegSuccess.name}</span>.
+                        </p>
+                      </div>
+
+                      <div className="bg-white border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs text-slate-600 shadow-xs">
+                        <div className="flex justify-between">
+                          <span className="font-semibold text-slate-500">Selected Program:</span>
+                          <span className="font-bold text-slate-800">{fastRegSuccess.course || 'General Admission'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-semibold text-slate-500">Email:</span>
+                          <span className="font-bold text-slate-800">{fastRegSuccess.email}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-semibold text-slate-500">Application ID:</span>
+                          <span className="font-bold text-slate-800">{fastRegSuccess.id}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white border border-slate-200 rounded-2xl p-4 text-left space-y-2 shadow-xs">
+                        <div className="flex items-center text-slate-900 font-bold text-xs">
+                          Mandatory Placement Exam Required
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                          We sent an examination link to <strong className="text-slate-900 font-bold">{fastRegSuccess.email}</strong>. Scoring 25%+ triggers instant automatic enrollment!
+                        </p>
+                        <a
+                          href={`/?examemail=${encodeURIComponent(fastRegSuccess.email)}`}
+                          className="inline-flex items-center justify-center w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-xs mt-1"
+                        >
+                          Take Placement Exam Now
+                          <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                        </a>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFastRegSuccess(null);
+                          setAdmissionMethod('selection');
+                          setOnboardingTab('authLogin');
+                        }}
+                        className="w-full py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-full text-xs transition-all cursor-pointer"
+                      >
+                        Go to Sign In
+                      </button>
+                    </div>
+
+                  /* CASE 2: STEP 2 - COURSE SELECTION (SOCIAL OR FAST REG) */
+                  ) : admissionMethod === 'social-course-select' ? (
+                    <div className="space-y-6 animate-fadeIn">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-full">
+                            Step 2 of 2
+                          </span>
+                          <span className="text-xs font-semibold text-slate-400">Course Choice</span>
+                        </div>
+                        <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                          Choose Your Course
+                        </h2>
+                        <p className="text-xs text-slate-500 font-medium mt-1">
+                          Select your desired program to complete your Learnora registration.
+                        </p>
+                      </div>
+
+                      {/* Upload Photo and Email Verification Sections */}
+                      <div className="space-y-3.5">
+                        {/* Profile Photo Upload */}
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                          <label className="block text-xs font-bold text-slate-800 mb-2">
+                            Upload Student Photo <span className="text-rose-500">*</span>
+                          </label>
+                          <div className="flex items-center gap-3.5">
+                            <div className="relative group shrink-0">
+                              {fastAvatarUrl ? (
+                                <img
+                                  src={fastAvatarUrl}
+                                  alt="Profile Avatar"
+                                  className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-xs ring-2 ring-slate-200/80"
+                                />
+                              ) : (
+                                <div className="w-14 h-14 rounded-full bg-slate-200/80 border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 ring-2 ring-slate-200/80">
+                                  <User className="w-7 h-7 text-slate-400" />
+                                </div>
+                              )}
+                              <label
+                                htmlFor="step2-avatar-upload"
+                                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+                              >
+                                <Camera className="w-4 h-4" />
+                              </label>
+                            </div>
+
+                            <div className="space-y-1 flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <label
+                                  htmlFor="step2-avatar-upload"
+                                  className="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                                >
+                                  <Upload className="w-3.5 h-3.5 text-slate-500" />
+                                  {fastAvatarUrl ? 'Change Photo' : 'Upload Photo'}
+                                </label>
+                                {fastAvatarUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFastAvatarUrl('');
+                                      setFastAvatarError('');
+                                    }}
+                                    className="text-xs text-rose-500 hover:text-rose-700 font-semibold underline cursor-pointer"
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-400 font-medium">
+                                JPG or PNG. Max size: 2MB.
+                              </p>
+                              <input
+                                id="step2-avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    if (file.size > 2 * 1024 * 1024) {
+                                      setFastAvatarError('photo size more then 2mb please upload photo under 2mb');
+                                    } else {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        setFastAvatarUrl(reader.result as string);
+                                        setFastAvatarError('');
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {fastAvatarError && (
+                            <p className="text-rose-500 text-[11px] font-semibold mt-2">
+                              {fastAvatarError}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Email Verification via OTP */}
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                              Email Verification <span className="text-rose-500">*</span>
+                            </label>
+                            {emailVerified || socialProvider !== null ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                {socialProvider ? 'Verified via Social' : 'Email Verified'}
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                OTP Required
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <input
+                              type="email"
+                              value={fastEmail}
+                              onChange={(e) => {
+                                setFastEmail(e.target.value);
+                                setEmailVerified(false);
+                                setEmailVerState('idle');
+                                setFastEmailError('');
+                              }}
+                              disabled={emailVerified || socialProvider !== null}
+                              placeholder="name@example.com"
+                              className="flex-1 px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-slate-900 font-medium disabled:bg-slate-100/80 disabled:text-slate-600"
+                            />
+
+                            {!emailVerified && socialProvider === null && (
+                              <button
+                                type="button"
+                                onClick={handleSendEmailOtp}
+                                disabled={emailOtpCooldown > 0 || emailVerState === 'sending'}
+                                className="px-3.5 py-2.5 bg-slate-900 hover:bg-black disabled:bg-slate-300 text-white font-bold rounded-xl text-xs transition-all cursor-pointer shrink-0"
+                              >
+                                {emailVerState === 'sending'
+                                  ? 'Sending...'
+                                  : emailOtpCooldown > 0
+                                  ? `Resend in ${emailOtpCooldown}s`
+                                  : emailVerState === 'sent'
+                                  ? 'Resend OTP'
+                                  : 'Send OTP'}
+                              </button>
+                            )}
+                          </div>
+
+                          {!emailVerified && socialProvider === null && emailVerState === 'sent' && (
+                            <div className="p-3 bg-purple-50/80 border border-purple-200 rounded-xl space-y-2 mt-2">
+                              <p className="text-[11px] font-bold text-purple-900">
+                                Enter 6-digit verification code sent to your email:
+                              </p>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  placeholder="XXXXXX"
+                                  value={otpCode}
+                                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                                  className="flex-1 px-3 py-2 text-center text-sm font-mono tracking-widest bg-white border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 font-bold"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleVerifyEmailOtp}
+                                  className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                                >
+                                  Verify OTP
+                                </button>
+                              </div>
+
+                              {sandboxOtp && (
+                                <div className="text-[11px] text-purple-800 font-semibold bg-white p-2 rounded border border-purple-200">
+                                  🔑 Developer Sandbox OTP: <span className="font-mono text-xs text-purple-950 font-bold">{sandboxOtp}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {fastEmailError && (
+                            <p className="text-rose-500 text-[11px] font-semibold mt-1">
+                              {fastEmailError}
+                            </p>
+                          )}
+                          {fastEmailSuccess && (
+                            <p className="text-emerald-600 text-[11px] font-semibold mt-1">
+                              {fastEmailSuccess}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Course Selection Form */}
+                      <form onSubmit={handleSocialStudentSubmit} className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                            Full Name <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Enter your full name"
+                            value={fastFirstName}
+                            onChange={(e) => {
+                              setFastFirstName(e.target.value);
+                              if (e.target.value.includes(' ')) {
+                                const parts = e.target.value.trim().split(/\s+/);
+                                setFastLastName(parts.slice(1).join(' ') || 'Student');
+                              }
+                            }}
+                            className="w-full px-4 py-3 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                            Select Course Program <span className="text-rose-500">*</span>
+                          </label>
+                          <select
+                            value={fastCourse}
+                            onChange={(e) => {
+                              setFastCourse(e.target.value);
+                              setFastCourseError('');
+                            }}
+                            className="w-full px-4 py-3 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 font-medium cursor-pointer"
+                            required
+                          >
+                            <option value="">-- Choose a Course Program --</option>
+                            {(() => {
+                              const availableCourses = courses && courses.length > 0 ? courses : [];
+                              if (availableCourses.length > 0) {
+                                return availableCourses.map((c) => (
+                                  <option key={c.id} value={`${c.name}::${c.batchNumber || ''}`}>
+                                    {c.name} {c.batchNumber ? `(Batch ${c.batchNumber})` : ''} {c.fee ? `- ₹${c.fee.toLocaleString('en-IN')}` : ''}
+                                  </option>
+                                ));
+                              }
+                              return (
+                                <option value="" disabled>
+                                  No courses currently available for enrollment
+                                </option>
+                              );
+                            })()}
+                          </select>
+                          {fastCourseError && (
+                            <p className="text-rose-500 text-[11px] font-semibold mt-1">
+                              {fastCourseError}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                            Phone Number <span className="text-slate-400 font-normal">(Optional)</span>
+                          </label>
+                          <div className="flex gap-2 w-full min-w-0">
+                            <select
+                              value={fastPhonePrefix}
+                              onChange={(e) => setFastPhonePrefix(e.target.value)}
+                              className="w-28 shrink-0 px-2 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium cursor-pointer truncate"
+                            >
+                              {COUNTRY_PHONE_CONFIGS.map((c) => (
+                                <option key={`${c.code}-${c.name}`} value={c.code}>
+                                  {c.flag} {c.code} ({c.name})
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="tel"
+                              placeholder="9876543210"
+                              value={fastPhone}
+                              onChange={(e) => setFastPhone(e.target.value.replace(/\D/g, ''))}
+                              className="flex-1 min-w-0 w-full px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 font-medium"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="w-full py-3.5 bg-[#0F172A] hover:bg-black text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-2"
+                        >
+                          Complete Registration
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </form>
+                    </div>
+
+                  /* CASE 3: INITIAL STEP (LOGIN OR CREATE ACCOUNT) */
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <h1 className="text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight mb-1.5">
+                          {onboardingTab === 'fastReg' ? 'Create an account' : 'Welcome back!'}
+                        </h1>
+                        <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
+                          {onboardingTab === 'fastReg'
+                            ? 'Join Learnora to start learning today. Enter your email or use a social account.'
+                            : 'Simplify your learning workflow with Learnora. Log in to continue.'}
+                        </p>
+                      </div>
+
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (onboardingTab === 'fastReg') {
+                            if (!fastEmail.trim()) {
+                              setFastEmailError('Please enter your email address.');
+                              return;
+                            }
+                            if (!/\S+@\S+\.\S+/.test(fastEmail.trim())) {
+                              setFastEmailError('Please enter a valid email address.');
+                              return;
+                            }
+                            if (users.some(u => u.email.toLowerCase() === fastEmail.toLowerCase()) || 
+                                registrationRequests.some(r => r.email.toLowerCase() === fastEmail.toLowerCase() && r.status === 'pending')) {
+                              setFastEmailError('This email address is already registered in Learnora.');
+                              return;
+                            }
+                            
+                            // Auto set default name handle from email if not entered
+                            if (!fastFirstName.trim()) {
+                              const emailHandle = fastEmail.split('@')[0];
+                              const formattedName = emailHandle.charAt(0).toUpperCase() + emailHandle.slice(1);
+                              setFastFirstName(formattedName);
+                              setFastLastName('Student');
+                            }
+
+                            setFastEmailError('');
+                            setSocialProvider(null);
+                            // Redirect to manual registration details (course selection & details)
+                            setAdmissionMethod('social-course-select');
+                          } else {
+                            handleCredentialsLogin(e);
+                          }
+                        }}
+                        className="space-y-3.5"
+                      >
+                        <div>
+                          <input
+                            type="email"
+                            required
+                            placeholder={onboardingTab === 'fastReg' ? 'name@work-email.com' : 'name@example.com'}
+                            value={onboardingTab === 'fastReg' ? fastEmail : loginUsername}
+                            onChange={(e) => {
+                              if (onboardingTab === 'fastReg') setFastEmail(e.target.value);
+                              else setLoginUsername(e.target.value);
+                              setFastEmailError('');
+                              setLoginError('');
+                            }}
+                            className="w-full px-5 py-3.5 text-[14px] bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-slate-900 placeholder-slate-400 transition-all font-sans font-medium"
+                          />
+                        </div>
+
+                        {onboardingTab === 'authLogin' && (
+                          <div className="relative">
+                            <input
+                              type={showLoginPassword ? 'text' : 'password'}
+                              required
+                              placeholder="Enter your password"
+                              value={loginPassword}
+                              onChange={(e) => setLoginPassword(e.target.value)}
+                              className="w-full px-5 py-3.5 text-[14px] bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-slate-900 placeholder-slate-400 transition-all font-sans font-medium pr-12"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowLoginPassword(!showLoginPassword)}
+                              className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                            >
+                              {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        )}
+
+                        {onboardingTab === 'authLogin' && (
+                          <div className="flex justify-end pt-0.5">
+                            <button
+                              type="button"
+                              className="text-[12px] font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                            >
+                              Forgot Password?
+                            </button>
+                          </div>
+                        )}
+
+                        {(loginError || fastEmailError || googleError || githubError) && (
+                          <div className="text-rose-500 text-xs font-semibold px-1 text-center py-1">
+                            {loginError || fastEmailError || googleError || githubError}
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="w-full py-3.5 bg-[#3B1A45] hover:bg-[#2A1133] text-white font-bold rounded-2xl text-[15px] shadow-sm transition-all active:scale-[0.98] cursor-pointer font-sans mt-1"
+                        >
+                          {onboardingTab === 'fastReg' ? 'Continue' : 'Login'}
+                        </button>
+                      </form>
+
+                      <div className="w-full flex items-center justify-center gap-4 py-1">
+                        <div className="h-[1px] flex-1 bg-slate-200"></div>
+                        <span className="text-[12px] font-bold text-slate-700 font-sans tracking-wide uppercase">
+                          OR
+                        </span>
+                        <div className="h-[1px] flex-1 bg-slate-200"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={handleGoogleSignIn}
+                          className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold border border-slate-200 rounded-2xl text-[14px] transition-all cursor-pointer flex items-center justify-center gap-3 shadow-2xs"
+                        >
+                          <GoogleIcon className="w-5 h-5 shrink-0" />
+                          <span>Continue with Google</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleGithubSignIn}
+                          className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold border border-slate-200 rounded-2xl text-[14px] transition-all cursor-pointer flex items-center justify-center gap-3 shadow-2xs"
+                        >
+                          <Github className="w-5 h-5 text-slate-900 shrink-0" />
+                          <span>Continue with GitHub</span>
+                        </button>
+                      </div>
+
+                      <p className="text-[11px] text-slate-400 text-center font-medium leading-relaxed px-2 pt-1">
+                        By continuing, you're agreeing to our{' '}
+                        <button
+                          type="button"
+                          onClick={() => window.history.pushState({}, '', '/terms')}
+                          className="underline hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer text-slate-500 font-semibold"
+                        >
+                          Terms of Service
+                        </button>,{' '}
+                        <button
+                          type="button"
+                          onClick={() => window.history.pushState({}, '', '/privacy')}
+                          className="underline hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer text-slate-500 font-semibold"
+                        >
+                          Privacy Policy
+                        </button>, and{' '}
+                        <button
+                          type="button"
+                          onClick={() => window.history.pushState({}, '', '/cookies')}
+                          className="underline hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer text-slate-500 font-semibold"
+                        >
+                          Cookie Policy
+                        </button>.
+                      </p>
+
+                      <div className="text-center pt-2">
+                        <p className="text-[13px] text-slate-500 font-medium">
+                          {onboardingTab === 'fastReg' ? 'Already a member?' : 'Not a member?'}{' '}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onboardingTab === 'fastReg') setOnboardingTab('authLogin');
+                              else setOnboardingTab('fastReg');
+                              setLoginError('');
+                              setFastEmailError('');
+                            }}
+                            className="text-emerald-600 font-bold hover:text-emerald-700 transition-colors cursor-pointer ml-1"
+                          >
+                            {onboardingTab === 'fastReg' ? 'Login now' : 'Register now'}
+                          </button>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
+              {/* Right Side: Visual Illustration Banner */}
+              <div className="hidden md:flex md:w-1/2 p-3">
+                <div className="w-full h-full min-h-[480px] bg-white border border-slate-200/80 rounded-[24px] relative overflow-hidden flex items-center justify-center p-4">
+                  <img
+                    src={rocketIllustrationImg}
+                    alt="Rocket Space Illustration"
+                    className="w-full h-full max-h-[560px] object-contain"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        ) : (
+          <HomePage
+            isDark={isDark}
+            courses={courses}
+            onEnterPortal={(tab, courseName) => {
+              const targetPath = tab === 'fastReg' ? '/admissions' : tab === 'adminLogin' ? '/admin' : '/login';
+              window.history.pushState({}, '', targetPath);
+              setShowPortal(true);
+              setOnboardingTab(tab);
+              setAdmissionMethod('selection');
+              if (courseName) {
+                setFastCourse(matchAndFormatCourse(courseName));
+              }
+            }}
+            onNavigate={(path) => {
+              window.history.pushState({}, '', path);
+              window.scrollTo(0, 0);
+            }}
+          />
+        )
+      ) : (
+        /* Core UI Application Shell */
+        <div className="h-screen flex flex-col md:flex-row relative z-0 overflow-hidden font-sans bg-white dark:bg-[#070708]">
+
+          
+          {/* Mobile Top Bar */}
+          <div className="md:hidden w-full h-16 px-5 border-b border-slate-200 dark:border-white/5 bg-[#fafafa] dark:bg-[#080809] flex items-center justify-between z-20 shrink-0">
+            <div className="scale-[0.55] origin-left">
+              <Logo size="sm" withStrapline={false} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-3 -mr-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-550 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition"
+              aria-label="Open Navigation Menu"
+              aria-expanded={!isSidebarCollapsed}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Backdrop on Mobile */}
+          {!isSidebarCollapsed && (
+            <div 
+              className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300"
+              onClick={() => setIsSidebarCollapsed(true)}
+            />
+          )}
+
+          {/* Responsive Navigation Rail / Drawer */}
+          <aside 
+            onMouseEnter={() => {
+              if (!ignoreHover) {
+                setIsSidebarHovered(true);
+              }
+            }}
+            onMouseLeave={() => {
+              setIsSidebarHovered(false);
+              setIgnoreHover(false);
+            }}
+            className={`
+              fixed inset-y-0 left-0 z-50 w-72 md:relative md:inset-auto md:z-auto md:flex-shrink-0
+              ${isActuallyCollapsed ? 'md:w-20 px-3' : 'md:w-64 px-5'} 
+              ${isSidebarCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
+              py-5 bg-[#fafafa] dark:bg-[#080809] border-r border-slate-200 dark:border-white/5 
+              flex flex-col justify-between transition-all duration-300 ease-in-out select-none overflow-y-auto h-full md:h-auto
+            `}
+          >
+            <div className="space-y-6">
+              {/* Header Branding */}
+              <div className="flex items-center justify-between md:justify-center select-none">
+                <div className="flex items-center gap-2">
+                  {!isActuallyCollapsed ? (
+                    <div className="leading-none animate-fadeIn">
+                      <div className="origin-left scale-[0.65] -mb-1 relative -left-1">
+                        <Logo size="sm" withStrapline={false} />
+                      </div>
+                      <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5 font-sans ml-1 text-slate-400 dark:text-gray-500">Active Scheduler</p>
+                    </div>
+                  ) : (
+                    <div className="scale-[0.45] origin-center -ml-3 -mb-1">
+                      <Logo size="sm" withStrapline={false} />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Mobile Menu Close Toggle inside Drawer */}
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(true)}
+                  className="md:hidden p-3 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition"
+                  aria-label="Close Navigation Menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items Container */}
+              <div className="flex flex-col gap-6 md:gap-6">
+                {/* Logged profile banner */}
+                <div 
+                  onClick={() => setActiveTab('profile')}
+                  className={`bg-slate-50 dark:bg-[#161618] hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl border ${activeTab === 'profile' ? 'border-amber-500' : 'border-slate-100 dark:border-white/5'} flex items-center ${isActuallyCollapsed ? 'justify-center p-1.5' : 'gap-3 p-3'} select-none transition-all cursor-pointer`}
+                  title={currentUser.role === 'student' ? "Click to Open My Profile" : "Click to Open Profile Settings"}
+                >
+                  <div className="relative group/avatar cursor-pointer flex-shrink-0">
+                    <img
+                      id="sidebar-user-avatar-image"
+                      src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                      alt={currentUser.name}
+                      referrerPolicy="no-referrer"
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-white/10 group-hover/avatar:brightness-75 transition"
+                    />
+                    <input
+                      type="file"
+                      id="user-sidebar-avatar-upload"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        try {
+                          const compressedUrl = await compressImage(file);
+                          setCurrentUser(prev => prev ? { ...prev, avatarUrl: compressedUrl } : null);
+                          setUsers(prev => prev.map(u => {
+                            if (u.id === currentUser.id) {
+                              return { ...u, avatarUrl: compressedUrl };
+                            }
+                            return u;
+                          }));
+                          // Trigger Notification
+                          const notif: AppNotification = {
+                            id: generateUniqueId('notif-avatar'),
+                            title: 'Profile Photo Updated',
+                            message: 'Your profile photo has been updated successfully and is now active across all administrative registers.',
+                            timestamp: new Date().toISOString(),
+                            read: false,
+                            type: 'enrollment',
+                            channel: 'push'
+                          };
+                          setNotifications(prev => [notif, ...prev]);
+                          triggerToast(notif);
+                        } catch (err) {
+                          const errNotif: AppNotification = {
+                            id: generateUniqueId('notif-err'),
+                            title: 'Avatar Update Failed',
+                            message: 'Could not process the selected image.',
+                            timestamp: new Date().toISOString(),
+                            read: false,
+                            type: 'general',
+                            channel: 'push'
+                          };
+                          triggerToast(errNotif);
+                        }
+                        e.target.value = '';
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="user-sidebar-avatar-upload"
+                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 bg-black/40 rounded-full text-white transition cursor-pointer"
+                      title="Change Photo"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                    </label>
+                  </div>
+                  {!isActuallyCollapsed && (
+                    <div className="min-w-0 flex-1 animate-fadeIn">
+                      <p className="text-[13px] font-bold text-slate-900 dark:text-gray-200 truncate">{currentUser.name}</p>
+                      <span className="inline-flex items-center text-[9px] uppercase font-bold tracking-wider text-blue-600 border border-blue-200/50 dark:border-blue-500/20 shadow-sm bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-1.5 py-0.5 rounded mt-0.5">
+                        {currentUser.role}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Central Navigation lists */}
+                <nav className="space-y-1">
+                  {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' && !getTrialInfo(currentUser).isTrialActive ? (
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs bg-rose-50 border border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 font-bold cursor-pointer"
+                    >
+                      <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 animate-pulse" />
+                      {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Fee Settle Required</span>}
+                    </motion.button>
+                  ) : (
+                    <>
+                      {/* Student Academic Sub-Menu */}
+                      {currentUser && currentUser.role === 'student' ? (
+                        <div className="space-y-1">
+                          {!isActuallyCollapsed && (
+                            <button
+                              type="button"
+                              onClick={() => setIsStudentAcademicExpanded(!isStudentAcademicExpanded)}
+                              className="w-full flex items-center justify-between pt-2 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                            >
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Academic Portal</p>
+                              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-slate-900 dark:group-hover/header:text-white transition-transform duration-200 ${isStudentAcademicExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                            </button>
+                          )}
+                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStudentAcademicExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('schedule');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'schedule'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "My Schedule" : undefined}
+                            >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'schedule' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Calendar className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">My Schedule</span>}
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('tasks');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'tasks'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Pending Tasks" : undefined}
+                            >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'tasks' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Clock className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Pending Tasks</span>}
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('completed');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'completed'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Completed Classes" : undefined}
+                            >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'completed' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn font-sans">Completed Classes</span>}
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('dashboard');
+                                setStudentScheduleTab('assignments');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'dashboard' && studentScheduleTab === 'assignments'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Assignments & Homework" : undefined}
+                            >
+                              {activeTab === 'dashboard' && studentScheduleTab === 'assignments' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <ClipboardList className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignments & Homework</span>}
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('voice-notes');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'voice-notes'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Voice Notes" : undefined}
+                            >
+                              {activeTab === 'voice-notes' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Mic className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Voice Notes</span>}
+                            </motion.button>
+                          </div>
+                        </div>
+                      ) : (
+                        <motion.button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('dashboard');
+                            if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                          }}
+                          whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                            activeTab === 'dashboard'
+                              ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                              : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                          }`}
+                          title={isActuallyCollapsed ? "Center Dashboard" : undefined}
+                        >
+                          {activeTab === 'dashboard' && (
+                            <motion.div
+                              layoutId="active-nav-pill"
+                              className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                          <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+                          {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Center Dashboard</span>}
+                        </motion.button>
+                      )}
+
+                      <motion.button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('profile');
+                          if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                        }}
+                        whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                          activeTab === 'profile'
+                            ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                            : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                        }`}
+                        title={isActuallyCollapsed ? (currentUser.role === 'student' ? 'My Profile' : "Profile & Password Settings") : undefined}
+                      >
+                        {activeTab === 'profile' && (
+                          <motion.div
+                            layoutId="active-nav-pill"
+                            className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          />
+                        )}
+                        <User className="w-4 h-4 flex-shrink-0" />
+                        {!isActuallyCollapsed && (
+                          <span className="truncate animate-fadeIn">
+                            {currentUser.role === 'student' ? 'My Profile' : 'Profile Settings'}
+                          </span>
+                        )}
+                      </motion.button>
+
+                      {currentUser.role !== 'student' && (
+                        <div className="space-y-1">
+                          {!isActuallyCollapsed && (
+                            <button
+                              type="button"
+                              onClick={() => setIsStaffAcademicExpanded(!isStaffAcademicExpanded)}
+                              className="w-full flex items-center justify-between pt-4 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                            >
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Academic shortcuts</p>
+                              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-slate-900 dark:group-hover/header:text-white transition-transform duration-200 ${isStaffAcademicExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                            </button>
+                          )}
+                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStaffAcademicExpanded || isActuallyCollapsed ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('enrollments');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'enrollments'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? (currentUser.role === 'admin' ? 'Accounts & Enrollments' : currentUser.role === 'sub-admin' ? 'Enrollments & Faculty' : currentUser.role === 'instructor' ? 'Student Profiles Registry' : '') : undefined}
+                            >
+                              {activeTab === 'enrollments' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Users className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && (
+                                <span className="truncate animate-fadeIn">
+                                  {currentUser.role === 'admin' 
+                                    ? 'Accounts & Enrollments' 
+                                    : currentUser.role === 'sub-admin' 
+                                      ? 'Enrollments & Faculty' 
+                                      : 'Student Profiles Registry'}
+                                </span>
+                              )}
+                            </motion.button>
+
+                            {['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+                              <>
+                                {/* First-level: Schedule New Live Class */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    if (activeTab === 'schedule' && scheduleShowAddForm) {
+                                      setScheduleShowAddForm(false);
+                                    } else {
+                                      setActiveTab('schedule');
+                                      setScheduleShowAddForm(true);
+                                      setScheduleShowCourseDashboard(false);
+                                      setScheduleShowBatchManager(false);
+                                    }
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'schedule' && scheduleShowAddForm
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Schedule New Live Class" : undefined}
+                                >
+                                  {activeTab === 'schedule' && scheduleShowAddForm && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <Plus className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Schedule New Live Class</span>}
+                                </motion.button>
+
+                                {/* First-level: Courses Publish Dashboard */}
+                                {['admin', 'sub-admin'].includes(currentUser.role) && (
+                                  <motion.button
+                                    type="button"
+                                    onClick={() => {
+                                      if (activeTab === 'schedule' && scheduleShowCourseDashboard) {
+                                        setScheduleShowCourseDashboard(false);
+                                      } else {
+                                        setActiveTab('schedule');
+                                        setScheduleShowCourseDashboard(true);
+                                        setScheduleShowAddForm(false);
+                                        setScheduleShowBatchManager(false);
+                                      }
+                                      if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                    }}
+                                    whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                      activeTab === 'schedule' && scheduleShowCourseDashboard
+                                        ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                        : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                    }`}
+                                    title={isActuallyCollapsed ? "Courses Publish Dashboard" : undefined}
+                                  >
+                                    {activeTab === 'schedule' && scheduleShowCourseDashboard && (
+                                      <motion.div
+                                        layoutId="active-nav-pill"
+                                        className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                      />
+                                    )}
+                                    <GraduationCap className="w-4 h-4 flex-shrink-0" />
+                                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Courses Publish Dashboard</span>}
+                                  </motion.button>
+                                )}
+
+                                {/* First-level: Scheduled Lectures */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('lectures');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'lectures'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Scheduled Lectures" : undefined}
+                                >
+                                  {activeTab === 'lectures' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
+                                </motion.button>
+
+                                {/* Consolidated Academic & Evolution Pipeline */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('assignment-pipeline');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'assignment-pipeline'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Academic & Evolution Pipeline" : undefined}
+                                >
+                                  {activeTab === 'assignment-pipeline' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <Layers className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic & Evolution Pipeline</span>}
+                                </motion.button>
+
+                                {/* First-level: Assignment Submission Tracker */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('assignment-tracker');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'assignment-tracker'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Assignment Status Tracker" : undefined}
+                                >
+                                  {activeTab === 'assignment-tracker' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Assignment Status Tracker</span>}
+                                </motion.button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* System Categories Sub-Menu */}
+                      <div className="space-y-1">
+                        {!isActuallyCollapsed && (
+                          <button
+                            type="button"
+                            onClick={() => setIsSystemCategoriesExpanded(!isSystemCategoriesExpanded)}
+                            className="w-full flex items-center justify-between pt-4 pb-1.5 pl-3.5 pr-2 group/header text-left cursor-pointer"
+                          >
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">System Categories</p>
+                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-slate-900 dark:group-hover/header:text-white transition-transform duration-200 ${isSystemCategoriesExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                          </button>
+                        )}
+                        <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isSystemCategoriesExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                          {['admin', 'sub-admin'].includes(currentUser.role) && (
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('courses-directory');
+                                setScheduleShowAddForm(false);
+                                setScheduleShowCourseDashboard(false);
+                                setScheduleShowBatchManager(false);
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'courses-directory'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Academic Course Roadmap" : undefined}
+                            >
+                              {activeTab === 'courses-directory' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <BookOpen className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Academic Course Roadmap</span>}
+                            </motion.button>
+                          )}
+
+                          <motion.button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('inbox');
+                              if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                            }}
+                            whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                              activeTab === 'inbox'
+                                ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                            }`}
+                            title={isActuallyCollapsed ? "Secure Mailbox" : undefined}
+                          >
+                            {activeTab === 'inbox' && (
+                              <motion.div
+                                layoutId="active-nav-pill"
+                                className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                              />
+                            )}
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Mailbox</span>}
+                            {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length > 0 && (
+                              <span className={`absolute ${isActuallyCollapsed ? 'top-1 right-1' : 'right-3.5 top-1/2 -translate-y-1/2'} min-w-[16px] h-4 leading-none text-sm font-mono font-bold bg-blue-500 text-white px-1 rounded-full flex items-center justify-center border border-white dark:border-[#161618] transition-all`}>
+                                {simulatedEmails.filter(m => m.to.toLowerCase() === currentUser.email.toLowerCase()).length}
+                              </span>
+                            )}
+                          </motion.button>
+
+                          {currentUser.role === 'admin' && (
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('backup');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'backup'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Secure Backups" : undefined}
+                            >
+                              {activeTab === 'backup' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <CloudLightning className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Secure Backups</span>}
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </nav>
+
+                {/* Logout anchor workspace */}
+                <div className="pt-2 border-t border-slate-100 dark:border-white/5">
+                  <motion.button
+                    type="button"
+                    onClick={() => handleLogout()}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-3' : 'gap-3.5 px-3.5 py-3'} rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.03] hover:text-slate-900 dark:hover:text-white font-bold text-xs text-slate-550 dark:text-gray-400 transition cursor-pointer`}
+                    title={isActuallyCollapsed ? "Change Simulator Role" : undefined}
+                  >
+                    <LogOut className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Change Simulator Role</span>}
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Context Stage */}
+          <main className="flex-1 relative z-10 p-5 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+            {currentUser && currentUser.role === 'student' && currentUser.paymentStatus !== 'paid' && !getTrialInfo(currentUser).isTrialActive ? (
+              <RazorpayPayment
+                currentUser={currentUser}
+                users={users}
+                setUsers={setUsers}
+                courses={courses}
+                setNotifications={setNotifications}
+                onLogout={handleLogout}
+              />
+            ) : (
+              <>
+                {/* Active Render Panels Routing based on Tab */}
+                {activeTab === 'dashboard' && (
+              <div className="space-y-6 max-w-6xl mx-auto w-full pt-4 font-sans animate-fadeIn">
+                {['admin', 'sub-admin'].includes(currentUser.role) ? (
+                  <div className="space-y-6 max-w-6xl mx-auto w-full pt-2 font-sans">
+                    {/* Vercel Header Breadcrumb */}
+                    <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-sm leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
+                            ▲
+                          </div>
+                          <span className="text-sm font-semibold text-slate-500 dark:text-gray-400 font-mono">learnora</span>
+                          <span className="text-slate-300 dark:text-neutral-700">/</span>
+                          <span className="text-sm font-semibold text-slate-950 dark:text-white font-sans flex items-center gap-1.5">
+                            admin-centre
+                            <span className="text-sm bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">hobby</span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs text-slate-450 dark:text-slate-500 font-mono flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live Ledger Containers Connected
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Greeting Header */}
+                    <div className="py-2">
+                      <h1 className="text-[28px] font-bold text-slate-950 dark:text-white mb-1 tracking-tight">Administrative Overview</h1>
+                      <p className="text-sm text-slate-500 dark:text-gray-400">
+                        Welcome, {currentUser.name}. Track students, study courses pathways, and manage schedules.
+                      </p>
+                    </div>
+
+                    {/* Premium Bento Grid Stats Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Card 1: Total Students */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Total Ledger Students</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {users.filter(u => u.role === 'student').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('enrollments')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          View Student Registry <ChevronRight className="w-3" />
+                        </button>
+                      </div>
+
+                      {/* Card 2: Instructors */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Faculty Instructors</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {users.filter(u => u.role === 'instructor').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('enrollments')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Manage Staff <ChevronRight className="w-3" />
+                        </button>
+                      </div>
+
+                      {/* Card 3: Schedules */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Active Classes Scheduled</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {schedules.filter(s => s.status === 'scheduled').length}
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('schedule')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Open Time Editor <ChevronRight className="w-3" />
+                        </button>
+                      </div>
+
+                      {/* Card 4: Average Score */}
+                      <div className="bg-white dark:bg-[#070708] border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-white/20 transition-all shadow-xs">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Average Evaluation Grade</p>
+                        <p className="text-3xl font-bold text-slate-950 dark:text-white mt-2 mb-4">
+                          {progressRecords.length > 0 ? (progressRecords.reduce((acc, r) => acc + r.score, 0) / progressRecords.length).toFixed(0) : '0'}%
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('reports')}
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Explore Report Metrics <ChevronRight className="w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="space-y-6 pb-2 mb-8">
+                      {/* Vercel Header Breadcrumb */}
+                      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold font-mono text-sm leading-none shrink-0 shadow-xs shadow-black/20 animate-pulse">
+                              ▲
+                            </div>
+                            <span className="text-sm font-semibold text-slate-500 dark:text-gray-400 font-mono">learnora</span>
+                            <span className="text-slate-300 dark:text-neutral-700">/</span>
+                            <span className="text-sm font-semibold text-slate-950 dark:text-white font-sans flex items-center gap-1.5 font-mono">
+                              {currentUser.role === 'student' ? 'student-centre' : 'faculty-centre'}
+                              <span className="text-[10px] bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono uppercase font-bold tracking-wider">
+                                {currentUser.role === 'student' ? 'hobby' : 'pro'}
+                              </span>
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-slate-450 dark:text-slate-500 font-mono flex items-center gap-1.5">
+                              {currentUser.role === 'student' 
+                                ? 'Live Learning Sync Connected' 
+                                : 'Live Faculty Registry Connected'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Greeting Header */}
+                      <div className="py-2">
+                        <h1 className="text-[28px] font-bold text-slate-950 dark:text-white mb-1 tracking-tight">
+                          {currentUser.role === 'student' ? 'Student Workspace' : 'Faculty Overview'}
+                        </h1>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">
+                          Welcome, {currentUser.name}. {currentUser.role === 'student' 
+                            ? "Manage your schedules, completed classes, and pending tasks." 
+                            : 'Track student records, updates, and upcoming lessons.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {currentUser.role === 'student' && (
+                      <>
+                        {(() => {
+                          const enrolledCourseConfig = (() => {
+                            if (!currentUser.course || !courses || courses.length === 0) return undefined;
+                            const userCourseClean = currentUser.course.trim().replace(/\.+$/, "").toLowerCase(); const userBatchClean = currentUser.batch?.trim().toLowerCase() || ""; let batchMatched = undefined; if (userBatchClean) { batchMatched = courses.find(c => { const cId = c.id?.trim().toLowerCase() || ""; const cName = c.name.trim().replace(/\.+$/, "").toLowerCase(); const cCode = c.code?.trim().toLowerCase() || ""; const cBatch = c.batchNumber?.trim().toLowerCase() || ""; const isCourseMatch = cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean; const isBatchMatch = cBatch === userBatchClean || cCode === userBatchClean; return isCourseMatch && isBatchMatch; }); } if (batchMatched) return batchMatched;
+                            
+                            // 1. Exact/Normalized check
+                            let matched = courses.find(c => {
+                              const cId = c.id?.trim().toLowerCase() || "";
+                              const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                              const cCode = c.code?.trim().toLowerCase() || "";
+                              return cId === userCourseClean || cName === userCourseClean || cCode === userCourseClean;
+                            });
+                            
+                            if (matched) return matched;
+                            
+                            // 2. Substring fallback
+                            matched = courses.find(c => {
+                              const cName = c.name.trim().replace(/\.+$/, "").toLowerCase();
+                              return cName.includes(userCourseClean) || userCourseClean.includes(cName);
+                            });
+                            
+                            return matched;
+                          })();
+                          if (!enrolledCourseConfig) return null;
+
+                          const trial = getTrialInfo(currentUser);
+
+                          return (
+                            <div className="space-y-4 animate-fadeIn">
+                              {enrolledCourseConfig.status === 'upcoming' && (
+                                <div className="p-4 rounded-xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white dark:bg-slate-900/60 border border-slate-200 text-slate-700 dark:text-gray-200 rounded-lg shrink-0 shadow-xs">
+                                      <Calendar className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-bold text-slate-900 dark:text-white text-sm">You are enrolled in an Upcoming Program!</h3>
+                                      <p className="text-xs text-slate-600 dark:text-gray-300 mt-0.5">
+                                        <strong className="font-semibold text-slate-800 dark:text-gray-200">{enrolledCourseConfig.name}</strong> will Start on <span className="font-bold underline decoration-slate-400/30 underline-offset-2">{new Date(enrolledCourseConfig.publishDate || enrolledCourseConfig.createdDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {currentUser.paymentStatus !== 'paid' && trial.isTrialActive && (
+                                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <div>
+                                      <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm flex items-center gap-1.5">
+                                        Active Free Trial Pass Enabled!
+                                      </h3>
+                                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                                        You have full, unlocked access to classes, assessments, and curriculum features. 
+                                        Your trial ends on <strong className="font-semibold">{trial.endDate?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</strong> 
+                                        {' '}(<span className="font-bold text-amber-700 dark:text-amber-400">{trial.daysLeft} {trial.daysLeft === 1 ? 'day' : 'days'} remaining</span>).
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveTab('enrollments')}
+                                    className="px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap self-start md:self-auto"
+                                  >
+                                    Secure Academic Gateway Pass
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                    {/* Enrolled Classes List for Student */}
+                    <div className="space-y-4 pt-4 font-sans">
+                      <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#070708] p-4 md:p-6 shadow-sm">
+                        {/* Student Schedule Sub-Navigation Tabs */}
+                        <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-white/10 pb-4 mb-6 overflow-x-auto no-scrollbar">
+                          <button
+                            type="button"
+                            onClick={() => setStudentScheduleTab('schedule')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                              studentScheduleTab === 'schedule'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                                : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <Calendar className="w-3.5 h-3.5" /> My Schedule
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setStudentScheduleTab('tasks')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                              studentScheduleTab === 'tasks'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                                : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <Clock className="w-3.5 h-3.5" /> Pending Tasks
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setStudentScheduleTab('completed')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                              studentScheduleTab === 'completed'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                                : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Completed Classes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setStudentScheduleTab('assignments')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                              studentScheduleTab === 'assignments'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                                : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            <ClipboardList className="w-3.5 h-3.5" /> Assignments & Homework
+                          </button>
+                        </div>
+
+                        {studentScheduleTab === 'schedule' ? (
+                          <div className="space-y-6">
+                            {/* Premium Header */}
+                            <div className="bg-white dark:bg-slate-900/10 p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-[10px] font-bold tracking-wider uppercase">Upcoming</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-sans tracking-tight">
+                                  Your Schedule
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed">
+                                  {(() => {
+                                    const today = new Date();
+                                    const endDate = new Date();
+                                    endDate.setDate(today.getDate() + 13);
+                                    const startMonth = today.toLocaleString('default', { month: 'short' });
+                                    const endMonth = endDate.toLocaleString('default', { month: 'short' });
+                                    if (startMonth === endMonth) {
+                                      return `Showing upcoming sessions for ${startMonth} ${today.getDate()} - ${endDate.getDate()}`;
+                                    }
+                                    return `Showing upcoming sessions for ${startMonth} ${today.getDate()} - ${endMonth} ${endDate.getDate()}`;
+                                  })()}
+                                </p>
+                              </div>
+                              <div className="hidden lg:block absolute right-0 top-0 translate-x-4 -translate-y-4 text-slate-50/50 dark:text-slate-800/20 select-none pointer-events-none">
+                                <Calendar className="w-40 h-40" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              {Array.from({ length: 14 }).map((_, i) => {
+                                const d = new Date();
+                                d.setDate(d.getDate() + i);
+                                const yyyy = d.getFullYear();
+                                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                const dd = String(d.getDate()).padStart(2, '0');
+                                const dateStr = `${yyyy}-${mm}-${dd}`;
+                                
+                                const dayAbbr = d.toLocaleString('default', { weekday: 'short' });
+                                const dayNum = d.getDate();
+
+                                const daySchedules = schedules.filter(s => {
+                                  if (s.date !== dateStr) return false;
+                                  if (s.status === 'completed') return false;
+                                  if (!isScheduleDateOnOrAfterJoinedDate(s.date, currentUser.joinedDate)) return false;
+                                  
+                                  const isExplicitlyEnrolled = s.enrolledStudentIds.includes(currentUser.id);
+                                  
+                                  const isMyCourse = s.course && currentUser.course && s.course.toLowerCase() === currentUser.course.toLowerCase();
+                                  const isAllCourse = !s.course || s.course === 'All';
+                                  const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+
+                                  const isMyBatch = s.batch && currentUser.batch && s.batch.toLowerCase() === currentUser.batch.toLowerCase();
+                                  const isAllBatch = !s.batch || s.batch === 'All';
+                                  const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+
+                                  return matchesCourse && matchesBatch;
+                                });
+
+                                const dayEvolutions = studentEvolutions.filter(ev => {
+                                  if (ev.studentId !== currentUser.id || ev.status === 'draft') return false;
+                                  if (!ev.examDate) return false;
+                                  return ev.examDate === dateStr;
+                                });
+
+                                return (
+                                  <div key={dateStr} className="flex gap-4 relative group">
+                                    {/* Timeline connector (except last item) */}
+                                    {i !== 13 && (
+                                      <div className="absolute left-[1.375rem] top-10 bottom-[-1rem] w-px bg-slate-200 dark:bg-white/10" />
+                                    )}
+                                    <div className="w-11 shrink-0 flex flex-col items-center pt-2 relative z-10">
+                                      {i === 0 ? (
+                                         <div className="w-10 h-10 rounded-full bg-[#ffde21] flex flex-col items-center justify-center shadow-md shadow-[#ffde21]/20">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest leading-none text-[#090909]">{dayAbbr}</span>
+                                            <span className="text-[14px] font-black leading-none mt-0.5 text-[#0a0a0a]">{dayNum}</span>
+                                         </div>
+                                      ) : (
+                                         <div className="w-10 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+                                            <span className="text-[10px] font-semibold uppercase tracking-widest leading-none">{dayAbbr}</span>
+                                            <span className="text-[15px] font-bold leading-none mt-1 text-slate-700 dark:text-slate-200">{dayNum}</span>
+                                         </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0 pb-6 pt-1.5">
+                                      {daySchedules.length === 0 && dayEvolutions.length === 0 ? (
+                                        <div className="flex items-center px-5 py-4 bg-white border border-dashed border-slate-200 rounded-2xl text-xs text-slate-400 dark:bg-[#070708] dark:border-white/5 dark:text-slate-500 font-medium italic shadow-sm">
+                                          No sessions scheduled for this day
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-4">
+                                          {daySchedules.map(cl => {
+                                            const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
+                                            const classStart = new Date(`${cl.date}T${cl.time}`);
+                                            const now = new Date();
+                                            const timeDiffMinutes = (classStart.getTime() - now.getTime()) / (1000 * 60);
+                                            const isTimeOver = -timeDiffMinutes > Number(cl.duration);
+                                            const isLinkActive = timeDiffMinutes <= 15 && !isTimeOver && cl.status === 'scheduled';
+                                            return (
+                                              <div key={cl.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 dark:bg-slate-900/10 dark:border-white/5 dark:hover:border-white/10 items-center">
+                                                <div className="md:col-span-4 flex items-center gap-3">
+                                                  <div className={`w-9 h-9 rounded-lg ${iconBg} border border-slate-200 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+                                                    <SubjectIcon className="w-4.5 h-4.5" />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                      <h4 className={`font-bold text-slate-900 dark:text-white text-[13px] truncate ${cl.status === 'completed' ? 'opacity-60 line-through decoration-slate-400' : ''}`} title={cl.title}>
+                                                        {cl.title}
+                                                      </h4>
+                                                      {cl.status === 'completed' && (
+                                                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/10 uppercase tracking-tight">
+                                                          Done
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                      by {cl.instructorName} • <span className="text-slate-600 dark:text-slate-300 font-bold">{cl.subject}</span>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                                
+                                                <div className="md:col-span-3">
+                                                   <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-bold uppercase tracking-tight ${
+                                                      cl.status === 'scheduled'
+                                                        ? 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700'
+                                                        : cl.status === 'completed'
+                                                          ? 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700'
+                                                          : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/10'
+                                                     }`}>
+                                                      {cl.status === 'scheduled' ? 'Scheduled' : cl.status === 'completed' ? 'Completed' : 'Cancelled'}
+                                                    </span>
+                                                </div>
+ 
+                                                <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
+                                                  <div className="min-w-0">
+                                                    <p className="font-bold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Room / Link</p>
+                                                    {cl.status === 'cancelled' ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <div className="px-3 py-1.5 bg-rose-50 border border-rose-200/50 dark:bg-rose-500/10 dark:border-rose-500/10 rounded-lg text-[11px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-tight flex items-center gap-1.5">
+                                                          <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> Cancelled
+                                                        </div>
+                                                      </div>
+                                                    ) : cl.status === 'completed' || isTimeOver ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 dark:bg-slate-800/50 dark:border-slate-700 rounded-lg text-[11px] text-slate-600 dark:text-slate-300 font-bold uppercase tracking-tight flex items-center gap-1.5">
+                                                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Completed
+                                                        </div>
+                                                      </div>
+                                                    ) : cl.meetingType === 'own_classroom' ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        {isLinkActive ? (
+                                                          <button
+                                                            onClick={() => {
+                                                              if (!cl.enrolledStudentIds.includes(currentUser.id)) {
+                                                                handleSelfEnroll(cl.id);
+                                                              }
+                                                              setActiveClassroomSession(cl);
+                                                            }}
+                                                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-150 cursor-pointer"
+                                                          >
+                                                            <Video className="w-3.5 h-3.5 animate-pulse" /> Join Live Classroom
+                                                          </button>
+                                                        ) : (
+                                                          <button
+                                                            disabled
+                                                            className="px-4 py-2 bg-slate-100 text-slate-400 dark:bg-[#161618] dark:text-zinc-500 rounded-lg text-xs font-bold cursor-not-allowed border border-slate-200 dark:border-white/5 flex items-center gap-1.5"
+                                                            title="Classroom will be active 15 minutes before the start time"
+                                                          >
+                                                            <Video className="w-3.5 h-3.5" /> Join Live Classroom
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                    ) : cl.meetingLink || (cl.location && (cl.location.includes('http') || cl.location.includes('zoom.us') || cl.location.includes('meet.google'))) ? (
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        {isLinkActive ? (
+                                                          <a
+                                                            href={(cl.meetingLink || cl.location).startsWith('http') ? (cl.meetingLink || cl.location) : `https://${cl.meetingLink || cl.location}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={() => {
+                                                              if (!cl.enrolledStudentIds.includes(currentUser.id)) {
+                                                                handleSelfEnroll(cl.id);
+                                                              }
+                                                            }}
+                                                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-150"
+                                                          >
+                                                            Join Class
+                                                          </a>
+                                                        ) : (
+                                                          <button
+                                                            disabled
+                                                            className="px-4 py-2 bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 rounded-lg text-xs font-bold cursor-not-allowed border border-slate-200 dark:border-white/10"
+                                                          >
+                                                            Join Class
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                    ) : (
+                                                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1"><span className="opacity-75">Location:</span> {cl.location || 'Online'}</p>
+                                                    )}
+                                                  </div>
+                                                  <div className="text-right shrink-0">
+                                                    <div className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{cl.time}</div>
+                                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center justify-end gap-1"><Clock className="w-3 h-3" /> {cl.duration}m</div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                          {dayEvolutions.map(ev => {
+                                            return (
+                                              <div key={ev.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-5 py-3 bg-white border border-indigo-200 dark:bg-[#161618] dark:border-indigo-500/30 rounded-[10px] items-center animate-fadeIn shadow-sm">
+                                                <div className="md:col-span-4 flex items-center gap-3">
+                                                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/50 dark:border-indigo-500/10 flex items-center justify-center flex-shrink-0 text-indigo-600 dark:text-indigo-400">
+                                                    <TrendingUp className="w-4 h-4" />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                      <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate" title="Continuous Evolution Exam">
+                                                        Continuous Evolution
+                                                      </h4>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                      Month {ev.month} • <span className="font-bold text-indigo-600 dark:text-indigo-400">Evaluation</span>
+                                                    </p>
+                                                  </div>
+                                                </div>
+
+                                                <div className="md:col-span-3">
+                                                  <span className="inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/10">
+                                                    Scheduled
+                                                  </span>
+                                                </div>
+
+                                                <div className="md:col-span-5 min-w-0 flex items-center justify-between gap-4">
+                                                  <div className="min-w-0">
+                                                    <p className="font-bold text-slate-400 dark:text-zinc-500 text-[10px] uppercase tracking-wider mb-0.5">Exam Details</p>
+                                                    <button onClick={() => {
+                                                      setActiveStudentModalEvolution(ev);
+                                                      setActiveStudentModalAssignment(undefined);
+                                                      setIsStudentModalOpen(true);
+                                                    }} className="px-2.5 py-1 bg-indigo-500 hover:bg-indigo-600 text-white dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 rounded-md text-xs font-bold transition">Start Exam</button>
+                                                  </div>
+                                                  <div className="text-right shrink-0">
+                                                    <div className="text-xs font-bold text-slate-900 dark:text-white">{ev.examTime || 'TBA'}</div>
+                                                    <div className="text-[11px] text-slate-450 dark:text-slate-550 font-medium">{ev.examDuration ? `${ev.examDuration}m` : 'Duration TBA'}</div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : studentScheduleTab === 'assignments' ? (
+                          <div className="space-y-6">
+                            {/* Premium Header */}
+                            <div className="bg-white dark:bg-slate-900/10 p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-[10px] font-bold tracking-wider uppercase">Evaluations</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-sans tracking-tight">
+                                  Course Homework & Assignments
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed">
+                                  Access curriculum homework published post-session. Complete challenges, submit code solutions, and track grades with active mentor feedback loops.
+                                </p>
+                              </div>
+                              <div className="hidden lg:block absolute right-0 top-0 translate-x-4 -translate-y-4 text-slate-50/50 dark:text-slate-800/20 select-none pointer-events-none">
+                                <ClipboardList className="w-40 h-40" />
+                              </div>
+                            </div>
+
+                            {(() => {
+                              const studentAssignments = assignments.filter(asg => {
+                                // Must match course and batch
+                                const matchesCourse = !asg.course || asg.course === 'All' || (currentUser.course && asg.course.toLowerCase() === currentUser.course.toLowerCase());
+                                const matchesBatch = !asg.batch || asg.batch === 'All' || (currentUser.batch && asg.batch.toLowerCase() === currentUser.batch.toLowerCase());
+                                
+                                // Alternatively, check if explicitly enrolled in the scheduling class
+                                const matchingClass = schedules.find(s => s.id === asg.classId);
+                                const isEnrolledInClass = matchingClass?.enrolledStudentIds?.includes(currentUser.id);
+
+                                return (matchesCourse && matchesBatch) || isEnrolledInClass;
+                              });
+
+                              if (studentAssignments.length === 0) {
+                                return (
+                                  <div className="py-20 text-center text-xs text-slate-400 font-sans border border-dashed border-slate-200 dark:border-white/5 bg-white dark:bg-[#070708] shadow-sm rounded-2xl p-6">
+                                    <ClipboardList className="w-12 h-12 text-slate-300 dark:text-white/5 mx-auto mb-3" />
+                                    No homework has been assigned for your courses yet. Complete lessons first!
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="space-y-6">
+                                  {studentAssignments.map(asg => {
+                                    const submission = asg.submissions.find(s => s.studentId === currentUser.id);
+                                    const isSubmitted = !!submission;
+                                    const isGraded = submission?.status === 'graded';
+
+                                    // Choose styling accents based on assignment state
+                                    const cardBorderClass = isGraded 
+                                      ? "border-slate-200 dark:border-white/5" 
+                                      : isSubmitted 
+                                        ? "border-slate-200 dark:border-white/5"
+                                        : "border-slate-200 dark:border-white/5 ring-1 ring-black/[0.02]";
+                                        
+                                    const cardBgClass = "bg-white hover:bg-slate-50/30 dark:bg-slate-900/10";
+
+                                    return (
+                                      <div key={asg.id} className={`p-6 border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden text-left ${cardBorderClass} ${cardBgClass}`}>
+                                        
+                                        {/* Upper Section */}
+                                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                                          <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-450 dark:text-gray-500">ASSIGNMENT PORTAL</span>
+                                              <span className="text-[11px] text-slate-400">•</span>
+                                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Instructor: {asg.instructorName || 'Mentor'}</span>
+                                            </div>
+                                            <h4 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{asg.title}</h4>
+                                            
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-gray-400 pt-0.5">
+                                              <span className="flex items-center gap-1">
+                                                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                                                Class Ref: <span className="text-slate-800 dark:text-zinc-300 font-semibold">{asg.className}</span>
+                                              </span>
+                                              <span>|</span>
+                                              <span className="flex items-center gap-1">
+                                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                                Published: <span className="font-medium text-slate-700 dark:text-zinc-350">{asg.createdDate}</span>
+                                              </span>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Stats and status pills */}
+                                          <div className="flex flex-wrap items-center gap-2 lg:self-start">
+                                            <div className="flex items-center gap-1.5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-300 px-3 py-1.5 rounded-full text-[10px] font-bold font-sans">
+                                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                              Due: {asg.dueDate}
+                                            </div>
+                                            <div className="border border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-300 px-3 py-1.5 rounded-full text-[10px] font-bold font-sans">
+                                              Max Score: {asg.maxPoints} pts
+                                            </div>
+                                            
+                                            {isGraded ? (
+                                              <span className="bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Graded
+                                              </span>
+                                            ) : isSubmitted ? (
+                                              <span className="bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                                                <Check className="w-3.5 h-3.5 text-indigo-500" /> Submitted
+                                              </span>
+                                            ) : (
+                                              <span className="bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                                                <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> Pending Submit
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Description */}
+                                        <div className="mb-5">
+                                          <h5 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 flex items-center gap-1.5">
+                                            <Code className="w-3.5 h-3.5 text-slate-400" /> Instructions & Description
+                                          </h5>
+                                          <p className="text-xs text-slate-600 dark:text-slate-350 bg-slate-50/50 dark:bg-slate-950/20 p-4 rounded-xl border border-slate-200 dark:border-white/5 leading-relaxed whitespace-pre-line font-medium text-left">
+                                            {asg.description}
+                                          </p>
+                                        </div>
+
+                                        {/* Status / Submission details */}
+                                        <div className="pt-1">
+                                          {isGraded ? (
+                                            <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 p-4 rounded-xl space-y-4 font-sans text-left relative overflow-hidden">
+                                              <div className="absolute right-0 top-0 p-3 opacity-5 text-slate-500 pointer-events-none select-none">
+                                                <Award className="w-24 h-24" />
+                                              </div>
+                                              
+                                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-xs">
+                                                  <Award className="w-4.5 h-4.5 text-emerald-500" /> Grade details & Score Report
+                                                </div>
+                                                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 shadow-sm">
+                                                  Score: <span className="text-sm font-extrabold">{submission.score}</span> / {asg.maxPoints} pts
+                                                </div>
+                                              </div>
+
+                                              <div className="text-xs text-slate-600 dark:text-slate-400 font-medium bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-white/10">
+                                                You completed this challenge successfully. Your score has been verified and registered on the grading leaderboard.
+                                              </div>
+
+                                              {submission.feedback && (
+                                                <div className="p-3.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-zinc-400 leading-relaxed text-left relative">
+                                                  <span className="font-bold text-slate-800 dark:text-slate-200 block mb-1">Instructor Feedback:</span>
+                                                  <span className="italic block pl-2.5 border-l-2 border-slate-200 dark:border-slate-700">"{submission.feedback}"</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          ) : isSubmitted ? (
+                                            <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 p-4 rounded-xl space-y-3.5 text-left">
+                                              <div className="flex items-center justify-between gap-4 flex-wrap">
+                                                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                                  <Check className="w-4 h-4 text-emerald-500 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm" /> Solution Submitted Successfully
+                                                </div>
+                                                <button
+                                                  onClick={() => {
+                                                    setActiveStudentModalAssignment(asg);
+                                                    setActiveStudentModalEvolution(undefined);
+                                                    setIsStudentModalOpen(true);
+                                                  }}
+                                                  className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-bold underline transition cursor-pointer flex items-center gap-1"
+                                                >
+                                                  Edit Solution Submission
+                                                </button>
+                                              </div>
+
+                                              <div className="space-y-1">
+                                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Submitted Answer Text</div>
+                                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-3.5 rounded-lg text-xs font-sans text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed text-left max-h-[160px] overflow-y-auto">
+                                                  {submission.answerText}
+                                                </div>
+                                              </div>
+
+                                              {submission.fileUrn && (
+                                                <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
+                                                  <FileText className="w-4 h-4 text-slate-400" />
+                                                  <span>Solution Document:</span>
+                                                  <span className="font-sans text-indigo-600 dark:text-indigo-400 font-semibold underline">{submission.fileUrn}</span>
+                                                </div>
+                                              )}
+                                              
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 italic mt-2">
+                                                Enqueued on Learnora servers at {new Date(submission.submittedDate).toLocaleString()}. Waiting to be reviewed by {asg.instructorName}.
+                                              </p>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center justify-between flex-wrap gap-4 pt-2">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+                                                Your homework response, repository link, and code file will be sent directly to your mentor once submitted.
+                                              </p>
+                                              <button
+                                                onClick={() => {
+                                                  setActiveStudentModalAssignment(asg);
+                                                  setActiveStudentModalEvolution(undefined);
+                                                  setIsStudentModalOpen(true);
+                                                }}
+                                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 duration-150 cursor-pointer"
+                                              >
+                                                <CheckSquare className="w-4 h-4" /> Start Submission Portal
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        ) : studentScheduleTab === 'tasks' ? (
+                          <div className="space-y-6">
+                            {/* Premium Header */}
+                            <div className="bg-white dark:bg-slate-900/10 p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-[10px] font-bold tracking-wider uppercase">Action Required</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-sans tracking-tight">
+                                  Pending Tasks
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed">
+                                  Complete and submit your pending homework assignments to stay on track with your coursework.
+                                </p>
+                              </div>
+                              <div className="hidden lg:block absolute right-0 top-0 translate-x-4 -translate-y-4 text-slate-50/50 dark:text-slate-800/20 select-none pointer-events-none">
+                                <Clock className="w-40 h-40" />
+                              </div>
+                            </div>
+
+                            {(() => {
+                              const studentAssignments = assignments.filter(asg => {
+                                const matchesCourse = !asg.course || asg.course === 'All' || (currentUser.course && asg.course.toLowerCase() === currentUser.course.toLowerCase());
+                                const matchesBatch = !asg.batch || asg.batch === 'All' || (currentUser.batch && asg.batch.toLowerCase() === currentUser.batch.toLowerCase());
+                                const matchingClass = schedules.find(s => s.id === asg.classId);
+                                const isEnrolledInClass = matchingClass?.enrolledStudentIds?.includes(currentUser.id);
+                                return (matchesCourse && matchesBatch) || isEnrolledInClass;
+                              });
+
+                              const pendingTasks = studentAssignments.filter(asg => {
+                                const submission = asg.submissions.find(s => s.studentId === currentUser.id);
+                                return !submission;
+                              });
+
+                              if (pendingTasks.length === 0) {
+                                return (
+                                  <div className="py-20 text-center text-xs text-slate-400 font-sans border border-dashed border-slate-200 dark:border-white/5 bg-white dark:bg-[#070708] shadow-sm rounded-2xl p-6">
+                                    <CheckCircle2 className="w-12 h-12 text-slate-300 dark:text-white/5 mx-auto mb-3" />
+                                    All caught up! No pending tasks at the moment.
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="space-y-6">
+                                  {pendingTasks.map(asg => {
+                                    return (
+                                      <div key={asg.id} className="p-6 border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden text-left border-slate-200 dark:border-white/5 ring-1 ring-black/[0.02] bg-white hover:bg-slate-50/30 dark:bg-slate-900/10">
+                                        
+                                        {/* Upper Section */}
+                                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                                          <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-450 dark:text-gray-500">ASSIGNMENT PORTAL</span>
+                                              <span className="text-[11px] text-slate-400">•</span>
+                                              <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Instructor: {asg.instructorName || 'Mentor'}</span>
+                                            </div>
+                                            <h4 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{asg.title}</h4>
+                                            
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-gray-400 pt-0.5">
+                                              <span className="flex items-center gap-1">
+                                                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                                                Class Ref: <span className="text-slate-800 dark:text-zinc-300 font-semibold">{asg.className}</span>
+                                              </span>
+                                              <span>|</span>
+                                              <span className="flex items-center gap-1">
+                                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                                Published: <span className="font-medium text-slate-700 dark:text-zinc-350">{asg.createdDate}</span>
+                                              </span>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Stats and status pills */}
+                                          <div className="flex flex-wrap items-center gap-2 lg:self-start">
+                                            <div className="flex items-center gap-1.5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-300 px-3 py-1.5 rounded-full text-[10px] font-bold font-sans">
+                                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                              Due: {asg.dueDate}
+                                            </div>
+                                            <div className="border border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-300 px-3 py-1.5 rounded-full text-[10px] font-bold font-sans">
+                                              Max Score: {asg.maxPoints} pts
+                                            </div>
+                                            <span className="bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                                              <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> Pending Submit
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Description */}
+                                        <div className="mb-5">
+                                          <h5 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 flex items-center gap-1.5">
+                                            <Code className="w-3.5 h-3.5 text-slate-400" /> Instructions & Description
+                                          </h5>
+                                          <p className="text-xs text-slate-600 dark:text-slate-350 bg-slate-50/50 dark:bg-slate-950/20 p-4 rounded-xl border border-slate-200 dark:border-white/5 leading-relaxed whitespace-pre-line font-medium text-left">
+                                            {asg.description}
+                                          </p>
+                                        </div>
+
+                                        {/* Status / Submission details */}
+                                        <div className="pt-1">
+                                          <div className="flex items-center justify-between flex-wrap gap-4 pt-2">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+                                              Your homework response, repository link, and code file will be sent directly to your mentor once submitted.
+                                            </p>
+                                            <button
+                                              onClick={() => {
+                                                setActiveStudentModalAssignment(asg);
+                                                setActiveStudentModalEvolution(undefined);
+                                                setIsStudentModalOpen(true);
+                                              }}
+                                              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 duration-150 cursor-pointer"
+                                            >
+                                              <CheckSquare className="w-4 h-4" /> Start Submission Portal
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            {/* Premium Header */}
+                            <div className="bg-white dark:bg-slate-900/10 p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30 rounded text-[10px] font-normal">Course History</span>
+                                </div>
+                                <h3 className="text-xl font-normal text-slate-800 dark:text-gray-200 flex items-center gap-2 font-sans tracking-tight">
+                                  Completed Classes
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed font-normal">
+                                  Review all your finished sessions, recorded attendance, instructor evaluations, and learning materials.
+                                </p>
+                              </div>
+                              <div className="hidden lg:block absolute right-0 top-0 translate-x-4 -translate-y-4 text-slate-50/50 dark:text-slate-800/20 select-none pointer-events-none">
+                                <CheckCircle2 className="w-40 h-40 text-slate-100 dark:text-slate-800/20" />
+                              </div>
+                            </div>
+
+                            {/* Stats Cards & Search/Filter Controls */}
+                            {(() => {
+                              // Filter completed classes
+                              const allCompletedClasses = schedules.filter(s => {
+                                const [hours, minutes] = s.time.split(':').map(Number);
+                                const classDate = new Date(`${s.date}T${String(hours || 0).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}:00`);
+                                const now = new Date();
+                                const timeDiffMinutes = (classDate.getTime() - now.getTime()) / (1000 * 60);
+                                const isTimeOver = -timeDiffMinutes > Number(s.duration || 60);
+
+                                const isCompletedStatus = s.status === 'completed' || (s.status === 'scheduled' && isTimeOver);
+                                if (!isCompletedStatus) return false;
+                                if (!isScheduleDateOnOrAfterJoinedDate(s.date, currentUser.joinedDate)) return false;
+
+                                const isExplicitlyEnrolled = s.enrolledStudentIds?.includes(currentUser.id);
+                                const isMyCourse = s.course && currentUser.course && s.course.toLowerCase() === currentUser.course.toLowerCase();
+                                const isAllCourse = !s.course || s.course === 'All';
+                                const matchesCourse = isMyCourse || isAllCourse || isExplicitlyEnrolled;
+                                const isMyBatch = s.batch && currentUser.batch && s.batch.toLowerCase() === currentUser.batch.toLowerCase();
+                                const isAllBatch = !s.batch || s.batch === 'All';
+                                const matchesBatch = isMyBatch || isAllBatch || isExplicitlyEnrolled;
+                                return matchesCourse && matchesBatch;
+                              });
+
+                              // Compute stats
+                              const totalCount = allCompletedClasses.length;
+                              const totalHours = (allCompletedClasses.reduce((acc, c) => acc + (c.duration || 60), 0) / 60).toFixed(1);
+                              
+                              // Student progress records for these classes
+                              const studentRecords = progressRecords.filter(r => r.studentId === currentUser.id);
+                              const presentCount = studentRecords.filter(r => r.attendanceStatus === 'present').length;
+                              const scores = studentRecords.map(r => r.score).filter(s => typeof s === 'number' && !isNaN(s));
+                              const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+
+                              // Apply search and subject filter
+                              const filteredClasses = allCompletedClasses.filter(cl => {
+                                const matchesSearch = !completedClassSearch || 
+                                  cl.title.toLowerCase().includes(completedClassSearch.toLowerCase()) ||
+                                  cl.subject.toLowerCase().includes(completedClassSearch.toLowerCase()) ||
+                                  cl.instructorName.toLowerCase().includes(completedClassSearch.toLowerCase());
+
+                                const matchesSubject = completedClassSubjectFilter === 'all' || 
+                                  cl.subject.toLowerCase() === completedClassSubjectFilter.toLowerCase();
+
+                                return matchesSearch && matchesSubject;
+                              });
+
+                              // Available subjects for filter dropdown
+                              const subjectsList = Array.from(new Set(allCompletedClasses.map(c => c.subject))).filter(Boolean);
+
+                              return (
+                                <div className="space-y-6">
+                                  {/* Metric Badges */}
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-xl p-3.5 text-left">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-gray-400 block">Total Completed</span>
+                                      <div className="text-xl font-normal text-slate-800 dark:text-gray-200 mt-1 flex items-center gap-1.5">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                        {totalCount} <span className="text-xs font-normal text-slate-500 dark:text-gray-400">Classes</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-xl p-3.5 text-left">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-gray-400 block">Learning Time</span>
+                                      <div className="text-xl font-normal text-slate-800 dark:text-gray-200 mt-1 flex items-center gap-1.5">
+                                        <Clock className="w-5 h-5 text-blue-500" />
+                                        {totalHours} <span className="text-xs font-normal text-slate-500 dark:text-gray-400">Hours</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-xl p-3.5 text-left">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-gray-400 block">Attended Sessions</span>
+                                      <div className="text-xl font-normal text-slate-800 dark:text-gray-200 mt-1 flex items-center gap-1.5">
+                                        <UserCheck className="w-5 h-5 text-indigo-500" />
+                                        {presentCount} <span className="text-xs font-normal text-slate-500 dark:text-gray-400">Logged</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-xl p-3.5 text-left">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-gray-400 block">Avg. Performance</span>
+                                      <div className="text-xl font-normal text-slate-800 dark:text-gray-200 mt-1 flex items-center gap-1.5">
+                                        <Award className="w-5 h-5 text-amber-500" />
+                                        {avgScore !== null ? `${avgScore}%` : 'Good'}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Search & Subject Filter Bar */}
+                                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-white/10">
+                                    <div className="relative w-full sm:w-72">
+                                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                      <input
+                                        type="text"
+                                        value={completedClassSearch}
+                                        onChange={(e) => setCompletedClassSearch(e.target.value)}
+                                        placeholder="Search by title, subject, instructor..."
+                                        className="w-full pl-9 pr-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 font-normal"
+                                      />
+                                    </div>
+
+                                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-gray-400 whitespace-nowrap">Subject:</span>
+                                      <select
+                                        value={completedClassSubjectFilter}
+                                        onChange={(e) => setCompletedClassSubjectFilter(e.target.value)}
+                                        className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-slate-800 dark:text-white focus:outline-none font-normal"
+                                      >
+                                        <option value="all">All Subjects</option>
+                                        {subjectsList.map(subj => (
+                                          <option key={subj} value={subj}>{subj}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  {/* Classes List */}
+                                  <div className="space-y-4">
+                                    {filteredClasses.length === 0 ? (
+                                      <div className="py-16 text-center text-xs text-slate-400 font-normal border border-dashed border-slate-200 dark:border-white/5 bg-white dark:bg-[#070708] shadow-sm rounded-2xl p-6">
+                                        <CheckCircle2 className="w-12 h-12 text-slate-300 dark:text-white/5 mx-auto mb-3" />
+                                        {allCompletedClasses.length === 0 
+                                          ? "No completed classes found yet for your enrolled course."
+                                          : "No completed classes match your current search/filter."}
+                                      </div>
+                                    ) : (
+                                      filteredClasses.map(cl => {
+                                        const { icon: SubjectIcon, color: iconColor } = getSubjectIconObj(cl.subject);
+                                        const record = studentRecords.find(r => r.classId === cl.id);
+
+                                        return (
+                                          <div key={cl.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 dark:bg-slate-900/10 dark:border-white/5 dark:hover:border-white/10 text-left space-y-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-3.5">
+                                              <div className="flex items-start gap-3.5">
+                                                <div className={`w-10 h-10 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor} mt-0.5 shadow-xs`}>
+                                                  <SubjectIcon className="w-5 h-5" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                  <div className="flex items-center gap-2 flex-wrap">
+                                                    <h4 className="font-normal text-slate-800 dark:text-gray-200 text-sm leading-snug">
+                                                      {cl.title}
+                                                    </h4>
+                                                    <span className="text-[10px] font-normal text-emerald-700 dark:text-emerald-400 bg-white dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Completed
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-xs text-slate-500 dark:text-gray-400 font-normal">
+                                                    Instructor: <span className="text-slate-800 dark:text-gray-200 font-normal">{cl.instructorName}</span> • Subject: <span className="text-slate-800 dark:text-gray-200 font-normal">{cl.subject}</span>
+                                                    {cl.course && <span className="ml-1 text-slate-400">• {cl.course}</span>}
+                                                  </p>
+                                                </div>
+                                              </div>
+
+                                              <div className="flex items-center gap-2 self-start">
+                                                <div className="text-right">
+                                                  <p className="text-[10px] font-normal text-slate-400">Session Time</p>
+                                                  <p className="text-xs text-slate-700 dark:text-slate-300 font-normal">
+                                                    {cl.date} at {cl.time} ({cl.duration} mins)
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Class Details & Evaluation status */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                                              <div className="bg-white dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-white/5 flex items-center justify-between">
+                                                <span className="text-xs text-slate-500 dark:text-gray-400 font-normal">Location / Link:</span>
+                                                <span className="text-xs font-normal text-slate-800 dark:text-gray-200 truncate max-w-[150px]">{cl.location || 'Online Classroom'}</span>
+                                              </div>
+
+                                              <div className="bg-white dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-white/5 flex items-center justify-between">
+                                                <span className="text-xs text-slate-500 dark:text-gray-400 font-normal">Attendance Record:</span>
+                                                {record ? (
+                                                  <span className={`text-xs font-normal px-2 py-0.5 rounded ${
+                                                    record.attendanceStatus === 'present' 
+                                                      ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                                      : record.attendanceStatus === 'excused'
+                                                        ? 'text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300'
+                                                        : 'text-rose-700 bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300'
+                                                  }`}>
+                                                    {record.attendanceStatus}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400">Attended</span>
+                                                )}
+                                              </div>
+
+                                              <div className="bg-white dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-white/5 flex items-center justify-between">
+                                                <span className="text-xs text-slate-500 dark:text-gray-400 font-normal">Evaluation Score:</span>
+                                                {record && typeof record.score === 'number' ? (
+                                                  <span className="text-xs font-normal text-slate-900 dark:text-white bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded border border-slate-200 dark:border-white/10 shadow-xs">
+                                                    {record.score}%
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-xs font-normal text-slate-400 italic">Logged</span>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                            {/* Instructor Feedback if available */}
+                                            {record && record.feedback && (
+                                              <div className="bg-white dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-200 dark:border-white/5 text-xs text-slate-600 dark:text-gray-300">
+                                                <span className="font-normal text-slate-800 dark:text-white block mb-0.5">Instructor Feedback:</span>
+                                                <p className="italic text-slate-600 dark:text-gray-300 font-normal">"{record.feedback}"</p>
+                                              </div>
+                                            )}
+
+                                            {/* Quick Action Button */}
+                                            {(cl.meetingLink || cl.meetingType === 'own_classroom') && (
+                                              <div className="pt-2 flex justify-end">
+                                                <button
+                                                  onClick={() => {
+                                                    if (cl.meetingType === 'own_classroom') {
+                                                      setActiveClassroomSession(cl);
+                                                    } else if (cl.meetingLink) {
+                                                      window.open(cl.meetingLink, '_blank', 'noopener,noreferrer');
+                                                    }
+                                                  }}
+                                                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 rounded-xl text-xs font-normal transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                                                >
+                                                  <BookOpen className="w-3.5 h-3.5" /> Open Class Workspace & Notes
+                                                </button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    </>
+                  )}
+
+                  {currentUser.role === 'instructor' && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                          <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Live Sessions</p>
+                          <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">
+                            {schedules.filter(s => s.instructorId === currentUser.id && s.status === 'scheduled').length}
+                          </p>
+                          <button onClick={() => setActiveTab('schedule')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors animate-pulseFast">
+                            Manage schedule <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="bg-white dark:bg-[#0B0C10] border border-slate-200/80 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                          <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">Evaluations Logged</p>
+                          <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2 mb-4">
+                            {progressRecords.filter(r => r.instructorId === currentUser.id).length}
+                          </p>
+                          <button onClick={() => setActiveTab('progress')} className="text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
+                            Open gradebook <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Your Schedule Section */}
+                      <div className="space-y-4 pt-4 font-sans mb-8">
+                        <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#070708] p-4 md:p-6 shadow-sm">
+                          <div className="space-y-6">
+                            {/* Premium Header */}
+                            <div className="bg-white dark:bg-[#0B0C10] p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-[10px] font-bold tracking-wider uppercase">Upcoming</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-sans tracking-tight">
+                                  Your Schedule
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed">
+                                  {(() => {
+                                    const today = new Date();
+                                    const endDate = new Date();
+                                    endDate.setDate(today.getDate() + 13);
+                                    const startMonth = today.toLocaleString('default', { month: 'short' });
+                                    const endMonth = endDate.toLocaleString('default', { month: 'short' });
+                                    if (startMonth === endMonth) {
+                                      return `Showing upcoming sessions for ${startMonth} ${today.getDate()} - ${endDate.getDate()}`;
+                                    }
+                                    return `Showing upcoming sessions for ${startMonth} ${today.getDate()} - ${endMonth} ${endDate.getDate()}`;
+                                  })()}
+                                </p>
+                              </div>
+                              
+                              <div className="relative z-10 flex items-center gap-3">
+                                <button
+                                  onClick={() => {
+                                    setActiveTab('schedule');
+                                    setScheduleShowAddForm(true);
+                                  }}
+                                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-150 cursor-pointer whitespace-nowrap self-start md:self-auto"
+                                >
+                                  <Plus className="w-4 h-4" /> Schedule New Class
+                                </button>
+                              </div>
+
+                              <div className="hidden lg:block absolute right-0 top-0 translate-x-4 -translate-y-4 text-slate-50/50 dark:text-slate-800/20 select-none pointer-events-none">
+                                <Calendar className="w-40 h-40" />
+                              </div>
+                            </div>
+
+                            {/* Timeline 14-day loop */}
+                            <div className="space-y-3">
+                              {Array.from({ length: 14 }).map((_, i) => {
+                                const d = new Date();
+                                d.setDate(d.getDate() + i);
+                                const yyyy = d.getFullYear();
+                                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                const dd = String(d.getDate()).padStart(2, '0');
+                                const dateStr = `${yyyy}-${mm}-${dd}`;
+                                
+                                const dayAbbr = d.toLocaleString('default', { weekday: 'short' });
+                                const dayNum = d.getDate();
+
+                                const daySchedules = schedules.filter(s => {
+                                  return s.date === dateStr && s.instructorId === currentUser.id;
+                                });
+
+                                return (
+                                  <div key={dateStr} className="flex gap-4 relative group">
+                                    {/* Timeline connector (except last item) */}
+                                    {i !== 13 && (
+                                      <div className="absolute left-[1.375rem] top-10 bottom-[-1rem] w-px bg-slate-200 dark:bg-white/10" />
+                                    )}
+                                    <div className="w-11 shrink-0 flex flex-col items-center pt-2 relative z-10">
+                                      {i === 0 ? (
+                                         <div className="w-10 h-10 rounded-full bg-[#ffde21] flex flex-col items-center justify-center shadow-md shadow-[#ffde21]/20">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest leading-none text-[#090909]">{dayAbbr}</span>
+                                            <span className="text-[14px] font-black leading-none mt-0.5 text-[#0a0a0a]">{dayNum}</span>
+                                         </div>
+                                      ) : (
+                                         <div className="w-10 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+                                            <span className="text-[10px] font-semibold uppercase tracking-widest leading-none">{dayAbbr}</span>
+                                            <span className="text-[15px] font-bold leading-none mt-1 text-slate-700 dark:text-slate-200">{dayNum}</span>
+                                         </div>
+                                      )}
+                                    </div>
+
+                                    <div className="flex-1 min-w-0 pb-6 pt-1.5">
+                                      {daySchedules.length === 0 ? (
+                                        <div className="flex items-center px-5 py-4 bg-white border border-dashed border-slate-200 rounded-2xl text-xs text-slate-400 dark:bg-[#070708] dark:border-white/5 dark:text-slate-500 font-medium italic shadow-sm">
+                                          No sessions scheduled for this day
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-4">
+                                          {daySchedules.map(cl => {
+                                            const { icon: SubjectIcon, color: iconColor, bg: iconBg } = getSubjectIconObj(cl.subject);
+                                            const isOwnClassroom = cl.meetingType === 'own_classroom';
+
+                                            return (
+                                              <div 
+                                                key={cl.id} 
+                                                className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 dark:bg-slate-900/10 dark:border-white/5 dark:hover:border-white/10 items-center"
+                                              >
+                                                {/* Subject & Title */}
+                                                <div className="md:col-span-4 flex items-center gap-3">
+                                                  <div className={`w-9 h-9 rounded-lg ${iconBg} border border-slate-200 dark:border-white/5 flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+                                                    <SubjectIcon className="w-4.5 h-4.5" />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                      <h4 className={`font-bold text-slate-900 dark:text-white text-[13px] truncate ${cl.status !== 'scheduled' ? 'opacity-60 line-through decoration-slate-400' : ''}`} title={cl.title}>
+                                                        {cl.title}
+                                                      </h4>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium mt-0.5">
+                                                      by {cl.instructorName} • <span className="text-slate-600 dark:text-slate-300 font-bold">{cl.subject}</span>
+                                                    </p>
+                                                  </div>
+                                                </div>
+
+                                                {/* Status Pill */}
+                                                <div className="md:col-span-2">
+                                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${
+                                                    cl.status === 'scheduled'
+                                                      ? 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700'
+                                                      : cl.status === 'completed'
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/25'
+                                                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-455 dark:border-rose-500/25'
+                                                  }`}>
+                                                    {cl.status}
+                                                  </span>
+                                                </div>
+
+                                                {/* Room / Link Actions */}
+                                                <div className="md:col-span-4 min-w-0 flex flex-col justify-center">
+                                                  <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Room / Link</span>
+                                                  {cl.status === 'cancelled' ? (
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                      <span className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                                                        <AlertCircle className="w-3.5 h-3.5" /> Cancelled
+                                                      </span>
+                                                    </div>
+                                                  ) : cl.status === 'completed' ? (
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Completed
+                                                      </span>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                                      {isOwnClassroom ? (
+                                                        <button
+                                                          onClick={() => setActiveClassroomSession(cl)}
+                                                          className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 duration-150"
+                                                          title="Open integrated Learnora Classroom and start teaching"
+                                                        >
+                                                          <Video className="w-3.5 h-3.5 animate-pulse" /> Host Class
+                                                        </button>
+                                                      ) : cl.meetingLink ? (
+                                                        <a
+                                                          href={cl.meetingLink.startsWith('http') ? cl.meetingLink : `https://${cl.meetingLink}`}
+                                                          target="_blank"
+                                                          rel="noopener noreferrer"
+                                                          className="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 duration-150"
+                                                          title="Open external conferencing link"
+                                                        >
+                                                          <ExternalLink className="w-3.5 h-3.5" /> Start Link
+                                                        </a>
+                                                      ) : null}
+
+                                                      {/* COMPLETED button matching user screenshot design */}
+                                                      <button
+                                                        onClick={() => handleUpdateClassStatus(cl.id, 'completed')}
+                                                        className="px-3 py-1.5 bg-emerald-50/80 border border-emerald-200/50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/25 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold uppercase rounded-lg flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
+                                                        title="Mark Completed"
+                                                      >
+                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+                                                      </button>
+
+                                                      {/* CANCEL button */}
+                                                      <button
+                                                        onClick={() => handleUpdateClassStatus(cl.id, 'cancelled')}
+                                                        className="p-1.5 bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50/20 text-slate-400 hover:text-rose-600 dark:bg-white/5 dark:border-white/10 dark:hover:border-rose-500/20 rounded-lg shadow-xs transition active:scale-95 cursor-pointer"
+                                                        title="Cancel Class"
+                                                      >
+                                                        <X className="w-3.5 h-3.5" />
+                                                      </button>
+                                                    </div>
+                                                  )}
+                                                </div>
+
+                                                {/* Time & Duration */}
+                                                <div className="md:col-span-2 text-right shrink-0">
+                                                  <div className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{cl.time}</div>
+                                                  <div className="text-[11px] text-slate-500 dark:text-gray-400 font-medium flex items-center justify-end gap-1">
+                                                    <Clock className="w-3 h-3 text-slate-400" /> {cl.duration}m
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  </div>
+                  )}
+                </div>
+            )}
+
+            {activeTab === 'enrollments' && (
+              <EnrollmentManager
+                currentUser={currentUser}
+                students={users.filter(u => u.role === 'student')}
+                instructors={users.filter(u => u.role === 'instructor')}
+                subAdmins={users.filter(u => u.role === 'sub-admin')}
+                schedules={schedules}
+                batches={batches}
+                courses={courses}
+                progressRecords={progressRecords}
+                onAddStudent={handleAddStudent}
+                onAddInstructor={handleAddInstructor}
+                onAddSubAdmin={handleAddSubAdmin}
+                onRemoveStudent={handleRemoveStudent}
+                onRemoveInstructor={handleRemoveInstructor}
+                onRemoveSubAdmin={handleRemoveSubAdmin}
+                onEnrollStudentInClass={handleEnrollStudentInClass}
+                registrationRequests={registrationRequests}
+                onApproveRequest={handleApproveRegistration}
+                onRejectRequest={handleRejectRegistration}
+                onUpdateStudent={handleUpdateProfile}
+                onUpdateRegistrationRequest={handleUpdateRegistrationRequest}
+                onImpersonateStudent={handleImpersonateStudent}
+              />
+            )}
+
+            {activeTab === 'schedule' && (
+              <ScheduleManager
+                currentUser={currentUser}
+                schedules={schedules}
+                instructors={users.filter(u => u.role === 'instructor')}
+                students={users.filter(u => u.role === 'student')}
+                batches={batches}
+                courses={courses}
+                masterCourses={masterCourses}
+                progressRecords={progressRecords}
+                onSaveClassAttendance={handleSaveClassAttendance}
+                onAddClass={handleAddClass}
+                onUpdateClass={handleUpdateClass}
+                onUpdateStatus={handleUpdateClassStatus}
+                onSelfEnroll={handleSelfEnroll}
+                onAddBatch={handleAddBatch}
+                onDeleteBatch={handleDeleteBatch}
+                onAddCourse={handleAddCourse}
+                onUpdateCourse={handleUpdateCourse}
+                onDeleteCourse={handleDeleteCourse}
+                onAddMasterCourse={handleAddMasterCourse}
+                onUpdateMasterCourse={handleUpdateMasterCourse}
+                onDeleteMasterCourse={handleDeleteMasterCourse}
+                showAddForm={scheduleShowAddForm}
+                setShowAddForm={setScheduleShowAddForm}
+                showBatchManager={scheduleShowBatchManager}
+                setShowBatchManager={setScheduleShowBatchManager}
+                showCourseDashboard={scheduleShowCourseDashboard}
+                setShowCourseDashboard={setScheduleShowCourseDashboard}
+                editingCourse={sharedEditingCourse}
+                setEditingCourse={setSharedEditingCourse}
+                onJoinClassroom={setActiveClassroomSession}
+              />
+            )}
+
+            {activeTab === 'lectures' && (
+              <ScheduleManager
+                currentUser={currentUser}
+                schedules={schedules}
+                instructors={users.filter(u => u.role === 'instructor')}
+                students={users.filter(u => u.role === 'student')}
+                batches={batches}
+                courses={courses}
+                masterCourses={masterCourses}
+                progressRecords={progressRecords}
+                onSaveClassAttendance={handleSaveClassAttendance}
+                onAddClass={handleAddClass}
+                onUpdateClass={handleUpdateClass}
+                onUpdateStatus={handleUpdateClassStatus}
+                onSelfEnroll={handleSelfEnroll}
+                onAddBatch={handleAddBatch}
+                onDeleteBatch={handleDeleteBatch}
+                onAddCourse={handleAddCourse}
+                onUpdateCourse={handleUpdateCourse}
+                onDeleteCourse={handleDeleteCourse}
+                onAddMasterCourse={handleAddMasterCourse}
+                onUpdateMasterCourse={handleUpdateMasterCourse}
+                onDeleteMasterCourse={handleDeleteMasterCourse}
+                showAddForm={false}
+                showBatchManager={false}
+                showCourseDashboard={false}
+                onJoinClassroom={setActiveClassroomSession}
+              />
+            )}
+
+            {activeTab === 'courses-directory' && ['admin', 'sub-admin'].includes(currentUser.role) && (
+              <CourseDirectory
+                currentUser={currentUser}
+                courses={courses}
+                users={users}
+                onUpdateCourse={handleUpdateCourse}
+                onDeleteCourse={handleDeleteCourse}
+                onTriggerEdit={(course) => {
+                  setSharedEditingCourse(course);
+                  setScheduleShowCourseDashboard(true);
+                  setActiveTab('schedule');
+                }}
+              />
+            )}
+
+            {activeTab === 'progress' && (
+              <ProgressTracker
+                currentUser={currentUser}
+                students={users.filter(u => u.role === 'student')}
+                courses={courses}
+                schedules={schedules}
+                progressRecords={progressRecords}
+                assignments={assignments}
+                onAddProgressRecord={handleAddProgressRecord}
+                studentEvolutions={studentEvolutions}
+                onUpdateStudentEvolutions={setStudentEvolutions}
+                onSendEmail={handleSendEmail}
+                onUpdateUsers={setUsers}
+              />
+            )}
+
+            {activeTab === 'inbox' && (
+              <MailboxManager
+                currentUser={currentUser}
+                users={users}
+                simulatedEmails={simulatedEmails}
+                onSendEmail={handleSendEmail}
+              />
+            )}
+
+            {activeTab === 'backup' && currentUser.role === 'admin' && (
+              <CloudBackup
+                students={users.filter(u => u.role === 'student')}
+                instructors={users.filter(u => u.role === 'instructor')}
+                schedules={schedules}
+                progressRecords={progressRecords}
+                backupHistory={backupHistory}
+                onTriggerBackup={handleTriggerBackup}
+                onRestoreState={handleRestoreState}
+                users={users}
+                onUpdateUsers={setUsers}
+                onUpdateSchedules={setSchedules}
+                onUpdateProgressRecords={setProgressRecords}
+                courses={courses}
+                onUpdateCourses={setCourses}
+                batches={batches}
+                onUpdateBatches={setBatches}
+                assignments={assignments}
+                onUpdateAssignments={setAssignments}
+              />
+            )}
+
+            {activeTab === 'assignment-pipeline' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+              <AssignmentPipeline
+                currentUser={currentUser}
+                courses={courses}
+                batches={batches}
+                assignmentBank={assignmentBank}
+                setAssignmentBank={setAssignmentBank}
+                assignments={assignments}
+                setAssignments={setAssignments}
+                evolutionBank={evolutionBank}
+                setEvolutionBank={setEvolutionBank}
+                studentEvolutions={studentEvolutions}
+                setStudentEvolutions={setStudentEvolutions}
+                users={users}
+                setNotifications={setNotifications}
+                onSendEmail={handleSendEmail}
+              />
+            )}
+
+            {activeTab === 'assignment-tracker' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+              <AssignmentTracker
+                currentUser={currentUser}
+                users={users}
+                courses={courses}
+                batches={batches}
+                assignments={assignments}
+                setAssignments={setAssignments}
+              />
+            )}
+
+            {activeTab === 'voice-notes' && currentUser && currentUser.role === 'student' && (
+              <VoiceNotes
+                currentUser={currentUser}
+                onUpdateProfile={handleUpdateProfile}
+                onTriggerToast={triggerToast}
+              />
+            )}
+
+            {activeTab === 'profile' && (
+              <ProfileSettings
+                currentUser={currentUser}
+                instructors={users.filter(u => u.role === 'instructor')}
+                onUpdateProfile={handleUpdateProfile}
+                onTriggerToast={triggerToast}
+                users={users}
+                onSendEmail={handleSendEmail}
+              />
+            )}
+              </>
+            )}
+          </main>
+        </div>
+      )}
+
+      {forgotEmailModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-[420px] bg-white dark:bg-[#1a1a1e] rounded-3xl border border-slate-200 dark:border-white/5 shadow-xl overflow-hidden">
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="flex items-start justify-between">
+                <div className="w-14 h-14 bg-[#fff0f2] dark:bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-100 dark:border-rose-500/20">
+                  <Lock className="w-6 h-6 text-[#ff0033] dark:text-rose-500" />
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setForgotEmailModalOpen(false);
+                    setForgotEmailInput('');
+                    setForgotModalSuccess('');
+                    setForgotModalError('');
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors cursor-pointer mt-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">Recover Credentials</h3>
+                <p className="text-[15px] text-slate-500 dark:text-gray-400 leading-relaxed mt-2.5">
+                  Enter your registered email address and we'll send you instructions to securely access your account.
+                </p>
+              </div>
+
+              {forgotModalSuccess ? (
+                <div className="space-y-6 pt-2 animate-fadeIn">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-2xl text-[14px] space-y-2.5 shadow-sm">
+                    <p className="font-bold flex items-center gap-2 tracking-tight"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Recovery Email Sent</p>
+                    <p className="leading-relaxed font-sans text-emerald-600 dark:text-emerald-300">{forgotModalSuccess}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmailModalOpen(false);
+                      setForgotEmailInput('');
+                      setForgotModalSuccess('');
+                      setForgotModalError('');
+                    }}
+                    className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-6 font-sans"
+                  >
+                    Return to Login
+                  </button>
+                </div>
+              ) : (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setForgotModalError('');
+                    setForgotModalSuccess('');
+                    const targetEmail = forgotEmailInput.trim().toLowerCase();
+                    
+                    const matchedUser = users.find(u => u.email?.toLowerCase() === targetEmail);
+                    
+                    if (matchedUser) {
+                      const subject = `[SECURITY DISPATCH] Recovered Platform Credentials`;
+                      const body = `Dear ${matchedUser.name || matchedUser.username},\n\nWe received a dynamic password lookup request for your platform account. Your security credentials are listed below:\n\n-----------------------------\nUSERNAME: ${matchedUser.username || 'n/a'}\nPASSWORD: ${matchedUser.password || 'n/a'}\n-----------------------------\n\nPlease make sure to memorize these credentials or change your password under Profile Settings once logged in.\n\nBest regards,\nLearnora Sandbox Security Dispatch Team`;
+                      
+                      handleSendEmail(matchedUser.email, subject, body, 'baidyaanik18@gmail.com');
+                      
+                      // Trigger a toast
+                      const notif: AppNotification = {
+                        id: `notif-forgot-${Date.now()}`,
+                        title: `Credentials Dispatched`,
+                        message: `Security recovery ledger packet transmitted to ${matchedUser.email}.`,
+                        timestamp: new Date().toISOString(),
+                        read: false,
+                        type: 'reminder',
+                        channel: 'push'
+                      };
+                      triggerToast(notif);
+                      
+                      setForgotModalSuccess(`We have successfully matched user account @${matchedUser.username}. A security recovery dispatch has been routed to your registered email address: ${matchedUser.email}. Please check your email inbox to retrieve your credentials.`);
+                    } else {
+                      setForgotModalError('Please input register mail id.');
+                    }
+                  }}
+                  className="space-y-5 pt-2"
+                >
+                  <div className="space-y-2.5">
+                    <label className="text-[14px] font-bold text-slate-800 dark:text-gray-300">Email Address</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        placeholder="name@example.com"
+                        value={forgotEmailInput}
+                        onChange={e => setForgotEmailInput(e.target.value)}
+                        className="w-full pl-12 pr-5 py-4 text-base bg-white dark:bg-[#121214] rounded-2xl border border-slate-300 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-550 transition-all font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {forgotModalError && (
+                    <div className="p-3.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[13px] flex gap-2.5 animate-fadeIn shadow-sm">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />
+                      <span className="leading-relaxed">{forgotModalError}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-4 bg-[#4A154B] hover:bg-[#3F103F] text-white font-bold rounded-2xl text-base shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-6 font-sans"
+                  >
+                    Send Recovery Link <ArrowRight className="w-5 h-5" />
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {showExamModal && examRequest && (
+        <AdmissionsExamModal
+          isOpen={showExamModal}
+          onClose={() => {
+            setShowExamModal(false);
+            setExamRequest(null);
+          }}
+          request={examRequest}
+          onExamPassBg={(score) => {
+            handleExamFinished(examRequest.id, score);
+          }}
+          onExamPass={(score) => {
+            handleExamFinished(examRequest.id, score);
+            setShowExamModal(false);
+            setExamRequest(null);
+          }}
+        />
+      )}
+      {isStudentModalOpen && (
+        <StudentHomeworkModal
+          isOpen={isStudentModalOpen}
+          onClose={() => {
+            setIsStudentModalOpen(false);
+            setActiveStudentModalAssignment(undefined);
+            setActiveStudentModalEvolution(undefined);
+          }}
+          assignment={activeStudentModalAssignment}
+          evolution={activeStudentModalEvolution}
+          onSubmit={(id, text, fileUrn, proctorLogs, videoUrl) => {
+             if (activeStudentModalAssignment) {
+               handleStudentSubmitAssignment(id, text, fileUrn, proctorLogs, videoUrl);
+             } else if (activeStudentModalEvolution) {
+               setStudentEvolutions(prev => prev.map(ev => {
+                 if (ev.id === id) {
+                   return {
+                     ...ev,
+                     isCompleted: true,
+                     week1Submission: text,
+                     week1SubmissionDate: new Date().toLocaleDateString(),
+                     proctoringLogs: proctorLogs,
+                     recordedVideoUrl: videoUrl,
+                   };
+                 }
+                 return ev;
+               }));
+               
+               const toastNotif: AppNotification = {
+                 id: generateUniqueId('notif-toast'),
+                 title: 'Evolution Exam Submitted',
+                 message: `Your monthly evaluation exam has been securely submitted with live proctoring telemetry.`,
+                 timestamp: new Date().toISOString(),
+                 read: false,
+                 type: 'general',
+                 channel: 'system'
+               };
+               triggerToast(toastNotif);
+             }
+             setIsStudentModalOpen(false);
+             setActiveStudentModalAssignment(undefined);
+             setActiveStudentModalEvolution(undefined);
+          }}
+        />
+      )}
+
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
