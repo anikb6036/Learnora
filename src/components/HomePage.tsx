@@ -1978,10 +1978,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                                 </div>
 
                                 <div className="pt-2 flex gap-2">
-                                  <button className="px-4 py-1.5 bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border border-[#C3C3C3] rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4] transition-all cursor-default">
+                                  <button className="px-4 py-1.5 bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border border-slate-300/70 dark:border-zinc-700/70 rounded shadow-sm text-[11px] font-medium text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80 transition-all cursor-pointer">
                                     System Report...
                                   </button>
-                                  <button className="px-4 py-1.5 bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border border-[#C3C3C3] rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4] transition-all cursor-default">
+                                  <button className="px-4 py-1.5 bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border border-slate-300/70 dark:border-zinc-700/70 rounded shadow-sm text-[11px] font-medium text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80 transition-all cursor-pointer">
                                     Network Diagnostics...
                                   </button>
                                 </div>
@@ -2288,10 +2288,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                                     }, 1200);
                                   }}
                                   disabled={isJoiningClassroom || joinedClassroomSuccess}
-                                  className={`px-4 py-1.5 border rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] transition-all cursor-default w-full ${
+                                  className={`px-4 py-1.5 border rounded shadow-sm text-[11px] font-medium transition-all cursor-pointer w-full ${
                                     joinedClassroomSuccess
-                                      ? 'bg-gradient-to-b from-[#E7F3E7] to-[#D5EAD5] border-[#A3CFA3] text-[#2D6A2D]'
-                                      : 'bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border-[#C3C3C3] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4]'
+                                      ? 'bg-emerald-500/20 backdrop-blur-sm border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
+                                      : 'bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border-slate-300/70 dark:border-zinc-700/70 text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80'
                                   }`}
                                 >
                                   {isJoiningClassroom ? 'Initializing Camera...' : joinedClassroomSuccess ? 'Stream Connected' : 'Join Classroom...'}
@@ -2516,10 +2516,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                                     }, 900);
                                   }}
                                   disabled={isRunningCode || runCodeSuccess}
-                                  className={`px-4 py-1.5 border rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] transition-all cursor-default w-full ${
+                                  className={`px-4 py-1.5 border rounded shadow-sm text-[11px] font-medium transition-all cursor-pointer w-full ${
                                     runCodeSuccess
-                                      ? 'bg-gradient-to-b from-[#E7F3E7] to-[#D5EAD5] border-[#A3CFA3] text-[#2D6A2D]'
-                                      : 'bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border-[#C3C3C3] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4]'
+                                      ? 'bg-emerald-500/20 backdrop-blur-sm border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
+                                      : 'bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border-slate-300/70 dark:border-zinc-700/70 text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80'
                                   }`}
                                 >
                                   {isRunningCode ? 'Compiling and running assertions...' : runCodeSuccess ? 'All Test Cases Passed Successfully (100%)' : 'Run Local Sandbox Assertion Suite...'}
@@ -2859,10 +2859,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                                     }, 1200);
                                   }}
                                   disabled={verifyingLedger}
-                                  className={`px-4 py-1.5 border rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] transition-all cursor-default w-full ${
+                                  className={`px-4 py-1.5 border rounded shadow-sm text-[11px] font-medium transition-all cursor-pointer w-full ${
                                     verificationResult
-                                      ? 'bg-gradient-to-b from-[#E7F3E7] to-[#D5EAD5] border-[#A3CFA3] text-[#2D6A2D]'
-                                      : 'bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border-[#C3C3C3] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4]'
+                                      ? 'bg-emerald-500/20 backdrop-blur-sm border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
+                                      : 'bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border-slate-300/70 dark:border-zinc-700/70 text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80'
                                   }`}
                                 >
                                   {verifyingLedger ? 'Verifying Ledger...' : verificationResult ? 'Cryptographically Secured' : 'Verify Blockchain Authenticity...'}
@@ -2921,10 +2921,10 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
                                   }, 1500);
                                 }}
                                 disabled={isPingingRecruiters || pingSuccess}
-                                className={`px-4 py-1.5 border rounded shadow-[0_1px_1px_rgba(0,0,0,0.05)] text-[11px] transition-all cursor-default w-full ${
+                                className={`px-4 py-1.5 border rounded shadow-sm text-[11px] font-medium transition-all cursor-pointer w-full ${
                                   pingSuccess
-                                    ? 'bg-gradient-to-b from-[#E7F3E7] to-[#D5EAD5] border-[#A3CFA3] text-[#2D6A2D]'
-                                    : 'bg-gradient-to-b from-[#FAFAFA] to-[#EAEAEA] border-[#C3C3C3] text-[#333] active:from-[#E4E4E4] active:to-[#E4E4E4]'
+                                    ? 'bg-emerald-500/20 backdrop-blur-sm border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
+                                    : 'bg-white/40 dark:bg-zinc-800/40 backdrop-blur-sm border-slate-300/70 dark:border-zinc-700/70 text-slate-800 dark:text-slate-100 hover:bg-white/60 active:bg-white/80'
                                 }`}
                               >
                                 {isPingingRecruiters ? 'Synchronizing portfolio...' : pingSuccess ? 'Profile Dispatched & Synced!' : 'Dispatch Profile to Recruiters...'}
