@@ -1404,12 +1404,12 @@ export default function HomePage({ isDark, onEnterPortal, courses = [], onNaviga
           </div>
         </div>
 
-        {/* Student Group Graphic Layer (Full Screen Edge-to-Edge Widescreen) */}
-        <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 relative z-10 mt-2 sm:mt-6 pointer-events-none select-none flex justify-center overflow-hidden">
+        {/* Student Group Graphic Layer (Full Screen Edge-to-Edge Widescreen Background) */}
+        <div className="w-full relative z-10 mt-2 sm:mt-6 pointer-events-none select-none flex justify-center overflow-hidden px-0">
           <img 
             src={mynaHeroStudents} 
             alt="Diverse 3D Student Group Selfie" 
-            className="w-full h-auto max-h-[720px] object-contain object-bottom mix-blend-multiply dark:mix-blend-normal"
+            className="w-full h-auto object-cover object-center mix-blend-multiply dark:mix-blend-normal min-w-full"
             referrerPolicy="no-referrer"
           />
         </div>
