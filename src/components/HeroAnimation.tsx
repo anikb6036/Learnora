@@ -20,10 +20,10 @@ export default function HeroAnimation() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-[150px] sm:min-h-[170px] mb-1">
+    <div className="flex flex-col items-center justify-center w-full min-h-[110px] sm:min-h-[160px] mb-1">
       <div className="flex flex-col items-center justify-center">
         {/* Top Row: Changing Text + Graphic */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3.5 h-[56px] sm:h-[68px]">
+        <div className="flex flex-row items-center justify-center gap-2 sm:gap-3.5 min-h-[40px] sm:h-[68px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={`text-${currentIndex}`}
@@ -33,7 +33,7 @@ export default function HeroAnimation() {
               transition={{ duration: 0.45, ease: 'easeOut' }}
               className="flex items-center"
             >
-              <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black tracking-tight ${phases[currentIndex].color}`}>
+              <h1 className={`text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black tracking-tight ${phases[currentIndex].color}`}>
                 {phases[currentIndex].text}
               </h1>
             </motion.div>
@@ -46,15 +46,15 @@ export default function HeroAnimation() {
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 0.8, opacity: 0, rotate: 10 }}
               transition={{ duration: 0.45, ease: 'backOut' }}
-              className={`w-11 h-11 sm:w-13 sm:h-13 md:w-15 md:h-15 rounded-full flex items-center justify-center shrink-0 ${phases[currentIndex].bgColor}`}
+              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-13 sm:h-13 md:w-15 md:h-15 rounded-full flex items-center justify-center shrink-0 ${phases[currentIndex].bgColor}`}
             >
-              {React.createElement(phases[currentIndex].Icon, { className: `w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 ${phases[currentIndex].color}` })}
+              {React.createElement(phases[currentIndex].Icon, { className: `w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 ${phases[currentIndex].color}` })}
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Bottom Row: Static Text */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black tracking-tight text-[#0F1117] dark:text-white mt-1 sm:mt-1.5">
+        <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black tracking-tight text-[#0F1117] dark:text-white mt-0.5 sm:mt-1.5">
           with Learnora.
         </h1>
       </div>
