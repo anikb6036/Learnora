@@ -2186,8 +2186,8 @@ export default function ScheduleManager({
                       onClick={() => setMeetingType('own_classroom')}
                       className={`py-2 px-3 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${
                         meetingType === 'own_classroom'
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                          : 'bg-white dark:bg-[#0C0C0E] text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-white/10'
+                          ? 'bg-transparent text-amber-600 dark:text-amber-400 border-amber-500/60 font-bold shadow-sm ring-1 ring-amber-500/30'
+                          : 'bg-transparent text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                       }`}
                     >
                       Our Own Classroom (Zoom-like Video & Whiteboard)
@@ -2197,8 +2197,8 @@ export default function ScheduleManager({
                       onClick={() => setMeetingType('external_link')}
                       className={`py-2 px-3 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${
                         meetingType === 'external_link'
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                          : 'bg-white dark:bg-[#0C0C0E] text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-white/10'
+                          ? 'bg-transparent text-amber-600 dark:text-amber-400 border-amber-500/60 font-bold shadow-sm ring-1 ring-amber-500/30'
+                          : 'bg-transparent text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                       }`}
                     >
                       Other Meeting Link (External URL or Room)
@@ -2228,7 +2228,7 @@ export default function ScheduleManager({
                       type="text"
                       disabled
                       value="Learnora Integrated Live Classroom"
-                      className="w-full px-3 py-2 text-xs border border-slate-100 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/[0.02] text-slate-500 dark:text-zinc-500 cursor-not-allowed"
+                      className="w-full px-3 py-2 text-xs border border-slate-200/80 dark:border-white/10 rounded-xl bg-transparent text-slate-500 dark:text-zinc-500 cursor-not-allowed"
                     />
                   </div>
                 )}
