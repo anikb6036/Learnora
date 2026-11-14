@@ -392,8 +392,17 @@ export function useFirebaseState<T>(key: string, defaultValue: T): [T, React.Dis
 
     initAndSync();
 
+    // Safety fallback: never keep the entire UI stuck on "Synchronizing with Live Database"
+    // if Firestore/network takes too long or is offline. Keep isLoadedRef untouched until real sync.
+    const loadSafetyTimer = setTimeout(() => {
+      if (active) {
+        setIsLoaded(true);
+      }
+    }, 3500);
+
     return () => {
       active = false;
+      clearTimeout(loadSafetyTimer);
       if (unsubFirebase) unsubFirebase();
       if (unsubSupabase) unsubSupabase();
     };
