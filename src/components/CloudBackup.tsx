@@ -27,7 +27,7 @@ import {
   FileCode 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase, setSupabaseState } from '../supabase';
+import { supabase, setSupabaseState, getSupabaseStatus, checkSupabaseReachable, SupabaseConnectionStatus } from '../supabase';
 
 interface CloudBackupProps {
   students: UserAccount[];
@@ -99,12 +99,35 @@ export default function CloudBackup({
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
   const [migratedKeysCount, setMigratedKeysCount] = useState(0);
+  const [supabaseConnStatus, setSupabaseConnStatus] = useState<SupabaseConnectionStatus>(() => getSupabaseStatus());
+  const [isCheckingSupabase, setIsCheckingSupabase] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  useEffect(() => {
+    if (activeSubTab === 'supabase' && supabase) {
+      setSupabaseConnStatus(getSupabaseStatus());
+    }
+  }, [activeSubTab]);
+
+  const handleRecheckSupabase = async () => {
+    setIsCheckingSupabase(true);
+    await checkSupabaseReachable(true);
+    setSupabaseConnStatus(getSupabaseStatus());
+    setIsCheckingSupabase(false);
+  };
 
   const handleFullMigration = async () => {
     if (!supabase) return;
     setMigrationStatus('running');
     setMigrationLogs(['Initializing manual database replication...']);
     setMigratedKeysCount(0);
+    const reachable = await checkSupabaseReachable(true);
+    setSupabaseConnStatus(getSupabaseStatus());
+    if (!reachable) {
+      setMigrationStatus('error');
+      setMigrationLogs(prev => [...prev, '✗ Supabase endpoint is currently unreachable or missing the app_state table. Data remains safely stored in Firebase.']);
+      return;
+    }
 
     const keysToMigrate = [
       { key: 'db-users', name: 'Users accounts & registries', data: users },
@@ -1472,9 +1495,9 @@ export default function CloudBackup({
           >
             {/* Supabase connection status card */}
             <div className="bg-white dark:bg-[#070708] border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-start justify-between border-b border-slate-100 dark:border-white/5 pb-4">
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-white/5 pb-4 gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-2xl ${supabase ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                  <div className={`p-3 rounded-2xl ${supabaseConnStatus === 'connected' ? 'bg-emerald-500/10 text-emerald-500' : supabaseConnStatus === 'unreachable' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
                     <Database className="w-6 h-6" />
                   </div>
                   <div>
@@ -1487,16 +1510,37 @@ export default function CloudBackup({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className={`h-2 w-2 rounded-full ${supabase ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                  <span className={`text-xs font-bold font-mono ${supabase ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {supabase ? 'CONNECTED & SYNCHRONIZED' : 'PENDING CONFIGURATION'}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${supabaseConnStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : supabaseConnStatus === 'unreachable' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+                    <span className={`text-xs font-bold font-mono ${supabaseConnStatus === 'connected' ? 'text-emerald-500' : supabaseConnStatus === 'unreachable' ? 'text-rose-500' : 'text-amber-500'}`}>
+                      {supabaseConnStatus === 'connected'
+                        ? 'CONNECTED & SYNCHRONIZED'
+                        : supabaseConnStatus === 'unreachable'
+                        ? 'UNREACHABLE (FIREBASE ACTIVE)'
+                        : supabaseConnStatus === 'table_missing'
+                        ? 'SCHEMA SETUP REQUIRED'
+                        : supabaseConnStatus === 'checking'
+                        ? 'CHECKING CONNECTION...'
+                        : 'PENDING CONFIGURATION'}
+                    </span>
+                  </div>
+                  {supabase && (
+                    <button
+                      type="button"
+                      onClick={handleRecheckSupabase}
+                      disabled={isCheckingSupabase}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isCheckingSupabase ? 'animate-spin' : ''}`} />
+                      Test
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Status explanation */}
-              {supabase ? (
+              {supabaseConnStatus === 'connected' ? (
                 <div className="bg-emerald-500/5 border border-emerald-500/10 p-5 rounded-2xl space-y-2">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-bold text-xs select-none">
                     <CheckCircle className="w-4 h-4" /> Dual-Streaming Activated (Zero Data Loss)
@@ -1504,7 +1548,26 @@ export default function CloudBackup({
                   <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed select-none">
                     Great news! Your Supabase database is successfully connected. The system is running in <strong>Active Dual-Sync</strong> mode:
                     all writes are simultaneously routed in real-time to both <strong>Firebase Firestore</strong> and <strong>Supabase</strong>.
-                    Any existing Firebase registries will be automatically migrated to Supabase the moment they are loaded. You are safe to shut down Firebase!
+                    Any existing Firebase registries will be automatically migrated to Supabase the moment they are loaded.
+                  </p>
+                </div>
+              ) : supabaseConnStatus === 'unreachable' ? (
+                <div className="bg-rose-500/5 border border-rose-500/15 p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-bold text-xs select-none">
+                    <AlertCircle className="w-4 h-4" /> Supabase Endpoint Unreachable — Firebase Fallback Active
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed select-none">
+                    Supabase credentials are configured, but the Supabase server could not be reached (the project may be paused, deleted, or blocked on this network).
+                    Your application is operating normally using <strong>Firebase Firestore</strong> and local caching with zero data loss. Click <strong>Test</strong> once your Supabase project is resumed.
+                  </p>
+                </div>
+              ) : supabaseConnStatus === 'table_missing' ? (
+                <div className="bg-amber-500/5 border border-amber-500/10 p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-bold text-xs select-none">
+                    <Info className="w-4 h-4" /> Create app_state Table in Supabase
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed select-none">
+                    Supabase is reachable, but the <strong>app_state</strong> table does not exist yet. Run the SQL schema below in your Supabase SQL Editor, then click <strong>Test</strong>.
                   </p>
                 </div>
               ) : (
@@ -1541,11 +1604,12 @@ alter table app_state disable row level security;
 -- Enable Realtime for app_state table:
 alter table app_state replica identity full;
 alter publication supabase_realtime add table app_state;`);
-                      alert('SQL Schema copied to clipboard!');
+                      setCopiedSql(true);
+                      setTimeout(() => setCopiedSql(false), 2500);
                     }}
                     className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition flex items-center gap-1 cursor-pointer"
                   >
-                    <Check className="w-3.5 h-3.5" /> Copy SQL Script
+                    <Check className="w-3.5 h-3.5" /> {copiedSql ? 'Copied SQL!' : 'Copy SQL Script'}
                   </button>
                 </div>
 

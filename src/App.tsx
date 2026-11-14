@@ -63,6 +63,9 @@ import ReportingDashboard from './components/ReportingDashboard';
 import CloudBackup from './components/CloudBackup';
 import MailboxManager from './components/MailboxManager';
 import ProfileSettings from './components/ProfileSettings';
+import GoogleMeetHub from './components/GoogleMeetHub';
+import GoogleClassroomHub from './components/GoogleClassroomHub';
+import { MeetSpace } from './googleMeet';
 import VoiceNotes from './components/VoiceNotes';
 import AssignmentTracker from './components/AssignmentTracker';
 import HomePage from './components/HomePage';
@@ -165,18 +168,7 @@ declare global {
   }
 }
 
-// Auto-detect and perform a one-time clean-up migration of old dummy/simulation storage data
-if (typeof window !== 'undefined' && !localStorage.getItem('db-migrated-to-real-v5')) {
-  localStorage.removeItem('db-users');
-  localStorage.removeItem('db-schedules');
-  localStorage.removeItem('db-progress');
-  localStorage.removeItem('db-notifications');
-  localStorage.removeItem('db-backups');
-  localStorage.removeItem('db-registration-requests');
-  localStorage.removeItem('db-simulated-emails');
-  localStorage.removeItem('active-user');
-  localStorage.setItem('db-migrated-to-real-v5', 'true');
-}
+// Preserve existing localStorage keys so cached app data is never unexpectedly cleared on new origins/browsers.
 
 const GoogleIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24">
@@ -447,7 +439,8 @@ function AppContent() {
                        backupsLoaded && registrationLoaded && emailsLoaded && batchesLoaded && coursesLoaded && masterCoursesLoaded && assignmentsLoaded && studentEvolutionsLoaded && evolutionBankLoaded;
 
   // Navigation tab state
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline' | 'voice-notes'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'enrollments' | 'schedule' | 'lectures' | 'courses-directory' | 'progress' | 'reports' | 'backup' | 'inbox' | 'profile' | 'assignment-pipeline' | 'assignment-tracker' | 'evolution-pipeline' | 'voice-notes' | 'google-meet' | 'google-classroom'>('dashboard');
+  const [meetInspectTarget, setMeetInspectTarget] = useState<string | null>(null);
 
   // Active integrated classroom session
   const [activeClassroomSession, setActiveClassroomSession] = useState<ClassSchedule | null>(null);
@@ -1117,6 +1110,8 @@ function AppContent() {
         '/backup': 'backup',
         '/assignment-pipeline': 'assignment-pipeline',
         '/assignment-tracker': 'assignment-tracker',
+        '/google-meet': 'google-meet',
+        '/google-classroom': 'google-classroom',
         '/profile': 'profile'
       };
 
@@ -1171,6 +1166,8 @@ function AppContent() {
       'backup': '/backup',
       'assignment-pipeline': '/assignment-pipeline',
       'assignment-tracker': '/assignment-tracker',
+      'google-meet': '/google-meet',
+      'google-classroom': '/google-classroom',
       'profile': '/profile'
     };
 
@@ -4535,7 +4532,7 @@ function AppContent() {
                               <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover/header:text-slate-900 dark:group-hover/header:text-white transition-transform duration-200 ${isStudentAcademicExpanded ? 'rotate-0' : '-rotate-90'}`} />
                             </button>
                           )}
-                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStudentAcademicExpanded || isActuallyCollapsed ? 'max-h-[350px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
+                          <div className={`space-y-1 transition-all duration-300 overflow-hidden ${isStudentAcademicExpanded || isActuallyCollapsed ? 'max-h-[450px] opacity-100 visible' : 'max-h-0 opacity-0 invisible pointer-events-none'}`}>
                             <motion.button
                               type="button"
                               onClick={() => {
@@ -4673,6 +4670,33 @@ function AppContent() {
                               )}
                               <Mic className="w-4 h-4 flex-shrink-0" />
                               {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Voice Notes</span>}
+                            </motion.button>
+
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('google-classroom');
+                                if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                              }}
+                              whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                              className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                activeTab === 'google-classroom'
+                                  ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                              }`}
+                              title={isActuallyCollapsed ? "Google Classroom" : undefined}
+                            >
+                              {activeTab === 'google-classroom' && (
+                                <motion.div
+                                  layoutId="active-nav-pill"
+                                  className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <BookOpen className="w-4 h-4 flex-shrink-0" />
+                              {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Google Classroom</span>}
                             </motion.button>
                           </div>
                         </div>
@@ -4887,6 +4911,68 @@ function AppContent() {
                                   )}
                                   <Calendar className="w-4 h-4 flex-shrink-0" />
                                   {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Scheduled Lectures</span>}
+                                </motion.button>
+
+                                {/* First-level: Google Meet Workspace */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('google-meet');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'google-meet'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Google Meet" : undefined}
+                                >
+                                  {activeTab === 'google-meet' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <Video className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Google Meet</span>}
+                                </motion.button>
+
+                                {/* First-level: Google Classroom Workspace */}
+                                <motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('google-classroom');
+                                    setScheduleShowAddForm(false);
+                                    setScheduleShowCourseDashboard(false);
+                                    setScheduleShowBatchManager(false);
+                                    if (window.innerWidth < 768) setIsSidebarCollapsed(true);
+                                  }}
+                                  whileHover={{ x: isActuallyCollapsed ? 0 : 6 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                  className={`w-full flex items-center ${isActuallyCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-xs relative cursor-pointer select-none transition-colors duration-200 ${
+                                    activeTab === 'google-classroom'
+                                      ? 'text-slate-900 dark:text-white font-bold shadow-sm'
+                                      : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent'
+                                  }`}
+                                  title={isActuallyCollapsed ? "Google Classroom" : undefined}
+                                >
+                                  {activeTab === 'google-classroom' && (
+                                    <motion.div
+                                      layoutId="active-nav-pill"
+                                      className="absolute inset-0 bg-slate-200/55 dark:bg-white/[0.06] border border-slate-300/40 dark:border-white/10 rounded-xl -z-10 shadow-xs"
+                                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                  )}
+                                  <BookOpen className="w-4 h-4 flex-shrink-0" />
+                                  {!isActuallyCollapsed && <span className="truncate animate-fadeIn">Google Classroom</span>}
                                 </motion.button>
 
                                 {/* Consolidated Academic & Evolution Pipeline */}
@@ -5546,9 +5632,14 @@ function AppContent() {
                                                                 handleSelfEnroll(cl.id);
                                                               }
                                                             }}
-                                                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-150"
+                                                            className={`px-4 py-2 ${
+                                                              cl.meetingType === 'google_meet' || (cl.meetingLink || cl.location || '').toLowerCase().includes('meet.google')
+                                                                ? 'bg-emerald-600 hover:bg-emerald-700'
+                                                                : 'bg-slate-900 hover:bg-slate-800'
+                                                            } text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-150`}
                                                           >
-                                                            Join Class
+                                                            <Video className="w-3.5 h-3.5" />
+                                                            {cl.meetingType === 'google_meet' || (cl.meetingLink || cl.location || '').toLowerCase().includes('meet.google') ? 'Join Google Meet' : 'Join Class'}
                                                           </a>
                                                         ) : (
                                                           <button
@@ -6393,10 +6484,14 @@ function AppContent() {
                                                           href={cl.meetingLink.startsWith('http') ? cl.meetingLink : `https://${cl.meetingLink}`}
                                                           target="_blank"
                                                           rel="noopener noreferrer"
-                                                          className="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 duration-150"
-                                                          title="Open external conferencing link"
+                                                          className={`px-3.5 py-1.5 ${
+                                                            cl.meetingType === 'google_meet' || cl.meetingLink.includes('meet.google.com')
+                                                              ? 'bg-emerald-600 hover:bg-emerald-700'
+                                                              : 'bg-blue-500 hover:bg-blue-600'
+                                                          } text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 duration-150`}
+                                                          title={cl.meetingType === 'google_meet' ? 'Start Google Meet conference' : 'Open external conferencing link'}
                                                         >
-                                                          <ExternalLink className="w-3.5 h-3.5" /> Start Link
+                                                          <ExternalLink className="w-3.5 h-3.5" /> {cl.meetingType === 'google_meet' || cl.meetingLink.includes('meet.google.com') ? 'Start Meet' : 'Start Link'}
                                                         </a>
                                                       ) : null}
 
@@ -6507,6 +6602,10 @@ function AppContent() {
                 editingCourse={sharedEditingCourse}
                 setEditingCourse={setSharedEditingCourse}
                 onJoinClassroom={setActiveClassroomSession}
+                onInspectGoogleMeet={(target) => {
+                  setMeetInspectTarget(target);
+                  setActiveTab('google-meet');
+                }}
               />
             )}
 
@@ -6537,7 +6636,35 @@ function AppContent() {
                 showBatchManager={false}
                 showCourseDashboard={false}
                 onJoinClassroom={setActiveClassroomSession}
+                onInspectGoogleMeet={(target) => {
+                  setMeetInspectTarget(target);
+                  setActiveTab('google-meet');
+                }}
               />
+            )}
+
+            {activeTab === 'google-meet' && ['admin', 'sub-admin', 'instructor'].includes(currentUser.role) && (
+              <GoogleMeetHub
+                schedules={schedules}
+                initialInspectTarget={meetInspectTarget}
+                onClearInspectTarget={() => setMeetInspectTarget(null)}
+                onAttachMeetToSchedule={(scheduleId: string, space: MeetSpace) => {
+                  const target = schedules.find(s => s.id === scheduleId);
+                  if (!target) return;
+                  handleUpdateClass({
+                    ...target,
+                    meetingType: 'google_meet',
+                    meetingLink: space.meetingUri,
+                    meetSpaceName: space.name,
+                    meetCode: space.meetingCode,
+                    location: `Google Meet (${space.meetingCode})`,
+                  });
+                }}
+              />
+            )}
+
+            {activeTab === 'google-classroom' && (
+              <GoogleClassroomHub currentUser={currentUser} />
             )}
 
             {activeTab === 'courses-directory' && ['admin', 'sub-admin'].includes(currentUser.role) && (

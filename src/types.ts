@@ -94,8 +94,10 @@ export interface ClassSchedule {
   status: 'scheduled' | 'completed' | 'cancelled';
   batch?: string; // Optional target batch (e.g. Batch A, Batch B, or All)
   course?: string; // Optional target course (e.g. Web Development, or All)
-  meetingType?: 'own_classroom' | 'external_link';
+  meetingType?: 'own_classroom' | 'google_meet' | 'external_link';
   meetingLink?: string;
+  meetSpaceName?: string;
+  meetCode?: string;
 }
 
 export interface ProgressRecord {

@@ -15,9 +15,11 @@ const activeConfig = {
 const app = initializeApp(activeConfig);
 
 // Use persistent local cache to enable robust offline storage, data caching, and session stability
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({})
-}, firebaseConfig.firestoreDatabaseId);
+const firestoreDatabaseId = (firebaseConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId;
+
+export const db = firestoreDatabaseId
+  ? initializeFirestore(app, { localCache: persistentLocalCache({}) }, firestoreDatabaseId)
+  : initializeFirestore(app, { localCache: persistentLocalCache({}) });
 
 export const auth = getAuth(app);
 
